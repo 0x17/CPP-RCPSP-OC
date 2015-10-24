@@ -6,9 +6,10 @@
 #define CPP_RCPSP_OC_LSSOLVER_H
 
 #include "Project.h"
+#include "ProjectWithOvertime.h"
 
 namespace LSSolver {
-    vector<int> solve(Project &p);
+    vector<int> solve(ProjectWithOvertime &p);
 };
 
 #endif //CPP_RCPSP_OC_LSSOLVER_H

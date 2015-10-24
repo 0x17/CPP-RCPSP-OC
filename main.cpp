@@ -6,6 +6,6 @@
 
 int main(int argc, const char * argv[]) {
     ProjectWithOvertime p("QBWLBeispiel.DAT");
-    cout << "Number of jobs " << p.numJobs << endl;
+    auto optimalSts = LSSolver::solve(p);
     return 0;
 }
