@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "ProjectWithOvertime.h"
+#include "LSSolver.h"
 
 int main(int argc, const char * argv[]) {
     ProjectWithOvertime p("QBWLBeispiel.DAT");
