@@ -9,7 +9,6 @@
 
 namespace ScheduleVisualizer {
     void drawScheduleToPDF(ProjectWithOvertime &p, vector<int> sts, string filename);
-
 };
 
 
