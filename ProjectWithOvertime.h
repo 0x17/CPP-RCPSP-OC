@@ -11,10 +11,10 @@
 class ProjectWithOvertime : public Project {
 public:
     vector<int> zmax;
-    vector<float> revenue, kappa;
+	vector<float> kappa, revenue;
     vector<int> zeroOc;
 
-    ProjectWithOvertime(string filename);
+	explicit ProjectWithOvertime(string filename);
 
 private:
     void computeRevenueFunction();

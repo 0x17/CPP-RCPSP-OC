@@ -5,7 +5,6 @@
 #ifndef SSGS_UTILS_H
 #define SSGS_UTILS_H
 
-#include <string>
 #include <vector>
 using namespace std;
 
@@ -28,6 +27,9 @@ namespace Utils {
         resizeMatrix(result, m, n);
         return result;
     }
+
+	inline int max(int a, int b) { return a > b ? a : b; }
+	inline int min(int a, int b) { return a < b ? a : b; }
 }
 
 #endif //SSGS_UTILS_H

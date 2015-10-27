@@ -3,6 +3,8 @@
 //
 
 #include "ScheduleVisualizer.h"
+
+/*
 #include <podofo/podofo.h>
 
 using namespace PoDoFo;
@@ -47,3 +49,4 @@ void ScheduleVisualizer::drawScheduleToPDF(ProjectWithOvertime &p, vector<int> s
 
     document.Close();
 }
+*/

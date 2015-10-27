@@ -11,7 +11,9 @@ using namespace std;
 template<class Individual>
 class GeneticAlgorithm {
 public:
-    Individual solve(int numGens, int popSize, int pmutate) {
+	virtual ~GeneticAlgorithm() {}
+
+	Individual solve(int numGens, int popSize, int pmutate) {
         vector<Individual> population(popSize*2);
 
         for(int i=0; i<popSize; i++) {
@@ -60,10 +62,10 @@ struct DeadlineLambda {
 
 class FixedCapacityGA : GeneticAlgorithm<LambdaZr> {
 private:
-    virtual LambdaZr init(int ix);
-    virtual LambdaZr crossover(LambdaZr a, LambdaZr b);
-    virtual LambdaZr mutate(LambdaZr i);
-    virtual float fitness(LambdaZr i);
+    virtual LambdaZr init(int ix) override;
+    virtual LambdaZr crossover(LambdaZr a, LambdaZr b) override;
+    virtual LambdaZr mutate(LambdaZr i) override;
+    virtual float fitness(LambdaZr i) override;
 };
 
 #endif //CPP_RCPSP_OC_GENETICALGORITHMS_H

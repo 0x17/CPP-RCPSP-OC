@@ -24,18 +24,20 @@ public:
 
     vector<int> topOrder;
 
-    Project(string filename);
+	explicit Project(string filename);
     virtual ~Project() {}
 
-    vector<int> serialSGS(const vector<int> order, const vector<int> zr) const;
+    vector<int> serialSGS(const vector<int> & order, const vector<int> & zr) const;
 
 private:
     void parsePrecedenceRelation(const vector<string> &lines);
     void parseDurationsAndDemands(const vector<string> &lines);
 
-    bool enoughCapacityForJob(int job, int t, vector<vector<int>> resRem) const;
+    bool enoughCapacityForJob(int job, int t, vector<vector<int>> & resRem) const;
     int computeLastPredFinishingTime(const vector<int> &fts, int job) const;
     void scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, vector<vector<int>> &resRem) const;
+
+	vector<int> computeTopOrder();
 };
 
 #endif //SSGS_PROJECT_H

@@ -18,8 +18,7 @@ Project::Project(string filename) {
 
     capacities = Utils::extractIntsFromLine(lines[18+numJobs*2+4+3]);
 
-    topOrder.resize(numJobs);
-    EACH_JOB(topOrder[j] = j)
+	topOrder = computeTopOrder();
 }
 
 void Project::parsePrecedenceRelation(const vector<string> &lines) {
@@ -44,7 +43,7 @@ void Project::parseDurationsAndDemands(const vector<string> &lines) {
     )
 }
 
-vector<int> Project::serialSGS(const vector<int> order, const vector<int> zr) const {
+vector<int> Project::serialSGS(const vector<int> & order, const vector<int> & zr) const {
     vector<int> sts(numJobs), fts(numJobs);
 
     vector<vector<int>> resRem = Utils::initMatrix<int>(numRes, numPeriods);
@@ -59,22 +58,28 @@ vector<int> Project::serialSGS(const vector<int> order, const vector<int> zr) co
     return sts;
 }
 
-inline void Project::scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, vector<vector<int>> &resRem) const {
-    sts[job] = t;
-    fts[job] = t + durations[job];
-    EACH_RES(for(int tau=t+1; tau<=fts[job]; tau++) resRem[r][t] -= demands[job][r];)
-
-}
-
 int Project::computeLastPredFinishingTime(const vector<int> &fts, int job) const {
-    int lastPredFinished = 0;
-    EACH_JOB(if(adjMx[j][job] && fts[j] > lastPredFinished) lastPredFinished = fts[j];)
-    return lastPredFinished;
+	int lastPredFinished = 0;
+	EACH_JOB(if (adjMx[j][job] && fts[j] > lastPredFinished) lastPredFinished = fts[j])
+	return lastPredFinished;
 }
 
-bool Project::enoughCapacityForJob(int job, int t, vector<vector<int>> resRem) const {
-    for(int tau = t+1; tau <= t+durations[job]; tau++ ) {
-        EACH_RES(if(demands[job][r] > resRem[r][tau]) return false;)
+bool Project::enoughCapacityForJob(int job, int t, vector<vector<int>> & resRem) const {
+    for(int tau = t + 1; tau <= t + durations[job]; tau++) {
+        EACH_RES(if(demands[job][r] > resRem[r][tau]) return false)
     }
     return true;
 }
+
+inline void Project::scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, vector<vector<int>> &resRem) const {
+	sts[job] = t;
+	fts[job] = t + durations[job];
+	EACH_RES(for (int tau = t + 1; tau <= fts[job]; tau++) resRem[r][t] -= demands[job][r];)
+}
+
+vector<int> Project::computeTopOrder() {
+	vector<int> order;
+	// TODO: Implement me!
+	return order;
+}
+

@@ -11,20 +11,20 @@ class SchedulingNativeFunction : public LSNativeFunction {
 protected:
     ProjectWithOvertime &p;
 public:
-    SchedulingNativeFunction(ProjectWithOvertime &_p) : p(_p) {}
+	explicit SchedulingNativeFunction(ProjectWithOvertime &_p) : p(_p) {}
     ~SchedulingNativeFunction() {}
 };
 
 class RevenueFunction : public SchedulingNativeFunction {
 public:
-    RevenueFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
-    virtual lsdouble call(const LSNativeContext &context);
+	explicit RevenueFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
+    virtual lsdouble call(const LSNativeContext &context) override;
 };
 
 class CumulatedDemandFunction : public SchedulingNativeFunction {
 public:
-    CumulatedDemandFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) { }
-    virtual lsdouble call(const LSNativeContext &context);
+	explicit CumulatedDemandFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) { }
+    virtual lsdouble call(const LSNativeContext &context) override;
 };
 
 lsdouble RevenueFunction::call(const LSNativeContext &context) {
@@ -100,7 +100,7 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
     ls.solve();
 
     auto sol = ls.getSolution();
-    EACH_COMMON(j, p.numJobs, sts[j] = (int)sol.getIntValue(Sj[j]));
+    EACH_COMMON(j, p.numJobs, sts[j] = static_cast<int>(sol.getIntValue(Sj[j])));
 
     //auto status = sol.getStatus();
     //auto solvetime = ls.getStatistics().getRunningTime();

@@ -5,8 +5,9 @@
 
 int main(int argc, const char * argv[]) {
     ProjectWithOvertime p("QBWLBeispiel.DAT");
-    //auto optimalSts = LSSolver::solve(p);
-    vector<int> optimalSts(p.numJobs);
-    ScheduleVisualizer::drawScheduleToPDF(p, optimalSts, "out.pdf");
+    auto optimalSts = LSSolver::solve(p);
+    //vector<int> optimalSts(p.numJobs);
+    //ScheduleVisualizer::drawScheduleToPDF(p, optimalSts, "out.pdf");
+	cin.get();
     return 0;
 }
