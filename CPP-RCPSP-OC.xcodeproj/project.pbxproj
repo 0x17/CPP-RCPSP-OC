@@ -1,0 +1,283 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		425E99CC1BE040AD0057A1E3 /* GeneticAlgorithms.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99BF1BE040AD0057A1E3 /* GeneticAlgorithms.cpp */; };
+		425E99CD1BE040AD0057A1E3 /* LSSolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C11BE040AD0057A1E3 /* LSSolver.cpp */; };
+		425E99CE1BE040AD0057A1E3 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C31BE040AD0057A1E3 /* main.cpp */; };
+		425E99CF1BE040AD0057A1E3 /* Project.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C41BE040AD0057A1E3 /* Project.cpp */; };
+		425E99D01BE040AD0057A1E3 /* ProjectWithOvertime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C61BE040AD0057A1E3 /* ProjectWithOvertime.cpp */; };
+		425E99D11BE040AD0057A1E3 /* ScheduleVisualizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C81BE040AD0057A1E3 /* ScheduleVisualizer.cpp */; };
+		425E99D21BE040AD0057A1E3 /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99CA1BE040AD0057A1E3 /* Utils.cpp */; };
+		425E99D41BE043400057A1E3 /* QBWLBeispiel.DAT in CopyFiles */ = {isa = PBXBuildFile; fileRef = 425E99D31BE041DC0057A1E3 /* QBWLBeispiel.DAT */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		42DB21021BE04034009242D4 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				425E99D41BE043400057A1E3 /* QBWLBeispiel.DAT in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		425E99BF1BE040AD0057A1E3 /* GeneticAlgorithms.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GeneticAlgorithms.cpp; sourceTree = "<group>"; };
+		425E99C01BE040AD0057A1E3 /* GeneticAlgorithms.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GeneticAlgorithms.h; sourceTree = "<group>"; };
+		425E99C11BE040AD0057A1E3 /* LSSolver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LSSolver.cpp; sourceTree = "<group>"; };
+		425E99C21BE040AD0057A1E3 /* LSSolver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSSolver.h; sourceTree = "<group>"; };
+		425E99C31BE040AD0057A1E3 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		425E99C41BE040AD0057A1E3 /* Project.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Project.cpp; sourceTree = "<group>"; };
+		425E99C51BE040AD0057A1E3 /* Project.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Project.h; sourceTree = "<group>"; };
+		425E99C61BE040AD0057A1E3 /* ProjectWithOvertime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProjectWithOvertime.cpp; sourceTree = "<group>"; };
+		425E99C71BE040AD0057A1E3 /* ProjectWithOvertime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProjectWithOvertime.h; sourceTree = "<group>"; };
+		425E99C81BE040AD0057A1E3 /* ScheduleVisualizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ScheduleVisualizer.cpp; sourceTree = "<group>"; };
+		425E99C91BE040AD0057A1E3 /* ScheduleVisualizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScheduleVisualizer.h; sourceTree = "<group>"; };
+		425E99CA1BE040AD0057A1E3 /* Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
+		425E99CB1BE040AD0057A1E3 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
+		425E99D31BE041DC0057A1E3 /* QBWLBeispiel.DAT */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = QBWLBeispiel.DAT; sourceTree = "<group>"; };
+		42DB21041BE04034009242D4 /* CPP-RCPSP-OC */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "CPP-RCPSP-OC"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		42DB21011BE04034009242D4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		42DB20FB1BE04034009242D4 = {
+			isa = PBXGroup;
+			children = (
+				425E99D31BE041DC0057A1E3 /* QBWLBeispiel.DAT */,
+				425E99BF1BE040AD0057A1E3 /* GeneticAlgorithms.cpp */,
+				425E99C01BE040AD0057A1E3 /* GeneticAlgorithms.h */,
+				425E99C11BE040AD0057A1E3 /* LSSolver.cpp */,
+				425E99C21BE040AD0057A1E3 /* LSSolver.h */,
+				425E99C31BE040AD0057A1E3 /* main.cpp */,
+				425E99C41BE040AD0057A1E3 /* Project.cpp */,
+				425E99C51BE040AD0057A1E3 /* Project.h */,
+				425E99C61BE040AD0057A1E3 /* ProjectWithOvertime.cpp */,
+				425E99C71BE040AD0057A1E3 /* ProjectWithOvertime.h */,
+				425E99C81BE040AD0057A1E3 /* ScheduleVisualizer.cpp */,
+				425E99C91BE040AD0057A1E3 /* ScheduleVisualizer.h */,
+				425E99CA1BE040AD0057A1E3 /* Utils.cpp */,
+				425E99CB1BE040AD0057A1E3 /* Utils.h */,
+				42DB21051BE04034009242D4 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		42DB21051BE04034009242D4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				42DB21041BE04034009242D4 /* CPP-RCPSP-OC */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		42DB21031BE04034009242D4 /* CPP-RCPSP-OC */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 42DB210B1BE04034009242D4 /* Build configuration list for PBXNativeTarget "CPP-RCPSP-OC" */;
+			buildPhases = (
+				42DB21001BE04034009242D4 /* Sources */,
+				42DB21011BE04034009242D4 /* Frameworks */,
+				42DB21021BE04034009242D4 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "CPP-RCPSP-OC";
+			productName = "CPP-RCPSP-OC";
+			productReference = 42DB21041BE04034009242D4 /* CPP-RCPSP-OC */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		42DB20FC1BE04034009242D4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0710;
+				ORGANIZATIONNAME = "André Schnabel";
+				TargetAttributes = {
+					42DB21031BE04034009242D4 = {
+						CreatedOnToolsVersion = 7.1;
+					};
+				};
+			};
+			buildConfigurationList = 42DB20FF1BE04034009242D4 /* Build configuration list for PBXProject "CPP-RCPSP-OC" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 42DB20FB1BE04034009242D4;
+			productRefGroup = 42DB21051BE04034009242D4 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				42DB21031BE04034009242D4 /* CPP-RCPSP-OC */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		42DB21001BE04034009242D4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				425E99D11BE040AD0057A1E3 /* ScheduleVisualizer.cpp in Sources */,
+				425E99D01BE040AD0057A1E3 /* ProjectWithOvertime.cpp in Sources */,
+				425E99D21BE040AD0057A1E3 /* Utils.cpp in Sources */,
+				425E99CC1BE040AD0057A1E3 /* GeneticAlgorithms.cpp in Sources */,
+				425E99CD1BE040AD0057A1E3 /* LSSolver.cpp in Sources */,
+				425E99CE1BE040AD0057A1E3 /* main.cpp in Sources */,
+				425E99CF1BE040AD0057A1E3 /* Project.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		42DB21091BE04034009242D4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		42DB210A1BE04034009242D4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		42DB210C1BE04034009242D4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = /opt/localsolver_6_0/include;
+				LIBRARY_SEARCH_PATHS = /opt/localsolver_6_0/bin;
+				OTHER_LDFLAGS = "-llocalsolver";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		42DB210D1BE04034009242D4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = /opt/localsolver_6_0/include;
+				LIBRARY_SEARCH_PATHS = /opt/localsolver_6_0/bin;
+				OTHER_LDFLAGS = "-llocalsolver";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		42DB20FF1BE04034009242D4 /* Build configuration list for PBXProject "CPP-RCPSP-OC" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				42DB21091BE04034009242D4 /* Debug */,
+				42DB210A1BE04034009242D4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		42DB210B1BE04034009242D4 /* Build configuration list for PBXNativeTarget "CPP-RCPSP-OC" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				42DB210C1BE04034009242D4 /* Debug */,
+				42DB210D1BE04034009242D4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 42DB20FC1BE04034009242D4 /* Project object */;
+}
