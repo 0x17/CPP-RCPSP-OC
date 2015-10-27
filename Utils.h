@@ -6,6 +6,7 @@
 #define SSGS_UTILS_H
 
 #include <vector>
+#include <string>
 using namespace std;
 
 namespace Utils {
@@ -26,6 +27,11 @@ namespace Utils {
         vector<vector<T>> result;
         resizeMatrix(result, m, n);
         return result;
+    }
+
+    template<class T>
+    void batchResize(int size, initializer_list<vector<T> *> vecs) {
+        for(auto v : vecs) v->resize(size);
     }
 
 	inline int max(int a, int b) { return a > b ? a : b; }

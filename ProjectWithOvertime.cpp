@@ -50,11 +50,12 @@ int ProjectWithOvertime::computeTKappa() const {
 
 vector<int> ProjectWithOvertime::earliestStartSchedule(vector<vector<int>>& resRem) {
     vector<int> ess(numJobs);
-    EACH_JOB(
+    for(int k=0; k<numJobs; k++) {
+        int j = topOrder[k];
         ess[j] = 0;
-        EACH_JOBi(if(adjMx[i][j] && ess[i] + durations[i] > ess[j]) ess[j] = ess[i] + durations[i])
-        EACH_RES(for(int tau=ess[j]+1; tau<=ess[j]+durations[j]; tau++) resRem[r][tau] -= demands[j][r])
-    )
+        EACH_JOBi(if (adjMx[i][j] && ess[i] + durations[i] > ess[j]) ess[j] = ess[i] + durations[i])
+        EACH_RES(for (int tau = ess[j] + 1; tau <= ess[j] + durations[j]; tau++) resRem[r][tau] -= demands[j][r])
+    }
     return ess;
 }
 

@@ -107,3 +107,88 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
 
     return sts;
 }
+
+#define TIME_WINDOW(code) for(int t=p.efts[p.numJobs-1]; t<=p.lfts[p.numJobs-1]; t++) { code; }
+
+vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
+    vector<int> sts(p.numJobs);
+
+    LocalSolver ls;
+    auto model = ls.getModel();
+
+    // Decision variables
+    vector<vector<LSExpression>> x, z;
+    Utils::resizeMatrix(x, p.numJobs, p.numPeriods);
+    Utils::resizeMatrix(z, p.numRes, p.numPeriods);
+    EACH_COMMON(j, p.numJobs, EACH_COMMON(t, p.numPeriods, x[j][t] = model.boolVar()))
+    EACH_COMMON(r, p.numRes, EACH_COMMON(t, p.numPeriods, z[r][t] = model.intVar(0, p.zmax[r])))
+
+    // Objective function
+    auto objfunc = model.sum();
+    TIME_WINDOW(objfunc += p.revenue[t] * x[p.numJobs-1][t])
+    EACH_COMMON(r, p.numRes, EACH_COMMON(t, p.numPeriods, objfunc += -p.kappa[r] * z[r][t]))
+
+    // Constraints
+
+    // Each job once
+    EACH_COMMON(j, p.numJobs,
+        auto xsum = model.sum();
+        TIME_WINDOW(xsum += x[j][t])
+        model.constraint(xsum == 1.0);
+    )
+
+    // Precedence restrictions
+    EACH_COMMON(j, p.numJobs,
+        EACH_COMMON(i, p.numJobs,
+            if(p.adjMx[i][j]) {
+                auto predFt = model.sum();
+                TIME_WINDOW(predFt += t * x[i][t])
+                auto jobSt = model.sum();
+                TIME_WINDOW(jobSt += t * x[j][t])
+                jobSt += -p.durations[j];
+                model.constraint(predFt <= jobSt);
+            }
+        )
+    )
+
+    // Capacity restrictions
+    EACH_COMMON(r, p.numRes,
+        EACH_COMMON(t, p.numPeriods,
+            auto cumulatedDemand = model.sum();
+            EACH_COMMON(j, p.numJobs,
+                auto makespan = model.sum();
+                for(int tau = t; tau < Utils::min(p.numPeriods, p.durations[j]); tau++)
+                    makespan += x[j][tau];
+                p.demands[j][r] * makespan
+            )
+            auto totalCapacity = model.sum(p.capacities[r], z[r][t]);
+            model.constraint(cumulatedDemand <= totalCapacity);
+        )
+    )
+
+    model.addObjective(objfunc, OD_Maximize);
+    model.close();
+
+    ls.createPhase().setTimeLimit(2);
+    ls.getParam().setNbThreads(8);
+    ls.solve();
+
+    auto sol = ls.getSolution();
+    EACH_COMMON(j, p.numJobs,
+        EACH_COMMON(t, p.numPeriods,
+            if(sol.getValue(x[j][t]) == 1) {
+                sts[j] = t - p.durations[j];
+                break;
+            }
+        )
+    )
+
+    auto status = sol.getStatus();
+    if(status != LSSolutionStatus::SS_Feasible) {
+        throw runtime_error("No feasible solution found!");
+    }
+
+    auto solvetime = ls.getStatistics().getRunningTime();
+
+    return sts;
+}

@@ -15,10 +15,13 @@ Project::Project(string filename) {
     parseDurationsAndDemands(lines);
 
     numPeriods = accumulate(durations.begin(), durations.end(), 0);
+    T = numPeriods - 1;
 
     capacities = Utils::extractIntsFromLine(lines[18+numJobs*2+4+3]);
 
 	topOrder = computeTopOrder();
+
+    computeELSFTs();
 }
 
 void Project::parsePrecedenceRelation(const vector<string> &lines) {
@@ -64,6 +67,12 @@ int Project::computeLastPredFinishingTime(const vector<int> &fts, int job) const
 	return lastPredFinished;
 }
 
+int Project::computeFirstSuccStartingTime(const vector<int> &sts, int job) const {
+    int firstSuccStarted = T;
+    EACH_JOB(if (adjMx[job][j] && sts[j] < firstSuccStarted) firstSuccStarted = sts[j])
+    return firstSuccStarted;
+}
+
 bool Project::enoughCapacityForJob(int job, int t, vector<vector<int>> & resRem) const {
     for(int tau = t + 1; tau <= t + durations[job]; tau++) {
         EACH_RES(if(demands[job][r] > resRem[r][tau]) return false)
@@ -74,12 +83,54 @@ bool Project::enoughCapacityForJob(int job, int t, vector<vector<int>> & resRem)
 inline void Project::scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, vector<vector<int>> &resRem) const {
 	sts[job] = t;
 	fts[job] = t + durations[job];
-	EACH_RES(for (int tau = t + 1; tau <= fts[job]; tau++) resRem[r][t] -= demands[job][r];)
+	EACH_RES(for (int tau = t + 1; tau <= fts[job]; tau++) resRem[r][tau] -= demands[job][r];)
 }
 
-vector<int> Project::computeTopOrder() {
-	vector<int> order;
-	// TODO: Implement me!
+bool Project::jobBeforeInOrder(int job, int curIndex, vector<int>& order) const {
+	for(int k = 0; k < curIndex; k++) {
+		if (order[k] == job) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Project::hasPredNotBeforeInOrder(int job, int curIndex, vector<int>& order) const {
+	for(int i = 0; i < numJobs; i++) {
+		if(adjMx[i][job]) {
+			if(!jobBeforeInOrder(i, curIndex, order))
+				return true;
+		}
+	}
+	return false;
+}
+
+vector<int> Project::computeTopOrder() const {
+	vector<int> order(numJobs);
+	for (int curIndex = 0; curIndex < numJobs; curIndex++) {
+		for(int job = 0; job < numJobs; job++) {
+			if(!jobBeforeInOrder(job, curIndex, order) && !hasPredNotBeforeInOrder(job, curIndex, order)) {
+				order[curIndex] = job;
+				break;
+			}
+		}
+	}
 	return order;
+}
+
+void Project::computeELSFTs() {
+    Utils::batchResize(numJobs, {&ests, &lsts, &efts, &lfts});
+
+    for(int k=0; k<numJobs; k++) {
+        int j = topOrder[k];
+        ests[j] = computeLastPredFinishingTime(efts, j);
+        efts[j] = ests[j] + durations[j];
+    }
+
+    for(int k=numJobs-1; k>=0; k--) {
+        int j = topOrder[k];
+        lfts[j] = computeFirstSuccStartingTime(lsts, j);
+        lsts[j] = lfts[j] - durations[j];
+    }
 }
 

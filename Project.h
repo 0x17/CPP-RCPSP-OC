@@ -17,12 +17,14 @@
 
 class Project {
 public:
-    int numJobs, numRes, numPeriods;
+    int numJobs, numRes, numPeriods, T;
     vector<vector<bool>> adjMx;
     vector<int> durations, capacities;
     vector<vector<int>> demands;
 
     vector<int> topOrder;
+
+    vector<int> ests, lsts, efts, lfts;
 
 	explicit Project(string filename);
     virtual ~Project() {}
@@ -35,9 +37,14 @@ private:
 
     bool enoughCapacityForJob(int job, int t, vector<vector<int>> & resRem) const;
     int computeLastPredFinishingTime(const vector<int> &fts, int job) const;
+    int computeFirstSuccStartingTime(const vector<int> &sts, int job) const;
     void scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, vector<vector<int>> &resRem) const;
 
-	vector<int> computeTopOrder();
+	bool jobBeforeInOrder(int job, int curIndex, vector<int>& order) const;
+	bool hasPredNotBeforeInOrder(int job, int curIndex, vector<int>& order) const;
+	vector<int> computeTopOrder() const;
+
+    void computeELSFTs();
 };
 
 #endif //SSGS_PROJECT_H
