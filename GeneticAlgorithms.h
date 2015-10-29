@@ -32,40 +32,29 @@ public:
 
 protected:
     virtual Individual init(int ix) = 0;
-    virtual Individual crossover(Individual a, Individual b) = 0;
-    virtual Individual mutate(Individual i) = 0;
-    virtual float fitness(Individual i) = 0;
+    virtual void crossover(Individual &mother, Individual &father, Individual &daughter) = 0;
+    virtual void mutate(Individual &i) = 0;
+    virtual float fitness(Individual &i) = 0;
 };
 
-struct LambdaZr {
-    vector<int> order, z;
+struct LambdaZrt { vector<int> order; vector<vector<int>> z; };
+struct LambdaBeta { vector<int> order, beta; };
+struct LambdaTau { vector<int> order; vector<float> tau; };
+struct DeadlineLambda { int deadline; vector<int> order; };
+struct LambdaZr { vector<int> order, z; };
+
+class TimeVaryingCapacityGA : public GeneticAlgorithm<LambdaZrt> {
+	LambdaZrt init(int ix) override { LambdaZrt e; return e; }
+	void crossover(LambdaZrt& mother, LambdaZrt& father, LambdaZrt& daughter) override {}
+	void mutate(LambdaZrt& i) override {}
+	float fitness(LambdaZrt& i) override { return 0.0f;  }
 };
 
-struct LambdaZrt {
-    vector<int> order;
-    vector<vector<int>> z;
-};
-
-struct LambdaBeta {
-    vector<int> order, beta;
-};
-
-struct LambdaTau {
-    vector<int> order;
-    vector<float> tau;
-};
-
-struct DeadlineLambda {
-    int deadline;
-    vector<int> order;
-};
-
-class FixedCapacityGA : GeneticAlgorithm<LambdaZr> {
-private:
-    virtual LambdaZr init(int ix) override;
-    virtual LambdaZr crossover(LambdaZr a, LambdaZr b) override;
-    virtual LambdaZr mutate(LambdaZr i) override;
-    virtual float fitness(LambdaZr i) override;
+class FixedCapacityGA : public GeneticAlgorithm<LambdaZr> {
+	virtual LambdaZr init(int ix) override { LambdaZr e; return e; }
+    virtual void crossover(LambdaZr &mother, LambdaZr &father, LambdaZr &daughter) override {}
+    virtual void mutate(LambdaZr &i) override {}
+	virtual float fitness(LambdaZr &i) override { return 0.0f;  }
 };
 
 #endif //CPP_RCPSP_OC_GENETICALGORITHMS_H

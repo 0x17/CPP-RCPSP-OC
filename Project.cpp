@@ -14,8 +14,8 @@ Project::Project(string filename) {
     parsePrecedenceRelation(lines);
     parseDurationsAndDemands(lines);
 
-    numPeriods = accumulate(durations.begin(), durations.end(), 0);
-    T = numPeriods - 1;
+	T = accumulate(durations.begin(), durations.end(), 0);
+    numPeriods = T+1;
 
     capacities = Utils::extractIntsFromLine(lines[18+numJobs*2+4+3]);
 

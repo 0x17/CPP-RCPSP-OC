@@ -109,7 +109,6 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
 }
 
 #define TIME_WINDOW(code) for(int t=p.efts[p.numJobs-1]; t<=p.lfts[p.numJobs-1]; t++) { code; }
-
 vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     vector<int> sts(p.numJobs);
 

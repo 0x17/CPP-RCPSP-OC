@@ -10,7 +10,7 @@
 
 namespace LSSolver {
     vector<int> solve(ProjectWithOvertime &p);
-    vector<int> solveMIPStyle(ProjectWithOvertime &p);
+	vector<int> solveMIPStyle(ProjectWithOvertime &p);
 };
 
 #endif //CPP_RCPSP_OC_LSSOLVER_H
