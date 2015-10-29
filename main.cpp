@@ -7,6 +7,7 @@ int main(int argc, const char * argv[]) {
     ProjectWithOvertime p("QBWLBeispiel.DAT");
     //auto optimalSts = LSSolver::solveMIPStyle(p);
     auto optimalSts = LSSolver::solve(p);
+	Utils::serializeSchedule(optimalSts, "myschedulebiatch.txt");
     //vector<int> optimalSts(p.numJobs);
     //ScheduleVisualizer::drawScheduleToPDF(p, optimalSts, "out.pdf");
 	cin.get();

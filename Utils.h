@@ -36,6 +36,8 @@ namespace Utils {
 
 	inline int max(int a, int b) { return a > b ? a : b; }
 	inline int min(int a, int b) { return a < b ? a : b; }
+
+	void serializeSchedule(vector<int> & sts, const string filename);
 }
 
 #endif //SSGS_UTILS_H

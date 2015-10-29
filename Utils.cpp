@@ -42,3 +42,15 @@ vector<int> Utils::extractIntsFromLine(string line) {
     }
     return nums;
 }
+
+void Utils::serializeSchedule(vector<int> & sts, const string filename) {
+	ofstream f(filename);
+	if(f.is_open()) {
+		for (int j = 0; j < sts.size(); j++) {
+			f << (j + 1) << "->" << (sts[j] + 1);
+			if (j < sts.size() - 1) f << "\n";
+		}
+		f.close();
+	}
+	
+}
