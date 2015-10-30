@@ -11,5 +11,4 @@ namespace ScheduleVisualizer {
     void drawScheduleToPDF(ProjectWithOvertime &p, vector<int> sts, string filename);
 };
 
-
 #endif //CPP_RCPSP_OC_SCHEDULEVISUALIZER_H

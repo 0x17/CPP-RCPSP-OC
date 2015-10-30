@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include <cstdlib>
 using namespace std;
 
 namespace Utils {
@@ -38,6 +39,17 @@ namespace Utils {
 	inline int min(int a, int b) { return a < b ? a : b; }
 
 	void serializeSchedule(vector<int> & sts, const string filename);
+
+    inline int randRangeIncl(int lb, int ub) {
+        return lb + rand() % (ub-lb+1);
+    }
+
+    template<class T>
+    bool rangeContains(const vector<T> &elems, int lb, int ub, int e) {
+        for(int i=lb; i<=ub; i++)
+            if(elems[i] == e) return true;
+        return false;
+    }
 }
 
 #endif //SSGS_UTILS_H
