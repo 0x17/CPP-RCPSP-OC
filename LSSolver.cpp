@@ -96,7 +96,9 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
     model.close();
 
     ls.createPhase().setTimeLimit(30);
-    ls.getParam().setNbThreads(8);
+	auto param = ls.getParam();
+	param.setNbThreads(8);
+	param.setVerbosity(2);
     ls.solve();
 
     auto sol = ls.getSolution();
@@ -155,10 +157,8 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
         EACH_RNG(t, p.numPeriods,
             auto cumulatedDemand = model.sum();
             EACH_RNG(j, p.numJobs,
-                auto makespan = model.sum();
-                for(int tau = t; tau < Utils::min(p.numPeriods, p.durations[j]); tau++)
-                    makespan += x[j][tau];
-                p.demands[j][r] * makespan
+                for(int tau = t; tau < Utils::min(t + p.durations[j], p.numPeriods); tau++)
+                    cumulatedDemand += x[j][tau] * p.demands[j][r];
             )
             auto totalCapacity = model.sum(p.capacities[r], z[r][t]);
             model.constraint(cumulatedDemand <= totalCapacity);
@@ -169,7 +169,9 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     model.close();
 
     ls.createPhase().setTimeLimit(2);
-    ls.getParam().setNbThreads(8);
+	auto param = ls.getParam();
+	param.setNbThreads(8);
+	param.setVerbosity(2);
     ls.solve();
 
     auto sol = ls.getSolution();
@@ -183,7 +185,7 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     )
 
     auto status = sol.getStatus();
-    if(status != LSSolutionStatus::SS_Feasible) {
+    if(status != SS_Feasible) {
         throw runtime_error("No feasible solution found!");
     }
 
