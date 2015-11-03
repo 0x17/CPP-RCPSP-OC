@@ -5,11 +5,13 @@
 
 int main(int argc, const char * argv[]) {
     ProjectWithOvertime p("QBWLBeispiel.DAT");
-    auto optimalSts = LSSolver::solveMIPStyle(p);
+    //auto optimalSts = LSSolver::solveMIPStyle(p);
     //auto optimalSts = LSSolver::solve(p);
+	auto optimalSts = LSSolver::solve2(p);
 	Utils::serializeSchedule(optimalSts, "myschedulebiatch.txt");
     //vector<int> optimalSts(p.numJobs);
     //ScheduleVisualizer::drawScheduleToPDF(p, optimalSts, "out.pdf");
-	cin.get();
+	//cin.get();
+	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedulebiatch.txt");
     return 0;
 }

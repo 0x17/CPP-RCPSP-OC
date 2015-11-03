@@ -40,10 +40,64 @@ lsdouble CumulatedDemandFunction::call(const LSNativeContext &context) {
     EACH_RNG(j, p.numJobs,
         lsint Sj = context.getIntValue(j+2);
         if(Sj < t && t <= Sj + p.durations[j])
-            demand += p.demands[j][r];
-    )
+            demand += p.demands[j][r])
 
     return demand;
+}
+
+vector<int> LSSolver::solve2(ProjectWithOvertime &p) {
+	vector<int> sts(p.numJobs);
+
+	LocalSolver ls;
+	auto model = ls.getModel();
+
+	// Decision variables
+	vector<LSExpression> S(p.numJobs);
+	EACH_RNG(j, p.numJobs, S[j] = model.intVar(0, p.numPeriods - 1));
+
+	vector<vector<LSExpression>> zrt = Utils::initMatrix<LSExpression>(p.numRes, p.numPeriods);
+	EACH_RNG(r, p.numRes, EACH_RNG(t, p.numPeriods, zrt[r][t] = model.intVar(0, p.zmax[r])))
+
+	// Revenue function parameter
+	LSExpression revenueArray = model.array();
+	EACH_RNG(t, p.numPeriods, revenueArray.addOperand(p.revenue[t]));
+
+	// Objective function
+	LSExpression objfunc = model.sum();
+	objfunc += model.at(revenueArray, S[p.numJobs - 1]);
+	EACH_RNG(r, p.numRes, EACH_RNG(t, p.numPeriods, objfunc += -p.kappa[r] * zrt[r][t]))
+	
+	// Precedence restriction
+	EACH_RNG(j, p.numJobs,
+		LSExpression lastPred = model.max(0);
+		EACH_RNG(i, p.numJobs,
+			if (p.adjMx[i][j])
+				lastPred.addOperand(S[i] + p.durations[i]))
+		model.constraint(lastPred <= S[j]))
+
+	// Capacity restriction
+	EACH_RNG(r, p.numRes,
+		EACH_RNG(t, p.numPeriods,
+			LSExpression cumDemandExpr = model.sum();
+			EACH_RNG(j, p.numJobs, cumDemandExpr += p.demands[j][r] * (t > S[j] && t <= S[j] + p.durations[j]))
+			model.constraint(cumDemandExpr <= p.capacities[r] + zrt[r][t])))
+
+    model.addObjective(objfunc, OD_Maximize);
+	model.close();
+
+	ls.createPhase().setTimeLimit(5);
+	auto param = ls.getParam();
+	param.setNbThreads(8);
+	param.setVerbosity(2);
+	ls.solve();
+
+	auto sol = ls.getSolution();
+	EACH_RNG(j, p.numJobs, sts[j] = static_cast<int>(sol.getIntValue(S[j])));
+
+	//auto status = sol.getStatus();
+	//auto solvetime = ls.getStatistics().getRunningTime();
+
+	return sts;
 }
 
 vector<int> LSSolver::solve(ProjectWithOvertime &p) {
@@ -76,10 +130,8 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
         LSExpression lastPred = model.max(0);
         EACH_RNG(i, p.numJobs,
             if(p.adjMx[i][j])
-                lastPred.addOperand(Sj[i] + p.durations[i]);
-        )
-        model.constraint(lastPred <= Sj[j]);
-    )
+                lastPred.addOperand(Sj[i] + p.durations[i]))
+        model.constraint(lastPred <= Sj[j]))
 
     // Capacity restriction
     EACH_RNG(r, p.numRes,
@@ -88,9 +140,7 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
             cumDemandExpr.addOperand(r);
             cumDemandExpr.addOperand(t);
             EACH_RNG(j, p.numJobs, cumDemandExpr.addOperand(Sj[j]))
-            model.constraint(cumDemandExpr <= p.capacities[r] + zrt[r][t]);
-        )
-    )
+            model.constraint(cumDemandExpr <= p.capacities[r] + zrt[r][t])))
 
     model.addObjective(objfunc, OD_Maximize);
     model.close();
@@ -135,8 +185,7 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     EACH_RNG(j, p.numJobs,
         auto xsum = model.sum();
         TIME_WINDOW(j, xsum += x[j][t])
-        model.constraint(xsum == 1.0);
-    )
+        model.constraint(xsum == 1.0))
 
     // Precedence restrictions
     EACH_RNG(j, p.numJobs,
@@ -148,9 +197,7 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
                 TIME_WINDOW(j, jobSt += t * x[j][t])
                 jobSt += -p.durations[j];
                 model.constraint(predFt <= jobSt);
-            }
-        )
-    )
+            }))
 
     // Capacity restrictions
     EACH_RNG(r, p.numRes,
@@ -158,12 +205,9 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
             auto cumulatedDemand = model.sum();
             EACH_RNG(j, p.numJobs,
                 for(int tau = t; tau < Utils::min(t + p.durations[j], p.numPeriods); tau++)
-                    cumulatedDemand += x[j][tau] * p.demands[j][r];
-            )
+                    cumulatedDemand += x[j][tau] * p.demands[j][r])
             auto totalCapacity = model.sum(p.capacities[r], z[r][t]);
-            model.constraint(cumulatedDemand <= totalCapacity);
-        )
-    )
+            model.constraint(cumulatedDemand <= totalCapacity)))
 
     model.addObjective(objfunc, OD_Maximize);
     model.close();
@@ -180,9 +224,7 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
             if(sol.getValue(x[j][t]) == 1) {
                 sts[j] = t - p.durations[j];
                 break;
-            }
-        )
-    )
+            }))
 
     auto status = sol.getStatus();
     if(status != SS_Feasible) {
