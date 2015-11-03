@@ -9,11 +9,11 @@
 #include "Utils.h"
 
 // Set range iteration macros
-#define EACH_COMMON(ctr, upperbound, code) for(int ctr=0; ctr<upperbound; ctr++) { code; }
-#define EACH_RES(code) EACH_COMMON(r, numRes, code)
-#define EACH_JOB(code) EACH_COMMON(j, numJobs, code)
-#define EACH_JOBi(code) EACH_COMMON(i, numJobs, code)
-#define EACH_PERIOD(code) EACH_COMMON(t, numPeriods, code)
+#define EACH_RNG(ctr, upperbound, code) for(int ctr=0; ctr<upperbound; ctr++) { code; }
+#define EACH_RES(code) EACH_RNG(r, numRes, code)
+#define EACH_JOB(code) EACH_RNG(j, numJobs, code)
+#define EACH_JOBi(code) EACH_RNG(i, numJobs, code)
+#define EACH_PERIOD(code) EACH_RNG(t, numPeriods, code)
 
 class Project {
 public:

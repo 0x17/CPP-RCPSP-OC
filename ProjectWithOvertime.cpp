@@ -42,8 +42,8 @@ int ProjectWithOvertime::computeTKappa() const {
 		float tkappar = 0.0f;
 		EACH_JOB(tkappar += durations[j] * demands[j][r])
 		tkappar /= static_cast<float>(capacities[r] + zmax[r]);
-		tkappar = static_cast<int>(ceil(tkappar));
-		tkappa = Utils::max(tkappa, tkappar);
+		tkappar = ceil(tkappar);
+		tkappa = Utils::max(tkappa, static_cast<int>(tkappar));
 	)
     return tkappa;
 }

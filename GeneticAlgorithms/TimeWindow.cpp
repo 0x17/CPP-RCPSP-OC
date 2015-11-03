@@ -3,7 +3,24 @@
 //
 
 #include "TimeWindow.h"
+#include "Sampling.h"
 
+LambdaTau TimeWindowArbitraryGA::init(int ix) {
+    return LambdaTau();
+}
+
+void TimeWindowArbitraryGA::crossover(LambdaTau &mother, LambdaTau &father, LambdaTau &daughter) {
+
+}
+
+void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
+}
+
+float TimeWindowArbitraryGA::fitness(LambdaTau &i) {
+    return 0;
+}
+
+//======================================================================================================================
 
 LambdaBeta TimeWindowBordersGA::init(int ix) {
     return LambdaBeta();
@@ -19,28 +36,14 @@ float TimeWindowBordersGA::fitness(LambdaBeta &i) {
     return 0;
 }
 
-LambdaTau TimeWindowArbitraryGA::init(int ix) {
-    return LambdaTau();
-}
-
-void TimeWindowArbitraryGA::crossover(LambdaTau &mother, LambdaTau &father, LambdaTau &daughter) {
-
-}
-
-void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
-
-}
-
-float TimeWindowArbitraryGA::fitness(LambdaTau &i) {
-    return 0;
-}
+//======================================================================================================================
 
 vector<int> CompareAlternativesGA::init(int ix) {
-    return __1::vector<int>();
+    return Sampling::naiveSampling(p);
 }
 
 void CompareAlternativesGA::crossover(vector<int> &mother, vector<int> &father, vector<int> &daughter) {
-
+    onePointCrossover(mother, father, daughter);
 }
 
 void CompareAlternativesGA::mutate(vector<int> &i) {
@@ -48,5 +51,6 @@ void CompareAlternativesGA::mutate(vector<int> &i) {
 }
 
 float CompareAlternativesGA::fitness(vector<int> &i) {
-    return 0;
+    //return p.serialSGSWithOvertime(i);
+    return 0.0f;
 }

@@ -37,7 +37,7 @@ lsdouble CumulatedDemandFunction::call(const LSNativeContext &context) {
     lsint r = context.getIntValue(0);
     lsint t = context.getIntValue(1);
 
-    EACH_COMMON(j, p.numJobs,
+    EACH_RNG(j, p.numJobs,
         lsint Sj = context.getIntValue(j+2);
         if(Sj < t && t <= Sj + p.durations[j])
             demand += p.demands[j][r];
@@ -60,21 +60,21 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
 
     // Decision variables
     vector<LSExpression> Sj(p.numJobs);
-    EACH_COMMON(j, p.numJobs, Sj[j] = model.intVar(0, p.numPeriods-1));
+    EACH_RNG(j, p.numJobs, Sj[j] = model.intVar(0, p.numPeriods-1));
     vector<vector<LSExpression>> zrt = Utils::initMatrix<LSExpression>(p.numRes, p.numPeriods);
-    EACH_COMMON(r, p.numRes, EACH_COMMON(t, p.numPeriods, zrt[r][t] = model.intVar(0, p.zmax[r])))
+    EACH_RNG(r, p.numRes, EACH_RNG(t, p.numPeriods, zrt[r][t] = model.intVar(0, p.zmax[r])))
 
     // Objective function
     LSExpression objfunc = model.sum();
     LSExpression revenueExpr = model.createExpression(O_Call, revFuncExpr);
     revenueExpr.addOperand(Sj[p.numJobs-1]);
     objfunc += revenueExpr;
-    EACH_COMMON(r, p.numRes, EACH_COMMON(t, p.numPeriods, objfunc += -p.kappa[r] * zrt[r][t]))
+    EACH_RNG(r, p.numRes, EACH_RNG(t, p.numPeriods, objfunc += -p.kappa[r] * zrt[r][t]))
 
     // Precedence restriction
-    EACH_COMMON(j, p.numJobs,
+    EACH_RNG(j, p.numJobs,
         LSExpression lastPred = model.max(0);
-        EACH_COMMON(i, p.numJobs,
+        EACH_RNG(i, p.numJobs,
             if(p.adjMx[i][j])
                 lastPred.addOperand(Sj[i] + p.durations[i]);
         )
@@ -82,12 +82,12 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
     )
 
     // Capacity restriction
-    EACH_COMMON(r, p.numRes,
-        EACH_COMMON(t, p.numPeriods,
+    EACH_RNG(r, p.numRes,
+        EACH_RNG(t, p.numPeriods,
             LSExpression cumDemandExpr = model.createExpression(O_Call, cumDemFuncExpr);
             cumDemandExpr.addOperand(r);
             cumDemandExpr.addOperand(t);
-            EACH_COMMON(j, p.numJobs, cumDemandExpr.addOperand(Sj[j]))
+            EACH_RNG(j, p.numJobs, cumDemandExpr.addOperand(Sj[j]))
             model.constraint(cumDemandExpr <= p.capacities[r] + zrt[r][t]);
         )
     )
@@ -95,12 +95,12 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
     model.addObjective(objfunc, OD_Maximize);
     model.close();
 
-    ls.createPhase().setTimeLimit(2);
+    ls.createPhase().setTimeLimit(30);
     ls.getParam().setNbThreads(8);
     ls.solve();
 
     auto sol = ls.getSolution();
-    EACH_COMMON(j, p.numJobs, sts[j] = static_cast<int>(sol.getIntValue(Sj[j])));
+    EACH_RNG(j, p.numJobs, sts[j] = static_cast<int>(sol.getIntValue(Sj[j])));
 
     //auto status = sol.getStatus();
     //auto solvetime = ls.getStatistics().getRunningTime();
@@ -119,26 +119,26 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     vector<vector<LSExpression>> x, z;
     Utils::resizeMatrix(x, p.numJobs, p.numPeriods);
     Utils::resizeMatrix(z, p.numRes, p.numPeriods);
-    EACH_COMMON(j, p.numJobs, EACH_COMMON(t, p.numPeriods, x[j][t] = model.boolVar()))
-    EACH_COMMON(r, p.numRes, EACH_COMMON(t, p.numPeriods, z[r][t] = model.intVar(0, p.zmax[r])))
+    EACH_RNG(j, p.numJobs, EACH_RNG(t, p.numPeriods, x[j][t] = model.boolVar()))
+    EACH_RNG(r, p.numRes, EACH_RNG(t, p.numPeriods, z[r][t] = model.intVar(0, p.zmax[r])))
 
     // Objective function
     auto objfunc = model.sum();
     TIME_WINDOW(objfunc += p.revenue[t] * x[p.numJobs-1][t])
-    EACH_COMMON(r, p.numRes, EACH_COMMON(t, p.numPeriods, objfunc += -p.kappa[r] * z[r][t]))
+    EACH_RNG(r, p.numRes, EACH_RNG(t, p.numPeriods, objfunc += -p.kappa[r] * z[r][t]))
 
     // Constraints
 
     // Each job once
-    EACH_COMMON(j, p.numJobs,
+    EACH_RNG(j, p.numJobs,
         auto xsum = model.sum();
         TIME_WINDOW(xsum += x[j][t])
         model.constraint(xsum == 1.0);
     )
 
     // Precedence restrictions
-    EACH_COMMON(j, p.numJobs,
-        EACH_COMMON(i, p.numJobs,
+    EACH_RNG(j, p.numJobs,
+        EACH_RNG(i, p.numJobs,
             if(p.adjMx[i][j]) {
                 auto predFt = model.sum();
                 TIME_WINDOW(predFt += t * x[i][t])
@@ -151,10 +151,10 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     )
 
     // Capacity restrictions
-    EACH_COMMON(r, p.numRes,
-        EACH_COMMON(t, p.numPeriods,
+    EACH_RNG(r, p.numRes,
+        EACH_RNG(t, p.numPeriods,
             auto cumulatedDemand = model.sum();
-            EACH_COMMON(j, p.numJobs,
+            EACH_RNG(j, p.numJobs,
                 auto makespan = model.sum();
                 for(int tau = t; tau < Utils::min(p.numPeriods, p.durations[j]); tau++)
                     makespan += x[j][tau];
@@ -173,8 +173,8 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     ls.solve();
 
     auto sol = ls.getSolution();
-    EACH_COMMON(j, p.numJobs,
-        EACH_COMMON(t, p.numPeriods,
+    EACH_RNG(j, p.numJobs,
+        EACH_RNG(t, p.numPeriods,
             if(sol.getValue(x[j][t]) == 1) {
                 sts[j] = t - p.durations[j];
                 break;
