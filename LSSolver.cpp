@@ -108,7 +108,7 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
     return sts;
 }
 
-#define TIME_WINDOW(code) for(int t=p.efts[p.numJobs-1]; t<=p.lfts[p.numJobs-1]; t++) { code; }
+#define TIME_WINDOW(j, code) for(int t=p.efts[j]; t<=p.lfts[j]; t++) { code; }
 vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     vector<int> sts(p.numJobs);
 
@@ -124,7 +124,7 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
 
     // Objective function
     auto objfunc = model.sum();
-    TIME_WINDOW(objfunc += p.revenue[t] * x[p.numJobs-1][t])
+    TIME_WINDOW(p.numJobs-1, objfunc += p.revenue[t] * x[p.numJobs-1][t])
     EACH_RNG(r, p.numRes, EACH_RNG(t, p.numPeriods, objfunc += -p.kappa[r] * z[r][t]))
 
     // Constraints
@@ -132,7 +132,7 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     // Each job once
     EACH_RNG(j, p.numJobs,
         auto xsum = model.sum();
-        TIME_WINDOW(xsum += x[j][t])
+        TIME_WINDOW(j, xsum += x[j][t])
         model.constraint(xsum == 1.0);
     )
 
@@ -141,9 +141,9 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
         EACH_RNG(i, p.numJobs,
             if(p.adjMx[i][j]) {
                 auto predFt = model.sum();
-                TIME_WINDOW(predFt += t * x[i][t])
+                TIME_WINDOW(i, predFt += t * x[i][t])
                 auto jobSt = model.sum();
-                TIME_WINDOW(jobSt += t * x[j][t])
+                TIME_WINDOW(j, jobSt += t * x[j][t])
                 jobSt += -p.durations[j];
                 model.constraint(predFt <= jobSt);
             }
