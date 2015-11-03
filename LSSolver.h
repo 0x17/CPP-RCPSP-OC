@@ -13,6 +13,8 @@ namespace LSSolver {
 	vector<int> solve2(ProjectWithOvertime &p);
 	vector<int> solve3(ProjectWithOvertime &p);
 	vector<int> solveMIPStyle(ProjectWithOvertime &p);
+
+	void writeLSPModelParamFile(ProjectWithOvertime &p, string outFilename);
 };
 
 #endif //CPP_RCPSP_OC_LSSOLVER_H

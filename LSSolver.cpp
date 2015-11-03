@@ -2,8 +2,10 @@
 // Created by André Schnabel on 24.10.15.
 //
 
+#include <list>
 #include <localsolver.h>
 #include "LSSolver.h"
+#include <fstream>
 
 using namespace localsolver;
 
@@ -292,4 +294,34 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     auto solvetime = ls.getStatistics().getRunningTime();
 
     return sts;
+}
+
+void LSSolver::writeLSPModelParamFile(ProjectWithOvertime &p, string outFilename) {
+	list<string> outLines = {
+		"njobs/nperiods/nres",
+		to_string(p.numJobs),
+		to_string(p.numPeriods),
+		to_string(p.numRes) };
+
+	outLines.push_back("durations");
+	EACH_RNG(j, p.numJobs, outLines.push_back(to_string(p.durations[j])))
+	outLines.push_back("demands (j,r)-matrix (row major order)");
+	EACH_RNG(j, p.numJobs, EACH_RNG(r, p.numRes, outLines.push_back(to_string(p.demands[j][r]))))
+	outLines.push_back("adjacency matrix (row major order)");
+	EACH_RNG(i, p.numJobs, EACH_RNG(j, p.numJobs, outLines.push_back(p.adjMx[i][j] ? "1" : "0")))
+	outLines.push_back("capacities");
+	EACH_RNG(r, p.numRes, outLines.push_back(to_string(p.capacities[r])))
+
+	outLines.push_back("revenue");
+	EACH_RNG(t, p.numPeriods+1, outLines.push_back(to_string(p.revenue[t])))
+	outLines.push_back("upper bound for overtime");
+	EACH_RNG(r, p.numRes, outLines.push_back(to_string(p.zmax[r])))
+	outLines.push_back("kappa");
+	EACH_RNG(r, p.numRes, outLines.push_back(to_string(p.kappa[r])))
+
+	ofstream f(outFilename);
+	if (!f.is_open()) return;
+	for(auto onum : outLines)
+		f << onum << "\n";
+	f.close();
 }
