@@ -16,9 +16,11 @@ public:
 private:
     virtual LambdaZrt init(int ix) override;
     virtual void crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter) override;
-    virtual void mutate(LambdaZrt &i) override;
+	virtual void mutate(LambdaZrt &i) override;
     virtual float fitness(LambdaZrt &i) override;
 	virtual vector<int> decode(LambdaZrt& i) override;
+
+	void mutateOvertime(vector<vector<int>> &z);
 };
 
 class FixedCapacityGA : public GeneticAlgorithm<LambdaZr> {

@@ -39,6 +39,9 @@ public:
 	pair<vector<int>,vector<vector<int>>> serialSGS(const vector<int>& order, const vector<int>& zr) const;
 	pair<vector<int>, vector<vector<int>>> serialSGS(const vector<int>& order, const vector<vector<int>>& zrt) const;
 
+	bool jobBeforeInOrder(int job, int curIndex, vector<int>& order) const;
+	bool hasPredNotBeforeInOrder(int job, int curIndex, vector<int>& order) const;
+
 private:
 	vector<int> serialSGSCore(const vector<int>& order, vector<vector<int>> &resRem) const;
 
@@ -49,9 +52,7 @@ private:
     int computeLastPredFinishingTime(const vector<int> &fts, int job) const;
     int computeFirstSuccStartingTime(const vector<int> &sts, int job) const;
     void scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, vector<vector<int>> &resRem) const;
-
-	bool jobBeforeInOrder(int job, int curIndex, vector<int>& order) const;
-	bool hasPredNotBeforeInOrder(int job, int curIndex, vector<int>& order) const;
+		
 	vector<int> computeTopOrder() const;
 
     void computeELSFTs();

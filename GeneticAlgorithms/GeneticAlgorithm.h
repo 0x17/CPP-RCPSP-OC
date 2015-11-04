@@ -8,6 +8,7 @@
 #include <vector>
 #include <algorithm>
 #include "../ProjectWithOvertime.h"
+#include <iostream>
 
 using namespace std;
 
@@ -53,7 +54,7 @@ pair<int, int> GeneticAlgorithm<Individual>::computePair(vector<bool> &alreadySe
 
 template<class Individual>
 void GeneticAlgorithm<Individual>::generateChildren(vector<pair<Individual, float>> & population) {
-    vector<bool> alreadySelected;
+    vector<bool> alreadySelected(popSize);
 
     for(int childIx =popSize; childIx <popSize*2; childIx +=2) {
         pair<int, int> parentIndices = computePair(alreadySelected);
@@ -71,7 +72,13 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
         pop[i].second = -fitness(pop[i].first);
     }
 
+	for(int i=popSize; i<popSize*2; i++) {
+		pop[i].first = init(i);
+		pop[i].second = 0.0f;
+	}
+
     for(int i=0; i<numGens; i++) {
+		cout << "Generation " << (i + 1) << endl;
         generateChildren(pop);
 
         for(int j=popSize; j<popSize*2; j++) {

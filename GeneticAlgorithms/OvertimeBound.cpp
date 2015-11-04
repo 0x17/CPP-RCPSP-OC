@@ -15,18 +15,33 @@ LambdaZrt TimeVaryingCapacityGA::init(int ix) {
 
 void TimeVaryingCapacityGA::crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter) {
     onePointCrossover(mother.order, father.order, daughter.order);
+	P_EACH_RES(P_EACH_PERIOD(daughter.z[r][t] = rand() % 2 == 0 ? mother.z[r][t] : father.z[r][t]))
 }
 
 void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
     neighborhoodSwap(i.order);
+	mutateOvertime(i.z);
 }
 
 float TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
-    return 0;
+	auto pair = p.serialSGS(i.order, i.z);
+	auto sts = pair.first;
+	auto resRem = pair.second;
+	return p.calcProfit(sts[p.numJobs - 1], resRem);
 }
 
 vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
 	return p.serialSGS(i.order, i.z).first;
+}
+
+void TimeVaryingCapacityGA::mutateOvertime(vector<vector<int>>& z) {
+	P_EACH_RES(P_EACH_PERIOD(
+		int q = Utils::randRangeIncl(1, 100);
+		if (q <= pmutate) {
+			if (rand() % 2 == 0) z[r][t]++;
+			else z[r][t]--;
+			z[r][t] = z[r][t] < 0 ? 0 : (z[r][t] > p.zmax[r] ? p.zmax[r] : z[r][t]);
+		}))
 }
 
 //===========================================================================================================

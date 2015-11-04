@@ -18,49 +18,6 @@ vector<int> Sampling::regretBasedBiasedRandomSampling(Project &p) {
     return order;
 }
 
-void makeSuccsWithoutOtherPredsEligible(Project &p, int j, vector<bool> &eligibles, int &numEligibles) {
-    EACH_RNG(k, p.numJobs,
-        if(p.adjMx[j][k]) {
-            bool hasOtherPred = false;
-            for(int l=0; l<p.numJobs; l++) {
-                if(p.adjMx[l][k] && l != j) {
-                    hasOtherPred = true;
-                    break;
-                }
-            }
-            if(!hasOtherPred) {
-                eligibles[k] = true;
-                numEligibles++;
-            }
-        }
-    )
-}
-
-int nthEligibleJob(Project &p, int q, vector<bool> &eligibles, int &numEligibles) {
-    int nth = 0;
-    P_EACH_JOB(
-        if(eligibles[j]) {
-            if(nth == q) {
-                makeSuccsWithoutOtherPredsEligible(p, j, eligibles, numEligibles);
-                return j;
-            }
-            nth++;
-        }
-    )
-    return -1;
-}
-
 vector<int> Sampling::naiveSampling(Project& p){
-	vector<int> order(p.numJobs);
-	vector<bool> eligibles(p.numJobs);
-    eligibles[0] = true;
-    int numEligibles = 1;
-
-    EACH_RNG(i, p.numJobs,
-        int q = Utils::randRangeIncl(0, numEligibles-1);
-        order[i] = nthEligibleJob(p, q, eligibles, numEligibles);
-        numEligibles--;
-    )
-
-    return order;
+    return p.topOrder;
 }
