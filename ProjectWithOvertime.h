@@ -12,15 +12,16 @@ class ProjectWithOvertime : public Project {
 public:
     vector<int> zmax;
 	vector<float> kappa, revenue;
-    vector<int> zeroOc;
 
 	explicit ProjectWithOvertime(string filename);
+
+	float calcProfit(int makespan, const vector<vector<int>> &resRem);
+	float totalCosts(const vector<vector<int>> & resRem);
 
 private:
     void computeRevenueFunction();
     int computeTKappa() const;
-    vector<int> earliestStartSchedule(vector<vector<int>> & resRem);
-    float totalCosts(vector<vector<int>> resRem);
+    vector<int> earliestStartSchedule(vector<vector<int>> & resRem);    
 };
 
 

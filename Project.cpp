@@ -24,15 +24,45 @@ Project::Project(string filename) {
     computeELSFTs();
 }
 
+#define INIT_RES_REM(code) \
+	vector<vector<int>> resRem = Utils::initMatrix<int>(numRes, numPeriods); \
+	EACH_RES(EACH_PERIOD(code));
+
+vector<int> Project::serialSGS(const vector<int>& order) const {
+	INIT_RES_REM(resRem[r][t] = capacities[r])
+	return serialSGSCore(order, resRem);
+}
+
+pair<vector<int>, vector<vector<int>>> Project::serialSGS(const vector<int>& order, const vector<int>& z) const {
+	INIT_RES_REM(resRem[r][t] = capacities[r] + z[r])
+	vector<int> sts = serialSGSCore(order, resRem);
+	return make_pair(sts, resRem);
+}
+
+pair<vector<int>, vector<vector<int>>> Project::serialSGS(const vector<int>& order, const vector<vector<int>>& z) const {
+	INIT_RES_REM(resRem[r][t] = capacities[r] + z[r][t])
+	vector<int> sts = serialSGSCore(order, resRem);
+	return make_pair(sts, resRem);
+}
+
+vector<int> Project::serialSGSCore(const vector<int>& order, vector<vector<int>>& resRem) const {
+	vector<int> sts(numJobs), fts(numJobs);
+	for (int job : order) {
+		int lastPredFinished = computeLastPredFinishingTime(fts, job);
+		int t;
+		for (t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++);
+		scheduleJobAt(job, t, sts, fts, resRem);
+	}
+	return sts;
+}
+
 void Project::parsePrecedenceRelation(const vector<string> &lines) {
     Utils::resizeMatrix(adjMx, numJobs, numJobs);
 
     EACH_JOB(
         auto nums = Utils::extractIntsFromLine(lines[18+j]);
-        for(int i=3; i<nums.size(); i++) {
-            adjMx[j][nums[i]-1] = true;
-        }
-    )
+        for(int i=3; i<nums.size(); i++)
+            adjMx[j][nums[i]-1] = true)
 }
 
 void Project::parseDurationsAndDemands(const vector<string> &lines) {
@@ -44,21 +74,6 @@ void Project::parseDurationsAndDemands(const vector<string> &lines) {
         durations[j] = nums[2];
         EACH_RES(demands[j][r] = nums[3+r])
     )
-}
-
-vector<int> Project::serialSGS(const vector<int> & order, const vector<int> & zr) const {
-    vector<int> sts(numJobs), fts(numJobs);
-
-    vector<vector<int>> resRem = Utils::initMatrix<int>(numRes, numPeriods);
-    EACH_RES(EACH_PERIOD(resRem[r][t] = capacities[r] + zr[r]))
-
-    for(int job : order) {
-        int lastPredFinished = computeLastPredFinishingTime(fts, job);
-        int t;
-        for(t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++) ;
-        scheduleJobAt(job, t, sts, fts, resRem);
-    }
-    return sts;
 }
 
 int Project::computeLastPredFinishingTime(const vector<int> &fts, int job) const {
@@ -87,21 +102,14 @@ inline void Project::scheduleJobAt(int job, int t, vector<int> &sts, vector<int>
 }
 
 bool Project::jobBeforeInOrder(int job, int curIndex, vector<int>& order) const {
-	for(int k = 0; k < curIndex; k++) {
-		if (order[k] == job) {
+	for(int k = 0; k < curIndex; k++)
+		if(order[k] == job)
 			return true;
-		}
-	}
 	return false;
 }
 
 bool Project::hasPredNotBeforeInOrder(int job, int curIndex, vector<int>& order) const {
-	for(int i = 0; i < numJobs; i++) {
-		if(adjMx[i][job]) {
-			if(!jobBeforeInOrder(i, curIndex, order))
-				return true;
-		}
-	}
+	EACH_JOBi(if (adjMx[i][job] && !jobBeforeInOrder(i, curIndex, order)) return true)
 	return false;
 }
 

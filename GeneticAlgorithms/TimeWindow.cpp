@@ -20,6 +20,12 @@ float TimeWindowArbitraryGA::fitness(LambdaTau &i) {
     return 0;
 }
 
+vector<int> TimeWindowArbitraryGA::decode(LambdaTau& i)
+{
+	vector<int> sts;
+	return sts;
+}
+
 //======================================================================================================================
 
 LambdaBeta TimeWindowBordersGA::init(int ix) {
@@ -34,6 +40,12 @@ void TimeWindowBordersGA::mutate(LambdaBeta &i) {
 
 float TimeWindowBordersGA::fitness(LambdaBeta &i) {
     return 0;
+}
+
+vector<int> TimeWindowBordersGA::decode(LambdaBeta& i)
+{
+	vector<int> sts;
+	return sts;
 }
 
 //======================================================================================================================
@@ -53,4 +65,9 @@ void CompareAlternativesGA::mutate(vector<int> &i) {
 float CompareAlternativesGA::fitness(vector<int> &i) {
     //return p.serialSGSWithOvertime(i);
     return 0.0f;
+}
+
+vector<int> CompareAlternativesGA::decode(vector<int>& i) {
+	vector<int> sts;
+	return sts;
 }

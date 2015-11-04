@@ -19,6 +19,7 @@ protected:
     virtual void crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter);
     virtual void mutate(LambdaBeta &i);
     virtual float fitness(LambdaBeta &i);
+	virtual vector<int> decode(LambdaBeta& i) override;
 };
 
 class TimeWindowArbitraryGA : public GeneticAlgorithm<LambdaTau> {
@@ -29,6 +30,7 @@ private:
     virtual void crossover(LambdaTau &mother, LambdaTau &father, LambdaTau &daughter);
     virtual void mutate(LambdaTau &i);
     virtual float fitness(LambdaTau &i);
+	virtual vector<int> decode(LambdaTau& i) override;
 };
 
 class CompareAlternativesGA : public GeneticAlgorithm<vector<int>> {
@@ -39,6 +41,7 @@ private:
     virtual void crossover(vector<int> &mother, vector<int> &father, vector<int> &daughter);
     virtual void mutate(vector<int> &i);
     virtual float fitness(vector<int> &i);
+	virtual vector<int> decode(vector<int>& i) override;
 };
 
 

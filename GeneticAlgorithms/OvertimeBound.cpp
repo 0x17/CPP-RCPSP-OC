@@ -25,6 +25,12 @@ float TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
     return 0;
 }
 
+vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
+	return p.serialSGS(i.order, i.z).first;
+}
+
+//===========================================================================================================
+
 LambdaZr FixedCapacityGA::init(int ix) {
     LambdaZr indiv;
     indiv.order = Sampling::naiveSampling(p);
@@ -44,8 +50,14 @@ void FixedCapacityGA::mutate(LambdaZr &i) {
 }
 
 float FixedCapacityGA::fitness(LambdaZr &i) {
-    auto order = p.serialSGS(i.order, i.z);
-    return 0.0f;
+	auto pair = p.serialSGS(i.order, i.z);
+	auto sts = pair.first;
+	auto resRem = pair.second;
+	return p.calcProfit(sts[p.numJobs-1], resRem);
+}
+
+vector<int> FixedCapacityGA::decode(LambdaZr& i) {
+	return p.serialSGS(i.order, i.z).first;
 }
 
 void FixedCapacityGA::mutateOvertime(vector<int> &z) {

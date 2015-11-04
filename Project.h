@@ -35,9 +35,13 @@ public:
 	explicit Project(string filename);
     virtual ~Project() {}
 
-    vector<int> serialSGS(const vector<int> & order, const vector<int> & zr) const;
+	vector<int> serialSGS(const vector<int>& order) const;
+	pair<vector<int>,vector<vector<int>>> serialSGS(const vector<int>& order, const vector<int>& zr) const;
+	pair<vector<int>, vector<vector<int>>> serialSGS(const vector<int>& order, const vector<vector<int>>& zrt) const;
 
 private:
+	vector<int> serialSGSCore(const vector<int>& order, vector<vector<int>> &resRem) const;
+
     void parsePrecedenceRelation(const vector<string> &lines);
     void parseDurationsAndDemands(const vector<string> &lines);
 

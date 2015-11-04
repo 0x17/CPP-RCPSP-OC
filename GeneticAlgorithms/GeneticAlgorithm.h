@@ -6,6 +6,7 @@
 #define CPP_RCPSP_OC_GENETICALGORITHMS_H
 
 #include <vector>
+#include <algorithm>
 #include "../ProjectWithOvertime.h"
 
 using namespace std;
@@ -15,18 +16,21 @@ class GeneticAlgorithm {
 public:
 	virtual ~GeneticAlgorithm() {}
 
-    void generateChildren(vector<Individual> &population);
-    pair<float, Individual> solve();
+    pair<vector<int>, float> solve();
 
 protected:
     ProjectWithOvertime &p;
     const int numGens, popSize, pmutate;
 
     GeneticAlgorithm(ProjectWithOvertime &_p) : p(_p), numGens(80), pmutate(5), popSize(100) {}
+
+	void generateChildren(vector<pair<Individual, float>> & population);
+
     virtual Individual init(int ix) = 0;
     virtual void crossover(Individual &mother, Individual &father, Individual &daughter) = 0;
     virtual void mutate(Individual &i) = 0;
     virtual float fitness(Individual &i) = 0;
+	virtual vector<int> decode(Individual &i) = 0;
 
     void neighborhoodSwap(vector<int> &order);
     void onePointCrossover(vector<int> &motherOrder, vector<int> &fatherOrder, vector<int> &daughterOrder);
@@ -48,38 +52,39 @@ pair<int, int> GeneticAlgorithm<Individual>::computePair(vector<bool> &alreadySe
 };
 
 template<class Individual>
-void GeneticAlgorithm<Individual>::generateChildren(vector<Individual> &population) {
+void GeneticAlgorithm<Individual>::generateChildren(vector<pair<Individual, float>> & population) {
     vector<bool> alreadySelected;
 
     for(int childIx =popSize; childIx <popSize*2; childIx +=2) {
         pair<int, int> parentIndices = computePair(alreadySelected);
-        crossover(population[parentIndices.first], population[parentIndices.second], population[childIx]);
-        crossover(population[parentIndices.second], population[parentIndices.first], population[childIx+1]);
+        crossover(population[parentIndices.first].first, population[parentIndices.second].first, population[childIx].first);
+        crossover(population[parentIndices.second].first, population[parentIndices.first].first, population[childIx+1].first);
     }
 }
 
 template<class Individual>
-pair<float, Individual> GeneticAlgorithm<Individual>::solve() {
-    vector<pair<float, Individual>> pop(popSize*2);
+pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
+    vector<pair<Individual, float>> pop(popSize*2);
 
     for(int i=0; i<popSize; i++) {
-        pop[i].second = init(i);
-        pop[i].first = -fitness(pop[i].second);
+        pop[i].first = init(i);
+        pop[i].second = -fitness(pop[i].first);
     }
 
     for(int i=0; i<numGens; i++) {
         generateChildren(pop);
 
         for(int j=popSize; j<popSize*2; j++) {
-            auto indiv = pop[j].second;
+            auto indiv = pop[j].first;
             mutate(indiv);
-            pop[j].first = -fitness(indiv);
+            pop[j].second = -fitness(indiv);
         }
 
-        sort(pop.begin(), pop.end());
+		sort(pop.begin(), pop.end(), [](auto &left, auto &right) { return left.second < right.second; });
     }
 
-    return pop[0];
+    auto best = pop[0];
+	return make_pair(decode(best.first), best.second);
 }
 
 template<class Individual>

@@ -9,14 +9,23 @@ ProjectWithOvertime::ProjectWithOvertime(string filename) :
         Project(filename),
         zmax(numRes),
         kappa(numRes),
-        revenue(numPeriods),
-        zeroOc(numRes) {
+        revenue(numPeriods) {
 	EACH_RES(
 		zmax[r] = capacities[r] / 2;
         kappa[r] = 0.5f;
     )
 
     computeRevenueFunction();
+}
+
+inline float ProjectWithOvertime::totalCosts(const vector<vector<int>> & resRem) {
+	float costs = 0.0f;
+	EACH_RES(EACH_PERIOD(costs += Utils::max(0, -resRem[r][t]) * kappa[r]))
+	return costs;
+}
+
+float ProjectWithOvertime::calcProfit(int makespan, const vector<vector<int>>& resRem) {
+	return revenue[makespan] - totalCosts(resRem);
 }
 
 void ProjectWithOvertime::computeRevenueFunction() {
@@ -30,7 +39,7 @@ void ProjectWithOvertime::computeRevenueFunction() {
 
     int minMs = Utils::max(ess[numJobs-1], tkappa);
 
-    auto sts = serialSGS(topOrder, zeroOc);
+    auto sts = serialSGS(topOrder);
     int maxMs = sts[numJobs-1];
 
     EACH_PERIOD(revenue[t] = static_cast<float>(maxCosts - maxCosts / pow(maxMs-minMs, 2) * pow(t-minMs, 2)))
@@ -57,10 +66,4 @@ vector<int> ProjectWithOvertime::earliestStartSchedule(vector<vector<int>>& resR
         EACH_RES(for (int tau = ess[j] + 1; tau <= ess[j] + durations[j]; tau++) resRem[r][tau] -= demands[j][r])
     }
     return ess;
-}
-
-float ProjectWithOvertime::totalCosts(vector<vector<int>> resRem) {
-    float costs = 0.0f;
-    EACH_RES(EACH_PERIOD(costs += Utils::max(0, -resRem[r][t]) * kappa[r]))
-    return costs;
 }

@@ -6,9 +6,8 @@
 #include "../Project.h"
 
 vector<int> Sampling::regretBasedBiasedRandomSampling(Project &p) {
-    vector<int> order;
-    vector<bool> jobEligible;
-
+    vector<int> order(p.numJobs);
+    vector<bool> jobEligible(p.numJobs);
     jobEligible[0] = true;
 
     for(int i=0; i<p.numJobs; i++) {
@@ -52,9 +51,8 @@ int nthEligibleJob(Project &p, int q, vector<bool> &eligibles, int &numEligibles
 }
 
 vector<int> Sampling::naiveSampling(Project& p){
-    vector<int> order;
-
-    vector<bool> eligibles;
+	vector<int> order(p.numJobs);
+	vector<bool> eligibles(p.numJobs);
     eligibles[0] = true;
     int numEligibles = 1;
 
