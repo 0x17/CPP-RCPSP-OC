@@ -108,6 +108,7 @@ void GeneticAlgorithm<Individual>::onePointCrossover(vector<int> &motherOrder, v
     for(int i=0; i<q; i++)
 		daughterOrder[i] = motherOrder[i];
 
+	// DEBUG THIS
     int ctr = q;
     for(int i=0; i<fatherOrder.size(); i++) {
         if(!Utils::rangeContains(motherOrder, 0, q-1, fatherOrder[i])) {

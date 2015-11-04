@@ -7,18 +7,26 @@
 
 #include "GeneticAlgorithm.h"
 
-struct LambdaBeta { vector<int> order, beta; };
-struct LambdaTau { vector<int> order; vector<float> tau; };
+struct LambdaBeta {
+	LambdaBeta(Project &p) : order(p.numJobs), beta(p.numJobs) {}
+	LambdaBeta() {}
+	vector<int> order, beta;
+};
+struct LambdaTau {
+	LambdaTau(Project &p) : order(p.numJobs), tau(p.numJobs) {}
+	LambdaTau() {}
+	vector<int> order; vector<float> tau;
+};
 
 class TimeWindowBordersGA : public GeneticAlgorithm<LambdaBeta> {
 protected:
 public:
     TimeWindowBordersGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) { }
 protected:
-    virtual LambdaBeta init(int ix);
-    virtual void crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter);
-    virtual void mutate(LambdaBeta &i);
-    virtual float fitness(LambdaBeta &i);
+    virtual LambdaBeta init(int ix) override;
+    virtual void crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) override;
+    virtual void mutate(LambdaBeta &i) override;
+    virtual float fitness(LambdaBeta &i) override;
 	virtual vector<int> decode(LambdaBeta& i) override;
 };
 
@@ -26,10 +34,10 @@ class TimeWindowArbitraryGA : public GeneticAlgorithm<LambdaTau> {
 public:
     TimeWindowArbitraryGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) { }
 private:
-    virtual LambdaTau init(int ix);
-    virtual void crossover(LambdaTau &mother, LambdaTau &father, LambdaTau &daughter);
-    virtual void mutate(LambdaTau &i);
-    virtual float fitness(LambdaTau &i);
+    virtual LambdaTau init(int ix) override;
+    virtual void crossover(LambdaTau &mother, LambdaTau &father, LambdaTau &daughter) override;
+    virtual void mutate(LambdaTau &i) override;
+    virtual float fitness(LambdaTau &i) override;
 	virtual vector<int> decode(LambdaTau& i) override;
 };
 
@@ -37,10 +45,10 @@ class CompareAlternativesGA : public GeneticAlgorithm<vector<int>> {
 public:
     CompareAlternativesGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) { }
 private:
-    virtual vector<int> init(int ix);
-    virtual void crossover(vector<int> &mother, vector<int> &father, vector<int> &daughter);
-    virtual void mutate(vector<int> &i);
-    virtual float fitness(vector<int> &i);
+    virtual vector<int> init(int ix) override;
+    virtual void crossover(vector<int> &mother, vector<int> &father, vector<int> &daughter) override;
+    virtual void mutate(vector<int> &i) override;
+    virtual float fitness(vector<int> &i) override;
 	virtual vector<int> decode(vector<int>& i) override;
 };
 

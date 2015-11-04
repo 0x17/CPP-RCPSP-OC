@@ -50,6 +50,17 @@ namespace Utils {
             if(elems[i] == e) return true;
         return false;
     }
+
+	template<class T>
+	int indexOfNthEqualTo(int nth, T val, vector<T> & coll) {
+		int xth = 0;
+		for (int k = 0; k < coll.size(); k++)
+			if (coll[k] == val) {
+				if (xth == nth) return k;
+				xth++;
+			}
+		throw runtime_error("No nth found!");
+	}
 }
 
 #endif //SSGS_UTILS_H

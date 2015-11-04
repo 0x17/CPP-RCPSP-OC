@@ -7,8 +7,18 @@
 
 #include "GeneticAlgorithm.h"
 
-struct LambdaZr { vector<int> order, z; };
-struct LambdaZrt { vector<int> order; vector<vector<int>> z; };
+struct LambdaZr {
+	LambdaZr(Project &p) : order(p.numJobs), z(p.numRes) {}
+	LambdaZr() {}
+	vector<int> order, z;
+};
+struct LambdaZrt {
+	LambdaZrt(Project &p) : order(p.numJobs) {
+		Utils::resizeMatrix(z, p.numRes, p.numPeriods);
+	}
+	LambdaZrt() {}
+	vector<int> order; vector<vector<int>> z;
+};
 
 class TimeVaryingCapacityGA : public GeneticAlgorithm<LambdaZrt> {
 public:

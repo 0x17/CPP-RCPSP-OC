@@ -6,9 +6,8 @@
 #include "Sampling.h"
 
 LambdaZrt TimeVaryingCapacityGA::init(int ix) {
-    LambdaZrt indiv;
+    LambdaZrt indiv(p);
     indiv.order = Sampling::naiveSampling(p);
-    Utils::resizeMatrix(indiv.z, p.numRes, p.numPeriods);
     P_EACH_RES(P_EACH_PERIOD(indiv.z[r][t] = Utils::randRangeIncl(0, p.zmax[r])))
     return indiv;
 }
@@ -47,9 +46,8 @@ void TimeVaryingCapacityGA::mutateOvertime(vector<vector<int>>& z) {
 //===========================================================================================================
 
 LambdaZr FixedCapacityGA::init(int ix) {
-    LambdaZr indiv;
+    LambdaZr indiv(p);
     indiv.order = Sampling::naiveSampling(p);
-    indiv.z.resize(p.numRes);
     P_EACH_RES(indiv.z[r] = Utils::randRangeIncl(0, p.zmax[r]))
     return indiv;
 }
