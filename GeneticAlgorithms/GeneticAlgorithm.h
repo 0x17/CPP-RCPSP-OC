@@ -82,7 +82,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
         generateChildren(pop);
 
         for(int j=popSize; j<popSize*2; j++) {
-            auto indiv = pop[j].first;
+            auto &indiv = pop[j].first;
             mutate(indiv);
             pop[j].second = -fitness(indiv);
         }
@@ -120,7 +120,7 @@ void GeneticAlgorithm<Individual>::onePointCrossover(vector<int> &motherOrder, v
 
 template<class Individual>
 void GeneticAlgorithm<Individual>::neighborhoodSwap(vector<int> &order) {
-    for(int i=2; i<p.numJobs-1; i++)
+    for(int i=1; i<p.numJobs; i++)
         if(Utils::randRangeIncl(1, 100) <= pmutate && !p.adjMx[i-1][i])
             swap(order, i-1, i);
 }

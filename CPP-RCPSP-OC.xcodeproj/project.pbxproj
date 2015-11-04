@@ -259,6 +259,7 @@
 		42DB210C1BE04034009242D4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				HEADER_SEARCH_PATHS = /opt/localsolver_6_0/include;
 				LIBRARY_SEARCH_PATHS = /opt/localsolver_6_0/bin;
 				OTHER_LDFLAGS = "-llocalsolver";
@@ -269,6 +270,7 @@
 		42DB210D1BE04034009242D4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				HEADER_SEARCH_PATHS = /opt/localsolver_6_0/include;
 				LIBRARY_SEARCH_PATHS = /opt/localsolver_6_0/bin;
 				OTHER_LDFLAGS = "-llocalsolver";
