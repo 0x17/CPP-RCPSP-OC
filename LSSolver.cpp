@@ -312,6 +312,11 @@ void LSSolver::writeLSPModelParamFile(ProjectWithOvertime &p, string outFilename
 	outLines.push_back("capacities");
 	EACH_RNG(r, p.numRes, outLines.push_back(to_string(p.capacities[r])))
 
+	outLines.push_back("earliest finishing times");
+	EACH_RNG(j, p.numJobs, outLines.push_back(to_string(p.efts[j])))
+	outLines.push_back("latest finishing times");
+	EACH_RNG(j, p.numJobs, outLines.push_back(to_string(p.lfts[j])))
+
 	outLines.push_back("revenue");
 	EACH_RNG(t, p.numPeriods+1, outLines.push_back(to_string(p.revenue[t])))
 	outLines.push_back("upper bound for overtime");
