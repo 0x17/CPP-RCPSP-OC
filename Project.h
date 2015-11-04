@@ -10,10 +10,16 @@
 
 // Set range iteration macros
 #define EACH_RNG(ctr, upperbound, code) for(int ctr=0; ctr<upperbound; ctr++) { code; }
+
 #define EACH_RES(code) EACH_RNG(r, numRes, code)
 #define EACH_JOB(code) EACH_RNG(j, numJobs, code)
 #define EACH_JOBi(code) EACH_RNG(i, numJobs, code)
 #define EACH_PERIOD(code) EACH_RNG(t, numPeriods, code)
+
+#define P_EACH_JOB(code) EACH_RNG(j, p.numJobs, code)
+#define P_EACH_JOBi(code) EACH_RNG(i, p.numJobs, code)
+#define P_EACH_RES(code) EACH_RNG(r, p.numRes, code)
+#define P_EACH_PERIOD(code) EACH_RNG(t, p.numPeriods, code)
 
 class Project {
 public:

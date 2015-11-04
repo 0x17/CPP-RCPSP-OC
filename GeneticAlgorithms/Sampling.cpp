@@ -3,6 +3,7 @@
 //
 
 #include "Sampling.h"
+#include "../Project.h"
 
 vector<int> Sampling::regretBasedBiasedRandomSampling(Project &p) {
     vector<int> order;
@@ -38,7 +39,7 @@ void makeSuccsWithoutOtherPredsEligible(Project &p, int j, vector<bool> &eligibl
 
 int nthEligibleJob(Project &p, int q, vector<bool> &eligibles, int &numEligibles) {
     int nth = 0;
-    EACH_RNG(j, p.numJobs,
+    P_EACH_JOB(
         if(eligibles[j]) {
             if(nth == q) {
                 makeSuccsWithoutOtherPredsEligible(p, j, eligibles, numEligibles);

@@ -14,20 +14,22 @@ class TimeVaryingCapacityGA : public GeneticAlgorithm<LambdaZrt> {
 public:
     TimeVaryingCapacityGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) { }
 private:
-    virtual LambdaZrt init(int ix);
-    virtual void crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter);
-    virtual void mutate(LambdaZrt &i);
-    virtual float fitness(LambdaZrt &i);
+    virtual LambdaZrt init(int ix) override;
+    virtual void crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter) override;
+    virtual void mutate(LambdaZrt &i) override;
+    virtual float fitness(LambdaZrt &i) override;
 };
 
 class FixedCapacityGA : public GeneticAlgorithm<LambdaZr> {
 public:
     FixedCapacityGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) { }
 private:
-    virtual LambdaZr init(int ix);
-    virtual void crossover(LambdaZr &mother, LambdaZr &father, LambdaZr &daughter);
-    virtual void mutate(LambdaZr &i);
-    virtual float fitness(LambdaZr &i);
+    virtual LambdaZr init(int ix) override;
+	virtual void crossover(LambdaZr &mother, LambdaZr &father, LambdaZr &daughter) override;	
+	virtual void mutate(LambdaZr &i) override;
+    virtual float fitness(LambdaZr &i) override;
+
+	void mutateOvertime(vector<int> &z);
 };
 
 

@@ -39,7 +39,7 @@ lsdouble CumulatedDemandFunction::call(const LSNativeContext &context) {
     lsint r = context.getIntValue(0);
     lsint t = context.getIntValue(1);
 
-    EACH_RNG(j, p.numJobs,
+    P_EACH_JOB(
         lsint Sj = context.getIntValue(j+2);
         if(Sj < t && t <= Sj + p.durations[j])
             demand += p.demands[j][r])
@@ -55,37 +55,33 @@ vector<int> LSSolver::solve3(ProjectWithOvertime &p) {
 
 	// Decision variables (primary)
 	vector<LSExpression> S(p.numJobs);
-	EACH_RNG(j, p.numJobs, S[j] = model.intVar(0, p.numPeriods - 1));
+	P_EACH_JOB(S[j] = model.intVar(0, p.numPeriods - 1))
 
 	// Intermediate expressions
 	vector<vector<LSExpression>> cumDemandExpr;
 	Utils::resizeMatrix(cumDemandExpr, p.numRes, p.numPeriods);
-	EACH_RNG(r, p.numRes,
-		EACH_RNG(t, p.numPeriods,
+	P_EACH_RES(
+		P_EACH_PERIOD(
 			cumDemandExpr[r][t] = model.sum();
-			EACH_RNG(j, p.numJobs, cumDemandExpr[r][t] += p.demands[j][r] * (t > S[j] && t <= S[j] + p.durations[j]))))
+			P_EACH_JOB(cumDemandExpr[r][t] += p.demands[j][r] * (t > S[j] && t <= S[j] + p.durations[j]))))
 
 	// Revenue function parameter
 	LSExpression revenueArray = model.array();
-	EACH_RNG(t, p.numPeriods, revenueArray.addOperand(p.revenue[t]));
+	P_EACH_PERIOD(revenueArray.addOperand(p.revenue[t]));
 
 	// Objective function
 	LSExpression objfunc = model.sum();
 	objfunc += model.at(revenueArray, S[p.numJobs - 1]);
-	EACH_RNG(r, p.numRes,
-		EACH_RNG(t, p.numPeriods,
-			objfunc += -p.kappa[r] * model.max(0, cumDemandExpr[r][t] - p.capacities[r])))
+	P_EACH_RES(P_EACH_PERIOD(objfunc += -p.kappa[r] * model.max(0, cumDemandExpr[r][t] - p.capacities[r])))
 
 	// Precedence restriction
-	EACH_RNG(j, p.numJobs,
+	P_EACH_JOB(
 		LSExpression lastPred = model.max(0);
-		EACH_RNG(i, p.numJobs,
-			if(p.adjMx[i][j])
-				lastPred.addOperand(S[i] + p.durations[i]))
+		P_EACH_JOBi(if(p.adjMx[i][j]) lastPred.addOperand(S[i] + p.durations[i]))
 		model.constraint(lastPred <= S[j]))
 
 	// Capacity restriction
-	EACH_RNG(r, p.numRes, EACH_RNG(t, p.numPeriods, model.constraint(cumDemandExpr[r][t] <= p.capacities[r] + p.zmax[r])))
+	P_EACH_RES(P_EACH_PERIOD( model.constraint(cumDemandExpr[r][t] <= p.capacities[r] + p.zmax[r])))
 
 	model.addObjective(objfunc, OD_Maximize);
 	model.close();
@@ -97,7 +93,7 @@ vector<int> LSSolver::solve3(ProjectWithOvertime &p) {
 	ls.solve();
 
 	auto sol = ls.getSolution();
-	EACH_RNG(j, p.numJobs, sts[j] = static_cast<int>(sol.getIntValue(S[j])));
+	P_EACH_JOB( sts[j] = static_cast<int>(sol.getIntValue(S[j])));
 
 	//auto status = sol.getStatus();
 	//auto solvetime = ls.getStatistics().getRunningTime();
@@ -113,33 +109,31 @@ vector<int> LSSolver::solve2(ProjectWithOvertime &p) {
 
 	// Decision variables
 	vector<LSExpression> S(p.numJobs);
-	EACH_RNG(j, p.numJobs, S[j] = model.intVar(0, p.numPeriods - 1));
+	P_EACH_JOB(S[j] = model.intVar(0, p.numPeriods - 1));
 
 	vector<vector<LSExpression>> zrt = Utils::initMatrix<LSExpression>(p.numRes, p.numPeriods);
-	EACH_RNG(r, p.numRes, EACH_RNG(t, p.numPeriods, zrt[r][t] = model.intVar(0, p.zmax[r])))
+	P_EACH_RES(P_EACH_PERIOD( zrt[r][t] = model.intVar(0, p.zmax[r])))
 
 	// Revenue function parameter
 	LSExpression revenueArray = model.array();
-	EACH_RNG(t, p.numPeriods, revenueArray.addOperand(p.revenue[t]));
+	P_EACH_PERIOD(revenueArray.addOperand(p.revenue[t]));
 
 	// Objective function
 	LSExpression objfunc = model.sum();
 	objfunc += model.at(revenueArray, S[p.numJobs - 1]);
-	EACH_RNG(r, p.numRes, EACH_RNG(t, p.numPeriods, objfunc += -p.kappa[r] * zrt[r][t]))
+	P_EACH_RES(P_EACH_PERIOD( objfunc += -p.kappa[r] * zrt[r][t]))
 	
 	// Precedence restriction
-	EACH_RNG(j, p.numJobs,
+	P_EACH_JOB(
 		LSExpression lastPred = model.max(0);
-		EACH_RNG(i, p.numJobs,
-			if (p.adjMx[i][j])
-				lastPred.addOperand(S[i] + p.durations[i]))
+		P_EACH_JOBi(if (p.adjMx[i][j]) lastPred.addOperand(S[i] + p.durations[i]))
 		model.constraint(lastPred <= S[j]))
 
 	// Capacity restriction
-	EACH_RNG(r, p.numRes,
-		EACH_RNG(t, p.numPeriods,
+	P_EACH_RES(
+		P_EACH_PERIOD(
 			LSExpression cumDemandExpr = model.sum();
-			EACH_RNG(j, p.numJobs, cumDemandExpr += p.demands[j][r] * (t > S[j] && t <= S[j] + p.durations[j]))
+			P_EACH_JOB(cumDemandExpr += p.demands[j][r] * (t > S[j] && t <= S[j] + p.durations[j]))
 			model.constraint(cumDemandExpr <= p.capacities[r] + zrt[r][t])))
 
     model.addObjective(objfunc, OD_Maximize);
@@ -152,7 +146,7 @@ vector<int> LSSolver::solve2(ProjectWithOvertime &p) {
 	ls.solve();
 
 	auto sol = ls.getSolution();
-	EACH_RNG(j, p.numJobs, sts[j] = static_cast<int>(sol.getIntValue(S[j])));
+	P_EACH_JOB(sts[j] = static_cast<int>(sol.getIntValue(S[j])));
 
 	//auto status = sol.getStatus();
 	//auto solvetime = ls.getStatistics().getRunningTime();
@@ -174,32 +168,30 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
 
     // Decision variables
     vector<LSExpression> Sj(p.numJobs);
-    EACH_RNG(j, p.numJobs, Sj[j] = model.intVar(0, p.numPeriods-1));
+    P_EACH_JOB(Sj[j] = model.intVar(0, p.numPeriods-1));
     vector<vector<LSExpression>> zrt = Utils::initMatrix<LSExpression>(p.numRes, p.numPeriods);
-    EACH_RNG(r, p.numRes, EACH_RNG(t, p.numPeriods, zrt[r][t] = model.intVar(0, p.zmax[r])))
+    P_EACH_RES(P_EACH_PERIOD( zrt[r][t] = model.intVar(0, p.zmax[r])))
 
     // Objective function
     LSExpression objfunc = model.sum();
     LSExpression revenueExpr = model.createExpression(O_Call, revFuncExpr);
     revenueExpr.addOperand(Sj[p.numJobs-1]);
     objfunc += revenueExpr;
-    EACH_RNG(r, p.numRes, EACH_RNG(t, p.numPeriods, objfunc += -p.kappa[r] * zrt[r][t]))
+    P_EACH_RES(P_EACH_PERIOD( objfunc += -p.kappa[r] * zrt[r][t]))
 
     // Precedence restriction
-    EACH_RNG(j, p.numJobs,
+    P_EACH_JOB(
         LSExpression lastPred = model.max(0);
-        EACH_RNG(i, p.numJobs,
-            if(p.adjMx[i][j])
-                lastPred.addOperand(Sj[i] + p.durations[i]))
+        P_EACH_JOBi(if(p.adjMx[i][j]) lastPred.addOperand(Sj[i] + p.durations[i]))
         model.constraint(lastPred <= Sj[j]))
 
     // Capacity restriction
-    EACH_RNG(r, p.numRes,
-        EACH_RNG(t, p.numPeriods,
+    P_EACH_RES(
+        P_EACH_PERIOD(
             LSExpression cumDemandExpr = model.createExpression(O_Call, cumDemFuncExpr);
             cumDemandExpr.addOperand(r);
             cumDemandExpr.addOperand(t);
-            EACH_RNG(j, p.numJobs, cumDemandExpr.addOperand(Sj[j]))
+            P_EACH_JOB( cumDemandExpr.addOperand(Sj[j]))
             model.constraint(cumDemandExpr <= p.capacities[r] + zrt[r][t])))
 
     model.addObjective(objfunc, OD_Maximize);
@@ -212,7 +204,7 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
     ls.solve();
 
     auto sol = ls.getSolution();
-    EACH_RNG(j, p.numJobs, sts[j] = static_cast<int>(sol.getIntValue(Sj[j])));
+    P_EACH_JOB( sts[j] = static_cast<int>(sol.getIntValue(Sj[j])));
 
     //auto status = sol.getStatus();
     //auto solvetime = ls.getStatistics().getRunningTime();
@@ -231,25 +223,25 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     vector<vector<LSExpression>> x, z;
     Utils::resizeMatrix(x, p.numJobs, p.numPeriods);
     Utils::resizeMatrix(z, p.numRes, p.numPeriods);
-    EACH_RNG(j, p.numJobs, EACH_RNG(t, p.numPeriods, x[j][t] = model.boolVar()))
-    EACH_RNG(r, p.numRes, EACH_RNG(t, p.numPeriods, z[r][t] = model.intVar(0, p.zmax[r])))
+    P_EACH_JOB( P_EACH_PERIOD( x[j][t] = model.boolVar()))
+    P_EACH_RES( P_EACH_PERIOD( z[r][t] = model.intVar(0, p.zmax[r])))
 
     // Objective function
     auto objfunc = model.sum();
     TIME_WINDOW(p.numJobs-1, objfunc += p.revenue[t] * x[p.numJobs-1][t])
-    EACH_RNG(r, p.numRes, EACH_RNG(t, p.numPeriods, objfunc += -p.kappa[r] * z[r][t]))
+    P_EACH_RES( P_EACH_PERIOD( objfunc += -p.kappa[r] * z[r][t]))
 
     // Constraints
 
     // Each job once
-    EACH_RNG(j, p.numJobs,
+    P_EACH_JOB(
         auto xsum = model.sum();
         TIME_WINDOW(j, xsum += x[j][t])
         model.constraint(xsum == 1.0))
 
     // Precedence restrictions
-    EACH_RNG(j, p.numJobs,
-        EACH_RNG(i, p.numJobs,
+    P_EACH_JOB(
+        P_EACH_JOBi(
             if(p.adjMx[i][j]) {
                 auto predFt = model.sum();
                 TIME_WINDOW(i, predFt += t * x[i][t])
@@ -260,10 +252,10 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
             }))
 
     // Capacity restrictions
-    EACH_RNG(r, p.numRes,
-        EACH_RNG(t, p.numPeriods,
+    P_EACH_RES(
+        P_EACH_PERIOD(
             auto cumulatedDemand = model.sum();
-            EACH_RNG(j, p.numJobs,
+            P_EACH_JOB(
                 for(int tau = t; tau < Utils::min(t + p.durations[j], p.numPeriods); tau++)
                     cumulatedDemand += x[j][tau] * p.demands[j][r])
             auto totalCapacity = model.sum(p.capacities[r], z[r][t]);
@@ -279,8 +271,8 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     ls.solve();
 
     auto sol = ls.getSolution();
-    EACH_RNG(j, p.numJobs,
-        EACH_RNG(t, p.numPeriods,
+    P_EACH_JOB(
+        P_EACH_PERIOD(
             if(sol.getValue(x[j][t]) == 1) {
                 sts[j] = t - p.durations[j];
                 break;
@@ -304,25 +296,25 @@ void LSSolver::writeLSPModelParamFile(ProjectWithOvertime &p, string outFilename
 		to_string(p.numRes) };
 
 	outLines.push_back("durations");
-	EACH_RNG(j, p.numJobs, outLines.push_back(to_string(p.durations[j])))
+	P_EACH_JOB( outLines.push_back(to_string(p.durations[j])))
 	outLines.push_back("demands (j,r)-matrix (row major order)");
-	EACH_RNG(j, p.numJobs, EACH_RNG(r, p.numRes, outLines.push_back(to_string(p.demands[j][r]))))
+	P_EACH_JOB( P_EACH_RES( outLines.push_back(to_string(p.demands[j][r]))))
 	outLines.push_back("adjacency matrix (row major order)");
-	EACH_RNG(i, p.numJobs, EACH_RNG(j, p.numJobs, outLines.push_back(p.adjMx[i][j] ? "1" : "0")))
+	P_EACH_JOBi(P_EACH_JOB( outLines.push_back(p.adjMx[i][j] ? "1" : "0")))
 	outLines.push_back("capacities");
-	EACH_RNG(r, p.numRes, outLines.push_back(to_string(p.capacities[r])))
+	P_EACH_RES( outLines.push_back(to_string(p.capacities[r])))
 
 	outLines.push_back("earliest finishing times");
-	EACH_RNG(j, p.numJobs, outLines.push_back(to_string(p.efts[j])))
+	P_EACH_JOB( outLines.push_back(to_string(p.efts[j])))
 	outLines.push_back("latest finishing times");
-	EACH_RNG(j, p.numJobs, outLines.push_back(to_string(p.lfts[j])))
+	P_EACH_JOB( outLines.push_back(to_string(p.lfts[j])))
 
 	outLines.push_back("revenue");
 	EACH_RNG(t, p.numPeriods+1, outLines.push_back(to_string(p.revenue[t])))
 	outLines.push_back("upper bound for overtime");
-	EACH_RNG(r, p.numRes, outLines.push_back(to_string(p.zmax[r])))
+	P_EACH_RES( outLines.push_back(to_string(p.zmax[r])))
 	outLines.push_back("kappa");
-	EACH_RNG(r, p.numRes, outLines.push_back(to_string(p.kappa[r])))
+	P_EACH_RES( outLines.push_back(to_string(p.kappa[r])))
 
 	ofstream f(outFilename);
 	if (!f.is_open()) return;
