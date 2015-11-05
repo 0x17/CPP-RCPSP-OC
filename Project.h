@@ -21,6 +21,8 @@
 #define P_EACH_RES(code) EACH_RNG(r, p.numRes, code)
 #define P_EACH_PERIOD(code) EACH_RNG(t, p.numPeriods, code)
 
+typedef pair<vector<int>, vector<vector<int>>> SGSResult;
+
 class Project {
 public:
     int numJobs, numRes, numPeriods, T;
@@ -36,27 +38,29 @@ public:
     virtual ~Project() {}
 
 	vector<int> serialSGS(const vector<int>& order) const;
-	pair<vector<int>,vector<vector<int>>> serialSGS(const vector<int>& order, const vector<int>& zr) const;
-	pair<vector<int>, vector<vector<int>>> serialSGS(const vector<int>& order, const vector<vector<int>>& zrt) const;
+	SGSResult serialSGS(const vector<int>& order, const vector<int>& zr) const;
+	SGSResult serialSGS(const vector<int>& order, const vector<vector<int>>& zrt) const;
 
 	bool jobBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
 	bool hasPredNotBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
 
 	bool isOrderFeasible(const vector<int> &order) const;
 
-private:
-	vector<int> serialSGSCore(const vector<int>& order, vector<vector<int>> &resRem) const;
+protected:
+    void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, vector<vector<int>> &resRem) const;
 
-    void parsePrecedenceRelation(const vector<string> &lines);
-    void parseDurationsAndDemands(const vector<string> &lines);
+	vector<int> serialSGSCore(const vector<int>& order, vector<vector<int>> &resRem) const;
 
     bool enoughCapacityForJob(int job, int t, vector<vector<int>> & resRem) const;
     int computeLastPredFinishingTime(const vector<int> &fts, int job) const;
     int computeFirstSuccStartingTime(const vector<int> &sts, int job) const;
     void scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, vector<vector<int>> &resRem) const;
-		
-	vector<int> computeTopOrder() const;
 
+private:
+    void parsePrecedenceRelation(const vector<string> &lines);
+    void parseDurationsAndDemands(const vector<string> &lines);
+
+	vector<int> computeTopOrder() const;
     void computeELSFTs();
 };
 

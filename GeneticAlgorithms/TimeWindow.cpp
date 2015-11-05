@@ -6,30 +6,34 @@
 #include "Sampling.h"
 
 LambdaTau TimeWindowArbitraryGA::init(int ix) {
-    return LambdaTau();
+    LambdaTau indiv(p);
+    indiv.order = Sampling::naiveSampling(p);
+    P_EACH_JOB(indiv.tau[j] = Utils::randUnitFloat())
+    return indiv;
 }
 
 void TimeWindowArbitraryGA::crossover(LambdaTau &mother, LambdaTau &father, LambdaTau &daughter) {
-
 }
 
 void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
 }
 
 float TimeWindowArbitraryGA::fitness(LambdaTau &i) {
-    return 0;
+    auto pair = p.serialSGSTimeWindowArbitrary(i.order, i.tau);
+    return profitForSGSResult(pair);
 }
 
-vector<int> TimeWindowArbitraryGA::decode(LambdaTau& i)
-{
-	vector<int> sts;
-	return sts;
+vector<int> TimeWindowArbitraryGA::decode(LambdaTau& i)  {
+	return p.serialSGSTimeWindowArbitrary(i.order, i.tau).first;
 }
 
 //======================================================================================================================
 
 LambdaBeta TimeWindowBordersGA::init(int ix) {
-    return LambdaBeta();
+    LambdaBeta indiv(p);
+    indiv.order = Sampling::naiveSampling(p);
+    P_EACH_JOB(indiv.beta[j] = rand() % 2);
+    return indiv;
 }
 
 void TimeWindowBordersGA::crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) {
@@ -39,11 +43,11 @@ void TimeWindowBordersGA::mutate(LambdaBeta &i) {
 }
 
 float TimeWindowBordersGA::fitness(LambdaBeta &i) {
-    return 0;
+    auto pair = p.serialSGSTimeWindowBorders(i.order, i.beta);
+    return profitForSGSResult(pair);
 }
 
-vector<int> TimeWindowBordersGA::decode(LambdaBeta& i)
-{
+vector<int> TimeWindowBordersGA::decode(LambdaBeta& i) {
 	vector<int> sts;
 	return sts;
 }
@@ -63,11 +67,10 @@ void CompareAlternativesGA::mutate(vector<int> &i) {
 }
 
 float CompareAlternativesGA::fitness(vector<int> &i) {
-    //return p.serialSGSWithOvertime(i);
-    return 0.0f;
+    auto pair = p.serialSGSWithOvertime(i);
+    return profitForSGSResult(pair);
 }
 
 vector<int> CompareAlternativesGA::decode(vector<int>& i) {
-	vector<int> sts;
-	return sts;
+	return p.serialSGSWithOvertime(i).first;
 }

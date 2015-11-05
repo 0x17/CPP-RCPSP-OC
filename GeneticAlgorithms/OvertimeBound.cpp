@@ -24,10 +24,8 @@ void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
 
 float TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
 	auto pair = p.serialSGS(i.order, i.z);
-	auto &sts = pair.first;
-	auto &resRem = pair.second;
-	P_EACH_RES(P_EACH_PERIOD(resRem[r][t] -= i.z[r][t]))
-	return p.calcProfit(sts[p.numJobs - 1], resRem);
+	P_EACH_RES(P_EACH_PERIOD(pair.second[r][t] -= i.z[r][t]))
+	return profitForSGSResult(pair);
 }
 
 vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
@@ -65,10 +63,8 @@ void FixedCapacityGA::mutate(LambdaZr &i) {
 
 float FixedCapacityGA::fitness(LambdaZr &i) {
 	auto pair = p.serialSGS(i.order, i.z);
-	auto &sts = pair.first;
-	auto &resRem = pair.second;
-	P_EACH_RES(P_EACH_PERIOD(resRem[r][t] -= i.z[r]))
-	return p.calcProfit(sts[p.numJobs-1], resRem);
+	P_EACH_RES(P_EACH_PERIOD(pair.second[r][t] -= i.z[r]))
+	return profitForSGSResult(pair);
 }
 
 vector<int> FixedCapacityGA::decode(LambdaZr& i) {

@@ -95,7 +95,7 @@ bool Project::enoughCapacityForJob(int job, int t, vector<vector<int>> & resRem)
     return true;
 }
 
-inline void Project::scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, vector<vector<int>> &resRem) const {
+void Project::scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, vector<vector<int>> &resRem) const {
 	sts[job] = t;
 	fts[job] = t + durations[job];
 	EACH_RES(for (int tau = t + 1; tau <= fts[job]; tau++) resRem[r][tau] -= demands[job][r];)
@@ -150,3 +150,9 @@ void Project::computeELSFTs() {
     }
 }
 
+void Project::complementPartialWithSSGS(const vector<int> &order, int startIx, vector<int> &fts, vector<vector<int>> &resRem) const {
+    for(int i=startIx; i<numJobs; i++) {
+        
+    }
+
+}

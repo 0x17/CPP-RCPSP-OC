@@ -40,7 +40,14 @@ protected:
     void inline swap(vector<int> &order, int i1, int i2);
 
     pair<int, int> computePair(vector<bool> &alreadySelected);
+
+    float profitForSGSResult(pair<vector<int>, vector<vector<int>>> &result);
 };
+
+template<class Individual>
+float GeneticAlgorithm<Individual>::profitForSGSResult(pair<vector<int>, vector<vector<int>>> &result) {
+    return p.calcProfit(result.first[p.numJobs-1], result.second);
+}
 
 template<class Individual>
 pair<int, int> GeneticAlgorithm<Individual>::computePair(vector<bool> &alreadySelected) {

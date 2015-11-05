@@ -59,11 +59,97 @@ int ProjectWithOvertime::computeTKappa() const {
 
 vector<int> ProjectWithOvertime::earliestStartSchedule(vector<vector<int>>& resRem) {
     vector<int> ess(numJobs);
-    for(int k=0; k<numJobs; k++) {
-        int j = topOrder[k];
+    for(int j : topOrder) {
         ess[j] = 0;
         EACH_JOBi(if (adjMx[i][j] && ess[i] + durations[i] > ess[j]) ess[j] = ess[i] + durations[i])
         EACH_RES(for (int tau = ess[j] + 1; tau <= ess[j] + durations[j]; tau++) resRem[r][tau] -= demands[j][r])
     }
     return ess;
+}
+
+SGSResult ProjectWithOvertime::serialSGSWithOvertime(vector<int> order) {
+    vector<vector<int>> resRem = Utils::initMatrix<int>(numRes, numPeriods);
+    vector<vector<int>> resRemTmp = Utils::initMatrix<int>(numRes, numPeriods);
+    EACH_RES(EACH_PERIOD(resRem[r][t] = capacities[r]))
+
+    vector<int> sts(numJobs), fts(numJobs), ftsTmp(numJobs);
+    for (int k=0; k<numJobs; k++) {
+        int job = order[k];
+        int lastPredFinished = computeLastPredFinishingTime(fts, job);
+
+        int t;
+        for (t = lastPredFinished; !enoughCapacityForJobWithOvertime(job, t, resRem); t++);
+
+        pair<int, float> bestT = make_pair(t, numeric_limits<float>::min());
+
+        for(;; t++) {
+            if(!enoughCapacityForJobWithOvertime(job, t, resRem))
+                continue;
+
+            resRemTmp.swap(resRem);
+            ftsTmp.swap(fts);
+            complementPartialWithSSGS(order, k, ftsTmp, resRemTmp);
+
+            float p = calcProfit(fts[numJobs-1], resRemTmp);
+            if(p > bestT.second) {
+                bestT.first = t;
+                bestT.second = p;
+            }
+
+            if(enoughCapacityForJob(job, t, resRem))
+                break;
+        }
+
+        scheduleJobAt(job, bestT.first, sts, fts, resRem);
+    }
+
+    return make_pair(sts, resRem);
+}
+
+bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, vector<vector<int>> & resRem) const {
+    for(int tau = t + 1; tau <= t + durations[job]; tau++) {
+        EACH_RES(if(demands[job][r] > resRem[r][tau] + zmax[r]) return false)
+    }
+    return true;
+}
+
+SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(vector<int> order, vector<int> beta) {
+    vector<vector<int>> resRem = Utils::initMatrix<int>(numRes, numPeriods);
+    EACH_RES(EACH_PERIOD(resRem[r][t] = capacities[r]))
+
+    vector<int> sts(numJobs), fts(numJobs);
+    for (int k=0; k<numJobs; k++) {
+        int job = order[k];
+        int lastPredFinished = computeLastPredFinishingTime(fts, job);
+        int t;
+        if(beta[k] == 1) {
+            for (t = lastPredFinished; !enoughCapacityForJobWithOvertime(job, t, resRem); t++);
+        } else {
+            for (t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++);
+        }
+
+        scheduleJobAt(job, t, sts, fts, resRem);
+    }
+
+    return make_pair(sts, resRem);
+}
+
+SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(vector<int> order, vector<float> tau) {
+    vector<vector<int>> resRem = Utils::initMatrix<int>(numRes, numPeriods);
+    EACH_RES(EACH_PERIOD(resRem[r][t] = capacities[r]))
+
+    vector<int> sts(numJobs), fts(numJobs);
+    for (int k=0; k<numJobs; k++) {
+        int job = order[k];
+        int lastPredFinished = computeLastPredFinishingTime(fts, job);
+        int t;
+        for (t = lastPredFinished; !enoughCapacityForJobWithOvertime(job, t, resRem); t++);
+        int tmin = t;
+        for (; !enoughCapacityForJob(job, t, resRem); t++);
+        int tmax = t;
+        for (t = tmax - static_cast<int>(round(static_cast<float>(tmax-tmin) * tau[k])); !enoughCapacityForJobWithOvertime(job, t, resRem); t++);
+        scheduleJobAt(job, t, sts, fts, resRem);
+    }
+
+    return make_pair(sts, resRem);
 }

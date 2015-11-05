@@ -44,6 +44,10 @@ namespace Utils {
         return lb + rand() % (ub-lb+1);
     }
 
+    inline float randUnitFloat() {
+        return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    }
+
     template<class T>
     bool rangeContains(const vector<T> &elems, int lb, int ub, int e) {
         for(int i=lb; i<=ub; i++)
