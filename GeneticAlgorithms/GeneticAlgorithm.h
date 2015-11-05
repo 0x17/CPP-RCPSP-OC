@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iostream>
 #include "../ProjectWithOvertime.h"
+#include "../Stopwatch.h"
 
 using namespace std;
 
@@ -22,8 +23,9 @@ public:
 protected:
     ProjectWithOvertime &p;
     const int numGens, popSize, pmutate;
+	const double timelimit;
 
-    GeneticAlgorithm(ProjectWithOvertime &_p) : p(_p), numGens(80), pmutate(5), popSize(100) {}
+    GeneticAlgorithm(ProjectWithOvertime &_p) : p(_p), numGens(80), pmutate(5), popSize(100), timelimit(-1.0) {}
 
 	void generateChildren(vector<pair<Individual, float>> & population);
 
@@ -65,20 +67,16 @@ void GeneticAlgorithm<Individual>::generateChildren(vector<pair<Individual, floa
 
 template<class Individual>
 pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
+	Stopwatch sw;
+	sw.start();
     vector<pair<Individual, float>> pop(popSize*2);
 
-    for(int i=0; i<popSize; i++) {
+    for(int i=0; i<popSize*2; i++) {
         pop[i].first = init(i);
-        pop[i].second = -fitness(pop[i].first);
+		pop[i].second = i < popSize ? -fitness(pop[i].first) : 0.0f;
     }
 
-	for(int i=popSize; i<popSize*2; i++) {
-		pop[i].first = init(i);
-		pop[i].second = 0.0f;
-	}
-
-    for(int i=0; i<numGens; i++) {
-		cout << "Generation " << (i + 1) << endl;
+    for(int i=0; (numGens == -1 || i<numGens) && (timelimit == -1.0 || sw.look() < timelimit); i++) {		
         generateChildren(pop);
 
         for(int j=popSize; j<popSize*2; j++) {
@@ -88,7 +86,8 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
         }
 
 		sort(pop.begin(), pop.end(), [](auto &left, auto &right) { return left.second < right.second; });
-		cout << "Obj=" << -pop[0].second << endl;
+
+		cout << "\rGeneration " << (i + 1) << " Obj=" << -pop[0].second;
     }
 
     auto best = pop[0];
@@ -109,8 +108,7 @@ void GeneticAlgorithm<Individual>::onePointCrossover(vector<int> &motherOrder, v
     for(int i=0; i<=q; i++)
 		daughterOrder[i] = motherOrder[i];
 
-    int ctr = q+1;
-    for(int i=0; i<fatherOrder.size(); i++) {
+    for(int i=0, ctr=q+1; i<fatherOrder.size(); i++) {
         if(!Utils::rangeContains(motherOrder, 0, q, fatherOrder[i])) {
             daughterOrder[ctr] = fatherOrder[i];
             ctr++;
@@ -118,7 +116,6 @@ void GeneticAlgorithm<Individual>::onePointCrossover(vector<int> &motherOrder, v
     }
 }
 
-// FIXME: Contains bug making feasible orders infeasible!
 template<class Individual>
 void GeneticAlgorithm<Individual>::neighborhoodSwap(vector<int> &order) {
     for(int i=1; i<p.numJobs; i++)

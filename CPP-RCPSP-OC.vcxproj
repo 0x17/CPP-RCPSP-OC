@@ -28,6 +28,7 @@
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="ProjectWithOvertime.cpp" />
     <ClCompile Include="ScheduleVisualizer.cpp" />
+    <ClCompile Include="Stopwatch.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -40,6 +41,7 @@
     <ClInclude Include="Project.h" />
     <ClInclude Include="ProjectWithOvertime.h" />
     <ClInclude Include="ScheduleVisualizer.h" />
+    <ClInclude Include="Stopwatch.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
