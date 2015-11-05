@@ -101,16 +101,24 @@ inline void Project::scheduleJobAt(int job, int t, vector<int> &sts, vector<int>
 	EACH_RES(for (int tau = t + 1; tau <= fts[job]; tau++) resRem[r][tau] -= demands[job][r];)
 }
 
-bool Project::jobBeforeInOrder(int job, int curIndex, vector<int>& order) const {
+bool Project::jobBeforeInOrder(int job, int curIndex, const vector<int>& order) const {
 	for(int k = 0; k < curIndex; k++)
 		if(order[k] == job)
 			return true;
 	return false;
 }
 
-bool Project::hasPredNotBeforeInOrder(int job, int curIndex, vector<int>& order) const {
+bool Project::hasPredNotBeforeInOrder(int job, int curIndex, const vector<int>& order) const {
 	EACH_JOBi(if (adjMx[i][job] && !jobBeforeInOrder(i, curIndex, order)) return true)
 	return false;
+}
+
+bool Project::isOrderFeasible(const vector<int>& order) const {
+	for (int i = 0; i < numJobs; i++) {
+		if (hasPredNotBeforeInOrder(order[i], i, order))
+			return false;
+	}
+	return true;
 }
 
 vector<int> Project::computeTopOrder() const {

@@ -39,8 +39,10 @@ public:
 	pair<vector<int>,vector<vector<int>>> serialSGS(const vector<int>& order, const vector<int>& zr) const;
 	pair<vector<int>, vector<vector<int>>> serialSGS(const vector<int>& order, const vector<vector<int>>& zrt) const;
 
-	bool jobBeforeInOrder(int job, int curIndex, vector<int>& order) const;
-	bool hasPredNotBeforeInOrder(int job, int curIndex, vector<int>& order) const;
+	bool jobBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
+	bool hasPredNotBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
+
+	bool isOrderFeasible(const vector<int> &order) const;
 
 private:
 	vector<int> serialSGSCore(const vector<int>& order, vector<vector<int>> &resRem) const;

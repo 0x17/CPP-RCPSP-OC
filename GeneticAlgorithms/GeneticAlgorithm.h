@@ -7,8 +7,8 @@
 
 #include <vector>
 #include <algorithm>
-#include "../ProjectWithOvertime.h"
 #include <iostream>
+#include "../ProjectWithOvertime.h"
 
 using namespace std;
 
@@ -53,13 +53,13 @@ pair<int, int> GeneticAlgorithm<Individual>::computePair(vector<bool> &alreadySe
 };
 
 template<class Individual>
-void GeneticAlgorithm<Individual>::generateChildren(vector<pair<Individual, float>> & population) {
+void GeneticAlgorithm<Individual>::generateChildren(vector<pair<Individual, float>> & pop) {
     vector<bool> alreadySelected(popSize);
 
-    for(int childIx =popSize; childIx <popSize*2; childIx +=2) {
+    for(int childIx=popSize; childIx<popSize*2; childIx +=2) {
         pair<int, int> parentIndices = computePair(alreadySelected);
-        crossover(population[parentIndices.first].first, population[parentIndices.second].first, population[childIx].first);
-        crossover(population[parentIndices.second].first, population[parentIndices.first].first, population[childIx+1].first);
+        crossover(pop[parentIndices.first].first, pop[parentIndices.second].first, pop[childIx].first);
+        crossover(pop[parentIndices.second].first, pop[parentIndices.first].first, pop[childIx+1].first);
     }
 }
 
@@ -88,14 +88,15 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
         }
 
 		sort(pop.begin(), pop.end(), [](auto &left, auto &right) { return left.second < right.second; });
+		cout << "Obj=" << -pop[0].second << endl;
     }
 
     auto best = pop[0];
-	return make_pair(decode(best.first), best.second);
+	return make_pair(decode(best.first), -best.second);
 }
 
 template<class Individual>
-void inline GeneticAlgorithm<Individual>::swap(vector<int> &order, int i1, int i2) {
+void GeneticAlgorithm<Individual>::swap(vector<int> &order, int i1, int i2) {
     int tmp = order[i1];
     order[i1] = order[i2];
     order[i2] = tmp;
@@ -103,21 +104,21 @@ void inline GeneticAlgorithm<Individual>::swap(vector<int> &order, int i1, int i
 
 template<class Individual>
 void GeneticAlgorithm<Individual>::onePointCrossover(vector<int> &motherOrder, vector<int> &fatherOrder, vector<int> &daughterOrder) {
-    int q = Utils::randRangeIncl(1, static_cast<int>(motherOrder.size()));
+    int q = Utils::randRangeIncl(0, static_cast<int>(motherOrder.size())-1);
 
-    for(int i=0; i<q; i++)
+    for(int i=0; i<=q; i++)
 		daughterOrder[i] = motherOrder[i];
 
-	// DEBUG THIS
-    int ctr = q;
+    int ctr = q+1;
     for(int i=0; i<fatherOrder.size(); i++) {
-        if(!Utils::rangeContains(motherOrder, 0, q-1, fatherOrder[i])) {
+        if(!Utils::rangeContains(motherOrder, 0, q, fatherOrder[i])) {
             daughterOrder[ctr] = fatherOrder[i];
             ctr++;
         }
     }
 }
 
+// FIXME: Contains bug making feasible orders infeasible!
 template<class Individual>
 void GeneticAlgorithm<Individual>::neighborhoodSwap(vector<int> &order) {
     for(int i=1; i<p.numJobs; i++)
