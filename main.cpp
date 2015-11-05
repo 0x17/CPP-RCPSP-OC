@@ -16,10 +16,10 @@ int main(int argc, const char * argv[]) {
     //auto optimalSts = LSSolver::solve(p);
 	//auto optimalSts = LSSolver::solve2(p);
 	//auto optimalSts = LSSolver::solve3(p);
-	//Utils::serializeSchedule(pair.first, "myschedulebiatch.txt");
+	Utils::serializeSchedule(pair.first, "myschedulebiatch.txt");
     //vector<int> optimalSts(p.numJobs);
     //ScheduleVisualizer::drawScheduleToPDF(p, optimalSts, "out.pdf");
 	//cin.get();
-	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedulebiatch.txt");
+	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedulebiatch.txt");
     return 0;
 }

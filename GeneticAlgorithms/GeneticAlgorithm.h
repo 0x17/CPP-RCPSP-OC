@@ -122,8 +122,8 @@ void GeneticAlgorithm<Individual>::onePointCrossover(vector<int> &motherOrder, v
 template<class Individual>
 void GeneticAlgorithm<Individual>::neighborhoodSwap(vector<int> &order) {
     for(int i=1; i<p.numJobs; i++)
-        if(Utils::randRangeIncl(1, 100) <= pmutate && !p.adjMx[i-1][i])
-            swap(order, i-1, i);
+		if(Utils::randRangeIncl(1, 100) <= pmutate && !p.adjMx[order[i - 1]][order[i]])
+			swap(order, i - 1, i);
 }
 
 #endif //CPP_RCPSP_OC_GENETICALGORITHMS_H
