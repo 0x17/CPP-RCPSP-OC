@@ -25,7 +25,7 @@ Project::Project(string filename) {
 }
 
 #define INIT_RES_REM(code) \
-	Matrix<int> resRem = Utils::initMatrix<int>(numRes, numPeriods); \
+    Matrix<int> resRem(numRes, numPeriods); \
 	EACH_RES(EACH_PERIOD(code));
 
 vector<int> Project::serialSGS(const vector<int>& order) const {
@@ -57,8 +57,7 @@ vector<int> Project::serialSGSCore(const vector<int>& order, Matrix<int>& resRem
 }
 
 void Project::parsePrecedenceRelation(const vector<string> &lines) {
-    Utils::resizeMatrix(adjMx, numJobs, numJobs);
-
+    adjMx.resize(numJobs, numJobs);
     EACH_JOB(
         auto nums = Utils::extractIntsFromLine(lines[18+j]);
         for(int i=3; i<nums.size(); i++)
@@ -67,8 +66,7 @@ void Project::parsePrecedenceRelation(const vector<string> &lines) {
 
 void Project::parseDurationsAndDemands(const vector<string> &lines) {
     durations.resize(numJobs);
-    Utils::resizeMatrix(demands, numJobs, numRes);
-
+    demands.resize(numJobs, numRes);
     EACH_JOB(
         auto nums = Utils::extractIntsFromLine(lines[18+numJobs+4+ j]);
         durations[j] = nums[2];

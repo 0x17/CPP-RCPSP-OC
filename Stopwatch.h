@@ -6,6 +6,6 @@ class Stopwatch {
 	std::chrono::time_point<std::chrono::system_clock> stime;
 public:
 	void start();
-	double look();
+	double look() const;
     double lookAndReset();
 };

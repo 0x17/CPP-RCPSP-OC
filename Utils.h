@@ -18,16 +18,6 @@ namespace Utils {
     vector<int> extractIntsFromLine(string line);
 
     template<class T>
-    inline void resizeMatrix(Matrix<T> &matrix, int m, int n) {
-        matrix.resize(m, n);
-    }
-
-    template<class T>
-    Matrix<T> initMatrix(int m, int n) {
-        return Matrix<T>(m, n);
-    }
-
-    template<class T>
     void batchResize(int size, initializer_list<vector<T> *> vecs) {
         for(auto v : vecs) v->resize(size);
     }

@@ -110,7 +110,7 @@ vector<int> LSSolver::solve2(ProjectWithOvertime &p) {
 	vector<LSExpression> S(p.numJobs);
 	P_EACH_JOB(S[j] = model.intVar(0, p.numPeriods - 1));
 
-	Matrix<LSExpression> zrt = Utils::initMatrix<LSExpression>(p.numRes, p.numPeriods);
+	Matrix<LSExpression> zrt(p.numRes, p.numPeriods);
 	P_EACH_RES(P_EACH_PERIOD( zrt(r,t) = model.intVar(0, p.zmax[r])))
 
 	// Revenue function parameter
@@ -168,7 +168,7 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
     // Decision variables
     vector<LSExpression> Sj(p.numJobs);
     P_EACH_JOB(Sj[j] = model.intVar(0, p.numPeriods-1));
-    Matrix<LSExpression> zrt = Utils::initMatrix<LSExpression>(p.numRes, p.numPeriods);
+    Matrix<LSExpression> zrt(p.numRes, p.numPeriods);
     P_EACH_RES(P_EACH_PERIOD( zrt(r,t) = model.intVar(0, p.zmax[r])))
 
     // Objective function
@@ -219,9 +219,7 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     auto model = ls.getModel();
 
     // Decision variables
-    Matrix<LSExpression> x, z;
-    Utils::resizeMatrix(x, p.numJobs, p.numPeriods);
-    Utils::resizeMatrix(z, p.numRes, p.numPeriods);
+    Matrix<LSExpression> x(p.numJobs, p.numPeriods), z(p.numRes, p.numPeriods);
     P_EACH_JOB( P_EACH_PERIOD( x(j,t) = model.boolVar()))
     P_EACH_RES( P_EACH_PERIOD( z(r,t) = model.intVar(0, p.zmax[r])))
 

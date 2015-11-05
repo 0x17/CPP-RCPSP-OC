@@ -6,7 +6,7 @@
 #include "Stopwatch.h"
 
 int main(int argc, const char * argv[]) {
-    ProjectWithOvertime p("../../Projekte/j120/j1201_1.sm");
+    ProjectWithOvertime p("QBWLBeispiel.DAT");
 	FixedCapacityGA ga(p);
 	
 	Stopwatch sw;

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		424D0E801BEC04BD009D199C /* Stopwatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 424D0E7E1BEC04BD009D199C /* Stopwatch.cpp */; };
 		425E99CD1BE040AD0057A1E3 /* LSSolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C11BE040AD0057A1E3 /* LSSolver.cpp */; };
 		425E99CE1BE040AD0057A1E3 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C31BE040AD0057A1E3 /* main.cpp */; };
 		425E99CF1BE040AD0057A1E3 /* Project.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C41BE040AD0057A1E3 /* Project.cpp */; };
@@ -34,6 +35,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		424D0E7D1BEC04BD009D199C /* Matrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Matrix.h; sourceTree = "<group>"; };
+		424D0E7E1BEC04BD009D199C /* Stopwatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Stopwatch.cpp; sourceTree = "<group>"; };
+		424D0E7F1BEC04BD009D199C /* Stopwatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Stopwatch.h; sourceTree = "<group>"; };
 		425E99C11BE040AD0057A1E3 /* LSSolver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LSSolver.cpp; sourceTree = "<group>"; };
 		425E99C21BE040AD0057A1E3 /* LSSolver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSSolver.h; sourceTree = "<group>"; };
 		425E99C31BE040AD0057A1E3 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -72,6 +76,9 @@
 		42DB20FB1BE04034009242D4 = {
 			isa = PBXGroup;
 			children = (
+				424D0E7D1BEC04BD009D199C /* Matrix.h */,
+				424D0E7E1BEC04BD009D199C /* Stopwatch.cpp */,
+				424D0E7F1BEC04BD009D199C /* Stopwatch.h */,
 				4287DCAD1BE52A2200C8D75A /* FixedDeadline.cpp */,
 				4287DCAE1BE52A2200C8D75A /* FixedDeadline.h */,
 				4287DCAF1BE52A2200C8D75A /* GeneticAlgorithm.h */,
@@ -163,6 +170,7 @@
 			files = (
 				4287DCB91BE52A2200C8D75A /* TimeWindow.cpp in Sources */,
 				425E99D11BE040AD0057A1E3 /* ScheduleVisualizer.cpp in Sources */,
+				424D0E801BEC04BD009D199C /* Stopwatch.cpp in Sources */,
 				4287DCB61BE52A2200C8D75A /* FixedDeadline.cpp in Sources */,
 				4287DCB81BE52A2200C8D75A /* Sampling.cpp in Sources */,
 				425E99D01BE040AD0057A1E3 /* ProjectWithOvertime.cpp in Sources */,

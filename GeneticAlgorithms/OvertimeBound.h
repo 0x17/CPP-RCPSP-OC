@@ -13,9 +13,7 @@ struct LambdaZr {
 	vector<int> order, z;
 };
 struct LambdaZrt {
-	LambdaZrt(Project &p) : order(p.numJobs) {
-		Utils::resizeMatrix(z, p.numRes, p.numPeriods);
-	}
+	LambdaZrt(Project &p) : order(p.numJobs), z(p.numRes, p.numPeriods) {}
 	LambdaZrt() {}
 	vector<int> order; Matrix<int> z;
 };

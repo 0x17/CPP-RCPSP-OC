@@ -30,7 +30,7 @@ float ProjectWithOvertime::calcProfit(int makespan, const Matrix<int>& resRem) {
 
 void ProjectWithOvertime::computeRevenueFunction() {
     int tkappa = computeTKappa();
-    Matrix<int> resRem = Utils::initMatrix<int>(numRes, numPeriods);
+    Matrix<int> resRem(numRes, numPeriods);
 
     EACH_RES(EACH_PERIOD(resRem(r,t) = capacities[r]))
     vector<int> ess = earliestStartSchedule(resRem);
@@ -113,7 +113,7 @@ bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, Matri
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(vector<int> order, vector<int> beta) {
-    Matrix<int> resRem = Utils::initMatrix<int>(numRes, numPeriods);
+    Matrix<int> resRem(numRes, numPeriods);
     EACH_RES(EACH_PERIOD(resRem(r,t) = capacities[r]))
 
     vector<int> sts(numJobs), fts(numJobs);
@@ -134,7 +134,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(vector<int> order, vec
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(vector<int> order, vector<float> tau) {
-    Matrix<int> resRem = Utils::initMatrix<int>(numRes, numPeriods);
+    Matrix<int> resRem(numRes, numPeriods);
     EACH_RES(EACH_PERIOD(resRem(r,t) = capacities[r]))
 
     vector<int> sts(numJobs), fts(numJobs);

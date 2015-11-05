@@ -5,15 +5,17 @@
 #ifndef CPP_RCPSP_OC_MATRIX_H
 #define CPP_RCPSP_OC_MATRIX_H
 
+#include <vector>
+
 template<class T>
 class Matrix {
     int m, n;
-    T *data;
+    std::vector<T> data;
 public:
-    Matrix(const Matrix& mx) : m(mx.m), n(mx.n), data(new T[mx.m*mx.n]) {}
+    Matrix(const Matrix& mx) : m(mx.m), n(mx.n), data(mx.data) {}
     Matrix() : m(0), n(0) {}
-    Matrix(int _m, int _n) : m(_m), n(_n), data(new T[_m*_n]) {}
-    ~Matrix() { delete [] data; }
+    Matrix(int _m, int _n) : m(_m), n(_n), data(_m*_n) {}
+    ~Matrix() {}
 
     inline T operator()(int i, int j) const { return data[i*n+j]; }
     inline T &operator()(int i, int j) { return data[i*n+j]; }
@@ -24,8 +26,7 @@ public:
     }
 
     void resize(int _m, int _n) {
-        delete [] data;
-        data = new T[_m*_n];
+        data.resize(_m*_n);
         m = _m;
         n = _n;
     }

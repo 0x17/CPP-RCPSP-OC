@@ -26,7 +26,7 @@ typedef pair<vector<int>, Matrix<int>> SGSResult;
 class Project {
 public:
     int numJobs, numRes, numPeriods, T;
-    Matrix<bool> adjMx;
+    Matrix<char> adjMx;
     vector<int> durations, capacities;
     Matrix<int> demands;
 
