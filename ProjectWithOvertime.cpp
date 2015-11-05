@@ -18,21 +18,21 @@ ProjectWithOvertime::ProjectWithOvertime(string filename) :
     computeRevenueFunction();
 }
 
-inline float ProjectWithOvertime::totalCosts(const vector<vector<int>> & resRem) {
+inline float ProjectWithOvertime::totalCosts(const Matrix<int> & resRem) {
 	float costs = 0.0f;
-	EACH_RES(EACH_PERIOD(costs += Utils::max(0, -resRem[r][t]) * kappa[r]))
+	EACH_RES(EACH_PERIOD(costs += Utils::max(0, -resRem(r,t)) * kappa[r]))
 	return costs;
 }
 
-float ProjectWithOvertime::calcProfit(int makespan, const vector<vector<int>>& resRem) {
+float ProjectWithOvertime::calcProfit(int makespan, const Matrix<int>& resRem) {
 	return revenue[makespan] - totalCosts(resRem);
 }
 
 void ProjectWithOvertime::computeRevenueFunction() {
     int tkappa = computeTKappa();
-    vector<vector<int>> resRem = Utils::initMatrix<int>(numRes, numPeriods);
+    Matrix<int> resRem = Utils::initMatrix<int>(numRes, numPeriods);
 
-    EACH_RES(EACH_PERIOD(resRem[r][t] = capacities[r]))
+    EACH_RES(EACH_PERIOD(resRem(r,t) = capacities[r]))
     vector<int> ess = earliestStartSchedule(resRem);
 
     float maxCosts = totalCosts(resRem);
@@ -49,7 +49,7 @@ int ProjectWithOvertime::computeTKappa() const {
     int tkappa = 0;
 	EACH_RES(
 		float tkappar = 0.0f;
-		EACH_JOB(tkappar += durations[j] * demands[j][r])
+		EACH_JOB(tkappar += durations[j] * demands(j,r))
 		tkappar /= static_cast<float>(capacities[r] + zmax[r]);
 		tkappar = ceil(tkappar);
 		tkappa = Utils::max(tkappa, static_cast<int>(tkappar));
@@ -57,20 +57,19 @@ int ProjectWithOvertime::computeTKappa() const {
     return tkappa;
 }
 
-vector<int> ProjectWithOvertime::earliestStartSchedule(vector<vector<int>>& resRem) {
+vector<int> ProjectWithOvertime::earliestStartSchedule(Matrix<int>& resRem) {
     vector<int> ess(numJobs);
     for(int j : topOrder) {
         ess[j] = 0;
-        EACH_JOBi(if (adjMx[i][j] && ess[i] + durations[i] > ess[j]) ess[j] = ess[i] + durations[i])
-        EACH_RES(for (int tau = ess[j] + 1; tau <= ess[j] + durations[j]; tau++) resRem[r][tau] -= demands[j][r])
+        EACH_JOBi(if (adjMx(i,j) && ess[i] + durations[i] > ess[j]) ess[j] = ess[i] + durations[i])
+        EACH_RES(for (int tau = ess[j] + 1; tau <= ess[j] + durations[j]; tau++) resRem(r,tau) -= demands(j,r))
     }
     return ess;
 }
 
 SGSResult ProjectWithOvertime::serialSGSWithOvertime(vector<int> order) {
-    vector<vector<int>> resRem = Utils::initMatrix<int>(numRes, numPeriods);
-    vector<vector<int>> resRemTmp = Utils::initMatrix<int>(numRes, numPeriods);
-    EACH_RES(EACH_PERIOD(resRem[r][t] = capacities[r]))
+    Matrix<int> resRem(numRes, numPeriods);
+    EACH_RES(EACH_PERIOD(resRem(r,t) = capacities[r]))
 
     vector<int> sts(numJobs), fts(numJobs), ftsTmp(numJobs);
     for (int k=0; k<numJobs; k++) {
@@ -86,7 +85,7 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(vector<int> order) {
             if(!enoughCapacityForJobWithOvertime(job, t, resRem))
                 continue;
 
-            resRemTmp.swap(resRem);
+            Matrix<int> resRemTmp(resRem);
             ftsTmp.swap(fts);
             complementPartialWithSSGS(order, k, ftsTmp, resRemTmp);
 
@@ -106,16 +105,16 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(vector<int> order) {
     return make_pair(sts, resRem);
 }
 
-bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, vector<vector<int>> & resRem) const {
+bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, Matrix<int> & resRem) const {
     for(int tau = t + 1; tau <= t + durations[job]; tau++) {
-        EACH_RES(if(demands[job][r] > resRem[r][tau] + zmax[r]) return false)
+        EACH_RES(if(demands(job,r) > resRem(r,tau) + zmax[r]) return false)
     }
     return true;
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(vector<int> order, vector<int> beta) {
-    vector<vector<int>> resRem = Utils::initMatrix<int>(numRes, numPeriods);
-    EACH_RES(EACH_PERIOD(resRem[r][t] = capacities[r]))
+    Matrix<int> resRem = Utils::initMatrix<int>(numRes, numPeriods);
+    EACH_RES(EACH_PERIOD(resRem(r,t) = capacities[r]))
 
     vector<int> sts(numJobs), fts(numJobs);
     for (int k=0; k<numJobs; k++) {
@@ -135,8 +134,8 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(vector<int> order, vec
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(vector<int> order, vector<float> tau) {
-    vector<vector<int>> resRem = Utils::initMatrix<int>(numRes, numPeriods);
-    EACH_RES(EACH_PERIOD(resRem[r][t] = capacities[r]))
+    Matrix<int> resRem = Utils::initMatrix<int>(numRes, numPeriods);
+    EACH_RES(EACH_PERIOD(resRem(r,t) = capacities[r]))
 
     vector<int> sts(numJobs), fts(numJobs);
     for (int k=0; k<numJobs; k++) {

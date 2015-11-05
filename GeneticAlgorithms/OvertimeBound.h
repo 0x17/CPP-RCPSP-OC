@@ -17,7 +17,7 @@ struct LambdaZrt {
 		Utils::resizeMatrix(z, p.numRes, p.numPeriods);
 	}
 	LambdaZrt() {}
-	vector<int> order; vector<vector<int>> z;
+	vector<int> order; Matrix<int> z;
 };
 
 class TimeVaryingCapacityGA : public GeneticAlgorithm<LambdaZrt> {
@@ -30,7 +30,7 @@ private:
     virtual float fitness(LambdaZrt &i) override;
 	virtual vector<int> decode(LambdaZrt& i) override;
 
-	void mutateOvertime(vector<vector<int>> &z);
+	void mutateOvertime(Matrix<int> &z);
 };
 
 class FixedCapacityGA : public GeneticAlgorithm<LambdaZr> {

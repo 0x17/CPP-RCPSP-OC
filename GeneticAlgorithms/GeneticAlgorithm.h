@@ -41,11 +41,11 @@ protected:
 
     pair<int, int> computePair(vector<bool> &alreadySelected);
 
-    float profitForSGSResult(pair<vector<int>, vector<vector<int>>> &result);
+    float profitForSGSResult(pair<vector<int>, Matrix<int>> &result);
 };
 
 template<class Individual>
-float GeneticAlgorithm<Individual>::profitForSGSResult(pair<vector<int>, vector<vector<int>>> &result) {
+float GeneticAlgorithm<Individual>::profitForSGSResult(pair<vector<int>, Matrix<int>> &result) {
     return p.calcProfit(result.first[p.numJobs-1], result.second);
 }
 
@@ -126,7 +126,7 @@ void GeneticAlgorithm<Individual>::onePointCrossover(vector<int> &motherOrder, v
 template<class Individual>
 void GeneticAlgorithm<Individual>::neighborhoodSwap(vector<int> &order) {
     for(int i=1; i<p.numJobs; i++)
-		if(Utils::randRangeIncl(1, 100) <= pmutate && !p.adjMx[order[i - 1]][order[i]])
+		if(Utils::randRangeIncl(1, 100) <= pmutate && !p.adjMx(order[i - 1],order[i]))
 			swap(order, i - 1, i);
 }
 

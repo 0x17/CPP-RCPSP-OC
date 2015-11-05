@@ -8,6 +8,8 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include "Matrix.h"
+
 using namespace std;
 
 namespace Utils {
@@ -16,18 +18,13 @@ namespace Utils {
     vector<int> extractIntsFromLine(string line);
 
     template<class T>
-    void resizeMatrix(vector<vector<T>> &matrix, int m, int n) {
-        matrix.resize(m);
-        for(int i = 0; i<m; i++) {
-            matrix[i].resize(n);
-        }
+    inline void resizeMatrix(Matrix<T> &matrix, int m, int n) {
+        matrix.resize(m, n);
     }
 
     template<class T>
-    vector<vector<T>> initMatrix(int m, int n) {
-        vector<vector<T>> result;
-        resizeMatrix(result, m, n);
-        return result;
+    Matrix<T> initMatrix(int m, int n) {
+        return Matrix<T>(m, n);
     }
 
     template<class T>

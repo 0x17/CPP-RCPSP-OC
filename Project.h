@@ -21,14 +21,14 @@
 #define P_EACH_RES(code) EACH_RNG(r, p.numRes, code)
 #define P_EACH_PERIOD(code) EACH_RNG(t, p.numPeriods, code)
 
-typedef pair<vector<int>, vector<vector<int>>> SGSResult;
+typedef pair<vector<int>, Matrix<int>> SGSResult;
 
 class Project {
 public:
     int numJobs, numRes, numPeriods, T;
-    vector<vector<bool>> adjMx;
+    Matrix<bool> adjMx;
     vector<int> durations, capacities;
-    vector<vector<int>> demands;
+    Matrix<int> demands;
 
     vector<int> topOrder;
 
@@ -39,7 +39,7 @@ public:
 
 	vector<int> serialSGS(const vector<int>& order) const;
 	SGSResult serialSGS(const vector<int>& order, const vector<int>& zr) const;
-	SGSResult serialSGS(const vector<int>& order, const vector<vector<int>>& zrt) const;
+	SGSResult serialSGS(const vector<int>& order, const Matrix<int>& zrt) const;
 
 	bool jobBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
 	bool hasPredNotBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
@@ -47,14 +47,14 @@ public:
 	bool isOrderFeasible(const vector<int> &order) const;
 
 protected:
-    void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, vector<vector<int>> &resRem) const;
+    void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem) const;
 
-	vector<int> serialSGSCore(const vector<int>& order, vector<vector<int>> &resRem) const;
+	vector<int> serialSGSCore(const vector<int>& order, Matrix<int> &resRem) const;
 
-    bool enoughCapacityForJob(int job, int t, vector<vector<int>> & resRem) const;
+    bool enoughCapacityForJob(int job, int t, Matrix<int> & resRem) const;
     int computeLastPredFinishingTime(const vector<int> &fts, int job) const;
     int computeFirstSuccStartingTime(const vector<int> &sts, int job) const;
-    void scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, vector<vector<int>> &resRem) const;
+    void scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, Matrix<int> &resRem) const;
 
 private:
     void parsePrecedenceRelation(const vector<string> &lines);

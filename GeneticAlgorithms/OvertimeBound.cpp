@@ -8,13 +8,13 @@
 LambdaZrt TimeVaryingCapacityGA::init(int ix) {
     LambdaZrt indiv(p);
     indiv.order = Sampling::naiveSampling(p);
-    P_EACH_RES(P_EACH_PERIOD(indiv.z[r][t] = Utils::randRangeIncl(0, p.zmax[r])))
+    P_EACH_RES(P_EACH_PERIOD(indiv.z(r,t) = Utils::randRangeIncl(0, p.zmax[r])))
     return indiv;
 }
 
 void TimeVaryingCapacityGA::crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter) {
     onePointCrossover(mother.order, father.order, daughter.order);
-	P_EACH_RES(P_EACH_PERIOD(daughter.z[r][t] = rand() % 2 == 0 ? mother.z[r][t] : father.z[r][t]))
+	P_EACH_RES(P_EACH_PERIOD(daughter.z(r,t) = rand() % 2 == 0 ? mother.z(r,t) : father.z(r,t)))
 }
 
 void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
@@ -24,7 +24,7 @@ void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
 
 float TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
 	auto pair = p.serialSGS(i.order, i.z);
-	P_EACH_RES(P_EACH_PERIOD(pair.second[r][t] -= i.z[r][t]))
+	P_EACH_RES(P_EACH_PERIOD(pair.second(r,t) -= i.z(r,t)))
 	return profitForSGSResult(pair);
 }
 
@@ -32,13 +32,13 @@ vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
 	return p.serialSGS(i.order, i.z).first;
 }
 
-void TimeVaryingCapacityGA::mutateOvertime(vector<vector<int>>& z) {
+void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) {
 	P_EACH_RES(P_EACH_PERIOD(
 		int q = Utils::randRangeIncl(1, 100);
 		if (q <= pmutate) {
-			if (rand() % 2 == 0) z[r][t]++;
-			else z[r][t]--;
-			z[r][t] = z[r][t] < 0 ? 0 : (z[r][t] > p.zmax[r] ? p.zmax[r] : z[r][t]);
+			if (rand() % 2 == 0) z(r,t)++;
+			else z(r,t)--;
+			z(r,t) = z(r,t) < 0 ? 0 : (z(r,t) > p.zmax[r] ? p.zmax[r] : z(r,t));
 		}))
 }
 
@@ -63,7 +63,7 @@ void FixedCapacityGA::mutate(LambdaZr &i) {
 
 float FixedCapacityGA::fitness(LambdaZr &i) {
 	auto pair = p.serialSGS(i.order, i.z);
-	P_EACH_RES(P_EACH_PERIOD(pair.second[r][t] -= i.z[r]))
+	P_EACH_RES(P_EACH_PERIOD(pair.second(r,t) -= i.z[r]))
 	return profitForSGSResult(pair);
 }
 
