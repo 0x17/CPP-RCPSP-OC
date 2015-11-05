@@ -8,6 +8,7 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <thread>
 #include "../ProjectWithOvertime.h"
 #include "../Stopwatch.h"
 
@@ -25,7 +26,7 @@ protected:
     const int numGens, popSize, pmutate;
 	const double timelimit;
 
-    GeneticAlgorithm(ProjectWithOvertime &_p) : p(_p), numGens(80), pmutate(5), popSize(100), timelimit(-1.0) {}
+    GeneticAlgorithm(ProjectWithOvertime &_p) : p(_p), numGens(200), pmutate(5), popSize(100), timelimit(-1.0) {}
 
 	void generateChildren(vector<pair<Individual, float>> & population);
 
@@ -42,6 +43,8 @@ protected:
     pair<int, int> computePair(vector<bool> &alreadySelected);
 
     float profitForSGSResult(pair<vector<int>, Matrix<int>> &result);
+
+    void mutateAndFitnessRange(vector<pair<Individual, float>> *pop, int startIx, int endIx);
 };
 
 template<class Individual>
@@ -73,10 +76,23 @@ void GeneticAlgorithm<Individual>::generateChildren(vector<pair<Individual, floa
 }
 
 template<class Individual>
+void GeneticAlgorithm<Individual>::mutateAndFitnessRange(vector<pair<Individual, float>> *pop, int startIx, int endIx) {
+    for(int i=startIx; i<=endIx; i++) {
+        mutate((*pop)[i].first);
+        (*pop)[i].second = -fitness((*pop)[i].first);
+    }
+}
+
+template<class Individual>
 pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 	Stopwatch sw;
 	sw.start();
     vector<pair<Individual, float>> pop(popSize*2);
+
+    const int NUM_THREADS = 4;
+    thread *threads[NUM_THREADS];
+    int numPerThread = popSize / NUM_THREADS;
+    const bool USE_THREADS = true;
 
     for(int i=0; i<popSize*2; i++) {
         pop[i].first = init(i);
@@ -86,16 +102,30 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
     for(int i=0; (numGens == -1 || i<numGens) && (timelimit == -1.0 || sw.look() < timelimit); i++) {		
         generateChildren(pop);
 
-        for(int j=popSize; j<popSize*2; j++) {
-            auto &indiv = pop[j].first;
-            mutate(indiv);
-            pop[j].second = -fitness(indiv);
+        if(USE_THREADS) {
+            for(int tix = 0; tix < NUM_THREADS; tix++) {
+                int six = popSize+tix*numPerThread;
+                int eix = popSize+(tix+1)*numPerThread-1;
+                threads[tix] = new thread(&GeneticAlgorithm<Individual>::mutateAndFitnessRange, this, &pop, six, eix);
+            }
+
+            for(auto thrd : threads)
+                thrd->join();
+        } else {
+            for(int j=popSize; j<popSize*2; j++) {
+                mutate(pop[j].first);
+                pop[j].second = -fitness(pop[j].first);
+            }
         }
 
 		sort(pop.begin(), pop.end(), [](auto &left, auto &right) { return left.second < right.second; });
 
 		cout << "\rGeneration " << (i + 1) << " Obj=" << -pop[0].second;
     }
+
+    if(USE_THREADS)
+        for(auto thrd : threads)
+            delete thrd;
 
     auto best = pop[0];
 	return make_pair(decode(best.first), -best.second);
