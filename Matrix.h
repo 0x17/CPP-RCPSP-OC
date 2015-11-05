@@ -32,5 +32,39 @@ public:
     }
 };
 
+template<class T>
+class Matrix2 {
+    int m, n;
+    std::vector<std::vector<T>> data;
+public:
+    Matrix2(const Matrix2& mx) : m(mx.m), n(mx.n), data(mx.data) {}
+    Matrix2() : m(0), n(0) {}
+    Matrix2(int _m, int _n) : m(_m), n(_n), data(m) {
+        for(int i=0; i<m; i++) {
+            data[i].resize(n);
+        }
+    }
+    ~Matrix2() {}
+
+    inline T operator()(int i, int j) const { return data[i][j]; }
+    inline T &operator()(int i, int j) { return data[i][j]; }
+
+    Matrix2 &operator=(const Matrix2 &mx) {
+        Matrix2 m(mx);
+        return m;
+    }
+
+    void resize(int _m, int _n) {
+        //data.resize(_m*_n);
+
+        m = _m;
+        n = _n;
+
+        data.resize(_m);
+        for(int i=0; i<_m; i++)
+            data[i].resize(_n);
+    }
+};
+
 
 #endif //CPP_RCPSP_OC_MATRIX_H
