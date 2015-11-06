@@ -124,8 +124,10 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
                 threads[tix] = new thread(&GeneticAlgorithm<Individual>::mutateAndFitnessRange, this, &pop, six, eix);
             }
 
-            for(auto thrd : threads)
+            for(auto thrd : threads) {
                 thrd->join();
+                delete thrd;
+            }
         } else {
             for(int j=popSize; j<popSize*2; j++) {
                 mutate(pop[j].first);
@@ -135,12 +137,8 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 
 		sort(pop.begin(), pop.end(), [](auto &left, auto &right) { return left.second < right.second; });
 
-		cout << "\rGeneration " << (i + 1) << " Obj=" << -pop[0].second;
+		//cout << "\rGeneration " << (i + 1) << " Obj=" << -pop[0].second;
     }
-
-    if(USE_THREADS)
-        for(auto thrd : threads)
-            delete thrd;
 
     auto best = pop[0];
 	return make_pair(decode(best.first), -best.second);

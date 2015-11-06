@@ -6,6 +6,7 @@
 #define SSGS_UTILS_H
 
 #include <vector>
+#include <iostream>
 #include <string>
 #include <cstdlib>
 #include "Matrix.h"
