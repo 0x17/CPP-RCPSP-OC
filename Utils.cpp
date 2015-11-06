@@ -54,3 +54,18 @@ void Utils::serializeSchedule(vector<int> & sts, const string filename) {
 	}
 	
 }
+
+int Utils::pickWithDistribution(vector<float> probs) {
+	int len = static_cast<int>(probs.size());
+	float q = randUnitFloat();
+
+	vector<float> cumulatedProbs(len);
+	for (int i = 0; i < len; i++)
+		cumulatedProbs[i] = (i == 0 ? 0 : cumulatedProbs[i - 1]) + probs[i];
+
+	for (int i = 0; i < len; i++)
+		if((i == 0 || q >= cumulatedProbs[i]) && (i == len || q < cumulatedProbs[i+1]))
+			return i;
+
+	throw runtime_error("No element picked!");
+}

@@ -10,7 +10,7 @@
 
 namespace Sampling {
     vector<int> naiveSampling(Project &p);
-    vector<int> regretBasedBiasedRandomSampling(Project &p);
+    vector<int> regretBasedBiasedRandomSampling(Project &p, vector<float> &priorityValues);
 };
 
 

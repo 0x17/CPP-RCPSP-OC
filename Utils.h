@@ -52,6 +52,8 @@ namespace Utils {
 			}
 		throw runtime_error("No nth found!");
 	}
+
+	int pickWithDistribution(vector<float> probs);
 }
 
 #endif //SSGS_UTILS_H
