@@ -15,7 +15,8 @@ struct LambdaZr {
 struct LambdaZrt {
 	LambdaZrt(Project &p) : order(p.numJobs), z(p.numRes, p.numPeriods) {}
 	LambdaZrt() {}
-	vector<int> order; Matrix<int> z;
+	vector<int> order;
+	Matrix<int> z;
 };
 
 class TimeVaryingCapacityGA : public GeneticAlgorithm<LambdaZrt> {

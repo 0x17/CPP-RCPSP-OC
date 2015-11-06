@@ -34,8 +34,7 @@ vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
 
 void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) {
 	P_EACH_RES(P_EACH_PERIOD(
-		int q = Utils::randRangeIncl(1, 100);
-		if (q <= pmutate) {
+		if (Utils::randRangeIncl(1, 100) <= pmutate) {
 			if (rand() % 2 == 0) z(r,t)++;
 			else z(r,t)--;
 			z(r,t) = z(r,t) < 0 ? 0 : (z(r,t) > p.zmax[r] ? p.zmax[r] : z(r,t));

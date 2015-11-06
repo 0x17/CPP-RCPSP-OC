@@ -38,6 +38,7 @@
     <ClInclude Include="GeneticAlgorithms\Sampling.h" />
     <ClInclude Include="GeneticAlgorithms\TimeWindow.h" />
     <ClInclude Include="LSSolver.h" />
+    <ClInclude Include="matrix.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="ProjectWithOvertime.h" />
     <ClInclude Include="ScheduleVisualizer.h" />

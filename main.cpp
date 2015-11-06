@@ -7,7 +7,7 @@
 
 int main(int argc, const char * argv[]) {
     ProjectWithOvertime p("QBWLBeispiel.DAT");
-	FixedCapacityGA ga(p);
+	TimeVaryingCapacityGA ga(p);
 	
 	Stopwatch sw;
 	sw.start();
@@ -27,6 +27,6 @@ int main(int argc, const char * argv[]) {
     //vector<int> optimalSts(p.numJobs);
     //ScheduleVisualizer::drawScheduleToPDF(p, optimalSts, "out.pdf");
 	//cin.get();
-	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Projekte\\j30\\j301_1.sm myschedulebiatch.txt");
+	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedulebiatch.txt");
     return 0;
 }

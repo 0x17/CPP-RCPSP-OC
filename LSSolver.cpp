@@ -42,7 +42,7 @@ lsdouble CumulatedDemandFunction::call(const LSNativeContext &context) {
     P_EACH_JOB(
         lsint Sj = context.getIntValue(j+2);
         if(Sj < t && t <= Sj + p.durations[j])
-            demand += p.demands(j,r))
+            demand += p.demands(j,static_cast<int>(r)))
 
     return demand;
 }

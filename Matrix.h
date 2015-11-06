@@ -21,8 +21,10 @@ public:
     inline T &operator()(int i, int j) { return data[i*n+j]; }
 
     Matrix &operator=(const Matrix &mx) {
-        Matrix m(mx);
-        return m;
+		data = mx.data;
+		m = mx.m;
+		n = mx.n;
+		return *this;
     }
 
     void resize(int _m, int _n) {
