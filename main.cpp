@@ -3,12 +3,12 @@
 #include "LSSolver.h"
 #include "ScheduleVisualizer.h"
 #include "GeneticAlgorithms/OvertimeBound.h"
+#include "GeneticAlgorithms/TimeWindow.h"
 #include "Stopwatch.h"
 
 int main(int argc, const char * argv[]) {
     ProjectWithOvertime p("QBWLBeispiel.DAT");
-	TimeVaryingCapacityGA ga(p);
-	
+	FixedCapacityGA ga(p);
 	Stopwatch sw;
 	sw.start();
 	auto pair = ga.solve();

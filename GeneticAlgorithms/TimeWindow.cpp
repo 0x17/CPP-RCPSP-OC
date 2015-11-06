@@ -16,6 +16,8 @@ void TimeWindowArbitraryGA::crossover(LambdaTau &mother, LambdaTau &father, Lamb
 }
 
 void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
+	neighborhoodSwapAssociated(i.order, i.tau);
+	P_EACH_JOB(if (Utils::randRangeIncl(1, 100) <= pmutate) i.tau[j] = 1.0f - i.tau[j])
 }
 
 float TimeWindowArbitraryGA::fitness(LambdaTau &i) {
@@ -40,6 +42,8 @@ void TimeWindowBordersGA::crossover(LambdaBeta &mother, LambdaBeta &father, Lamb
 }
 
 void TimeWindowBordersGA::mutate(LambdaBeta &i) {
+	neighborhoodSwapAssociated(i.order, i.beta);
+	P_EACH_JOB(if(Utils::randRangeIncl(1, 100) <= pmutate) i.beta[j] = 1-i.beta[j])
 }
 
 float TimeWindowBordersGA::fitness(LambdaBeta &i) {
@@ -59,7 +63,7 @@ vector<int> CompareAlternativesGA::init(int ix) {
 }
 
 void CompareAlternativesGA::crossover(vector<int> &mother, vector<int> &father, vector<int> &daughter) {
-    onePointCrossover(mother, father, daughter);
+	onePointCrossover({ mother, father, daughter });
 }
 
 void CompareAlternativesGA::mutate(vector<int> &i) {
