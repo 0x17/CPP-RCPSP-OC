@@ -45,8 +45,8 @@ protected:
 		T &mother, &father, &daughter;
 	};	
     void onePointCrossover(CrossoverData<vector<int>> order);	
-	template<class T>
-	void onePointCrossoverAssociated(CrossoverData<T> order, CrossoverData<T> associated);
+	template<class T, class U>
+	void onePointCrossoverAssociated(CrossoverData<T> order, CrossoverData<U> associated);
 
 	template<class T>
     inline void swap(vector<T> &order, int i1, int i2);
@@ -168,8 +168,8 @@ void GeneticAlgorithm<Individual>::onePointCrossover(CrossoverData<vector<int>> 
 }
 
 template <class Individual>
-template <class T>
-void GeneticAlgorithm<Individual>::onePointCrossoverAssociated(CrossoverData<T> order, CrossoverData<T> associated) {
+template <class T, class U>
+void GeneticAlgorithm<Individual>::onePointCrossoverAssociated(CrossoverData<T> order, CrossoverData<U> associated) {
 	OPC_COMMON(
 		order.daughter[i] = order.mother[i];
 		associated.daughter[i] = associated.mother[i],

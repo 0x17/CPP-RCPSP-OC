@@ -13,6 +13,7 @@ LambdaTau TimeWindowArbitraryGA::init(int ix) {
 }
 
 void TimeWindowArbitraryGA::crossover(LambdaTau &mother, LambdaTau &father, LambdaTau &daughter) {
+	onePointCrossoverAssociated<vector<int>, vector<float>>({ mother.order, father.order, daughter.order }, { mother.tau, father.tau, daughter.tau });
 }
 
 void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
@@ -39,6 +40,7 @@ LambdaBeta TimeWindowBordersGA::init(int ix) {
 }
 
 void TimeWindowBordersGA::crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) {
+	onePointCrossoverAssociated<vector<int>, vector<int>>({ mother.order, father.order, daughter.order }, { mother.beta, father.beta, daughter.beta });
 }
 
 void TimeWindowBordersGA::mutate(LambdaBeta &i) {
@@ -52,8 +54,7 @@ float TimeWindowBordersGA::fitness(LambdaBeta &i) {
 }
 
 vector<int> TimeWindowBordersGA::decode(LambdaBeta& i) {
-	vector<int> sts;
-	return sts;
+	return p.serialSGSTimeWindowBorders(i.order, i.beta).first;
 }
 
 //======================================================================================================================
