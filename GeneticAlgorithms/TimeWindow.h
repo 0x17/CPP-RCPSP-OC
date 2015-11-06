@@ -21,7 +21,7 @@ struct LambdaTau {
 class TimeWindowBordersGA : public GeneticAlgorithm<LambdaBeta> {
 protected:
 public:
-    TimeWindowBordersGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) { }
+    TimeWindowBordersGA(ProjectWithOvertime &_p);
 protected:
     virtual LambdaBeta init(int ix) override;
     virtual void crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) override;
@@ -32,7 +32,7 @@ protected:
 
 class TimeWindowArbitraryGA : public GeneticAlgorithm<LambdaTau> {
 public:
-    TimeWindowArbitraryGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) { }
+    TimeWindowArbitraryGA(ProjectWithOvertime &_p);
 private:
     virtual LambdaTau init(int ix) override;
     virtual void crossover(LambdaTau &mother, LambdaTau &father, LambdaTau &daughter) override;
@@ -43,7 +43,7 @@ private:
 
 class CompareAlternativesGA : public GeneticAlgorithm<vector<int>> {
 public:
-    CompareAlternativesGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) { }
+    CompareAlternativesGA(ProjectWithOvertime &_p);
 private:
     virtual vector<int> init(int ix) override;
     virtual void crossover(vector<int> &mother, vector<int> &father, vector<int> &daughter) override;

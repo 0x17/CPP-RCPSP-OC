@@ -14,6 +14,11 @@
 
 using namespace std;
 
+struct GAParameters {
+    int numGens, popSize, pmutate;
+    double timeLimit;
+};
+
 template<class Individual>
 class GeneticAlgorithm {
 public:
@@ -21,12 +26,16 @@ public:
 
     pair<vector<int>, float> solve();
 
-protected:
-    ProjectWithOvertime &p;
-    const int numGens, popSize, pmutate;
-	const double timelimit;
+    void setParameters(GAParameters _params);
 
-    GeneticAlgorithm(ProjectWithOvertime &_p) : p(_p), numGens(200), pmutate(5), popSize(100), timelimit(-1.0) {}
+protected:
+    GAParameters params = {200, 100, 5, -1.0};
+
+    ProjectWithOvertime &p;
+
+    bool useThreads = false;
+
+    GeneticAlgorithm(ProjectWithOvertime &_p) : p(_p) {}
 
 	void generateChildren(vector<pair<Individual, float>> & population);
 
@@ -59,6 +68,11 @@ protected:
 };
 
 template<class Individual>
+void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
+    params = _params;
+}
+
+template<class Individual>
 float GeneticAlgorithm<Individual>::profitForSGSResult(pair<vector<int>, Matrix<int>> &result) {
     return p.calcProfit(result.first[p.numJobs-1], result.second);
 }
@@ -67,19 +81,19 @@ template<class Individual>
 pair<int, int> GeneticAlgorithm<Individual>::computePair(vector<bool> &alreadySelected) {
     pair<int, int> p;
     do {
-        p.first = Utils::randRangeIncl(0, popSize-1);
+        p.first = Utils::randRangeIncl(0, params.popSize-1);
     } while(alreadySelected[p.first]);
     do {
-        p.second = Utils::randRangeIncl(0, popSize-1);
+        p.second = Utils::randRangeIncl(0, params.popSize-1);
     } while(alreadySelected[p.second] || p.first == p.second);
     return p;
 };
 
 template<class Individual>
 void GeneticAlgorithm<Individual>::generateChildren(vector<pair<Individual, float>> & pop) {
-    vector<bool> alreadySelected(popSize);
+    vector<bool> alreadySelected(params.popSize);
 
-    for(int childIx=popSize; childIx<popSize*2; childIx +=2) {
+    for(int childIx=params.popSize; childIx<params.popSize*2; childIx +=2) {
         pair<int, int> parentIndices = computePair(alreadySelected);
         crossover(pop[parentIndices.first].first, pop[parentIndices.second].first, pop[childIx].first);
         crossover(pop[parentIndices.second].first, pop[parentIndices.first].first, pop[childIx+1].first);
@@ -98,29 +112,24 @@ template<class Individual>
 pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 	Stopwatch sw;
 	sw.start();
-    vector<pair<Individual, float>> pop(popSize*2);
+    vector<pair<Individual, float>> pop(params.popSize*2);
 
     const int NUM_THREADS = 4;
     thread *threads[NUM_THREADS];
-    int numPerThread = popSize / NUM_THREADS;
-#ifdef _DEBUG
-	const bool USE_THREADS = false;
-#else
-	const bool USE_THREADS = true;
-#endif
+    int numPerThread = params.popSize / NUM_THREADS;
 
-    for(int i=0; i<popSize*2; i++) {
+    for(int i=0; i<params.popSize*2; i++) {
         pop[i].first = init(i);
-		pop[i].second = i < popSize ? -fitness(pop[i].first) : 0.0f;
+		pop[i].second = i < params.popSize ? -fitness(pop[i].first) : 0.0f;
     }
 
-    for(int i=0; (numGens == -1 || i<numGens) && (timelimit == -1.0 || sw.look() < timelimit); i++) {		
+    for(int i=0; (params.numGens == -1 || i<params.numGens) && (params.timeLimit == -1.0 || sw.look() < params.timeLimit); i++) {		
         generateChildren(pop);
 
-        if(USE_THREADS) {
+        if(useThreads) {
             for(int tix = 0; tix < NUM_THREADS; tix++) {
-                int six = popSize+tix*numPerThread;
-                int eix = popSize+(tix+1)*numPerThread-1;
+                int six = params.popSize+tix*numPerThread;
+                int eix = params.popSize+(tix+1)*numPerThread-1;
                 threads[tix] = new thread(&GeneticAlgorithm<Individual>::mutateAndFitnessRange, this, &pop, six, eix);
             }
 
@@ -129,7 +138,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
                 delete thrd;
             }
         } else {
-            for(int j=popSize; j<popSize*2; j++) {
+            for(int j=params.popSize; j<params.popSize*2; j++) {
                 mutate(pop[j].first);
                 pop[j].second = -fitness(pop[j].first);
             }
@@ -181,7 +190,7 @@ void GeneticAlgorithm<Individual>::onePointCrossoverAssociated(CrossoverData<T> 
 
 #define SWAP_COMMON(code) \
 	for(int i=1; i<p.numJobs; i++) \
-	if(Utils::randRangeIncl(1, 100) <= pmutate && !p.adjMx(order[i - 1], order[i])) { code; }
+	if(Utils::randRangeIncl(1, 100) <= params.pmutate && !p.adjMx(order[i - 1], order[i])) { code; }
 
 template<class Individual>
 void GeneticAlgorithm<Individual>::neighborhoodSwap(vector<int> &order) {

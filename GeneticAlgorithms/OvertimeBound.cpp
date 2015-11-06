@@ -5,6 +5,10 @@
 #include "OvertimeBound.h"
 #include "Sampling.h"
 
+TimeVaryingCapacityGA::TimeVaryingCapacityGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) {
+    useThreads = false;
+}
+
 LambdaZrt TimeVaryingCapacityGA::init(int ix) {
     LambdaZrt indiv(p);
     indiv.order = Sampling::naiveSampling(p);
@@ -34,7 +38,7 @@ vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
 
 void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) {
 	P_EACH_RES(P_EACH_PERIOD(
-		if (Utils::randRangeIncl(1, 100) <= pmutate) {
+		if (Utils::randRangeIncl(1, 100) <= params.pmutate) {
 			if (rand() % 2 == 0) z(r,t)++;
 			else z(r,t)--;
 			z(r,t) = z(r,t) < 0 ? 0 : (z(r,t) > p.zmax[r] ? p.zmax[r] : z(r,t));
@@ -42,6 +46,10 @@ void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) {
 }
 
 //===========================================================================================================
+
+FixedCapacityGA::FixedCapacityGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) {
+    useThreads = false;
+}
 
 LambdaZr FixedCapacityGA::init(int ix) {
     LambdaZr indiv(p);
@@ -73,7 +81,7 @@ vector<int> FixedCapacityGA::decode(LambdaZr& i) {
 void FixedCapacityGA::mutateOvertime(vector<int> &z) {
 	P_EACH_RES(
 		int q = Utils::randRangeIncl(1, 100);
-		if(q <= pmutate) {
+		if(q <= params.pmutate) {
 			if (rand() % 2 == 0) z[r]++;
 			else z[r]--;
 			z[r] = z[r] < 0 ? 0 : (z[r] > p.zmax[r] ? p.zmax[r] : z[r]);
