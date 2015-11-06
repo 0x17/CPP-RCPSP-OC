@@ -21,7 +21,7 @@ int main(int argc, const char * argv[]) {
     params.pmutate = 5;
     params.timeLimit = -1.0;
 
-    ProjectWithOvertime p("QBWLBeispiel.DAT");
+    ProjectWithOvertime p("../../Projekte/j30/j301_1.sm");
     GARunners::runAll(p, params);
 
 	//Utils::serializeSchedule(result.sts, "myschedulebiatch.txt");

@@ -4,6 +4,7 @@
 
 #include "Runners.h"
 #include <iostream>
+
 namespace GARunners {
 
     vector<GAResult(*)(ProjectWithOvertime &, GAParameters &)> funcs = { runTwBorderGA, runTwArbitraryGA, runFixedCapaGA, runTimeVaryCapaGA, runCompAltsGA };
