@@ -148,10 +148,13 @@ void Project::computeELSFTs() {
     }
 }
 
-// FIXME: Implement me!
 void Project::complementPartialWithSSGS(const vector<int> &order, int startIx, vector<int> &fts, Matrix<int> &resRem) const {
     for(int i=startIx; i<numJobs; i++) {
-
-    }
-
+		int job = order[i];
+		int lastPredFinished = computeLastPredFinishingTime(fts, job);
+		int t;
+		for (t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++);
+		fts[job] = t + durations[job];
+		EACH_RES(for (int tau = t + 1; tau <= fts[job]; tau++) resRem(r, tau) -= demands(job, r);)
+	}
 }

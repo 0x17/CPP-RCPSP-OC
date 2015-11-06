@@ -103,7 +103,11 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
     const int NUM_THREADS = 4;
     thread *threads[NUM_THREADS];
     int numPerThread = popSize / NUM_THREADS;
-    const bool USE_THREADS = true;
+#ifdef _DEBUG
+	const bool USE_THREADS = false;
+#else
+	const bool USE_THREADS = true;
+#endif
 
     for(int i=0; i<popSize*2; i++) {
         pop[i].first = init(i);
