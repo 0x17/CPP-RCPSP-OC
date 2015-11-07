@@ -34,6 +34,8 @@ public:
 
     vector<int> ests, lsts, efts, lfts;
 
+    const bool USE_DISPOSITION_METHOD = false;
+
 	explicit Project(string filename);
     virtual ~Project() {}
 
@@ -45,8 +47,6 @@ public:
 	bool hasPredNotBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
 
 	bool isOrderFeasible(const vector<int> &order) const;
-
-    void reorderDispositionMethod();
 
 protected:
     void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem) const;
@@ -61,6 +61,8 @@ protected:
 private:
     void parsePrecedenceRelation(const vector<string> &lines);
     void parseDurationsAndDemands(const vector<string> &lines);
+
+    void reorderDispositionMethod();
 
 	vector<int> computeTopOrder() const;
     void computeELSFTs();

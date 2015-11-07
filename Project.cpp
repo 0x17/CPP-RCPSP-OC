@@ -15,6 +15,9 @@ Project::Project(string filename) {
     parsePrecedenceRelation(lines);
     parseDurationsAndDemands(lines);
 
+    if(USE_DISPOSITION_METHOD)
+        reorderDispositionMethod();
+
 	T = accumulate(durations.begin(), durations.end(), 0);
     numPeriods = T+1;
 
@@ -163,7 +166,7 @@ void Project::complementPartialWithSSGS(const vector<int> &order, int startIx, v
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "InfiniteRecursion"
 void Project::computeNodeDepths(int root, int curDepth, vector<int> &nodeDepths) {
-    EACH_JOB(if(adjMx(root, j) && nodeDepths[j] == -1) {
+    EACH_JOB(if(adjMx(root, j) && (nodeDepths[j] == -1 || nodeDepths[j] > curDepth)) {
         nodeDepths[j] = curDepth;
         computeNodeDepths(j, curDepth+1, nodeDepths);
     })
@@ -174,11 +177,25 @@ void Project::reorderDispositionMethod() {
     vector<int> nodeDepths(numJobs, -1);
     nodeDepths[0] = 0;
     computeNodeDepths(0, 1, nodeDepths);
-    cout << endl;
 
-    /*vector<int> mapping(numJobs);
-    mapping[0] = 0;
+    int maxDepth = *max_element(nodeDepths.begin(), nodeDepths.end());
+
+    vector<int> mapping(numJobs);
+    int ctr = 0;
+    for(int d = 0; d <= maxDepth; d++) {
+        EACH_JOB(if(nodeDepths[j] == d) mapping[ctr++] = j)
+    }
 
     Matrix<char> newAdjMx(numJobs, numJobs);
-    EACH_JOBi(EACH_JOB(newAdjMx(i,j) = adjMx(mapping[i], mapping[j])))*/
+    EACH_JOBi(EACH_JOB(newAdjMx(i,j) = adjMx(mapping[i], mapping[j])))
+
+    Matrix<int> newDemands(numJobs, numRes);
+    EACH_JOB(EACH_RES(newDemands(j,r) = demands(mapping[j],mapping[r])))
+
+    vector<int> newDurations(numJobs);
+    EACH_JOB(newDurations[j] = durations[mapping[j]])
+
+    durations = newDurations;
+    adjMx = newAdjMx;
+    demands = newDemands;
 }

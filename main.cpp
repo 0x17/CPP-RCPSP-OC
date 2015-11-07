@@ -22,7 +22,7 @@ int main(int argc, const char * argv[]) {
     params.timeLimit = -1.0;
 
     ProjectWithOvertime p("../../Projekte/j30/j301_1.sm");
-    Visualization::drawActivityOnNodeGraphToPDF(p, "j301_1.pdf");
+    //Visualization::drawActivityOnNodeGraphToPDF(p, "j301_1.pdf");
 
     //ProjectWithOvertime p("QBWLBeispiel.DAT");
 
