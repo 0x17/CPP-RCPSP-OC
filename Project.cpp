@@ -3,6 +3,7 @@
 //
 
 #include <numeric>
+#include <list>
 #include "Project.h"
 
 Project::Project(string filename) {
@@ -157,4 +158,27 @@ void Project::complementPartialWithSSGS(const vector<int> &order, int startIx, v
 		fts[job] = t + durations[job];
 		EACH_RES(for (int tau = t + 1; tau <= fts[job]; tau++) resRem(r, tau) -= demands(job, r);)
 	}
+}
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "InfiniteRecursion"
+void Project::computeNodeDepths(int root, int curDepth, vector<int> &nodeDepths) {
+    EACH_JOB(if(adjMx(root, j) && nodeDepths[j] == -1) {
+        nodeDepths[j] = curDepth;
+        computeNodeDepths(j, curDepth+1, nodeDepths);
+    })
+}
+#pragma clang diagnostic pop
+
+void Project::reorderDispositionMethod() {
+    vector<int> nodeDepths(numJobs, -1);
+    nodeDepths[0] = 0;
+    computeNodeDepths(0, 1, nodeDepths);
+    cout << endl;
+
+    /*vector<int> mapping(numJobs);
+    mapping[0] = 0;
+
+    Matrix<char> newAdjMx(numJobs, numJobs);
+    EACH_JOBi(EACH_JOB(newAdjMx(i,j) = adjMx(mapping[i], mapping[j])))*/
 }

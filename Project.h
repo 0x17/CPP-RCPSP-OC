@@ -46,6 +46,8 @@ public:
 
 	bool isOrderFeasible(const vector<int> &order) const;
 
+    void reorderDispositionMethod();
+
 protected:
     void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem) const;
 
@@ -62,6 +64,8 @@ private:
 
 	vector<int> computeTopOrder() const;
     void computeELSFTs();
+
+    void computeNodeDepths(int root, int curDepth, vector<int> &nodeDepths);
 };
 
 #endif //SSGS_PROJECT_H

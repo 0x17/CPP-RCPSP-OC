@@ -1,7 +1,7 @@
 #include <iostream>
 #include "ProjectWithOvertime.h"
 #include "LSSolver.h"
-#include "ScheduleVisualizer.h"
+#include "Visualization.h"
 #include "GeneticAlgorithms/OvertimeBound.h"
 #include "GeneticAlgorithms/TimeWindow.h"
 #include "Stopwatch.h"
@@ -22,7 +22,12 @@ int main(int argc, const char * argv[]) {
     params.timeLimit = -1.0;
 
     ProjectWithOvertime p("../../Projekte/j30/j301_1.sm");
-    GARunners::runAll(p, params);
+    Visualization::drawActivityOnNodeGraphToPDF(p, "j301_1.pdf");
+
+    //ProjectWithOvertime p("QBWLBeispiel.DAT");
+
+    //p.reorderDispositionMethod();
+    //GARunners::runAll(p, params);
 
 	//Utils::serializeSchedule(result.sts, "myschedulebiatch.txt");
 	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedulebiatch.txt");

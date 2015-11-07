@@ -32,6 +32,13 @@ public:
         m = _m;
         n = _n;
     }
+
+    std::vector<T> row(int i) const {
+        std::vector<T> r(n);
+        for(int j=0; j<n; j++)
+            r[j] = data[i*n+j];
+        return r;
+    }
 };
 
 template<class T>

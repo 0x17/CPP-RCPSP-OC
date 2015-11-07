@@ -55,6 +55,8 @@ namespace Utils {
 	}
 
 	int pickWithDistribution(vector<float> probs);
+
+    void spit(const string s, const string filename);
 }
 
 #endif //SSGS_UTILS_H

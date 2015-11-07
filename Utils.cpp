@@ -69,3 +69,11 @@ int Utils::pickWithDistribution(vector<float> probs) {
 
 	throw runtime_error("No element picked!");
 }
+
+void Utils::spit(const string s, const string filename) {
+    ofstream f(filename);
+    if(f.is_open()) {
+        f << s;
+        f.close();
+    }
+}

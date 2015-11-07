@@ -2,7 +2,7 @@
 // Created by André Schnabel on 25.10.15.
 //
 
-#include "ScheduleVisualizer.h"
+#include "Visualization.h"
 
 /*
 #include <podofo/podofo.h>
@@ -50,3 +50,21 @@ void ScheduleVisualizer::drawScheduleToPDF(ProjectWithOvertime &p, vector<int> s
     document.Close();
 }
 */
+
+string Visualization::activityOnNodeGraphDOT(Project &p) {
+    string dotCode = "digraph precedence {\n";
+    P_EACH_JOBi(P_EACH_JOB(if(p.adjMx(i,j)) dotCode += to_string(i+1) + "->" + to_string(j+1) + "\n"))
+    P_EACH_JOB(
+        string demandsStr = "";
+        auto jobDemands = p.demands.row(j);
+        P_EACH_RES(demandsStr += to_string(jobDemands[r]) + (r == p.numRes-1 ? "" : " "))
+        dotCode += to_string(j+1) + "[label=\"(" + to_string(p.durations[j]) + ") " + to_string(j+1) + " (" + demandsStr + ")\"]\n")
+    dotCode += "\n}";
+    return dotCode;
+}
+
+void Visualization::drawActivityOnNodeGraphToPDF(Project &p, string filename) {
+    const string tmpfilename = "ActivityOnNodeGraphTEMP.dot";
+    Utils::spit(activityOnNodeGraphDOT(p), tmpfilename);
+    std::system(("dot -Tpdf " + tmpfilename + " -o" + filename).c_str());
+}
