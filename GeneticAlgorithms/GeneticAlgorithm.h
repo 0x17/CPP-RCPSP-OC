@@ -17,6 +17,7 @@ using namespace std;
 struct GAParameters {
     int numGens, popSize, pmutate;
     double timeLimit;
+    bool fitnessBasedPairing;
 };
 
 #define WITH_MUT_PROB(code) \
@@ -32,7 +33,7 @@ public:
     void setParameters(GAParameters _params);
 
 protected:
-    GAParameters params = {200, 100, 5, -1.0};
+    GAParameters params = {200, 100, 5, -1.0, false};
 
     ProjectWithOvertime &p;
 
@@ -63,7 +64,7 @@ protected:
 	template<class T>
     inline void swap(vector<T> &order, int i1, int i2);
 
-    pair<int, int> computePair(vector<bool> &alreadySelected);
+    pair<int, int> computePair(vector<pair<Individual, float>> &pop, vector<bool> &alreadySelected);
 
     float profitForSGSResult(pair<vector<int>, Matrix<int>> &result);
 
@@ -81,14 +82,16 @@ float GeneticAlgorithm<Individual>::profitForSGSResult(pair<vector<int>, Matrix<
 }
 
 template<class Individual>
-pair<int, int> GeneticAlgorithm<Individual>::computePair(vector<bool> &alreadySelected) {
+pair<int, int> GeneticAlgorithm<Individual>::computePair(vector<pair<Individual, float>> &pop, vector<bool> &alreadySelected) {
     pair<int, int> p;
+
     do {
-        p.first = Utils::randRangeIncl(0, params.popSize-1);
+        p.first = Utils::randRangeIncl(0, params.fitnessBasedPairing ? (params.popSize / 2) - 1 : params.popSize-1);
     } while(alreadySelected[p.first]);
     do {
-        p.second = Utils::randRangeIncl(0, params.popSize-1);
+        p.second = params.fitnessBasedPairing ? Utils::randRangeIncl(params.popSize / 2, params.popSize-1) : Utils::randRangeIncl(0, params.popSize-1);
     } while(alreadySelected[p.second] || p.first == p.second);
+
     return p;
 };
 
@@ -97,7 +100,7 @@ void GeneticAlgorithm<Individual>::generateChildren(vector<pair<Individual, floa
     vector<bool> alreadySelected(params.popSize);
 
     for(int childIx=params.popSize; childIx<params.popSize*2; childIx +=2) {
-        pair<int, int> parentIndices = computePair(alreadySelected);
+        pair<int, int> parentIndices = computePair(pop, alreadySelected);
         crossover(pop[parentIndices.first].first, pop[parentIndices.second].first, pop[childIx].first);
         crossover(pop[parentIndices.second].first, pop[parentIndices.first].first, pop[childIx+1].first);
     }

@@ -9,6 +9,7 @@
 #include "GeneticAlgorithm.h"
 #include "TimeWindow.h"
 #include "OvertimeBound.h"
+#include "FixedDeadline.h"
 #include <vector>
 
 #define RUN_GA_FUNC_SIGN(funcname, gaType, indivType) \
@@ -42,9 +43,12 @@ namespace GARunners {
     RUN_GA_FUNC_SIGN(runTwArbitraryGA, TimeWindowArbitraryGA, LambdaTau)
     RUN_GA_FUNC_SIGN(runFixedCapaGA, FixedCapacityGA, LambdaZr)
     RUN_GA_FUNC_SIGN(runTimeVaryCapaGA, TimeVaryingCapacityGA, LambdaZrt)
-    RUN_GA_FUNC_SIGN(runCompAltsGA, CompareAlternativesGA, vector<int>);
+    RUN_GA_FUNC_SIGN(runCompAltsGA, CompareAlternativesGA, vector<int>)
+    RUN_GA_FUNC_SIGN(runFixedDeadlineGA, FixedDeadlineGA, DeadlineLambda)
 
-    void runAll(ProjectWithOvertime &p, GAParameters params);
+    void runAll(ProjectWithOvertime &p, GAParameters &params);
+    void runSpecific(ProjectWithOvertime &p, GAParameters &params, int index);
+    void runRange(ProjectWithOvertime &p, GAParameters &params, int startIx, int endIx);
 }
 
 

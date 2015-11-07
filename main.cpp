@@ -27,7 +27,9 @@ int main(int argc, const char * argv[]) {
     //ProjectWithOvertime p("QBWLBeispiel.DAT");
 
     //p.reorderDispositionMethod();
-    GARunners::runAll(p, params);
+    //GARunners::runAll(p, params);
+
+    GARunners::runRange(p, params, 0, 4);
 
 	//Utils::serializeSchedule(result.sts, "myschedulebiatch.txt");
 	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedulebiatch.txt");

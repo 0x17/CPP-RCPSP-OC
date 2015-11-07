@@ -9,7 +9,7 @@
 
 struct DeadlineLambda {
     DeadlineLambda(Project &p) : order(p.numJobs) {}
-
+    DeadlineLambda() {}
     int deadline;
     vector<int> order;
 };
