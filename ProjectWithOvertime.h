@@ -18,9 +18,10 @@ public:
 	float calcProfit(int makespan, const Matrix<int> &resRem);
 	float totalCosts(const Matrix<int> & resRem);
 
-    SGSResult serialSGSWithOvertime(vector<int> order);
-    SGSResult serialSGSTimeWindowBorders(vector<int> order, vector<int> beta);
-    SGSResult serialSGSTimeWindowArbitrary(vector<int> order, vector<float> tau);
+    SGSResult serialSGSWithOvertime(const vector<int> &order);
+    SGSResult serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta);
+    SGSResult serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau);
+    SGSResult serialSGSWithDeadline(int deadline, const vector<int> order);
 
 private:
     bool enoughCapacityForJobWithOvertime(int job, int t, Matrix<int> & resRem) const;

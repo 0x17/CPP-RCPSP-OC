@@ -19,6 +19,9 @@ struct GAParameters {
     double timeLimit;
 };
 
+#define WITH_MUT_PROB(code) \
+    if(Utils::randRangeIncl(1, 100) <= params.pmutate) { code; }
+
 template<class Individual>
 class GeneticAlgorithm {
 public:
@@ -74,7 +77,7 @@ void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
 
 template<class Individual>
 float GeneticAlgorithm<Individual>::profitForSGSResult(pair<vector<int>, Matrix<int>> &result) {
-    return p.calcProfit(result.first[p.numJobs-1], result.second);
+    return p.calcProfit(p.makespan(result.first), result.second);
 }
 
 template<class Individual>

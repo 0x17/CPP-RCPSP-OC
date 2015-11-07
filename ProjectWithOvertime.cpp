@@ -37,10 +37,10 @@ void ProjectWithOvertime::computeRevenueFunction() {
 
     float maxCosts = totalCosts(resRem);
 
-    int minMs = Utils::max(ess[numJobs-1], tkappa);
+    int minMs = Utils::max(makespan(ess), tkappa);
 
     auto sts = serialSGS(topOrder);
-    int maxMs = sts[numJobs-1];
+    int maxMs = makespan(sts);
 
     EACH_PERIOD(revenue[t] = static_cast<float>(maxCosts - maxCosts / pow(maxMs-minMs, 2) * pow(t-minMs, 2)))
 }
@@ -67,7 +67,7 @@ vector<int> ProjectWithOvertime::earliestStartSchedule(Matrix<int>& resRem) {
     return ess;
 }
 
-SGSResult ProjectWithOvertime::serialSGSWithOvertime(vector<int> order) {
+SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order) {
     Matrix<int> resRem(numRes, numPeriods);
     EACH_RES(EACH_PERIOD(resRem(r,t) = capacities[r]))
 
@@ -89,7 +89,7 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(vector<int> order) {
             ftsTmp.swap(fts);
             complementPartialWithSSGS(order, k, ftsTmp, resRemTmp);
 
-            float p = calcProfit(fts[numJobs-1], resRemTmp);
+            float p = calcProfit(makespan(fts), resRemTmp);
             if(p > bestT.second) {
                 bestT.first = t;
                 bestT.second = p;
@@ -112,7 +112,7 @@ bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, Matri
     return true;
 }
 
-SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(vector<int> order, vector<int> beta) {
+SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta) {
     Matrix<int> resRem(numRes, numPeriods);
     EACH_RES(EACH_PERIOD(resRem(r,t) = capacities[r]))
 
@@ -133,7 +133,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(vector<int> order, vec
     return make_pair(sts, resRem);
 }
 
-SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(vector<int> order, vector<float> tau) {
+SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau) {
     Matrix<int> resRem(numRes, numPeriods);
     EACH_RES(EACH_PERIOD(resRem(r,t) = capacities[r]))
 
@@ -150,5 +150,13 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(vector<int> order, v
         scheduleJobAt(job, t, sts, fts, resRem);
     }
 
+    return make_pair(sts, resRem);
+}
+
+// FIXME: Implement me!
+SGSResult ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<int> order) {
+    Matrix<int> resRem(numRes, numPeriods);
+    EACH_RES(EACH_PERIOD(resRem(r,t) = capacities[r]))
+    vector<int> sts;
     return make_pair(sts, resRem);
 }

@@ -48,6 +48,8 @@ public:
 
 	bool isOrderFeasible(const vector<int> &order) const;
 
+    int makespan(const vector<int>& sts);
+
 protected:
     void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem) const;
 
@@ -69,5 +71,9 @@ private:
 
     void computeNodeDepths(int root, int curDepth, vector<int> &nodeDepths);
 };
+
+inline int Project::makespan(const vector<int>& sts) {
+    return sts[numJobs-1];
+}
 
 #endif //SSGS_PROJECT_H
