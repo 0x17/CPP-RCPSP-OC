@@ -12,7 +12,7 @@ TimeWindowArbitraryGA::TimeWindowArbitraryGA(ProjectWithOvertime &_p) : GeneticA
 LambdaTau TimeWindowArbitraryGA::init(int ix) {
     LambdaTau indiv(p);
     indiv.order = Sampling::naiveSampling(p);
-    P_EACH_JOB(indiv.tau[j] = Utils::randUnitFloat())
+    p.eachJob([&](int j) { indiv.tau[j] = Utils::randUnitFloat(); });
     return indiv;
 }
 
@@ -22,7 +22,11 @@ void TimeWindowArbitraryGA::crossover(LambdaTau &mother, LambdaTau &father, Lamb
 
 void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
 	neighborhoodSwapAssociated(i.order, i.tau);
-	P_EACH_JOB(WITH_MUT_PROB(i.tau[j] = 1.0f - i.tau[j]))
+	p.eachJob([&](int j) {
+        withMutProb([&] {
+            i.tau[j] = 1.0f - i.tau[j];
+        });
+    });
 }
 
 float TimeWindowArbitraryGA::fitness(LambdaTau &i) {
@@ -43,7 +47,7 @@ TimeWindowBordersGA::TimeWindowBordersGA(ProjectWithOvertime &_p) : GeneticAlgor
 LambdaBeta TimeWindowBordersGA::init(int ix) {
     LambdaBeta indiv(p);
     indiv.order = Sampling::naiveSampling(p);
-    P_EACH_JOB(indiv.beta[j] = rand() % 2);
+    p.eachJob([&](int j) { indiv.beta[j] = rand() % 2; });
     return indiv;
 }
 
@@ -53,7 +57,11 @@ void TimeWindowBordersGA::crossover(LambdaBeta &mother, LambdaBeta &father, Lamb
 
 void TimeWindowBordersGA::mutate(LambdaBeta &i) {
 	neighborhoodSwapAssociated(i.order, i.beta);
-	P_EACH_JOB(WITH_MUT_PROB(i.beta[j] = 1-i.beta[j]))
+	p.eachJob([&](int j) {
+        withMutProb([&] {
+            i.beta[j] = 1-i.beta[j];
+        });
+    });
 }
 
 float TimeWindowBordersGA::fitness(LambdaBeta &i) {

@@ -35,7 +35,7 @@ vector<int> Sampling::regretBasedBiasedRandomSampling(Project &p, vector<float> 
 	eligible[0] = true;
 	for (int i = 0; i < p.numJobs; i++) {
 		order[i] = pickFromDecisionSet(eligible, priorityValues);
-		P_EACH_JOB(eligible[j] = !p.jobBeforeInOrder(j, i + 1, order) && !p.hasPredNotBeforeInOrder(j, i + 1, order))
+        p.eachJob([&](int j){ eligible[j] = !p.jobBeforeInOrder(j, i + 1, order) && !p.hasPredNotBeforeInOrder(j, i + 1, order); });
 	}
 
 	return order;
@@ -48,7 +48,7 @@ vector<int> Sampling::naiveSampling(Project& p) {
 	for(int i = 0; i < p.numJobs; i++) {
 		int nth = Utils::randRangeIncl(0, static_cast<int>(count(eligible.begin(), eligible.end(), true))-1);
 		order[i] = Utils::indexOfNthEqualTo(nth, true, eligible);
-		P_EACH_JOB(eligible[j] = !p.jobBeforeInOrder(j, i+1, order) && !p.hasPredNotBeforeInOrder(j, i+1, order))
+        p.eachJob([&](int j) { eligible[j] = !p.jobBeforeInOrder(j, i+1, order) && !p.hasPredNotBeforeInOrder(j, i+1, order); });
 	}
 	return order;
 }

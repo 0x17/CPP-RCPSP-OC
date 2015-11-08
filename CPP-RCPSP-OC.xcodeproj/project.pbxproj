@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		422C02971BEF805300322C01 /* Visualization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 422C02951BEF805300322C01 /* Visualization.cpp */; };
 		424D0E801BEC04BD009D199C /* Stopwatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 424D0E7E1BEC04BD009D199C /* Stopwatch.cpp */; };
 		425E99CD1BE040AD0057A1E3 /* LSSolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C11BE040AD0057A1E3 /* LSSolver.cpp */; };
 		425E99CE1BE040AD0057A1E3 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C31BE040AD0057A1E3 /* main.cpp */; };
 		425E99CF1BE040AD0057A1E3 /* Project.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C41BE040AD0057A1E3 /* Project.cpp */; };
 		425E99D01BE040AD0057A1E3 /* ProjectWithOvertime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C61BE040AD0057A1E3 /* ProjectWithOvertime.cpp */; };
-		425E99D11BE040AD0057A1E3 /* ScheduleVisualizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C81BE040AD0057A1E3 /* ScheduleVisualizer.cpp */; };
 		425E99D21BE040AD0057A1E3 /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99CA1BE040AD0057A1E3 /* Utils.cpp */; };
 		425E99D41BE043400057A1E3 /* QBWLBeispiel.DAT in CopyFiles */ = {isa = PBXBuildFile; fileRef = 425E99D31BE041DC0057A1E3 /* QBWLBeispiel.DAT */; };
 		428F06241BED3EE800DC47F5 /* FixedDeadline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 428F06191BED3EE800DC47F5 /* FixedDeadline.cpp */; };
@@ -36,6 +36,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		422C02951BEF805300322C01 /* Visualization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Visualization.cpp; sourceTree = "<group>"; };
+		422C02961BEF805300322C01 /* Visualization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Visualization.h; sourceTree = "<group>"; };
 		424D0E7D1BEC04BD009D199C /* Matrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Matrix.h; sourceTree = "<group>"; };
 		424D0E7E1BEC04BD009D199C /* Stopwatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Stopwatch.cpp; sourceTree = "<group>"; };
 		424D0E7F1BEC04BD009D199C /* Stopwatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Stopwatch.h; sourceTree = "<group>"; };
@@ -46,8 +48,6 @@
 		425E99C51BE040AD0057A1E3 /* Project.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Project.h; sourceTree = "<group>"; };
 		425E99C61BE040AD0057A1E3 /* ProjectWithOvertime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProjectWithOvertime.cpp; sourceTree = "<group>"; };
 		425E99C71BE040AD0057A1E3 /* ProjectWithOvertime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProjectWithOvertime.h; sourceTree = "<group>"; };
-		425E99C81BE040AD0057A1E3 /* ScheduleVisualizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ScheduleVisualizer.cpp; sourceTree = "<group>"; };
-		425E99C91BE040AD0057A1E3 /* ScheduleVisualizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScheduleVisualizer.h; sourceTree = "<group>"; };
 		425E99CA1BE040AD0057A1E3 /* Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
 		425E99CB1BE040AD0057A1E3 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
 		425E99D31BE041DC0057A1E3 /* QBWLBeispiel.DAT */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = QBWLBeispiel.DAT; sourceTree = "<group>"; };
@@ -109,10 +109,10 @@
 				425E99C51BE040AD0057A1E3 /* Project.h */,
 				425E99C61BE040AD0057A1E3 /* ProjectWithOvertime.cpp */,
 				425E99C71BE040AD0057A1E3 /* ProjectWithOvertime.h */,
-				425E99C81BE040AD0057A1E3 /* ScheduleVisualizer.cpp */,
-				425E99C91BE040AD0057A1E3 /* ScheduleVisualizer.h */,
 				425E99CA1BE040AD0057A1E3 /* Utils.cpp */,
 				425E99CB1BE040AD0057A1E3 /* Utils.h */,
+				422C02951BEF805300322C01 /* Visualization.cpp */,
+				422C02961BEF805300322C01 /* Visualization.h */,
 				42DB21051BE04034009242D4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -182,7 +182,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				428F06241BED3EE800DC47F5 /* FixedDeadline.cpp in Sources */,
-				425E99D11BE040AD0057A1E3 /* ScheduleVisualizer.cpp in Sources */,
 				428F06281BED3EE800DC47F5 /* TimeWindow.cpp in Sources */,
 				424D0E801BEC04BD009D199C /* Stopwatch.cpp in Sources */,
 				425E99D01BE040AD0057A1E3 /* ProjectWithOvertime.cpp in Sources */,
@@ -190,6 +189,7 @@
 				428F06261BED3EE800DC47F5 /* Runners.cpp in Sources */,
 				425E99CD1BE040AD0057A1E3 /* LSSolver.cpp in Sources */,
 				428F06251BED3EE800DC47F5 /* OvertimeBound.cpp in Sources */,
+				422C02971BEF805300322C01 /* Visualization.cpp in Sources */,
 				425E99CE1BE040AD0057A1E3 /* main.cpp in Sources */,
 				425E99CF1BE040AD0057A1E3 /* Project.cpp in Sources */,
 				428F06271BED3EE800DC47F5 /* Sampling.cpp in Sources */,

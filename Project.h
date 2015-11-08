@@ -8,18 +8,17 @@
 #include <map>
 #include "Utils.h"
 
-// Set range iteration macros
-#define EACH_RNG(ctr, upperbound, code) for(int ctr=0; ctr<upperbound; ctr++) { code; }
+#define EACH_FUNC(name, constname, it, ub) \
+    template<class Func> \
+    void name(Func code) { for(int it=0; it<ub; it++) { code(it); }} \
+    template<class Func> \
+    void constname(Func code) const { for(int it=0; it<ub; it++) { code(it); }}
 
-#define EACH_RES(code) EACH_RNG(r, numRes, code)
-#define EACH_JOB(code) EACH_RNG(j, numJobs, code)
-#define EACH_JOBi(code) EACH_RNG(i, numJobs, code)
-#define EACH_PERIOD(code) EACH_RNG(t, numPeriods, code)
-
-#define P_EACH_JOB(code) EACH_RNG(j, p.numJobs, code)
-#define P_EACH_JOBi(code) EACH_RNG(i, p.numJobs, code)
-#define P_EACH_RES(code) EACH_RNG(r, p.numRes, code)
-#define P_EACH_PERIOD(code) EACH_RNG(t, p.numPeriods, code)
+#define EACH_FUNC_PAIR(name, constname, it1, it2, ub1, ub2) \
+    template<class Func> \
+    void name(Func code) { for(int it1=0; it1<ub1; it1++) { for(int it2=0; it2<ub2; it2++) { code(it1, it2); } }} \
+    template<class Func> \
+    void constname(Func code) const { for(int it1=0; it1<ub1; it1++) { for(int it2=0; it2<ub2; it2++) { code(it1, it2); } }}
 
 typedef pair<vector<int>, Matrix<int>> SGSResult;
 
@@ -50,6 +49,21 @@ public:
 
     int makespan(const vector<int>& sts);
 
+    EACH_FUNC(eachJob, eachJobConst, j, numJobs)
+    EACH_FUNC(eachJobi, eachJobiConst, i, numJobs)
+    EACH_FUNC(eachRes, eachResConst, r, numRes)
+    EACH_FUNC(eachPeriod, eachPeriodConst, t, numPeriods)
+
+    EACH_FUNC_PAIR(eachJobPair, eachJobPairConst, i, j, numJobs, numJobs)
+    EACH_FUNC_PAIR(eachResPeriod, eachResPeriodConst, r, t, numRes, numPeriods)
+    EACH_FUNC_PAIR(eachJobRes, eachJobResConst, j, r, numJobs, numRes)
+    
+    template<class Func>
+    Matrix<int> initResRem(Func code) const;
+
+    template<class Func>
+    void timeWindow(int j, Func code) const;
+
 protected:
     void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem) const;
 
@@ -71,6 +85,11 @@ private:
 
     void computeNodeDepths(int root, int curDepth, vector<int> &nodeDepths);
 };
+
+template<class Func>
+inline void Project::timeWindow(int j, Func code) const {
+    for(int t=efts[j]; t<=lfts[j]; t++) { code(t); }
+}
 
 inline int Project::makespan(const vector<int>& sts) {
     return sts[numJobs-1];

@@ -20,9 +20,6 @@ struct GAParameters {
     bool fitnessBasedPairing;
 };
 
-#define WITH_MUT_PROB(code) \
-    if(Utils::randRangeIncl(1, 100) <= params.pmutate) { code; }
-
 template<class Individual>
 class GeneticAlgorithm {
 public:
@@ -69,7 +66,16 @@ protected:
     float profitForSGSResult(pair<vector<int>, Matrix<int>> &result);
 
     void mutateAndFitnessRange(vector<pair<Individual, float>> *pop, int startIx, int endIx);
+
+    template<class Func>
+    void withMutProb(Func code);
 };
+
+template<class Individual>
+template<class Func>
+inline void GeneticAlgorithm<Individual>::withMutProb(Func code) {
+    if(Utils::randRangeIncl(1, 100) <= params.pmutate) { code(); }
+}
 
 template<class Individual>
 void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {

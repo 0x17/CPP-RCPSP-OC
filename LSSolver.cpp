@@ -39,10 +39,11 @@ lsdouble CumulatedDemandFunction::call(const LSNativeContext &context) {
     lsint r = context.getIntValue(0);
     lsint t = context.getIntValue(1);
 
-    P_EACH_JOB(
-        lsint Sj = context.getIntValue(j+2);
-        if(Sj < t && t <= Sj + p.durations[j])
-            demand += p.demands(j,static_cast<int>(r)))
+    p.eachJob([&](int j) {
+        lsint Sj = context.getIntValue(j + 2);
+        if (Sj < t && t <= Sj + p.durations[j])
+            demand += p.demands(j, static_cast<int>(r));
+    });
 
     return demand;
 }
@@ -55,32 +56,36 @@ vector<int> LSSolver::solve3(ProjectWithOvertime &p) {
 
 	// Decision variables (primary)
 	vector<LSExpression> S(p.numJobs);
-	P_EACH_JOB(S[j] = model.intVar(0, p.numPeriods - 1))
+    p.eachJob([&](int j) { S[j] = model.intVar(0, p.numPeriods - 1); });
 
 	// Intermediate expressions
 	Matrix<LSExpression> cumDemandExpr(p.numRes, p.numPeriods);
-	P_EACH_RES(
-		P_EACH_PERIOD(
-			cumDemandExpr(r,t) = model.sum();
-			P_EACH_JOB(cumDemandExpr(r,t) += p.demands(j,r) * (t > S[j] && t <= S[j] + p.durations[j]))))
+    p.eachResPeriod([&](int r, int t) {
+        cumDemandExpr(r,t) = model.sum();
+        p.eachJob([&](int j) { cumDemandExpr(r,t) += p.demands(j,r) * (t > S[j] && t <= S[j] + p.durations[j]); });
+    });
+
 
 	// Revenue function parameter
 	LSExpression revenueArray = model.array();
-	P_EACH_PERIOD(revenueArray.addOperand(p.revenue[t]));
+	p.eachPeriod([&](int t){revenueArray.addOperand(p.revenue[t]); });
 
 	// Objective function
 	LSExpression objfunc = model.sum();
 	objfunc += model.at(revenueArray, S[p.numJobs - 1]);
-	P_EACH_RES(P_EACH_PERIOD(objfunc += -p.kappa[r] * model.max(0, cumDemandExpr(r,t) - p.capacities[r])))
+    p.eachResPeriod([&](int r, int t) {objfunc += -p.kappa[r] * model.max(0, cumDemandExpr(r,t) - p.capacities[r]); });
 
 	// Precedence restriction
-	P_EACH_JOB(
-		LSExpression lastPred = model.max(0);
-		P_EACH_JOBi(if(p.adjMx(i,j)) lastPred.addOperand(S[i] + p.durations[i]))
-		model.constraint(lastPred <= S[j]))
+    p.eachJob([&](int j) {
+        LSExpression lastPred = model.max(0);
+        for (int i = 0; i < p.numJobs; i++) {
+            if (p.adjMx(i, j)) lastPred.addOperand(S[i] + p.durations[i]);
+        }
+        model.constraint(lastPred <= S[j]);
+    });
 
 	// Capacity restriction
-	P_EACH_RES(P_EACH_PERIOD( model.constraint(cumDemandExpr(r,t) <= p.capacities[r] + p.zmax[r])))
+    p.eachResPeriod([&](int r, int t) { model.constraint(cumDemandExpr(r,t) <= p.capacities[r] + p.zmax[r]); });
 
 	model.addObjective(objfunc, OD_Maximize);
 	model.close();
@@ -92,7 +97,7 @@ vector<int> LSSolver::solve3(ProjectWithOvertime &p) {
 	ls.solve();
 
 	auto sol = ls.getSolution();
-	P_EACH_JOB( sts[j] = static_cast<int>(sol.getIntValue(S[j])));
+	p.eachJob([&](int j) { sts[j] = static_cast<int>(sol.getIntValue(S[j])); });
 
 	//auto status = sol.getStatus();
 	//auto solvetime = ls.getStatistics().getRunningTime();
@@ -108,32 +113,34 @@ vector<int> LSSolver::solve2(ProjectWithOvertime &p) {
 
 	// Decision variables
 	vector<LSExpression> S(p.numJobs);
-	P_EACH_JOB(S[j] = model.intVar(0, p.numPeriods - 1));
+	p.eachJob([&](int j) { S[j] = model.intVar(0, p.numPeriods - 1); });
 
 	Matrix<LSExpression> zrt(p.numRes, p.numPeriods);
-	P_EACH_RES(P_EACH_PERIOD( zrt(r,t) = model.intVar(0, p.zmax[r])))
+	p.eachResPeriod([&](int r, int t) { zrt(r,t) = model.intVar(0, p.zmax[r]); });
 
 	// Revenue function parameter
 	LSExpression revenueArray = model.array();
-	P_EACH_PERIOD(revenueArray.addOperand(p.revenue[t]));
+    p.eachPeriod([&](int t) { revenueArray.addOperand(p.revenue[t]); });
 
 	// Objective function
 	LSExpression objfunc = model.sum();
 	objfunc += model.at(revenueArray, S[p.numJobs - 1]);
-	P_EACH_RES(P_EACH_PERIOD( objfunc += -p.kappa[r] * zrt(r,t)))
+	p.eachResPeriod([&](int r, int t) { objfunc += -p.kappa[r] * zrt(r,t); });
 	
 	// Precedence restriction
-	P_EACH_JOB(
+	p.eachJob([&](int j) {
 		LSExpression lastPred = model.max(0);
-		P_EACH_JOBi(if (p.adjMx(i,j)) lastPred.addOperand(S[i] + p.durations[i]))
-		model.constraint(lastPred <= S[j]))
+        for(int i=0; i<p.numJobs; i++)
+		    if (p.adjMx(i,j)) lastPred.addOperand(S[i] + p.durations[i]);
+		model.constraint(lastPred <= S[j]);
+    });
 
 	// Capacity restriction
-	P_EACH_RES(
-		P_EACH_PERIOD(
-			LSExpression cumDemandExpr = model.sum();
-			P_EACH_JOB(cumDemandExpr += p.demands(j,r) * (t > S[j] && t <= S[j] + p.durations[j]))
-			model.constraint(cumDemandExpr <= p.capacities[r] + zrt(r,t))))
+	p.eachResPeriod([&](int r, int t) {
+        LSExpression cumDemandExpr = model.sum();
+        p.eachJob([&](int j) { cumDemandExpr += p.demands(j, r) * (t > S[j] && t <= S[j] + p.durations[j]); });
+        model.constraint(cumDemandExpr <= p.capacities[r] + zrt(r, t));
+    });
 
     model.addObjective(objfunc, OD_Maximize);
 	model.close();
@@ -145,7 +152,7 @@ vector<int> LSSolver::solve2(ProjectWithOvertime &p) {
 	ls.solve();
 
 	auto sol = ls.getSolution();
-	P_EACH_JOB(sts[j] = static_cast<int>(sol.getIntValue(S[j])));
+    p.eachJob([&](int j){ sts[j] = static_cast<int>(sol.getIntValue(S[j])); });
 
 	//auto status = sol.getStatus();
 	//auto solvetime = ls.getStatistics().getRunningTime();
@@ -167,31 +174,33 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
 
     // Decision variables
     vector<LSExpression> Sj(p.numJobs);
-    P_EACH_JOB(Sj[j] = model.intVar(0, p.numPeriods-1));
+    p.eachJob([&](int j) {Sj[j] = model.intVar(0, p.numPeriods-1); });
     Matrix<LSExpression> zrt(p.numRes, p.numPeriods);
-    P_EACH_RES(P_EACH_PERIOD( zrt(r,t) = model.intVar(0, p.zmax[r])))
+    p.eachResPeriod([&](int r, int t) { zrt(r,t) = model.intVar(0, p.zmax[r]); });
 
     // Objective function
     LSExpression objfunc = model.sum();
     LSExpression revenueExpr = model.createExpression(O_Call, revFuncExpr);
     revenueExpr.addOperand(Sj[p.numJobs-1]);
     objfunc += revenueExpr;
-    P_EACH_RES(P_EACH_PERIOD( objfunc += -p.kappa[r] * zrt(r,t)))
+    p.eachResPeriod([&](int r, int t) { objfunc += -p.kappa[r] * zrt(r,t); });
 
     // Precedence restriction
-    P_EACH_JOB(
+    p.eachJob([&](int j) {
         LSExpression lastPred = model.max(0);
-        P_EACH_JOBi(if(p.adjMx(i,j)) lastPred.addOperand(Sj[i] + p.durations[i]))
-        model.constraint(lastPred <= Sj[j]))
+        for(int i=0; i<p.numJobs; i++)
+            if(p.adjMx(i,j)) lastPred.addOperand(Sj[i] + p.durations[i]);
+        model.constraint(lastPred <= Sj[j]);
+    });
 
     // Capacity restriction
-    P_EACH_RES(
-        P_EACH_PERIOD(
-            LSExpression cumDemandExpr = model.createExpression(O_Call, cumDemFuncExpr);
-            cumDemandExpr.addOperand(r);
-            cumDemandExpr.addOperand(t);
-            P_EACH_JOB( cumDemandExpr.addOperand(Sj[j]))
-            model.constraint(cumDemandExpr <= p.capacities[r] + zrt(r,t))))
+	p.eachResPeriod([&](int r, int t) {
+        LSExpression cumDemandExpr = model.createExpression(O_Call, cumDemFuncExpr);
+        cumDemandExpr.addOperand(r);
+        cumDemandExpr.addOperand(t);
+        p.eachJob([&](int j) { cumDemandExpr.addOperand(Sj[j]); });
+        model.constraint(cumDemandExpr <= p.capacities[r] + zrt(r,t));
+    });
 
     model.addObjective(objfunc, OD_Maximize);
     model.close();
@@ -203,7 +212,7 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
     ls.solve();
 
     auto sol = ls.getSolution();
-    P_EACH_JOB( sts[j] = static_cast<int>(sol.getIntValue(Sj[j])));
+    p.eachJob([&](int j) { sts[j] = static_cast<int>(sol.getIntValue(Sj[j])); });
 
     //auto status = sol.getStatus();
     //auto solvetime = ls.getStatistics().getRunningTime();
@@ -211,7 +220,6 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
     return sts;
 }
 
-#define TIME_WINDOW(j, code) for(int t=p.efts[j]; t<=p.lfts[j]; t++) { code; }
 vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     vector<int> sts(p.numJobs);
 
@@ -220,43 +228,45 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
 
     // Decision variables
     Matrix<LSExpression> x(p.numJobs, p.numPeriods), z(p.numRes, p.numPeriods);
-    P_EACH_JOB( P_EACH_PERIOD( x(j,t) = model.boolVar()))
-    P_EACH_RES( P_EACH_PERIOD( z(r,t) = model.intVar(0, p.zmax[r])))
+    p.eachJob([&](int j) { p.eachPeriod([&](int t){ x(j,t) = model.boolVar(); }); });
+    p.eachResPeriod([&](int r, int t) { z(r,t) = model.intVar(0, p.zmax[r]); });
 
     // Objective function
     auto objfunc = model.sum();
-    TIME_WINDOW(p.numJobs-1, objfunc += p.revenue[t] * x(p.numJobs-1,t))
-    P_EACH_RES( P_EACH_PERIOD( objfunc += -p.kappa[r] * z(r,t)))
+    p.timeWindow(p.numJobs-1, [&](int t) { objfunc += p.revenue[t] * x(p.numJobs-1,t); });
+    p.eachResPeriod([&](int r, int t) { objfunc += -p.kappa[r] * z(r,t); });
 
     // Constraints
 
     // Each job once
-    P_EACH_JOB(
+    p.eachJob([&](int j) {
         auto xsum = model.sum();
-        TIME_WINDOW(j, xsum += x(j,t))
-        model.constraint(xsum == 1.0))
+        p.timeWindow(j, [&](int t){ xsum += x(j,t); });
+        model.constraint(xsum == 1.0);
+    });
 
     // Precedence restrictions
-    P_EACH_JOB(
-        P_EACH_JOBi(
-            if(p.adjMx(i,j)) {
-                auto predFt = model.sum();
-                TIME_WINDOW(i, predFt += t * x(i,t))
-                auto jobSt = model.sum();
-                TIME_WINDOW(j, jobSt += t * x(j,t))
-                jobSt += -p.durations[j];
-                model.constraint(predFt <= jobSt);
-            }))
+    p.eachJobPair([&](int i, int j) {
+        if(p.adjMx(i,j)) {
+            auto predFt = model.sum();
+            p.timeWindow(i, [&](int t) { predFt += t * x(i,t); });
+            auto jobSt = model.sum();
+            p.timeWindow(j, [&](int t) { jobSt += t * x(j,t); });
+            jobSt += -p.durations[j];
+            model.constraint(predFt <= jobSt);
+        }
+    });
+            
 
     // Capacity restrictions
-    P_EACH_RES(
-        P_EACH_PERIOD(
+    p.eachRes([&](int r){
+        p.eachPeriod([&](int t){
             auto cumulatedDemand = model.sum();
-            P_EACH_JOB(
+            p.eachJob([&](int j) {
                 for(int tau = t; tau < Utils::min(t + p.durations[j], p.numPeriods); tau++)
-                    cumulatedDemand += x(j,tau) * p.demands(j,r))
+                    cumulatedDemand += x(j,tau) * p.demands(j,r); });
             auto totalCapacity = model.sum(p.capacities[r], z(r,t));
-            model.constraint(cumulatedDemand <= totalCapacity)))
+            model.constraint(cumulatedDemand <= totalCapacity); }); });
 
     model.addObjective(objfunc, OD_Maximize);
     model.close();
@@ -268,12 +278,14 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     ls.solve();
 
     auto sol = ls.getSolution();
-    P_EACH_JOB(
-        P_EACH_PERIOD(
+    p.eachJob([&](int j) {
+        for(int t=0; t<p.numPeriods; t++) {
             if(sol.getValue(x(j,t)) == 1) {
                 sts[j] = t - p.durations[j];
                 break;
-            }))
+            }
+        }
+    });
 
     auto status = sol.getStatus();
     if(status != SS_Feasible) {
@@ -293,25 +305,27 @@ void LSSolver::writeLSPModelParamFile(ProjectWithOvertime &p, string outFilename
 		to_string(p.numRes) };
 
 	outLines.push_back("durations");
-	P_EACH_JOB( outLines.push_back(to_string(p.durations[j])))
+    p.eachJob([&](int j) { outLines.push_back(to_string(p.durations[j])); });
 	outLines.push_back("demands (j,r)-matrix (row major order)");
-	P_EACH_JOB( P_EACH_RES( outLines.push_back(to_string(p.demands(j,r)))))
+    p.eachJob([&](int j) { p.eachRes([&](int r){ outLines.push_back(to_string(p.demands(j,r))); }); });
 	outLines.push_back("adjacency matrix (row major order)");
-	P_EACH_JOBi(P_EACH_JOB( outLines.push_back(p.adjMx(i,j) ? "1" : "0")))
+	p.eachJobPair([&](int i, int j) { outLines.push_back(p.adjMx(i,j) ? "1" : "0"); });
 	outLines.push_back("capacities");
-	P_EACH_RES( outLines.push_back(to_string(p.capacities[r])))
+    p.eachRes([&](int r){ outLines.push_back(to_string(p.capacities[r])); });
 
 	outLines.push_back("earliest finishing times");
-	P_EACH_JOB( outLines.push_back(to_string(p.efts[j])))
+    p.eachJob([&](int j) { outLines.push_back(to_string(p.efts[j])); });
 	outLines.push_back("latest finishing times");
-	P_EACH_JOB( outLines.push_back(to_string(p.lfts[j])))
+    p.eachJob([&](int j) { outLines.push_back(to_string(p.lfts[j])); });
 
 	outLines.push_back("revenue");
-	EACH_RNG(t, p.numPeriods+1, outLines.push_back(to_string(p.revenue[t])))
+    for(int t=0; t<p.numPeriods+1; t++) {
+        outLines.push_back(to_string(p.revenue[t]));
+    }
 	outLines.push_back("upper bound for overtime");
-	P_EACH_RES( outLines.push_back(to_string(p.zmax[r])))
+    p.eachRes([&](int r){ outLines.push_back(to_string(p.zmax[r])); });
 	outLines.push_back("kappa");
-	P_EACH_RES( outLines.push_back(to_string(p.kappa[r])))
+    p.eachRes([&](int r){ outLines.push_back(to_string(p.kappa[r])); });
 
 	ofstream f(outFilename);
 	if (!f.is_open()) return;

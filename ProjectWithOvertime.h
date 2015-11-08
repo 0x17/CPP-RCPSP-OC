@@ -27,7 +27,7 @@ public:
 private:
     bool enoughCapacityForJobWithOvertime(int job, int t, Matrix<int> & resRem) const;
     void computeRevenueFunction();
-    int computeTKappa() const;
+    int computeTKappa();
     vector<int> earliestStartSchedule(Matrix<int> & resRem);
 };
 

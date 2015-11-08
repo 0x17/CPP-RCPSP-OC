@@ -4,7 +4,7 @@
 
 #include "Visualization.h"
 
-#define USE_PODOFO
+//#define USE_PODOFO
 
 #ifdef USE_PODOFO
 #include <podofo/podofo.h>
@@ -62,12 +62,15 @@ void Visualization::drawScheduleToPDF(ProjectWithOvertime &p, vector<int> sts, s
 
 string Visualization::activityOnNodeGraphDOT(Project &p) {
     string dotCode = "digraph precedence {\n";
-    P_EACH_JOBi(P_EACH_JOB(if(p.adjMx(i,j)) dotCode += to_string(i+1) + "->" + to_string(j+1) + "\n"))
-    P_EACH_JOB(
+    
+    p.eachJobPair([&](int i, int j) { if(p.adjMx(i,j)) dotCode += to_string(i+1) + "->" + to_string(j+1) + "\n"; });
+    p.eachJob([&](int j) {
         string demandsStr = "";
         auto jobDemands = p.demands.row(j);
-        P_EACH_RES(demandsStr += to_string(jobDemands[r]) + (r == p.numRes-1 ? "" : " "))
-        dotCode += to_string(j+1) + "[label=\"(" + to_string(p.durations[j]) + ") " + to_string(j+1) + " (" + demandsStr + ")\"]\n")
+        p.eachRes([&](int r) { demandsStr += to_string(jobDemands[r]) + (r == p.numRes-1 ? "" : " "); });
+        dotCode += to_string(j+1) + "[label=\"(" + to_string(p.durations[j]) + ") " + to_string(j+1) + " (" + demandsStr + ")\"]\n";
+    });
+        
     dotCode += "\n}";
     return dotCode;
 }

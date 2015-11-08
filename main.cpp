@@ -21,7 +21,8 @@ int main(int argc, const char * argv[]) {
     params.pmutate = 5;
     params.timeLimit = -1.0;
 
-    ProjectWithOvertime p("../../Projekte/j30/j301_1.sm");
+    ProjectWithOvertime p("QBWLBeispiel.DAT");
+//    ProjectWithOvertime p("../../Projekte/j30/j301_1.sm");
 
     //auto res = GARunners::runSpecific(p, params, 0);
     //Visualization::drawScheduleToPDF(p, res.sts, "myschedule.pdf");
