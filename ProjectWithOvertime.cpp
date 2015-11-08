@@ -158,5 +158,12 @@ SGSResult ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<
     Matrix<int> resRem(numRes, numPeriods);
     EACH_RES(EACH_PERIOD(resRem(r,t) = capacities[r]))
     vector<int> sts;
+
+    for(int i=0; i<numJobs; i++) {
+        int job = order[i];
+        int t = 0;
+        sts[job] = t;
+    }
+
     return make_pair(sts, resRem);
 }

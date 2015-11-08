@@ -64,8 +64,6 @@ public:
     }
 
     void resize(int _m, int _n) {
-        //data.resize(_m*_n);
-
         m = _m;
         n = _n;
 

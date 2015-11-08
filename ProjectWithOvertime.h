@@ -6,6 +6,7 @@
 #define SSGS_PROJECTWITHOVERTIME_H
 
 
+#include <list>
 #include "Project.h"
 
 class ProjectWithOvertime : public Project {

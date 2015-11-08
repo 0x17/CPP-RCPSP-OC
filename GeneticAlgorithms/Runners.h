@@ -47,7 +47,7 @@ namespace GARunners {
     RUN_GA_FUNC_SIGN(runFixedDeadlineGA, FixedDeadlineGA, DeadlineLambda)
 
     void runAll(ProjectWithOvertime &p, GAParameters &params);
-    void runSpecific(ProjectWithOvertime &p, GAParameters &params, int index);
+    GAResult runSpecific(ProjectWithOvertime &p, GAParameters &params, int index);
     void runRange(ProjectWithOvertime &p, GAParameters &params, int startIx, int endIx);
 }
 

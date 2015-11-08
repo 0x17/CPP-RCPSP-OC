@@ -4,7 +4,9 @@
 
 #include "Visualization.h"
 
-/*
+#define USE_PODOFO
+
+#ifdef USE_PODOFO
 #include <podofo/podofo.h>
 
 using namespace PoDoFo;
@@ -17,7 +19,10 @@ void initAttributes(const PdfStreamedDocument &document) {
     document.GetInfo()->SetKeywords(PdfString("Schedule;RCPSP;Ablaufplan;"));
 }
 
-void ScheduleVisualizer::drawScheduleToPDF(ProjectWithOvertime &p, vector<int> sts, string filename) {
+void drawJob(PdfPainter &painter, int j, int stj, int dj, int demand) {
+}
+
+void Visualization::drawScheduleToPDF(ProjectWithOvertime &p, vector<int> sts, string filename) {
     PdfStreamedDocument document(filename.c_str());
     PdfPage *page;
     PdfPainter painter;
@@ -43,13 +48,17 @@ void ScheduleVisualizer::drawScheduleToPDF(ProjectWithOvertime &p, vector<int> s
     // Draw res axis (y)
     painter.DrawLine(origin[0], origin[1], origin[0], origin[1]+100);
 
+    for(int i=0; i<p.numJobs; i++) {
+        drawJob(painter, (i+1), sts[i], p.durations[i], p.demands(i,0));
+    }
+
     painter.FinishPage();
 
     initAttributes(document);
 
     document.Close();
 }
-*/
+#endif
 
 string Visualization::activityOnNodeGraphDOT(Project &p) {
     string dotCode = "digraph precedence {\n";
