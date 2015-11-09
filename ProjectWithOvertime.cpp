@@ -161,7 +161,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &o
 // FIXME: Implement me!
 SGSResult ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<int> order) {
     Matrix<int> resRem(numRes, numPeriods);
-    eachResPeriod([&](int r, int t) {resRem(r,t) = capacities[r]; });
+    eachResPeriod([&](int r, int t) { resRem(r,t) = capacities[r]; });
     vector<int> sts;
 
     for(int i=0; i<numJobs; i++) {

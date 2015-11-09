@@ -32,23 +32,23 @@ Project::Project(string filename) {
 template<class Func>
 Matrix<int> Project::initResRem(Func code) const {
     Matrix<int> resRem(numRes, numPeriods);
-    eachResPeriodConst([&](int r, int t) { code(r, t); });
+    eachResPeriodConst([&](int r, int t) { resRem(r,t) = code(r, t); });
     return resRem;
 }
 
 vector<int> Project::serialSGS(const vector<int>& order) const {
-    Matrix<int> resRem = initResRem([&](int r, int t) { resRem(r,t) = capacities[r]; });
+    Matrix<int> resRem = initResRem([&](int r, int t) { return capacities[r]; });
 	return serialSGSCore(order, resRem);
 }
 
 pair<vector<int>, Matrix<int>> Project::serialSGS(const vector<int>& order, const vector<int>& z) const {
-    Matrix<int> resRem = initResRem([&](int r, int t) { resRem(r,t) = capacities[r] + z[r]; });
+    Matrix<int> resRem = initResRem([&](int r, int t) { return capacities[r] + z[r]; });
 	vector<int> sts = serialSGSCore(order, resRem);
 	return make_pair(sts, resRem);
 }
 
 pair<vector<int>, Matrix<int>> Project::serialSGS(const vector<int>& order, const Matrix<int>& z) const {
-    Matrix<int> resRem = initResRem([&](int r, int t) { resRem(r,t) = capacities[r] + z(r,t); });
+    Matrix<int> resRem = initResRem([&](int r, int t) { return capacities[r] + z(r,t); });
 	vector<int> sts = serialSGSCore(order, resRem);
 	return make_pair(sts, resRem);
 }
