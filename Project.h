@@ -5,8 +5,8 @@
 #ifndef SSGS_PROJECT_H
 #define SSGS_PROJECT_H
 
-#include <map>
 #include "Utils.h"
+#include "Matrix.h"
 
 #define EACH_FUNC(name, constname, it, ub) \
     template<class Func> \

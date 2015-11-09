@@ -8,8 +8,8 @@
 #include "GeneticAlgorithm.h"
 
 struct DeadlineLambda {
-    DeadlineLambda(Project &p) : order(p.numJobs) {}
-    DeadlineLambda() {}
+    DeadlineLambda(Project &p) : deadline(0), order(p.numJobs) {}
+    DeadlineLambda() : deadline(0) {}
     int deadline;
     vector<int> order;
 };

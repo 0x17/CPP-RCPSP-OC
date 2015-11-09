@@ -7,9 +7,6 @@
 
 #include "../ProjectWithOvertime.h"
 #include "GeneticAlgorithm.h"
-#include "TimeWindow.h"
-#include "OvertimeBound.h"
-#include "FixedDeadline.h"
 #include <vector>
 
 #define RUN_GA_FUNC_SIGN(funcname, gaType, indivType) \

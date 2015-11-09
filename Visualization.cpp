@@ -3,6 +3,7 @@
 //
 
 #include "Visualization.h"
+#include <string>
 
 //#define USE_PODOFO
 

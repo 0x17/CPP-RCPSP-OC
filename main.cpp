@@ -1,10 +1,6 @@
-#include <iostream>
 #include "ProjectWithOvertime.h"
 #include "LSSolver.h"
-#include "Visualization.h"
 #include "GeneticAlgorithms/OvertimeBound.h"
-#include "GeneticAlgorithms/TimeWindow.h"
-#include "Stopwatch.h"
 #include "GeneticAlgorithms/Runners.h"
 
 void convertArgFileToLSP(int argc, char * argv[]) {

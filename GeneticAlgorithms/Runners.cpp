@@ -4,6 +4,10 @@
 
 #include "Runners.h"
 #include <iostream>
+#include <string>
+#include "TimeWindow.h"
+#include "OvertimeBound.h"
+#include "FixedDeadline.h"
 
 namespace GARunners {
 
