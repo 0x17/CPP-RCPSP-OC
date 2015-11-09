@@ -123,6 +123,19 @@ bool Project::hasPredNotBeforeInOrder(int job, int curIndex, const vector<int>& 
 	return false;
 }
 
+bool Project::jobAfterInOrder(int job, int curIndex, const vector<int>& order) const {
+	for (int k = curIndex+1; k < order.size(); k++)
+		if (order[k] == job)
+			return true;
+	return false;
+}
+
+bool Project::hasSuccNotAfterInOrder(int job, int curIndex, const vector<int>& order) const {
+	for (int j = 0; j<numJobs; j++)
+		if (adjMx(job, j) && !jobAfterInOrder(j, curIndex, order)) return true;
+	return false;
+}
+
 bool Project::isOrderFeasible(const vector<int>& order) const {
 	for (int i = 0; i < numJobs; i++) {
 		if (hasPredNotBeforeInOrder(order[i], i, order))
@@ -131,17 +144,32 @@ bool Project::isOrderFeasible(const vector<int>& order) const {
 	return true;
 }
 
-vector<int> Project::computeTopOrder() const {
+template <class Pred>
+vector<int> Project::topOrderComputationCore(Pred isEligible) const {
 	vector<int> order(numJobs);
+
 	for (int curIndex = 0; curIndex < numJobs; curIndex++) {
-		for(int job = 0; job < numJobs; job++) {
-			if(!jobBeforeInOrder(job, curIndex, order) && !hasPredNotBeforeInOrder(job, curIndex, order)) {
+		for (int job = 0; job < numJobs; job++) {
+			if (isEligible(curIndex, job, order)) {
 				order[curIndex] = job;
 				break;
 			}
 		}
 	}
+
 	return order;
+}
+
+vector<int> Project::computeTopOrder() const {
+	return topOrderComputationCore([&](int curIndex, int job, const vector<int> &order) {
+		return !jobBeforeInOrder(job, curIndex, order) && !hasPredNotBeforeInOrder(job, curIndex, order);
+	});
+}
+
+vector<int> Project::computeReverseTopOrder() const {
+	return topOrderComputationCore([&](int curIndex, int job, const vector<int> &order) {
+		return !jobAfterInOrder(job, curIndex, order) && !hasSuccNotAfterInOrder(job, curIndex, order);
+	});
 }
 
 void Project::computeELSFTs() {
@@ -213,4 +241,17 @@ void Project::reorderDispositionMethod() {
     durations = newDurations;
     adjMx = newAdjMx;
     demands = newDemands;
+}
+
+vector<int> Project::earliestStartSchedule(Matrix<int>& resRem) const {
+	vector<int> ess(numJobs);
+	for(int j : topOrder) {
+		ess[j] = 0;
+		for(int i = 0; i<numJobs; i++) {
+			if(adjMx(i, j))
+				ess[j] = Utils::max(ess[j], ess[i] + durations[i]);
+		}
+		eachResConst([&](int r) { for (int tau = ess[j] + 1; tau <= ess[j] + durations[j]; tau++) resRem(r, tau) -= demands(j, r); });
+	}
+	return ess;
 }

@@ -57,17 +57,68 @@ int ProjectWithOvertime::computeTKappa() {
     return tkappa;
 }
 
-vector<int> ProjectWithOvertime::earliestStartSchedule(Matrix<int>& resRem) {
-    vector<int> ess(numJobs);
-    for(int j : topOrder) {
-        ess[j] = 0;
-        for(int i=0; i<numJobs; i++) {
-            if (adjMx(i,j) && ess[i] + durations[i] > ess[j])
-                ess[j] = ess[i] + durations[i];
-        }
-        eachRes([&](int r) { for (int tau = ess[j] + 1; tau <= ess[j] + durations[j]; tau++) resRem(r,tau) -= demands(j,r); });
-    }
-    return ess;
+vector<int> ProjectWithOvertime::earliestStartingTimesForPartial(const vector<int>& sts) const {
+	vector<int> ests(numJobs);
+
+	for(int j : topOrder) {
+		if(sts[j] != -1) {
+			ests[j] = sts[j];
+		}
+	}
+
+	for (int j : topOrder) {
+		if(sts[j] != -1) continue;
+		ests[j] = 0;
+		for (int i = 0; i<numJobs; i++) {
+			if (adjMx(i, j))
+				ests[j] = Utils::max(ests[j], ests[i] + durations[i]);
+		}
+	}
+
+	return ests;
+}
+
+vector<int> ProjectWithOvertime::latestFinishingTimesForPartial(const vector<int>& sts) const {
+	vector<int> lfts(numJobs);
+	
+	for (int i : revTopOrder) {
+		if (sts[i] != -1) {
+			lfts[i] = sts[i];
+		}
+	}
+
+	for (int i : revTopOrder) {
+		if (sts[i] != -1) continue;
+		lfts[i] = T;
+		eachJobConst([&](int j){
+			if(adjMx(i, j))
+				lfts[i] = Utils::min(lfts[i], lfts[j] - durations[j]);
+		});
+	}
+	
+	return lfts;
+}
+
+list<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>& sts, const vector<int>& ests, const vector<int>& lfts) const {
+	list<int> decisionTimes;
+
+	// FIXME: Implement me!
+
+	return decisionTimes;
+}
+
+float ProjectWithOvertime::extensionCosts(const Matrix<int> &resRem, int j, int stj) const {
+	float costs = 0.0f;
+	eachResConst([&](int r) {
+		for (int tau = stj + 1; tau <= stj + durations[j]; tau++) {
+			costs += Utils::min(0, demands(j,r) - resRem(r,tau)) * kappa[r];
+		}
+	});	
+	return costs;
+}
+
+int ProjectWithOvertime::selectBestStartingTime(vector<int>& sts, int j, const list<int>& decisionTimes) const {
+	return 0;
 }
 
 SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order) {
@@ -162,11 +213,20 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &o
 SGSResult ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<int> order) {
     Matrix<int> resRem(numRes, numPeriods);
     eachResPeriod([&](int r, int t) { resRem(r,t) = capacities[r]; });
-    vector<int> sts;
+	vector<int> sts(numJobs, -1);
 
     for(int i=0; i<numJobs; i++) {
+		vector<int> cests = earliestStartingTimesForPartial(sts);
+		vector<int> clfts = latestFinishingTimesForPartial(sts);
+		list<int> decisionTimes = decisionTimesForResDevProblem(sts, cests, clfts);
+		if(!decisionTimes.empty()) {
+			
+		}
+
         int job = order[i];
+
         int t = 0;
+
         sts[job] = t;
     }
 

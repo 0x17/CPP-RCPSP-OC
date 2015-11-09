@@ -29,7 +29,7 @@ public:
     vector<int> durations, capacities;
     Matrix<int> demands;
 
-    vector<int> topOrder;
+	vector<int> topOrder, revTopOrder;
 
     vector<int> ests, lsts, efts, lfts;
 
@@ -44,6 +44,9 @@ public:
 
 	bool jobBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
 	bool hasPredNotBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
+
+	bool jobAfterInOrder(int job, int curIndex, const vector<int>& order) const;
+	bool hasSuccNotAfterInOrder(int job, int curIndex, const vector<int>& order) const;
 
 	bool isOrderFeasible(const vector<int> &order) const;
 
@@ -74,13 +77,19 @@ protected:
     int computeFirstSuccStartingTime(const vector<int> &sts, int job) const;
     void scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, Matrix<int> &resRem) const;
 
+	vector<int> earliestStartSchedule(Matrix<int> & resRem) const;
+
 private:
     void parsePrecedenceRelation(const vector<string> &lines);
     void parseDurationsAndDemands(const vector<string> &lines);
 
     void reorderDispositionMethod();
 
+	template <class Pred>
+	vector<int> topOrderComputationCore(Pred isEligible) const;
 	vector<int> computeTopOrder() const;
+	vector<int> computeReverseTopOrder() const;
+
     void computeELSFTs();
 
     void computeNodeDepths(int root, int curDepth, vector<int> &nodeDepths);

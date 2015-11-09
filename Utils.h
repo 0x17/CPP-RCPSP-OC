@@ -24,7 +24,9 @@ namespace Utils {
     }
 
 	inline int max(int a, int b) { return a > b ? a : b; }
+	inline int max(int a, int b, int c) { return max(max(a, b), c); }
 	inline int min(int a, int b) { return a < b ? a : b; }
+	inline int min(int a, int b, int c) { return min(min(a, b), c); }
 
 	void serializeSchedule(vector<int> & sts, const string filename);
 

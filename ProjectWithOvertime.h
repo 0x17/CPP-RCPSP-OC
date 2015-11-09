@@ -5,7 +5,6 @@
 #ifndef SSGS_PROJECTWITHOVERTIME_H
 #define SSGS_PROJECTWITHOVERTIME_H
 
-
 #include <list>
 #include "Project.h"
 
@@ -25,10 +24,15 @@ public:
     SGSResult serialSGSWithDeadline(int deadline, const vector<int> order);
 
 private:
-    bool enoughCapacityForJobWithOvertime(int job, int t, Matrix<int> & resRem) const;
     void computeRevenueFunction();
-    int computeTKappa();
-    vector<int> earliestStartSchedule(Matrix<int> & resRem);
+    int computeTKappa();    
+
+	bool enoughCapacityForJobWithOvertime(int job, int t, Matrix<int> & resRem) const;
+	vector<int> earliestStartingTimesForPartial(const vector<int> &order) const;
+	vector<int> latestFinishingTimesForPartial(const vector<int> &order) const;
+	list<int> decisionTimesForResDevProblem(const vector<int> &sts, const vector<int> &ests, const vector<int> &lfts) const;
+	float extensionCosts(const Matrix<int> &resRem, int j, int stj) const;
+	int selectBestStartingTime(vector<int> &sts, int j, const list<int> &decisionTimes) const;
 };
 
 
