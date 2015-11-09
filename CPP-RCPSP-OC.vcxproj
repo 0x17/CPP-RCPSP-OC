@@ -21,29 +21,31 @@
   <ItemGroup>
     <ClCompile Include="GeneticAlgorithms\FixedDeadline.cpp" />
     <ClCompile Include="GeneticAlgorithms\OvertimeBound.cpp" />
+    <ClCompile Include="GeneticAlgorithms\Runners.cpp" />
     <ClCompile Include="GeneticAlgorithms\Sampling.cpp" />
     <ClCompile Include="GeneticAlgorithms\TimeWindow.cpp" />
     <ClCompile Include="LSSolver.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="ProjectWithOvertime.cpp" />
-    <ClCompile Include="ScheduleVisualizer.cpp" />
     <ClCompile Include="Stopwatch.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="Visualization.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneticAlgorithms\FixedDeadline.h" />
     <ClInclude Include="GeneticAlgorithms\GeneticAlgorithm.h" />
     <ClInclude Include="GeneticAlgorithms\OvertimeBound.h" />
+    <ClInclude Include="GeneticAlgorithms\Runners.h" />
     <ClInclude Include="GeneticAlgorithms\Sampling.h" />
     <ClInclude Include="GeneticAlgorithms\TimeWindow.h" />
     <ClInclude Include="LSSolver.h" />
     <ClInclude Include="matrix.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="ProjectWithOvertime.h" />
-    <ClInclude Include="ScheduleVisualizer.h" />
     <ClInclude Include="Stopwatch.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="Visualization.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{79EF54FB-DEF8-4F61-9C71-C3CF7F899037}</ProjectGuid>

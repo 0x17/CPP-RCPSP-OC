@@ -5,6 +5,7 @@
 #include <numeric>
 #include <list>
 #include "Project.h"
+#include <algorithm>
 
 Project::Project(string filename) {
     auto lines = Utils::readLines(filename);
