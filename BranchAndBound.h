@@ -19,10 +19,7 @@ private:
 	const int UNSCHEDULED = -1;
 
 	bool isEligible(vector<int> &sts, int j);
-	template<class Func>
-	bool resourceFeasibleCore(vector<int> &sts, int j, int stj, Func capacityLimit);
-	bool resourceFeasibleWithOvertime(vector<int> &sts, int j, int stj);
-	bool resourceFeasibleWithoutOvertime(vector<int> &sts, int j, int stj);
+	pair<bool,bool> resourceFeasibilityCheck(vector<int> &sts, int j, int stj);
 	float upperBoundForPartial(vector<int> &sts);
 	void branch(vector<int> sts);
 };

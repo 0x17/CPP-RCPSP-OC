@@ -18,28 +18,24 @@ bool BranchAndBound::isEligible(vector<int>& sts, int j) {
 	return true;
 }
 
-template <class Func>
-bool BranchAndBound::resourceFeasibleCore(vector<int>& sts, int j, int stj, Func capacityLimit) {
-	for (int r = 0; r < p.numRes; r++) {
-		for (int tau = stj + 1; tau <= stj + p.durations[j]; tau++) {
+pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j, int stj) {
+	bool feasWoutOC = true;
+
+	for(int r = 0; r < p.numRes; r++) {
+		for(int tau = stj + 1; tau <= stj + p.durations[j]; tau++) {
 			int cdemand = 0;
-			for (int i = 0; i < p.numJobs; i++)
+			for(int i = 0; i < p.numJobs; i++)
 				if (sts[i] != UNSCHEDULED && sts[i] < tau && tau <= sts[i] + p.durations[i])
 					cdemand += p.demands(i, r);
 
-			if (cdemand + p.demands(j, r) > capacityLimit(r))
-				return false;
+			if(cdemand + p.demands(j, r) > p.capacities[r]  + p.zmax[r])
+				return make_pair(false, false);
+
+			if(feasWoutOC && cdemand + p.demands(j,r) > p.capacities[r])
+				feasWoutOC = false;
 		}
 	}
-	return false;
-}
-
-bool BranchAndBound::resourceFeasibleWithOvertime(vector<int>& sts, int j, int stj) {
-	return resourceFeasibleCore(sts, j, stj, [&](int r) { return p.capacities[r] + p.zmax[r]; });
-}
-
-bool BranchAndBound::resourceFeasibleWithoutOvertime(vector<int>& sts, int j, int stj) {
-	return resourceFeasibleCore(sts, j, stj, [&](int r) { return p.capacities[r]; });
+	return make_pair(true, feasWoutOC);
 }
 
 float BranchAndBound::upperBoundForPartial(vector<int>& sts) {
@@ -63,14 +59,16 @@ void BranchAndBound::branch(vector<int> sts) {
 			}
 
 			for (;true;t++) {
-				if (resourceFeasibleWithOvertime(sts, j, t)) {
+				pair<bool, bool> feas = resourceFeasibilityCheck(sts, j, t);
+
+				if (feas.first) {
 					sts[j] = t;
 
 					if (upperBoundForPartial(sts) > lb)
 						branch(sts);
 				}
 
-				if (resourceFeasibleWithoutOvertime(sts, j, t))
+				if (feas.second)
 					break;
 			}
 		}
