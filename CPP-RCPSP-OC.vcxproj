@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BranchAndBound.cpp" />
     <ClCompile Include="GeneticAlgorithms\FixedDeadline.cpp" />
     <ClCompile Include="GeneticAlgorithms\OvertimeBound.cpp" />
     <ClCompile Include="GeneticAlgorithms\Runners.cpp" />
@@ -33,6 +34,7 @@
     <ClCompile Include="Visualization.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BranchAndBound.h" />
     <ClInclude Include="GeneticAlgorithms\FixedDeadline.h" />
     <ClInclude Include="GeneticAlgorithms\GeneticAlgorithm.h" />
     <ClInclude Include="GeneticAlgorithms\OvertimeBound.h" />

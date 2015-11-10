@@ -11,7 +11,7 @@ void convertArgFileToLSP(int argc, char * argv[]) {
 }
 
 int main(int argc, const char * argv[]) {
-    GAParameters params;
+	GAParameters params;
     params.popSize = 80;
     params.numGens = 100;
     params.pmutate = 5;
