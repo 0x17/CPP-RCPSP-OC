@@ -22,6 +22,7 @@ int main(int argc, const char * argv[]) {
 
 	BranchAndBound bb(p);
 	auto sts = bb.solve();
+    cout << p.calcProfit(sts) << endl;
 
     //ProjectWithOvertime p("../../Projekte/j30/j301_1.sm");
 

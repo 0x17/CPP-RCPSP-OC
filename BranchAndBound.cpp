@@ -13,6 +13,9 @@ vector<int> BranchAndBound::solve() {
 }
 
 bool BranchAndBound::isEligible(vector<int>& sts, int j) {
+    if(sts[j] != UNSCHEDULED)
+        return false;
+
 	for (int i = 0; i < p.numJobs; i++)
 		if(p.adjMx(i,j) && sts[i] == UNSCHEDULED)
 			return false;
@@ -43,7 +46,6 @@ float BranchAndBound::upperBoundForPartial(vector<int>& sts) {
 	return numeric_limits<float>::max();
 }
 
-// DEBUG ME!
 void BranchAndBound::branch(vector<int> sts) {
 	for (int j = 0; j < p.numJobs; j++) {
 		if (isEligible(sts, j)) {
