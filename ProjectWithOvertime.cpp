@@ -3,6 +3,7 @@
 //
 
 #include <cmath>
+#include <string>
 #include "ProjectWithOvertime.h"
 
 ProjectWithOvertime::ProjectWithOvertime(string filename) :
