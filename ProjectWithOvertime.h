@@ -16,9 +16,10 @@ public:
 	explicit ProjectWithOvertime(string filename);
 
 	float calcProfit(int makespan, const Matrix<int> &resRem) const;
-	float calcProfit(const vector<int> sts) const;
+	float calcProfit(const vector<int> &sts) const;
 	float totalCosts(const Matrix<int> & resRem) const;
-	float totalCosts(const vector<int> sts) const;
+	float totalCosts(const vector<int> &sts) const;
+    float totalCostsForPartial(const vector<int> &sts) const;
 
     SGSResult serialSGSWithOvertime(const vector<int> &order);
     SGSResult serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta);

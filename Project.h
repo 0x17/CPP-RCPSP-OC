@@ -34,11 +34,13 @@ public:
     vector<int> ests, lsts, efts, lfts;
 
     const bool USE_DISPOSITION_METHOD = false;
+    const int UNSCHEDULED = -1;
 
 	explicit Project(string filename);
     virtual ~Project() {}
 
 	vector<int> serialSGS(const vector<int>& order) const;
+    vector<int> serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const;
 	SGSResult serialSGS(const vector<int>& order, const vector<int>& zr) const;
 	SGSResult serialSGS(const vector<int>& order, const Matrix<int>& zrt) const;
 
@@ -75,6 +77,7 @@ protected:
     bool enoughCapacityForJob(int job, int t, Matrix<int> & resRem) const;
     int computeLastPredFinishingTime(const vector<int> &fts, int job) const;
     int computeFirstSuccStartingTime(const vector<int> &sts, int job) const;
+    int computeLastPredFinishingTimeForPartial(const vector<int> &fts, int job) const;
     void scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, Matrix<int> &resRem) const;
 
 	vector<int> earliestStartSchedule(Matrix<int> & resRem) const;
@@ -93,6 +96,8 @@ private:
     void computeELSFTs();
 
     void computeNodeDepths(int root, int curDepth, vector<int> &nodeDepths);
+
+    Matrix<int> resRemForPartial(const vector<int> &sts) const;
 };
 
 template<class Func>

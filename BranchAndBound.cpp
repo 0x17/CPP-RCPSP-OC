@@ -3,21 +3,21 @@
 #include "ProjectWithOvertime.h"
 #include <algorithm>
 
-BranchAndBound::BranchAndBound(ProjectWithOvertime& _p) : p(_p), lb(0.0f) {}
+BranchAndBound::BranchAndBound(ProjectWithOvertime& _p) : p(_p), lb(0.0f), Tmin(p.makespan(p.ests)) {}
 
 vector<int> BranchAndBound::solve() {
-	vector<int> sts(p.numJobs, UNSCHEDULED);
+	vector<int> sts(p.numJobs, p.UNSCHEDULED);
 	sts[0] = 0;
 	branch(sts);
 	return candidate;
 }
 
 bool BranchAndBound::isEligible(vector<int>& sts, int j) {
-    if(sts[j] != UNSCHEDULED)
+    if(sts[j] != p.UNSCHEDULED)
         return false;
 
 	for (int i = 0; i < p.numJobs; i++)
-		if(p.adjMx(i,j) && sts[i] == UNSCHEDULED)
+		if(p.adjMx(i,j) && sts[i] == p.UNSCHEDULED)
 			return false;
 	return true;
 }
@@ -29,7 +29,7 @@ pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j
 		for(int tau = stj + 1; tau <= stj + p.durations[j]; tau++) {
 			int cdemand = 0;
 			for(int i = 0; i < p.numJobs; i++)
-				if (sts[i] != UNSCHEDULED && sts[i] < tau && tau <= sts[i] + p.durations[i])
+				if (sts[i] != p.UNSCHEDULED && sts[i] < tau && tau <= sts[i] + p.durations[i])
 					cdemand += p.demands(i, r);
 
 			if(cdemand + p.demands(j, r) > p.capacities[r]  + p.zmax[r])
@@ -43,7 +43,17 @@ pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j
 }
 
 float BranchAndBound::upperBoundForPartial(vector<int>& sts) {
-	return numeric_limits<float>::max();
+    int Tmax = p.makespan(p.serialSGSForPartial(sts, p.topOrder));
+    float maxProfit = 0.0f;
+    float minCosts = p.totalCostsForPartial(sts);
+
+    for(int deadline = Tmin; deadline <= Tmax; deadline++) {
+        // TODO BETTER MINCOST
+        minCosts = 0.0f;
+        maxProfit = max(p.revenue[deadline] - minCosts, maxProfit);
+    }
+
+	return maxProfit;
 }
 
 void BranchAndBound::branch(vector<int> sts) {
@@ -71,7 +81,7 @@ void BranchAndBound::branch(vector<int> sts) {
 					if (upperBoundForPartial(sts) > lb)
 						branch(sts);
 
-					sts[j] = UNSCHEDULED;
+					sts[j] = p.UNSCHEDULED;
 				}
 
 				if (feas.second)

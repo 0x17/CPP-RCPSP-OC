@@ -42,6 +42,40 @@ vector<int> Project::serialSGS(const vector<int>& order) const {
 	return serialSGSCore(order, resRem);
 }
 
+vector<int> Project::serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const {
+    Matrix<int> resRem = resRemForPartial(sts);
+
+    vector<int> fts(numJobs), nsts;
+    nsts = sts;
+    eachJobConst([&](int j) {
+        if(sts[j] != UNSCHEDULED) fts[j] = sts[j] + durations[j];
+        else fts[j] = -1;
+    });
+
+    for (int job : order) {
+        if(sts[job] == UNSCHEDULED) {
+            int lastPredFinished = computeLastPredFinishingTimeForPartial(fts, job);
+            int t;
+            for (t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++);
+            scheduleJobAt(job, t, nsts, fts, resRem);
+        }
+    }
+
+    return nsts;
+}
+
+Matrix<int> Project::resRemForPartial(const vector<int> &sts) const {
+    Matrix<int> resRem = initResRem([&](int r, int t) {
+        int rem = capacities[r];
+        eachJobConst([&](int j) {
+            if(sts[j] != UNSCHEDULED && sts[j] < t && t <= sts[j])
+                rem -= demands(j, r);
+        });
+        return rem;
+    });
+    return resRem;
+}
+
 pair<vector<int>, Matrix<int>> Project::serialSGS(const vector<int>& order, const vector<int>& z) const {
     Matrix<int> resRem = initResRem([&](int r, int t) { return capacities[r] + z[r]; });
 	vector<int> sts = serialSGSCore(order, resRem);
@@ -88,6 +122,12 @@ int Project::computeLastPredFinishingTime(const vector<int> &fts, int job) const
 	int lastPredFinished = 0;
     eachJobConst([&] (int j) { if (adjMx(j,job) && fts[j] > lastPredFinished) lastPredFinished = fts[j]; });
 	return lastPredFinished;
+}
+
+int Project::computeLastPredFinishingTimeForPartial(const vector<int> &fts, int job) const {
+    int lastPredFinished = 0;
+    eachJobConst([&] (int j) { if (adjMx(j,job) && fts[j] != UNSCHEDULED && fts[j] > lastPredFinished) lastPredFinished = fts[j]; });
+    return lastPredFinished;
 }
 
 int Project::computeFirstSuccStartingTime(const vector<int> &sts, int job) const {
@@ -256,3 +296,4 @@ vector<int> Project::earliestStartSchedule(Matrix<int>& resRem) const {
 	}
 	return ess;
 }
+

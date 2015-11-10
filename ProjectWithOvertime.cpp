@@ -25,7 +25,7 @@ inline float ProjectWithOvertime::totalCosts(const Matrix<int> & resRem) const {
 	return costs;
 }
 
-float ProjectWithOvertime::totalCosts(const vector<int> sts) const {
+float ProjectWithOvertime::totalCosts(const vector<int> &sts) const {
 	float costs = 0.0f;
 	int cdemand;
 	eachResPeriodConst([&](int r, int t) {
@@ -39,7 +39,21 @@ float ProjectWithOvertime::totalCosts(const vector<int> sts) const {
 	return costs;
 }
 
-float ProjectWithOvertime::calcProfit(const vector<int> sts) const {
+float ProjectWithOvertime::totalCostsForPartial(const vector<int> &sts) const {
+    float costs = 0.0f;
+    int cdemand;
+    eachResPeriodConst([&](int r, int t) {
+        cdemand = 0;
+        eachJobConst([&](int j) {
+            if (sts[j] != UNSCHEDULED && sts[j] < t && t <= sts[j] + durations[j])
+                cdemand += demands(j, r);
+        });
+        costs += Utils::max(0, cdemand - capacities[r]) * kappa[r];
+    });
+    return costs;
+}
+
+float ProjectWithOvertime::calcProfit(const vector<int> &sts) const {
 	return revenue[sts[numJobs - 1]] - totalCosts(sts);
 }
 
@@ -251,3 +265,4 @@ SGSResult ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<
 
     return make_pair(sts, resRem);
 }
+
