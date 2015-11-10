@@ -2,6 +2,7 @@
 #include "LSSolver.h"
 #include "GeneticAlgorithms/OvertimeBound.h"
 #include "GeneticAlgorithms/Runners.h"
+#include "BranchAndBound.h"
 
 void convertArgFileToLSP(int argc, char * argv[]) {
     if (argc == 2) {
@@ -18,7 +19,11 @@ int main(int argc, const char * argv[]) {
     params.timeLimit = -1.0;
 
     ProjectWithOvertime p("QBWLBeispiel.DAT");
-//    ProjectWithOvertime p("../../Projekte/j30/j301_1.sm");
+
+	BranchAndBound bb(p);
+	auto sts = bb.solve();
+
+    //ProjectWithOvertime p("../../Projekte/j30/j301_1.sm");
 
     //auto res = GARunners::runSpecific(p, params, 0);
     //Visualization::drawScheduleToPDF(p, res.sts, "myschedule.pdf");
@@ -28,7 +33,7 @@ int main(int argc, const char * argv[]) {
     //ProjectWithOvertime p("QBWLBeispiel.DAT");
 
     //p.reorderDispositionMethod();
-    GARunners::runAll(p, params);
+    //GARunners::runAll(p, params);
 
     //GARunners::runRange(p, params, 0, 4);
 

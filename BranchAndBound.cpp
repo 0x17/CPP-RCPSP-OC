@@ -1,6 +1,7 @@
 ﻿#include "BranchAndBound.h"
 #include "Utils.h"
 #include "ProjectWithOvertime.h"
+#include <algorithm>
 
 BranchAndBound::BranchAndBound(ProjectWithOvertime& _p) : p(_p), lb(0.0f) {}
 
@@ -42,13 +43,14 @@ float BranchAndBound::upperBoundForPartial(vector<int>& sts) {
 	return numeric_limits<float>::max();
 }
 
+// DEBUG ME!
 void BranchAndBound::branch(vector<int> sts) {
 	for (int j = 0; j < p.numJobs; j++) {
 		if (isEligible(sts, j)) {
 			if (j == p.numJobs - 1) {
 				sts[j] = sts[j - 1];
 				candidate = sts;
-				lb = Utils::max(lb, p.calcProfit(sts));
+				lb = max(lb, p.calcProfit(sts));
 				return;
 			}
 
@@ -66,6 +68,8 @@ void BranchAndBound::branch(vector<int> sts) {
 
 					if (upperBoundForPartial(sts) > lb)
 						branch(sts);
+
+					sts[j] = UNSCHEDULED;
 				}
 
 				if (feas.second)
