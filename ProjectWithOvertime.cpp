@@ -132,10 +132,15 @@ vector<int> ProjectWithOvertime::latestFinishingTimesForPartial(const vector<int
 	return lfts;
 }
 
-list<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>& sts, const vector<int>& ests, const vector<int>& lfts) const {
-	list<int> decisionTimes;
+list<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>& sts, const vector<int>& ests, const vector<int>& lfts, int j) const {
+	list<int> decisionTimes = { ests[j], lfts[j] };
 
-	// FIXME: Implement me!
+	for(int tau = ests[j]; tau <= lfts[j]; tau++) {
+		eachJobConst([&](int i) {
+			if (sts[i] + durations[i] == tau || tau + durations[j] == sts[i])
+				decisionTimes.push_back(tau);
+		});
+	}
 
 	return decisionTimes;
 }
@@ -150,8 +155,17 @@ float ProjectWithOvertime::extensionCosts(const Matrix<int> &resRem, int j, int 
 	return costs;
 }
 
-int ProjectWithOvertime::selectBestStartingTime(vector<int>& sts, int j, const list<int>& decisionTimes) const {
-	return 0;
+int ProjectWithOvertime::selectBestStartingTime(vector<int>& sts, int j, const list<int>& decisionTimes, const Matrix<int> &resRem) const {
+	int bestT;
+	float bestCosts = numeric_limits<float>::max(), costs;
+	for(auto dt : decisionTimes) {
+		costs = extensionCosts(resRem, j, dt);
+		if(costs < bestCosts) {
+			bestCosts = costs;
+			bestT = dt;
+		}
+	}
+	return bestT;
 }
 
 SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order) {

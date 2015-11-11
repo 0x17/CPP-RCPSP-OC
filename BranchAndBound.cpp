@@ -3,7 +3,7 @@
 #include "ProjectWithOvertime.h"
 #include <algorithm>
 
-BranchAndBound::BranchAndBound(ProjectWithOvertime& _p) : p(_p), lb(0.0f), Tmin(p.makespan(p.ests)) {}
+BranchAndBound::BranchAndBound(ProjectWithOvertime& _p) : p(_p), lb(0.0f) {}
 
 vector<int> BranchAndBound::solve() {
 	vector<int> sts(p.numJobs, p.UNSCHEDULED);
@@ -43,17 +43,7 @@ pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j
 }
 
 float BranchAndBound::upperBoundForPartial(vector<int>& sts) {
-    int Tmax = p.makespan(p.serialSGSForPartial(sts, p.topOrder));
-    float maxProfit = 0.0f;
-    float minCosts = p.totalCostsForPartial(sts);
-
-    for(int deadline = Tmin; deadline <= Tmax; deadline++) {
-        // TODO BETTER MINCOST
-        minCosts = 0.0f;
-        maxProfit = max(p.revenue[deadline] - minCosts, maxProfit);
-    }
-
-	return maxProfit;
+	return p.revenue[p.makespan(p.earliestStartingTimesForPartial(sts))] - p.totalCosts(p.serialSGSForPartial(sts, p.topOrder));
 }
 
 void BranchAndBound::branch(vector<int> sts) {
