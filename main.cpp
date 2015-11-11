@@ -18,15 +18,26 @@ int main(int argc, const char * argv[]) {
     params.pmutate = 5;
     params.timeLimit = -1.0;
 
-    ProjectWithOvertime p("QBWLBeispiel.DAT");
+	
+	string pfilename = "QBWLBeispiel.DAT";
+    ProjectWithOvertime p(pfilename);
 
 	BranchAndBound bb(p);
 	auto sts = bb.solve();
-    cout << p.calcProfit(sts) << endl;
+
+	Utils::serializeSchedule(sts, "myschedulebiatch.txt");
+	system(("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe " + pfilename + " myschedulebiatch.txt").c_str());
+
+	//auto res = GARunners::runSpecific(p, params, 0);	
+	//Utils::serializeSchedule(res.sts, "myschedulebiatch.txt");
+	//system(("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe " + pfilename + " myschedulebiatch.txt").c_str());
+
+    //cout << p.calcProfit(sts) << endl;
 
     //ProjectWithOvertime p("../../Projekte/j30/j301_1.sm");
 
     //auto res = GARunners::runSpecific(p, params, 0);
+
     //Visualization::drawScheduleToPDF(p, res.sts, "myschedule.pdf");
 
     //Visualization::drawActivityOnNodeGraphToPDF(p, "j301_1.pdf");
@@ -37,9 +48,6 @@ int main(int argc, const char * argv[]) {
     //GARunners::runAll(p, params);
 
     //GARunners::runRange(p, params, 0, 4);
-
-
-	//Utils::serializeSchedule(result.sts, "myschedulebiatch.txt");
-	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedulebiatch.txt");
+		
     return 0;
 }

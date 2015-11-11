@@ -17,6 +17,7 @@ public:
 
 	float calcProfit(int makespan, const Matrix<int> &resRem) const;
 	float calcProfit(const vector<int> &sts) const;
+
 	float totalCosts(const Matrix<int> & resRem) const;
 	float totalCosts(const vector<int> &sts) const;
     float totalCostsForPartial(const vector<int> &sts) const;

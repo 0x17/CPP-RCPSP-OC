@@ -54,7 +54,7 @@ float ProjectWithOvertime::totalCostsForPartial(const vector<int> &sts) const {
 }
 
 float ProjectWithOvertime::calcProfit(const vector<int> &sts) const {
-	return revenue[sts[numJobs - 1]] - totalCosts(sts);
+	return revenue[makespan(sts)] - totalCosts(sts);
 }
 
 float ProjectWithOvertime::calcProfit(int makespan, const Matrix<int>& resRem) const {
@@ -265,12 +265,11 @@ SGSResult ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<
     for(int i=0; i<numJobs; i++) {
 		vector<int> cests = earliestStartingTimesForPartial(sts);
 		vector<int> clfts = latestFinishingTimesForPartial(sts);
-		list<int> decisionTimes = decisionTimesForResDevProblem(sts, cests, clfts);
-		if(!decisionTimes.empty()) {
-			
-		}
 
-        int job = order[i];
+		int job = order[i];
+		list<int> decisionTimes = decisionTimesForResDevProblem(sts, cests, clfts, job);
+		if(!decisionTimes.empty()) {
+		}       
 
         int t = 0;
 

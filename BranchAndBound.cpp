@@ -2,13 +2,22 @@
 #include "Utils.h"
 #include "ProjectWithOvertime.h"
 #include <algorithm>
+#include <iostream>
 
-BranchAndBound::BranchAndBound(ProjectWithOvertime& _p) : p(_p), lb(0.0f) {}
+BranchAndBound::BranchAndBound(ProjectWithOvertime& _p) : p(_p), lb(0.0f), nodeCtr(0), boundCtr(0) {}
 
 vector<int> BranchAndBound::solve() {
+	nodeCtr = 0;
+	boundCtr = 0;
+
 	vector<int> sts(p.numJobs, p.UNSCHEDULED);
 	sts[0] = 0;
+
 	branch(sts);
+
+	cout << "Number of nodes visited: " << nodeCtr << endl;
+	cout << "Number of boundings: " << boundCtr << endl;
+
 	return candidate;
 }
 
@@ -47,12 +56,22 @@ float BranchAndBound::upperBoundForPartial(vector<int>& sts) {
 }
 
 void BranchAndBound::branch(vector<int> sts) {
+	nodeCtr++;
+
 	for (int j = 0; j < p.numJobs; j++) {
 		if (isEligible(sts, j)) {
 			if (j == p.numJobs - 1) {
-				sts[j] = sts[j - 1];
-				candidate = sts;
-				lb = max(lb, p.calcProfit(sts));
+				sts[p.lastJob] = 0;
+				p.eachJobConst([&](int i) {
+					if(i < p.lastJob)
+						sts[p.lastJob] = Utils::max(sts[i] + p.durations[i], sts[p.lastJob]);
+				});
+				float profit = p.calcProfit(sts);
+				if(profit > lb) {
+					candidate = sts;
+					lb = profit;
+					cout << "Updated lower bound = " << lb << endl;
+				}
 				return;
 			}
 
@@ -70,6 +89,7 @@ void BranchAndBound::branch(vector<int> sts) {
 
 					if (upperBoundForPartial(sts) > lb)
 						branch(sts);
+					else boundCtr++;
 
 					sts[j] = p.UNSCHEDULED;
 				}

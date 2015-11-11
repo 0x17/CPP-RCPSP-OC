@@ -24,7 +24,7 @@ typedef pair<vector<int>, Matrix<int>> SGSResult;
 
 class Project {
 public:
-    int numJobs, numRes, numPeriods, T;
+    int numJobs, numRes, numPeriods, T, lastJob;
     Matrix<char> adjMx;
     vector<int> durations, capacities;
     Matrix<int> demands;
@@ -52,7 +52,7 @@ public:
 
 	bool isOrderFeasible(const vector<int> &order) const;
 
-    int makespan(const vector<int>& sts);
+    int makespan(const vector<int>& sts) const;
 
     EACH_FUNC(eachJob, eachJobConst, j, numJobs)
     EACH_FUNC(eachJobi, eachJobiConst, i, numJobs)
@@ -105,8 +105,8 @@ inline void Project::timeWindow(int j, Func code) const {
     for(int t=efts[j]; t<=lfts[j]; t++) { code(t); }
 }
 
-inline int Project::makespan(const vector<int>& sts) {
-    return sts[numJobs-1];
+inline int Project::makespan(const vector<int>& sts) const {
+    return sts[lastJob];
 }
 
 #endif //SSGS_PROJECT_H

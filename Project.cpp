@@ -12,6 +12,7 @@ Project::Project(string filename) {
     auto lines = Utils::readLines(filename);
 
     numJobs = Utils::extractIntFromStr(lines[5], "jobs \\(incl. supersource\\/sink \\):  (\\d+)");
+	lastJob = numJobs - 1;
     numRes = Utils::extractIntFromStr(lines[8], "  - renewable                 :  (\\d+)   R");
 
     parsePrecedenceRelation(lines);
@@ -222,7 +223,7 @@ void Project::computeELSFTs() {
         efts[j] = ests[j] + durations[j];
     }
 
-    for(int k=numJobs-1; k>=0; k--) {
+    for(int k=lastJob; k>=0; k--) {
         int j = topOrder[k];
         lfts[j] = computeFirstSuccStartingTime(lsts, j);
         lsts[j] = lfts[j] - durations[j];
