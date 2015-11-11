@@ -56,6 +56,16 @@ namespace Utils {
 	int pickWithDistribution(vector<float> probs);
 
     void spit(const string s, const string filename);
+
+    template<class Func>
+    float maxInRangeIncl(int lb, int ub, Func transform) {
+        float r = numeric_limits<float>::lowest();
+        for(int i = lb; i<=ub; i++) {
+            float v = transform(i);
+            if(v > r) r = v;
+        }
+        return r;
+    }
 }
 
 #endif //SSGS_UTILS_H

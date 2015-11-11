@@ -13,7 +13,7 @@ vector<int> BranchAndBound::solve() {
 	nodeCtr = 0;
 	boundCtr = 0;
 
-	vector<int> sts(p.numJobs, p.UNSCHEDULED);
+	vector<int> sts(p.numJobs, Project::UNSCHEDULED);
 	sts[0] = 0;
 
 	branch(sts);
@@ -26,11 +26,11 @@ vector<int> BranchAndBound::solve() {
 }
 
 bool BranchAndBound::isEligible(vector<int>& sts, int j) {
-    if(sts[j] != p.UNSCHEDULED)
+    if(sts[j] != Project::UNSCHEDULED)
         return false;
 
 	for (int i = 0; i < p.numJobs; i++)
-		if(p.adjMx(i,j) && sts[i] == p.UNSCHEDULED)
+		if(p.adjMx(i,j) && sts[i] == Project::UNSCHEDULED)
 			return false;
 
 	return true;
@@ -42,7 +42,7 @@ pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j
 		for(int tau = stj + 1; tau <= stj + p.durations[j]; tau++) {
 			int cdemand = 0;
 			for(int i = 0; i < p.numJobs; i++)
-				if (sts[i] != p.UNSCHEDULED && sts[i] < tau && tau <= sts[i] + p.durations[i])
+				if (sts[i] != Project::UNSCHEDULED && sts[i] < tau && tau <= sts[i] + p.durations[i])
 					cdemand += p.demands(i, r);
 
 			cdemand += p.demands(j, r);
@@ -62,35 +62,53 @@ float BranchAndBound::upperBoundForPartial(vector<int>& sts) {
 
 	int msMin = p.makespan(p.earliestStartingTimesForPartial(sts));
 	int msMax = p.makespan(p.serialSGSForPartial(sts, p.topOrder, resRem).first);
-	
-	float bestProfit = numeric_limits<float>::lowest(), costs;
 
-	vector<int> missingDemand(p.numRes), freeArea(p.numRes);
-	for (int r = 0; r < p.numRes; r++) {
+    auto areas = computeAreas(sts, resRem, msMin);
+    vector<int> &missingDemand = areas.first;
+    vector<int> &freeArea = areas.second;
+
+    return Utils::maxInRangeIncl(msMin, msMax, [&](int ms) { return p.revenue[ms] - costsLbForMakespan(msMin, missingDemand, freeArea, ms); });
+}
+
+float BranchAndBound::costsLbForMakespan(int msMin, const vector<int> &missingDemand, const vector<int> &freeArea, int ms) const {
+    float costs = 0.0f;
+    for (int r = 0; r < p.numRes; r++) {
+        costs += p.kappa[r] * Utils::max(0, missingDemand[r] - (freeArea[r] + (ms - msMin) * p.capacities[r]));
+    }
+    return costs;
+}
+
+pair<vector<int>, vector<int>> BranchAndBound::computeAreas(const vector<int> &sts, const Matrix<int> &resRem, int msMin) const {
+    vector<int> missingDemand(p.numRes), freeArea(p.numRes);
+    for (int r = 0; r < p.numRes; r++) {
 		missingDemand[r] = 0;
 		for (int j = 0; j < p.numJobs; j++)
-			if (sts[j] == p.UNSCHEDULED)
-				missingDemand[r] += p.demands(j, r);
+			if (sts[j] == Project::UNSCHEDULED)
+				missingDemand[r] += p.demands(j, r) * p.durations[j];
 
 		freeArea[r] = 0;
 		for (int t = 0; t <= msMin; t++)
 			freeArea[r] += max(0, resRem(r, t));
-	}	
-
-	for(int ms = msMin; ms <= msMax; ms++) {
-		costs = 0.0f;
-		for (int r = 0; r < p.numRes; r++) {			
-			costs += p.kappa[r] * Utils::max(0, missingDemand[r] - (freeArea[r] + (ms-msMin) * p.capacities[r]));
-		}
-
-		float profit = p.revenue[ms] - costs;
-		if (profit > bestProfit)
-			bestProfit = profit;		
 	}
+    return make_pair(missingDemand, freeArea);
+}
 
-	return bestProfit;
+float BranchAndBound::upperBoundForPartialSimple(vector<int> &sts) {
+    return p.revenue[p.makespan(p.earliestStartingTimesForPartial(sts))] - p.totalCostsForPartial(sts);
+}
 
-	//return p.revenue[p.makespan(p.earliestStartingTimesForPartial(sts))] - p.totalCostsForPartial(sts);
+void BranchAndBound::foundLeaf(vector<int> &sts) {
+    sts[p.lastJob] = 0;
+    p.eachJobConst([&](int i) {
+        if(i < p.lastJob)
+            sts[p.lastJob] = Utils::max(sts[i] + p.durations[i], sts[p.lastJob]);
+    });
+    float profit = p.calcProfit(sts);
+    if(profit > lb) {
+        candidate = sts;
+        lb = profit;
+        cout << "Updated lower bound = " << lb << endl;
+    }
 }
 
 void BranchAndBound::branch(vector<int> sts) {
@@ -98,54 +116,30 @@ void BranchAndBound::branch(vector<int> sts) {
 		cout << "Nodes visited = " << nodeCtr << ", Boundings = " << boundCtr << ", Opt = " << lb << endl;
 	}
 
-	nodeCtr++;
+ 	nodeCtr++;
+
+    int maxSt = p.latestStartingTimeInPartial(sts);
 
 	for(int j = 0; j < p.numJobs; j++) {
 		if(isEligible(sts, j)) {
 			if(j == p.numJobs - 1) {
-				sts[p.lastJob] = 0;
-				p.eachJobConst([&](int i) {
-					if(i < p.lastJob)
-						sts[p.lastJob] = Utils::max(sts[i] + p.durations[i], sts[p.lastJob]);
-				});
-				float profit = p.calcProfit(sts);
-				if(profit > lb) {
-					candidate = sts;
-					lb = profit;
-					cout << "Updated lower bound = " << lb << endl;
-				}
-				return;
+                foundLeaf(sts);
+                return;
 			}
 
-			int t = 0;
-			for(int i = 0; i < p.numJobs; i++) {
-				if (p.adjMx(i, j))
-					t = Utils::max(t, sts[i] + p.durations[i]);
-			}
-
-			int maxSt = 0;
-			for (int i = 0; i < p.numJobs; i++)
-				if (sts[i] != p.UNSCHEDULED && sts[i] > maxSt)
-					maxSt = sts[i];
-
-			if (t < maxSt) continue;
-
-			for(;true;t++) {
+			for(int t = p.computeLastPredFinishingTimeForSts(sts, j); true; t++) {
 				pair<bool, bool> feas = resourceFeasibilityCheck(sts, j, t);
 
 				if(feas.first) {
-					if(upperBoundForPartial(sts) > lb) {
+					if(upperBoundForPartial(sts) > lb && t >= maxSt) {
 						sts[j] = t;
 						branch(sts);
-						sts[j] = p.UNSCHEDULED;
+						sts[j] = Project::UNSCHEDULED;
 					}
-					else
-						boundCtr++;
-
+					else boundCtr++;
 				}
 
-				if(feas.second)
-					break;
+				if(feas.second) break;
 			}
 		}
 	}

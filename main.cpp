@@ -19,8 +19,8 @@ int main(int argc, const char * argv[]) {
     params.timeLimit = -1.0;
 
 	
-	//string pfilename = "../../Projekte/j30/j301_1.sm";
-	string pfilename = "QBWLBeispiel.DAT";
+	string pfilename = "../../Projekte/j30/j301_1.sm";
+	//string pfilename = "QBWLBeispiel.DAT";
     ProjectWithOvertime p(pfilename);
 
 	BranchAndBound bb(p);

@@ -128,6 +128,14 @@ int Project::computeLastPredFinishingTime(const vector<int> &fts, int job) const
 	return lastPredFinished;
 }
 
+int Project::computeLastPredFinishingTimeForSts(const vector<int> &sts, int job) const {
+    int lastPredFinished = 0;
+    eachJobConst([&] (int j) {
+        int ftj = sts[j] + durations[j];
+        if (adjMx(j,job) && ftj > lastPredFinished) lastPredFinished = ftj; });
+    return lastPredFinished;
+}
+
 int Project::computeLastPredFinishingTimeForPartial(const vector<int> &fts, int job) const {
     int lastPredFinished = 0;
     eachJobConst([&] (int j) { if (adjMx(j,job) && fts[j] != UNSCHEDULED && fts[j] > lastPredFinished) lastPredFinished = fts[j]; });
@@ -301,3 +309,11 @@ vector<int> Project::earliestStartSchedule(Matrix<int>& resRem) const {
 	return ess;
 }
 
+int Project::latestStartingTimeInPartial(const vector<int>& sts) const {
+    int maxSt = 0;
+    for (int i = 0; i < numJobs; i++) {
+        if (sts[i] != UNSCHEDULED && sts[i] > maxSt)
+            maxSt = sts[i];
+    }
+    return maxSt;
+}

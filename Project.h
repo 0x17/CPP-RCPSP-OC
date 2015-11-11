@@ -34,7 +34,8 @@ public:
     vector<int> ests, lsts, efts, lfts;
 
     const bool USE_DISPOSITION_METHOD = false;
-    const int UNSCHEDULED = -1;
+
+    enum { UNSCHEDULED = -1 };
 
 	explicit Project(string filename);
     virtual ~Project() {}
@@ -72,13 +73,17 @@ public:
 
 	Matrix<int> resRemForPartial(const vector<int> &sts) const;
 
+    int computeLastPredFinishingTime(const vector<int> &fts, int job) const;
+    int computeLastPredFinishingTimeForSts(const vector<int> &sts, int job) const;
+    int latestStartingTimeInPartial(const vector<int> &sts) const;
+
 protected:
     void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem) const;
 
 	vector<int> serialSGSCore(const vector<int>& order, Matrix<int> &resRem) const;
 
     bool enoughCapacityForJob(int job, int t, Matrix<int> & resRem) const;
-    int computeLastPredFinishingTime(const vector<int> &fts, int job) const;
+
     int computeFirstSuccStartingTime(const vector<int> &sts, int job) const;
     int computeLastPredFinishingTimeForPartial(const vector<int> &fts, int job) const;
     void scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, Matrix<int> &resRem) const;
