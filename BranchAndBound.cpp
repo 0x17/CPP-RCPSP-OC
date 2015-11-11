@@ -123,6 +123,13 @@ void BranchAndBound::branch(vector<int> sts) {
 					t = Utils::max(t, sts[i] + p.durations[i]);
 			}
 
+			int maxSt = 0;
+			for (int i = 0; i < p.numJobs; i++)
+				if (sts[i] != p.UNSCHEDULED && sts[i] > maxSt)
+					maxSt = sts[i];
+
+			if (t < maxSt) continue;
+
 			for(;true;t++) {
 				pair<bool, bool> feas = resourceFeasibilityCheck(sts, j, t);
 
