@@ -43,7 +43,7 @@ vector<int> Project::serialSGS(const vector<int>& order) const {
 	return serialSGSCore(order, resRem);
 }
 
-vector<int> Project::serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const {
+pair<vector<int>, Matrix<int>> Project::serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const {
     Matrix<int> resRem = resRemForPartial(sts);
 
     vector<int> fts(numJobs), nsts;
@@ -62,7 +62,7 @@ vector<int> Project::serialSGSForPartial(const vector<int> &sts, const vector<in
         }
     }
 
-    return nsts;
+	return make_pair(nsts, resRem);
 }
 
 Matrix<int> Project::resRemForPartial(const vector<int> &sts) const {

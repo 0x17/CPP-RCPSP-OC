@@ -28,12 +28,12 @@ bool BranchAndBound::isEligible(vector<int>& sts, int j) {
 	for (int i = 0; i < p.numJobs; i++)
 		if(p.adjMx(i,j) && sts[i] == p.UNSCHEDULED)
 			return false;
+
 	return true;
 }
 
 pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j, int stj) {
 	bool feasWoutOC = true;
-
 	for(int r = 0; r < p.numRes; r++) {
 		for(int tau = stj + 1; tau <= stj + p.durations[j]; tau++) {
 			int cdemand = 0;
@@ -41,10 +41,12 @@ pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j
 				if (sts[i] != p.UNSCHEDULED && sts[i] < tau && tau <= sts[i] + p.durations[i])
 					cdemand += p.demands(i, r);
 
-			if(cdemand + p.demands(j, r) > p.capacities[r]  + p.zmax[r])
+			cdemand += p.demands(j, r);
+
+			if(cdemand > p.capacities[r]  + p.zmax[r])
 				return make_pair(false, false);
 
-			if(feasWoutOC && cdemand + p.demands(j,r) > p.capacities[r])
+			if(feasWoutOC && cdemand > p.capacities[r])
 				feasWoutOC = false;
 		}
 	}
@@ -52,15 +54,15 @@ pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j
 }
 
 float BranchAndBound::upperBoundForPartial(vector<int>& sts) {
-	return p.revenue[p.makespan(p.earliestStartingTimesForPartial(sts))] - p.totalCosts(p.serialSGSForPartial(sts, p.topOrder));
+	return p.revenue[p.makespan(p.earliestStartingTimesForPartial(sts))] - p.totalCosts(p.serialSGSForPartial(sts, p.topOrder).second);
 }
 
 void BranchAndBound::branch(vector<int> sts) {
 	nodeCtr++;
 
-	for (int j = 0; j < p.numJobs; j++) {
-		if (isEligible(sts, j)) {
-			if (j == p.numJobs - 1) {
+	for(int j = 0; j < p.numJobs; j++) {
+		if(isEligible(sts, j)) {
+			if(j == p.numJobs - 1) {
 				sts[p.lastJob] = 0;
 				p.eachJobConst([&](int i) {
 					if(i < p.lastJob)
@@ -76,25 +78,26 @@ void BranchAndBound::branch(vector<int> sts) {
 			}
 
 			int t = 0;
-			for (int i = 0; i < p.numJobs; i++) {
+			for(int i = 0; i < p.numJobs; i++) {
 				if (p.adjMx(i, j))
 					t = Utils::max(t, sts[i] + p.durations[i]);
 			}
 
-			for (;true;t++) {
+			for(;true;t++) {
 				pair<bool, bool> feas = resourceFeasibilityCheck(sts, j, t);
 
-				if (feas.first) {
-					sts[j] = t;
-
-					if (upperBoundForPartial(sts) > lb)
+				if(feas.first) {
+					if(upperBoundForPartial(sts) > lb) {
+						sts[j] = t;
 						branch(sts);
-					else boundCtr++;
+						sts[j] = p.UNSCHEDULED;
+					}
+					else
+						boundCtr++;
 
-					sts[j] = p.UNSCHEDULED;
 				}
 
-				if (feas.second)
+				if(feas.second)
 					break;
 			}
 		}

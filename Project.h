@@ -40,7 +40,7 @@ public:
     virtual ~Project() {}
 
 	vector<int> serialSGS(const vector<int>& order) const;
-    vector<int> serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const;
+    pair<vector<int>, Matrix<int>> serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const;
 	SGSResult serialSGS(const vector<int>& order, const vector<int>& zr) const;
 	SGSResult serialSGS(const vector<int>& order, const Matrix<int>& zrt) const;
 
