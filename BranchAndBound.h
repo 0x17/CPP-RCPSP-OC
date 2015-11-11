@@ -2,6 +2,7 @@
 #define __BRANCH_AND_BOUND_H__
 
 #include <vector>
+#include "Stopwatch.h"
 using namespace std;
 
 class ProjectWithOvertime;
@@ -12,6 +13,7 @@ public:
 	vector<int> solve();
 
 private:
+	Stopwatch sw;
 	ProjectWithOvertime &p;
 	float lb;
 	vector<int> candidate;

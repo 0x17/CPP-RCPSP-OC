@@ -7,6 +7,8 @@
 BranchAndBound::BranchAndBound(ProjectWithOvertime& _p) : p(_p), lb(0.0f), nodeCtr(0), boundCtr(0) {}
 
 vector<int> BranchAndBound::solve() {
+	sw.start();
+
 	nodeCtr = 0;
 	boundCtr = 0;
 
@@ -58,6 +60,10 @@ float BranchAndBound::upperBoundForPartial(vector<int>& sts) {
 }
 
 void BranchAndBound::branch(vector<int> sts) {
+	if(static_cast<int>(sw.look()) % 1000 == 0) {
+		cout << "Nodes visited = " << nodeCtr << ", Boundings = " << boundCtr << ", Opt = " << lb << endl;
+	}
+
 	nodeCtr++;
 
 	for(int j = 0; j < p.numJobs; j++) {
