@@ -180,7 +180,7 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order) {
         int t;
         for (t = lastPredFinished; !enoughCapacityForJobWithOvertime(job, t, resRem); t++);
 
-        pair<int, float> bestT = make_pair(t, numeric_limits<float>::min());
+        pair<int, float> bestT = make_pair(t, numeric_limits<float>::lowest());
 
         for(;; t++) {
             if(!enoughCapacityForJobWithOvertime(job, t, resRem))

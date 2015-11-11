@@ -43,26 +43,29 @@ vector<int> Project::serialSGS(const vector<int>& order) const {
 	return serialSGSCore(order, resRem);
 }
 
-pair<vector<int>, Matrix<int>> Project::serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const {
-    Matrix<int> resRem = resRemForPartial(sts);
+pair<vector<int>, Matrix<int>> Project::serialSGSForPartial(const vector<int>& sts, const vector<int>& order, Matrix<int>& resRem) const {
+	vector<int> fts(numJobs), nsts;
+	nsts = sts;
+	eachJobConst([&](int j) {
+		if (sts[j] != UNSCHEDULED) fts[j] = sts[j] + durations[j];
+		else fts[j] = -1;
+	});
 
-    vector<int> fts(numJobs), nsts;
-    nsts = sts;
-    eachJobConst([&](int j) {
-        if(sts[j] != UNSCHEDULED) fts[j] = sts[j] + durations[j];
-        else fts[j] = -1;
-    });
-
-    for (int job : order) {
-        if(sts[job] == UNSCHEDULED) {
-            int lastPredFinished = computeLastPredFinishingTimeForPartial(fts, job);
-            int t;
-            for (t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++);
-            scheduleJobAt(job, t, nsts, fts, resRem);
-        }
-    }
+	for (int job : order) {
+		if (sts[job] == UNSCHEDULED) {
+			int lastPredFinished = computeLastPredFinishingTimeForPartial(fts, job);
+			int t;
+			for (t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++);
+			scheduleJobAt(job, t, nsts, fts, resRem);
+		}
+	}
 
 	return make_pair(nsts, resRem);
+}
+
+pair<vector<int>, Matrix<int>> Project::serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const {
+    Matrix<int> resRem = resRemForPartial(sts);
+	return serialSGSForPartial(sts, order, resRem);
 }
 
 Matrix<int> Project::resRemForPartial(const vector<int> &sts) const {

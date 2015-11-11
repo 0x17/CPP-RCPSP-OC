@@ -40,6 +40,7 @@ public:
     virtual ~Project() {}
 
 	vector<int> serialSGS(const vector<int>& order) const;
+	pair<vector<int>, Matrix<int>> serialSGSForPartial(const vector<int> &sts, const vector<int> &order, Matrix<int> &resRem) const;
     pair<vector<int>, Matrix<int>> serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const;
 	SGSResult serialSGS(const vector<int>& order, const vector<int>& zr) const;
 	SGSResult serialSGS(const vector<int>& order, const Matrix<int>& zrt) const;
@@ -69,6 +70,8 @@ public:
     template<class Func>
     void timeWindow(int j, Func code) const;
 
+	Matrix<int> resRemForPartial(const vector<int> &sts) const;
+
 protected:
     void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem) const;
 
@@ -96,8 +99,6 @@ private:
     void computeELSFTs();
 
     void computeNodeDepths(int root, int curDepth, vector<int> &nodeDepths);
-
-    Matrix<int> resRemForPartial(const vector<int> &sts) const;
 };
 
 template<class Func>

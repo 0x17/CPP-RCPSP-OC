@@ -3,6 +3,7 @@
 #include "ProjectWithOvertime.h"
 #include <algorithm>
 #include <iostream>
+#include <numeric>
 
 BranchAndBound::BranchAndBound(ProjectWithOvertime& _p) : p(_p), lb(0.0f), nodeCtr(0), boundCtr(0) {}
 
@@ -19,6 +20,7 @@ vector<int> BranchAndBound::solve() {
 
 	cout << "Number of nodes visited: " << nodeCtr << endl;
 	cout << "Number of boundings: " << boundCtr << endl;
+	cout << "Total solvetime: " << sw.look() << endl;
 
 	return candidate;
 }
@@ -56,7 +58,39 @@ pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j
 }
 
 float BranchAndBound::upperBoundForPartial(vector<int>& sts) {
-	return p.revenue[p.makespan(p.earliestStartingTimesForPartial(sts))] - p.totalCosts(p.serialSGSForPartial(sts, p.topOrder).second);
+	Matrix<int> resRem = p.resRemForPartial(sts);
+
+	int msMin = p.makespan(p.earliestStartingTimesForPartial(sts));
+	int msMax = p.makespan(p.serialSGSForPartial(sts, p.topOrder, resRem).first);
+	
+	float bestProfit = numeric_limits<float>::lowest(), costs;
+
+	vector<int> missingDemand(p.numRes), freeArea(p.numRes);
+	for (int r = 0; r < p.numRes; r++) {
+		missingDemand[r] = 0;
+		for (int j = 0; j < p.numJobs; j++)
+			if (sts[j] == p.UNSCHEDULED)
+				missingDemand[r] += p.demands(j, r);
+
+		freeArea[r] = 0;
+		for (int t = 0; t <= msMin; t++)
+			freeArea[r] += max(0, resRem(r, t));
+	}	
+
+	for(int ms = msMin; ms <= msMax; ms++) {
+		costs = 0.0f;
+		for (int r = 0; r < p.numRes; r++) {			
+			costs += p.kappa[r] * Utils::max(0, missingDemand[r] - (freeArea[r] + (ms-msMin) * p.capacities[r]));
+		}
+
+		float profit = p.revenue[ms] - costs;
+		if (profit > bestProfit)
+			bestProfit = profit;		
+	}
+
+	return bestProfit;
+
+	//return p.revenue[p.makespan(p.earliestStartingTimesForPartial(sts))] - p.totalCostsForPartial(sts);
 }
 
 void BranchAndBound::branch(vector<int> sts) {
