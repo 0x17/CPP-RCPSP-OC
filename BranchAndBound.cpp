@@ -4,8 +4,9 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
+#include <map>
 
-BranchAndBound::BranchAndBound(ProjectWithOvertime& _p) : p(_p), lb(0.0f), nodeCtr(0), boundCtr(0) {}
+BranchAndBound::BranchAndBound(ProjectWithOvertime& _p) : p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0) {}
 
 vector<int> BranchAndBound::solve() {
 	sw.start();
@@ -14,9 +15,7 @@ vector<int> BranchAndBound::solve() {
 	boundCtr = 0;
 
 	vector<int> sts(p.numJobs, Project::UNSCHEDULED);
-	sts[0] = 0;
-
-	branch(sts);
+	branch(sts, 0, 0);
 
 	cout << "Number of nodes visited: " << nodeCtr << endl;
 	cout << "Number of boundings: " << boundCtr << endl;
@@ -111,10 +110,12 @@ void BranchAndBound::foundLeaf(vector<int> &sts) {
     }
 }
 
-void BranchAndBound::branch(vector<int> sts) {
+void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 	if(static_cast<int>(sw.look()) % 1000 == 0) {
 		cout << "Nodes visited = " << nodeCtr << ", Boundings = " << boundCtr << ", Opt = " << lb << endl;
 	}
+
+	sts[job] = stj;
 
  	nodeCtr++;
 
@@ -126,21 +127,41 @@ void BranchAndBound::branch(vector<int> sts) {
                 foundLeaf(sts);
                 return;
 			}
+						
+			int tPredFeas = p.computeLastPredFinishingTimeForSts(sts, j);
 
-			for(int t = p.computeLastPredFinishingTimeForSts(sts, j); true; t++) {
+			// fathom redundant schedules
+			if(tPredFeas < maxSt) {
+				boundCtr++;
+				continue;
+			}
+
+			list<pair<float, int>> ubToT;
+
+			for(int t = tPredFeas; true; t++) {
 				pair<bool, bool> feas = resourceFeasibilityCheck(sts, j, t);
 
 				if(feas.first) {
-					if(upperBoundForPartial(sts) > lb && t >= maxSt) {
-						sts[j] = t;
-						branch(sts);
-						sts[j] = Project::UNSCHEDULED;
+					//if (upperBoundForPartialSimple(sts) > lb) branch(sts);
+					//else boundCtr++;
+					
+					sts[j] = t;
+					float ub = upperBoundForPartialSimple(sts);
+					sts[j] = Project::UNSCHEDULED;
+
+					// fathom proven suboptimal schedules
+					if(ub > lb) {
+						ubToT.push_back(make_pair(-ub, t));
+						boundCtr++;
 					}
-					else boundCtr++;
 				}
 
 				if(feas.second) break;
 			}
+
+			ubToT.sort();
+			for(auto p : ubToT)
+				branch(sts, j, p.second);
 		}
 	}
 }

@@ -156,7 +156,7 @@ float ProjectWithOvertime::extensionCosts(const Matrix<int> &resRem, int j, int 
 }
 
 int ProjectWithOvertime::selectBestStartingTime(vector<int>& sts, int j, const list<int>& decisionTimes, const Matrix<int> &resRem) const {
-	int bestT;
+	int bestT = -1;
 	float bestCosts = numeric_limits<float>::max(), costs;
 	for(auto dt : decisionTimes) {
 		costs = extensionCosts(resRem, j, dt);
