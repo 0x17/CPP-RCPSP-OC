@@ -24,6 +24,7 @@ private:
 	int nodeCtr, boundCtr;
 	string dotGraph, leafsStr;
 	bool writeGraph;
+    TimePoint lupdate;
 	
 	bool isEligible(vector<int> &sts, int j);
 	pair<bool,bool> resourceFeasibilityCheck(vector<int> &sts, int j, int stj);

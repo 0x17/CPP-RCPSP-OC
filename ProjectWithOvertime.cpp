@@ -93,19 +93,16 @@ int ProjectWithOvertime::computeTKappa() {
 vector<int> ProjectWithOvertime::earliestStartingTimesForPartial(const vector<int>& sts) const {
 	vector<int> ests(numJobs);
 
-	for(int j : topOrder) {
-		if(sts[j] != -1) {
+	for(int j : topOrder)
+        if(sts[j] != Project::UNSCHEDULED)
 			ests[j] = sts[j];
-		}
-	}
 
 	for (int j : topOrder) {
-		if(sts[j] != -1) continue;
+        if(sts[j] != Project::UNSCHEDULED) continue;
 		ests[j] = 0;
-		for (int i = 0; i<numJobs; i++) {
+		for (int i = 0; i<numJobs; i++)
 			if (adjMx(i, j))
 				ests[j] = Utils::max(ests[j], ests[i] + durations[i]);
-		}
 	}
 
 	return ests;
@@ -115,13 +112,13 @@ vector<int> ProjectWithOvertime::latestFinishingTimesForPartial(const vector<int
 	vector<int> lfts(numJobs);
 	
 	for (int i : revTopOrder) {
-		if (sts[i] != -1) {
+        if (sts[i] != Project::UNSCHEDULED) {
 			lfts[i] = sts[i];
 		}
 	}
 
 	for (int i : revTopOrder) {
-		if (sts[i] != -1) continue;
+        if (sts[i] != Project::UNSCHEDULED) continue;
 		lfts[i] = T;
 		eachJobConst([&](int j){
 			if(adjMx(i, j))

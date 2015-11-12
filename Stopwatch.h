@@ -2,8 +2,10 @@
 
 #include <chrono>
 
+using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
+
 class Stopwatch {
-	std::chrono::time_point<std::chrono::system_clock> stime;
+	TimePoint stime;
 public:
 	void start();
 	double look() const;

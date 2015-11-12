@@ -27,6 +27,9 @@ void BranchAndBound::graphPreamble() {
 }
 
 vector<int> BranchAndBound::solve(bool seedWithGA) {
+    lupdate = chrono::system_clock::now();
+    sw.start();
+    
 	if (seedWithGA) {
 		FixedCapacityGA ga(p);
 		auto res = ga.solve();
@@ -35,8 +38,6 @@ vector<int> BranchAndBound::solve(bool seedWithGA) {
 		cout << "Lower bound seeded by genetic algorithm = " << lb << endl;
 	}
 
-	sw.start();
-
 	nodeCtr = 0;
 	boundCtr = 0;
 
@@ -44,10 +45,12 @@ vector<int> BranchAndBound::solve(bool seedWithGA) {
 
 	vector<int> sts(p.numJobs, Project::UNSCHEDULED);
 	branch(sts, 0, 0);
+    
+    double solvetime = sw.look();
 
 	cout << "Number of nodes visited: " << nodeCtr << endl;
 	cout << "Number of boundings: " << boundCtr << endl;
-	cout << "Total solvetime: " << sw.look() << endl;
+	cout << "Total solvetime: " << solvetime << endl;
 
 	drawGraph();
 
@@ -163,8 +166,9 @@ void BranchAndBound::foundLeaf(vector<int> &sts) {
 }
 
 void BranchAndBound::branch(vector<int> sts, int job, int stj) {
-	if(static_cast<int>(sw.look()) % 1000 == 0) {
+	if(chrono::duration<double, std::milli>(chrono::system_clock::now() - lupdate).count() > 1000.0) {
 		cout << "Nodes visited = " << nodeCtr << ", Boundings = " << boundCtr << ", Opt = " << lb << endl;
+        lupdate = chrono::system_clock::now();
 	}
 
 	sts[job] = stj;
@@ -196,7 +200,7 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 					}
 					
 					sts[j] = t;
-					float ub = min(upperBoundForPartial(sts), upperBoundForPartialSimple(sts));
+                    float ub = upperBoundForPartialSimple(sts); //min(upperBoundForPartial(sts), upperBoundForPartialSimple(sts));
 					sts[j] = Project::UNSCHEDULED;
 
 					// fathom proven suboptimal schedules
