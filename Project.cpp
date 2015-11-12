@@ -72,7 +72,7 @@ Matrix<int> Project::resRemForPartial(const vector<int> &sts) const {
     Matrix<int> resRem = initResRem([&](int r, int t) {
         int rem = capacities[r];
         eachJobConst([&](int j) {
-            if(sts[j] != UNSCHEDULED && sts[j] < t && t <= sts[j])
+            if(sts[j] != UNSCHEDULED && sts[j] < t && t <= sts[j] + durations[j])
                 rem -= demands(j, r);
         });
         return rem;

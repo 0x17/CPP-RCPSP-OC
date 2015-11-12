@@ -79,5 +79,5 @@ string Visualization::activityOnNodeGraphDOT(Project &p) {
 void Visualization::drawActivityOnNodeGraphToPDF(Project &p, string filename) {
     const string tmpfilename = "ActivityOnNodeGraphTEMP.dot";
     Utils::spit(activityOnNodeGraphDOT(p), tmpfilename);
-    std::system(("dot -Tpdf " + tmpfilename + " -o" + filename).c_str());
+    system(("dot -Tpdf " + tmpfilename + " -o" + filename).c_str());
 }

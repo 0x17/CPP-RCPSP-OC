@@ -1,18 +1,46 @@
 ﻿#include "BranchAndBound.h"
 #include "Utils.h"
 #include "ProjectWithOvertime.h"
+#include "GeneticAlgorithms/OvertimeBound.h"
 #include <algorithm>
 #include <iostream>
 #include <numeric>
 #include <map>
+#include <string>
 
-BranchAndBound::BranchAndBound(ProjectWithOvertime& _p) : p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0) {}
+BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, bool _writeGraph) : p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph) {}
 
-vector<int> BranchAndBound::solve() {
+void BranchAndBound::drawGraph() {
+	if(!writeGraph) return;
+
+	dotGraph += leafsStr;
+	dotGraph += "\n}";
+
+	const string dotFilename = "bbgraph.dot";
+	Utils::spit(dotGraph, dotFilename);
+	system(("dot -Tpdf " + dotFilename + " -o" + dotFilename + ".pdf").c_str());
+}
+
+void BranchAndBound::graphPreamble() {
+	if(!writeGraph) return;
+	dotGraph = "digraph precedence{\n";
+}
+
+vector<int> BranchAndBound::solve(bool seedWithGA) {
+	if (seedWithGA) {
+		FixedCapacityGA ga(p);
+		auto res = ga.solve();
+		candidate = res.first;
+		lb = res.second;
+		cout << "Lower bound seeded by genetic algorithm = " << lb << endl;
+	}
+
 	sw.start();
 
 	nodeCtr = 0;
 	boundCtr = 0;
+
+	graphPreamble();
 
 	vector<int> sts(p.numJobs, Project::UNSCHEDULED);
 	branch(sts, 0, 0);
@@ -20,6 +48,8 @@ vector<int> BranchAndBound::solve() {
 	cout << "Number of nodes visited: " << nodeCtr << endl;
 	cout << "Number of boundings: " << boundCtr << endl;
 	cout << "Total solvetime: " << sw.look() << endl;
+
+	drawGraph();
 
 	return candidate;
 }
@@ -58,11 +88,12 @@ pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j
 
 float BranchAndBound::upperBoundForPartial(vector<int>& sts) {
 	Matrix<int> resRem = p.resRemForPartial(sts);
+	Matrix<int> resRemCp = resRem;
 
 	int msMin = p.makespan(p.earliestStartingTimesForPartial(sts));
 	int msMax = p.makespan(p.serialSGSForPartial(sts, p.topOrder, resRem).first);
 
-    auto areas = computeAreas(sts, resRem, msMin);
+    auto areas = computeAreas(sts, resRemCp, msMin);
     vector<int> &missingDemand = areas.first;
     vector<int> &freeArea = areas.second;
 
@@ -77,6 +108,27 @@ float BranchAndBound::costsLbForMakespan(int msMin, const vector<int> &missingDe
     return costs;
 }
 
+void BranchAndBound::addArrowToGraph(int nodeA, int nodeB) {
+	if (!writeGraph) return;
+	dotGraph += to_string(nodeA) + "->" + to_string(nodeB) + "\n";
+}
+
+void BranchAndBound::addLeafToGraph(int node, const vector<int> &sts) {
+	if (!writeGraph) return;
+	string stsStr;
+	for(int i = 0; i < sts.size(); i++)
+		stsStr += to_string(sts[i]) + (i + 1 < sts.size() ? "," : "");
+	leafsStr += (to_string(node) + "[label=\"" + stsStr + "\"]\n");
+}
+
+void BranchAndBound::addNodeLabelToGraph(int node, const vector<int>& sts) {
+	if (!writeGraph) return;
+	string stsStr;
+	for (int i = 0; i < sts.size(); i++)
+		stsStr += ((sts[i] == Project::UNSCHEDULED) ? "_" : to_string(sts[i])) + (i + 1 < sts.size() ? "," : "") + ((i+1) % 4 == 0 ? "\n" : "");
+	leafsStr += (to_string(node) + "[label=\"#" + to_string(node) + "\n" + stsStr + "\"]\n");
+}
+
 pair<vector<int>, vector<int>> BranchAndBound::computeAreas(const vector<int> &sts, const Matrix<int> &resRem, int msMin) const {
     vector<int> missingDemand(p.numRes), freeArea(p.numRes);
     for (int r = 0; r < p.numRes; r++) {
@@ -87,7 +139,7 @@ pair<vector<int>, vector<int>> BranchAndBound::computeAreas(const vector<int> &s
 
 		freeArea[r] = 0;
 		for (int t = 0; t <= msMin; t++)
-			freeArea[r] += max(0, resRem(r, t));
+			freeArea[r] += Utils::max(0, resRem(r, t));
 	}
     return make_pair(missingDemand, freeArea);
 }
@@ -118,6 +170,8 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 	sts[job] = stj;
 
  	nodeCtr++;
+	int nodeIx = nodeCtr;
+	addNodeLabelToGraph(nodeIx, sts);
 
     int maxSt = p.latestStartingTimeInPartial(sts);
 
@@ -125,28 +179,24 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 		if(isEligible(sts, j)) {
 			if(j == p.numJobs - 1) {
                 foundLeaf(sts);
+				addLeafToGraph(nodeIx, sts);
                 return;
 			}
-						
-			int tPredFeas = p.computeLastPredFinishingTimeForSts(sts, j);
-
-			// fathom redundant schedules
-			if(tPredFeas < maxSt) {
-				boundCtr++;
-				continue;
-			}
-
+			
 			list<pair<float, int>> ubToT;
 
-			for(int t = tPredFeas; true; t++) {
+			for(int t = p.computeLastPredFinishingTimeForSts(sts, j); true; t++) {
 				pair<bool, bool> feas = resourceFeasibilityCheck(sts, j, t);
 
 				if(feas.first) {
-					//if (upperBoundForPartialSimple(sts) > lb) branch(sts);
-					//else boundCtr++;
+					// fathom redundant schedules
+					if (t < maxSt) {
+						boundCtr++;
+						break;
+					}
 					
 					sts[j] = t;
-					float ub = upperBoundForPartialSimple(sts);
+					float ub = min(upperBoundForPartial(sts), upperBoundForPartialSimple(sts));
 					sts[j] = Project::UNSCHEDULED;
 
 					// fathom proven suboptimal schedules
@@ -160,8 +210,10 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 			}
 
 			ubToT.sort();
-			for(auto p : ubToT)
+			for(auto p : ubToT) {
+				addArrowToGraph(nodeIx, nodeCtr + 1);
 				branch(sts, j, p.second);
+			}
 		}
 	}
 }
