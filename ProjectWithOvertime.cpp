@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by André Schnabel on 23.10.15.
 //
 
@@ -90,45 +90,6 @@ int ProjectWithOvertime::computeTKappa() {
     return tkappa;
 }
 
-vector<int> ProjectWithOvertime::earliestStartingTimesForPartial(const vector<int>& sts) const {
-	vector<int> ests(numJobs);
-
-	for(int j : topOrder)
-        if(sts[j] != Project::UNSCHEDULED)
-			ests[j] = sts[j];
-
-	for (int j : topOrder) {
-        if(sts[j] != Project::UNSCHEDULED) continue;
-		ests[j] = 0;
-		for (int i = 0; i<numJobs; i++)
-			if (adjMx(i, j))
-				ests[j] = Utils::max(ests[j], ests[i] + durations[i]);
-	}
-
-	return ests;
-}
-
-vector<int> ProjectWithOvertime::latestFinishingTimesForPartial(const vector<int>& sts) const {
-	vector<int> lfts(numJobs);
-	
-	for (int i : revTopOrder) {
-        if (sts[i] != Project::UNSCHEDULED) {
-			lfts[i] = sts[i];
-		}
-	}
-
-	for (int i : revTopOrder) {
-        if (sts[i] != Project::UNSCHEDULED) continue;
-		lfts[i] = T;
-		eachJobConst([&](int j){
-			if(adjMx(i, j))
-				lfts[i] = Utils::min(lfts[i], lfts[j] - durations[j]);
-		});
-	}
-	
-	return lfts;
-}
-
 list<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>& sts, const vector<int>& ests, const vector<int>& lfts, int j) const {
 	list<int> decisionTimes = { ests[j], lfts[j] };
 
@@ -203,7 +164,7 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order) {
     return make_pair(sts, resRem);
 }
 
-bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, Matrix<int> & resRem) const {
+bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, const Matrix<int> & resRem) const {
     for(int tau = t + 1; tau <= t + durations[job]; tau++) {
         for(int r=0; r<numRes; r++)
             if(demands(job,r) > resRem(r,tau) + zmax[r])
@@ -276,3 +237,22 @@ SGSResult ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<
     return make_pair(sts, resRem);
 }
 
+vector<int> ProjectWithOvertime::earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const {
+    vector<int> ests(numJobs), relaxedEsts = earliestStartingTimesForPartial(sts);
+
+    transferAlreadyScheduled(ests, sts);
+
+    for(int j : topOrder) {
+        if(sts[j] != UNSCHEDULED) continue;
+        ests[j] = 0;
+        for (int i = 0; i<numJobs; i++)
+            if (adjMx(i, j))
+                ests[j] = Utils::max(ests[j], relaxedEsts[i] + durations[i]);
+
+        int tau;
+        for(tau = ests[j]; !enoughCapacityForJobWithOvertime(j, tau, resRem); tau++) ;
+        ests[j] = tau;
+    }
+
+    return ests;
+}

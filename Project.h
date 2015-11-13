@@ -73,6 +73,10 @@ public:
     int computeLastPredFinishingTime(const vector<int> &fts, int job) const;
     int computeLastPredFinishingTimeForSts(const vector<int> &sts, int job) const;
     int latestStartingTimeInPartial(const vector<int> &sts) const;
+    int earliestStartingTimeInPartial(const vector<int> &sts) const;
+
+    vector<int> earliestStartingTimesForPartial(const vector<int> &sts) const;
+    vector<int> latestFinishingTimesForPartial(const vector<int> &sts) const;
 
 protected:
     void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem) const;
@@ -86,6 +90,8 @@ protected:
     void scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, Matrix<int> &resRem) const;
 
 	vector<int> earliestStartSchedule(Matrix<int> & resRem) const;
+
+    void transferAlreadyScheduled(vector<int> &destSts, const vector<int> &partialSts) const;
 
 private:
     void parsePrecedenceRelation(const vector<string> &lines);

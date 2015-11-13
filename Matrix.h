@@ -24,6 +24,9 @@ public:
     Matrix(int _m, int _n) : m(_m), n(_n), data(_m*_n) {}
     ~Matrix() {}
 
+    int getM() const { return m; }
+    int getN() const { return n; }
+
     inline T operator()(int i, int j) const { return data[i*n+j]; }
     inline T &operator()(int i, int j) { return data[i*n+j]; }
 

@@ -2,6 +2,7 @@
 // Created by André Schnabel on 23.10.15.
 //
 
+#include "ProjectWithOvertime.h"
 #include <numeric>
 #include <list>
 #include <algorithm>
@@ -310,3 +311,51 @@ int Project::latestStartingTimeInPartial(const vector<int>& sts) const {
     }
     return maxSt;
 }
+
+int Project::earliestStartingTimeInPartial(const vector<int> &sts) const {
+    int minSt = numeric_limits<int>::max();
+    for(int j=0; j<numJobs; j++)
+        if(sts[j] != UNSCHEDULED && sts[j] < minSt)
+            minSt = sts[j];
+    return minSt;
+}
+
+vector<int> Project::earliestStartingTimesForPartial(const vector<int>& sts) const {
+	vector<int> ests(numJobs);
+
+	transferAlreadyScheduled(ests, sts);
+
+	for (int j : topOrder) {
+        if(sts[j] != UNSCHEDULED) continue;
+		ests[j] = 0;
+		for (int i = 0; i<numJobs; i++)
+			if (adjMx(i, j))
+				ests[j] = Utils::max(ests[j], ests[i] + durations[i]);
+	}
+
+	return ests;
+}
+
+vector<int> Project::latestFinishingTimesForPartial(const vector<int>& sts) const {
+	vector<int> lfts(numJobs);
+
+    transferAlreadyScheduled(lfts, sts);
+
+	for (int i : revTopOrder) {
+        if (sts[i] != UNSCHEDULED) continue;
+		lfts[i] = T;
+		eachJobConst([&](int j){
+			if(adjMx(i, j))
+				lfts[i] = Utils::min(lfts[i], lfts[j] - durations[j]);
+		});
+	}
+
+	return lfts;
+}
+
+void Project::transferAlreadyScheduled(vector<int> &destSts, const vector<int> &partialSts) const {
+    for(int i=0; i<numJobs; i++)
+        if(partialSts[i] != UNSCHEDULED)
+            destSts[i] = partialSts[i];
+}
+

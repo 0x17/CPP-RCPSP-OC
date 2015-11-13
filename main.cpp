@@ -18,15 +18,15 @@ int main(int argc, const char * argv[]) {
     params.pmutate = 5;
     params.timeLimit = -1.0;
 	
-	string pfilename = "/Users/andreschnabel/DropboxLink/Arbeit/Scheduling/Projekte/j30/j301_1.sm";
+	string pfilename = "../../Projekte/j30/j301_1.sm";
 	//string pfilename = "QBWLBeispiel.DAT";
     ProjectWithOvertime p(pfilename);
 
-	BranchAndBound bb(p);
+	BranchAndBound bb(p, false);
 	auto sts = bb.solve(true);
 
-	//Utils::serializeSchedule(sts, "myschedulebiatch.txt");
-	//system(("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe " + pfilename + " myschedulebiatch.txt").c_str());
+	Utils::serializeSchedule(sts, "myschedulebiatch.txt");
+	system(("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe " + pfilename + " myschedulebiatch.txt").c_str());
 
 	//auto res = GARunners::runSpecific(p, params, 0);	
 	//Utils::serializeSchedule(res.sts, "myschedulebiatch.txt");

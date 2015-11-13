@@ -2,11 +2,11 @@
 #include "Utils.h"
 #include "ProjectWithOvertime.h"
 #include "GeneticAlgorithms/OvertimeBound.h"
+#include "Project.h"
 #include <algorithm>
-#include <iostream>
 #include <numeric>
 #include <map>
-#include <string>
+#include <cmath>
 
 BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, bool _writeGraph) : p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph) {}
 
@@ -63,7 +63,7 @@ pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j
 
 			cdemand += p.demands(j, r);
 
-			if(cdemand > p.capacities[r]  + p.zmax[r])
+			if(cdemand > p.capacities[r] + p.zmax[r])
 				return make_pair(false, false);
 
 			if(feasWoutOC && cdemand > p.capacities[r])
@@ -73,45 +73,89 @@ pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j
 	return make_pair(true, feasWoutOC);
 }
 
-float BranchAndBound::upperBoundForPartial(vector<int>& sts) {
+struct BranchAndBound::AreaData {
+    vector<int> missingDemand, freeArea, overtime;
+    AreaData(Project &p) : missingDemand(p.numRes), freeArea(p.numRes), overtime(p.numRes) {}
+};
+
+float BranchAndBound::upperBoundForPartial(const vector<int>& sts) const {
 	Matrix<int> resRem = p.resRemForPartial(sts);
 	Matrix<int> resRemCp = resRem;
 
 	int msMin = p.makespan(p.earliestStartingTimesForPartial(sts));
 	int msMax = p.makespan(p.serialSGSForPartial(sts, p.topOrder, resRem).first);
 
-    auto areas = computeAreas(sts, resRemCp, msMin);
-    vector<int> &missingDemand = areas.first;
-    vector<int> &freeArea = areas.second;
+    AreaData data = computeAreas(sts, resRemCp, 0, msMin);
 
-    return Utils::maxInRangeIncl(msMin, msMax, [&](int ms) { return p.revenue[ms] - costsLbForMakespan(msMin, missingDemand, freeArea, ms); });
+    return Utils::maxInRangeIncl(msMin, msMax, [&](int ms) { return p.revenue[ms] - costsLbForMakespan(msMin, data.missingDemand, data.freeArea, data.overtime, ms); });
 }
 
-float BranchAndBound::costsLbForMakespan(int msMin, const vector<int> &missingDemand, const vector<int> &freeArea, int ms) const {
+float BranchAndBound::costsLbForMakespan(int msMin, const vector<int> &missingDemand, const vector<int> &freeArea, vector<int> &overtime, int ms) const {
     float costs = 0.0f;
     for (int r = 0; r < p.numRes; r++) {
-        costs += p.kappa[r] * Utils::max(0, missingDemand[r] - (freeArea[r] + (ms - msMin) * p.capacities[r]));
+        costs += p.kappa[r] * Utils::max(0, overtime[r] + missingDemand[r] - (freeArea[r] + (ms - msMin) * p.capacities[r]));
     }
     return costs;
 }
 
-pair<vector<int>, vector<int>> BranchAndBound::computeAreas(const vector<int> &sts, const Matrix<int> &resRem, int msMin) const {
-    vector<int> missingDemand(p.numRes), freeArea(p.numRes);
+BranchAndBound::AreaData BranchAndBound::computeAreas(const vector<int> &sts, const Matrix<int> &resRem, int tmin, int tmax) const {
+    AreaData data(p);
     for (int r = 0; r < p.numRes; r++) {
-		missingDemand[r] = 0;
+		data.missingDemand[r] = 0;
 		for (int j = 0; j < p.numJobs; j++)
 			if (sts[j] == Project::UNSCHEDULED)
-				missingDemand[r] += p.demands(j, r) * p.durations[j];
+                data.missingDemand[r] += p.demands(j, r) * p.durations[j];
 
-		freeArea[r] = 0;
-		for (int t = 0; t <= msMin; t++)
-			freeArea[r] += Utils::max(0, resRem(r, t));
+        data.freeArea[r] = 0;
+        data.overtime[r] = 0;
+        for (int t = tmin; t <= tmax; t++) {
+            data.freeArea[r] += Utils::max(0, resRem(r, t));
+            data.overtime[r] += Utils::max(0, -resRem(r, t));
+        }
 	}
-    return make_pair(missingDemand, freeArea);
+    return data;
 }
 
-float BranchAndBound::upperBoundForPartialSimple(vector<int> &sts) {
+float BranchAndBound::upperBoundForPartialSimple(const vector<int> &sts) const {
     return p.revenue[p.makespan(p.earliestStartingTimesForPartial(sts))] - p.totalCostsForPartial(sts);
+}
+
+float BranchAndBound::upperBoundForPartial2(const vector<int> &sts) const {
+    Matrix<int> resRem = p.resRemForPartial(sts);
+    float fixedCosts = p.totalCostsForPartial(sts);
+
+	vector<int> essFeas = p.earliestStartingTimesForPartialRespectZmax(sts, resRem);
+
+	int minStUnscheduled = numeric_limits<int>::max();
+	for (int j = 0; j < p.numJobs; j++) {
+		if (sts[j] == Project::UNSCHEDULED && essFeas[j] < minStUnscheduled)
+			minStUnscheduled = essFeas[j];
+	}
+
+    int essFeasMakespan = p.makespan(essFeas);
+
+    AreaData data = computeAreas(sts, resRem, minStUnscheduled, essFeasMakespan);
+
+    float bestProfit = numeric_limits<float>::lowest();
+    int delayPeriods = 0;
+
+    while(true) {
+        float additionalCostsLb = 0.0f;
+        for (int r = 0; r < p.numRes; r++) {
+            additionalCostsLb += fmax(0, data.missingDemand[r] - (data.freeArea[r] + p.capacities[r] * delayPeriods)) * p.kappa[r];
+        }
+
+        float profit = p.revenue[essFeasMakespan + delayPeriods] - (fixedCosts + additionalCostsLb);
+        bestProfit = fmax(profit, bestProfit);
+
+        if(fabs(additionalCostsLb - 0.0f) < 0.0000001f) {
+            break;
+        }
+
+        delayPeriods++;
+    }
+
+    return bestProfit;
 }
 
 void BranchAndBound::foundLeaf(vector<int> &sts) {
@@ -163,14 +207,12 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 					}
 					
 					sts[j] = t;
-                    float ub = upperBoundForPartialSimple(sts);
+                    float ub = upperBoundForPartial2(sts);
 					sts[j] = Project::UNSCHEDULED;
 
 					// fathom proven suboptimal schedules
-					if(ub > lb) {
-						ubToT.push_back(make_pair(-ub, t));
-						boundCtr++;
-					}
+					if(ub > lb) ubToT.push_back(make_pair(-ub, t));
+					else boundCtr++;
 				}
 
 				if(feas.second) break;
@@ -221,3 +263,4 @@ void BranchAndBound::graphPreamble() {
     if(!writeGraph) return;
     dotGraph = "digraph precedence{\n";
 }
+
