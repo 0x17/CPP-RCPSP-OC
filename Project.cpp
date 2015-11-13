@@ -31,15 +31,8 @@ Project::Project(string filename) {
     computeELSFTs();
 }
 
-template<class Func>
-Matrix<int> Project::initResRem(Func code) const {
-    Matrix<int> resRem(numRes, numPeriods);
-    eachResPeriodConst([&](int r, int t) { resRem(r,t) = code(r, t); });
-    return resRem;
-}
-
 vector<int> Project::serialSGS(const vector<int>& order) const {
-    Matrix<int> resRem = initResRem([&](int r, int t) { return capacities[r]; });
+    Matrix<int> resRem(numRes, numPeriods, [&](int r, int t) { return capacities[r]; });
 	return serialSGSCore(order, resRem);
 }
 
@@ -69,7 +62,7 @@ pair<vector<int>, Matrix<int>> Project::serialSGSForPartial(const vector<int> &s
 }
 
 Matrix<int> Project::resRemForPartial(const vector<int> &sts) const {
-    Matrix<int> resRem = initResRem([&](int r, int t) {
+    Matrix<int> resRem(numRes, numPeriods, [&](int r, int t) {
         int rem = capacities[r];
         eachJobConst([&](int j) {
             if(sts[j] != UNSCHEDULED && sts[j] < t && t <= sts[j] + durations[j])
@@ -81,13 +74,13 @@ Matrix<int> Project::resRemForPartial(const vector<int> &sts) const {
 }
 
 pair<vector<int>, Matrix<int>> Project::serialSGS(const vector<int>& order, const vector<int>& z) const {
-    Matrix<int> resRem = initResRem([&](int r, int t) { return capacities[r] + z[r]; });
+    Matrix<int> resRem(numRes, numPeriods, [&](int r, int t) { return capacities[r] + z[r]; });
 	vector<int> sts = serialSGSCore(order, resRem);
 	return make_pair(sts, resRem);
 }
 
 pair<vector<int>, Matrix<int>> Project::serialSGS(const vector<int>& order, const Matrix<int>& z) const {
-    Matrix<int> resRem = initResRem([&](int r, int t) { return capacities[r] + z(r,t); });
+    Matrix<int> resRem(numRes, numPeriods, [&](int r, int t) { return capacities[r] + z(r,t); });
 	vector<int> sts = serialSGSCore(order, resRem);
 	return make_pair(sts, resRem);
 }

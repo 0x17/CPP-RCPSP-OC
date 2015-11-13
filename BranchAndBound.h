@@ -28,10 +28,11 @@ private:
 	
 	bool isEligible(vector<int> &sts, int j);
 	pair<bool,bool> resourceFeasibilityCheck(vector<int> &sts, int j, int stj);
-	float upperBoundForPartial(vector<int> &sts);
-    float upperBoundForPartialSimple(vector<int> &sts);
 	void branch(vector<int> sts, int job, int stj);
     void foundLeaf(vector<int> &sts);
+    
+    float upperBoundForPartial(vector<int> &sts);
+    float upperBoundForPartialSimple(vector<int> &sts);
     pair<vector<int>, vector<int>> computeAreas(const vector<int> &sts, const Matrix<int> &resRem, int msMin) const;
     float costsLbForMakespan(int msMin, const vector<int> &missingDemand, const vector<int> &freeArea, int ms) const;
 

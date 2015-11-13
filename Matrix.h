@@ -12,6 +12,13 @@ class Matrix {
     int m, n;
     std::vector<T> data;
 public:
+    template<class Func>
+    Matrix(int _m , int _n, Func code) : m(_m), n(_n), data(_m*_n) {
+        for(int i=0; i<m; i++)
+            for(int j=0; j<n; j++)
+                data[i*n+j] = code(i,j);
+    }
+
     Matrix(const Matrix& mx) : m(mx.m), n(mx.n), data(mx.data) {}
     Matrix() : m(0), n(0) {}
     Matrix(int _m, int _n) : m(_m), n(_n), data(_m*_n) {}

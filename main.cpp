@@ -17,7 +17,6 @@ int main(int argc, const char * argv[]) {
     params.numGens = 100;
     params.pmutate = 5;
     params.timeLimit = -1.0;
-
 	
 	string pfilename = "/Users/andreschnabel/DropboxLink/Arbeit/Scheduling/Projekte/j30/j301_1.sm";
 	//string pfilename = "QBWLBeispiel.DAT";

@@ -10,22 +10,6 @@
 
 BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, bool _writeGraph) : p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph) {}
 
-void BranchAndBound::drawGraph() {
-	if(!writeGraph) return;
-
-	dotGraph += leafsStr;
-	dotGraph += "\n}";
-
-	const string dotFilename = "bbgraph.dot";
-	Utils::spit(dotGraph, dotFilename);
-	system(("dot -Tpdf " + dotFilename + " -o" + dotFilename + ".pdf").c_str());
-}
-
-void BranchAndBound::graphPreamble() {
-	if(!writeGraph) return;
-	dotGraph = "digraph precedence{\n";
-}
-
 vector<int> BranchAndBound::solve(bool seedWithGA) {
     lupdate = chrono::system_clock::now();
     sw.start();
@@ -111,27 +95,6 @@ float BranchAndBound::costsLbForMakespan(int msMin, const vector<int> &missingDe
     return costs;
 }
 
-void BranchAndBound::addArrowToGraph(int nodeA, int nodeB) {
-	if (!writeGraph) return;
-	dotGraph += to_string(nodeA) + "->" + to_string(nodeB) + "\n";
-}
-
-void BranchAndBound::addLeafToGraph(int node, const vector<int> &sts) {
-	if (!writeGraph) return;
-	string stsStr;
-	for(int i = 0; i < sts.size(); i++)
-		stsStr += to_string(sts[i]) + (i + 1 < sts.size() ? "," : "");
-	leafsStr += (to_string(node) + "[label=\"" + stsStr + "\"]\n");
-}
-
-void BranchAndBound::addNodeLabelToGraph(int node, const vector<int>& sts) {
-	if (!writeGraph) return;
-	string stsStr;
-	for (int i = 0; i < sts.size(); i++)
-		stsStr += ((sts[i] == Project::UNSCHEDULED) ? "_" : to_string(sts[i])) + (i + 1 < sts.size() ? "," : "") + ((i+1) % 4 == 0 ? "\n" : "");
-	leafsStr += (to_string(node) + "[label=\"#" + to_string(node) + "\n" + stsStr + "\"]\n");
-}
-
 pair<vector<int>, vector<int>> BranchAndBound::computeAreas(const vector<int> &sts, const Matrix<int> &resRem, int msMin) const {
     vector<int> missingDemand(p.numRes), freeArea(p.numRes);
     for (int r = 0; r < p.numRes; r++) {
@@ -200,7 +163,7 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 					}
 					
 					sts[j] = t;
-                    float ub = upperBoundForPartialSimple(sts); //min(upperBoundForPartial(sts), upperBoundForPartialSimple(sts));
+                    float ub = upperBoundForPartialSimple(sts);
 					sts[j] = Project::UNSCHEDULED;
 
 					// fathom proven suboptimal schedules
@@ -220,4 +183,41 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 			}
 		}
 	}
+}
+
+void BranchAndBound::addArrowToGraph(int nodeA, int nodeB) {
+    if (!writeGraph) return;
+    dotGraph += to_string(nodeA) + "->" + to_string(nodeB) + "\n";
+}
+
+void BranchAndBound::addLeafToGraph(int node, const vector<int> &sts) {
+    if (!writeGraph) return;
+    string stsStr;
+    for(int i = 0; i < sts.size(); i++)
+        stsStr += to_string(sts[i]) + (i + 1 < sts.size() ? "," : "");
+    leafsStr += (to_string(node) + "[label=\"" + stsStr + "\"]\n");
+}
+
+void BranchAndBound::addNodeLabelToGraph(int node, const vector<int>& sts) {
+    if (!writeGraph) return;
+    string stsStr;
+    for (int i = 0; i < sts.size(); i++)
+        stsStr += ((sts[i] == Project::UNSCHEDULED) ? "_" : to_string(sts[i])) + (i + 1 < sts.size() ? "," : "") + ((i+1) % 4 == 0 ? "\n" : "");
+    leafsStr += (to_string(node) + "[label=\"#" + to_string(node) + "\n" + stsStr + "\"]\n");
+}
+
+void BranchAndBound::drawGraph() {
+    if(!writeGraph) return;
+    
+    dotGraph += leafsStr;
+    dotGraph += "\n}";
+    
+    const string dotFilename = "bbgraph.dot";
+    Utils::spit(dotGraph, dotFilename);
+    system(("dot -Tpdf " + dotFilename + " -o" + dotFilename + ".pdf").c_str());
+}
+
+void BranchAndBound::graphPreamble() {
+    if(!writeGraph) return;
+    dotGraph = "digraph precedence{\n";
 }

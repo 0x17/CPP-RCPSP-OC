@@ -64,9 +64,6 @@ public:
     EACH_FUNC_PAIR(eachJobPair, eachJobPairConst, i, j, numJobs, numJobs)
     EACH_FUNC_PAIR(eachResPeriod, eachResPeriodConst, r, t, numRes, numPeriods)
     EACH_FUNC_PAIR(eachJobRes, eachJobResConst, j, r, numJobs, numRes)
-    
-    template<class Func>
-    Matrix<int> initResRem(Func code) const;
 
     template<class Func>
     void timeWindow(int j, Func code) const;

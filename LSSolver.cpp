@@ -6,6 +6,7 @@
 #include <localsolver.h>
 #include "LSSolver.h"
 #include <fstream>
+#include <iostream>
 
 using namespace localsolver;
 
@@ -293,6 +294,7 @@ vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
     }
 
     auto solvetime = ls.getStatistics().getRunningTime();
+    cout << "Solvetime = " << solvetime << endl;
 
     return sts;
 }
