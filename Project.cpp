@@ -171,31 +171,22 @@ bool Project::hasPredNotBeforeInOrder(int job, int curIndex, const vector<int>& 
 	return false;
 }
 
-bool Project::jobAfterInOrder(int job, int curIndex, const vector<int>& order) const {
-	for (int k = curIndex+1; k < order.size(); k++)
-		if (order[k] == job)
-			return true;
-	return false;
-}
-
-bool Project::hasSuccNotAfterInOrder(int job, int curIndex, const vector<int>& order) const {
+bool Project::hasSuccNotBeforeInOrder(int job, int curIndex, const vector<int>& order) const {
 	for (int j = 0; j<numJobs; j++)
-		if (adjMx(job, j) && !jobAfterInOrder(j, curIndex, order)) return true;
+		if (adjMx(job, j) && !jobBeforeInOrder(j, curIndex, order)) return true;
 	return false;
 }
 
 bool Project::isOrderFeasible(const vector<int>& order) const {
-	for (int i = 0; i < numJobs; i++) {
-		if (hasPredNotBeforeInOrder(order[i], i, order))
-			return false;
-	}
+	for(int i = 0; i < numJobs; i++)
+		if(hasPredNotBeforeInOrder(order[i], i, order)) return false;
 	return true;
 }
 
 template <class Pred>
 vector<int> Project::topOrderComputationCore(Pred isEligible) const {
 	vector<int> order(numJobs);
-
+	
 	for (int curIndex = 0; curIndex < numJobs; curIndex++) {
 		for (int job = 0; job < numJobs; job++) {
 			if (isEligible(curIndex, job, order)) {
@@ -216,7 +207,7 @@ vector<int> Project::computeTopOrder() const {
 
 vector<int> Project::computeReverseTopOrder() const {
 	return topOrderComputationCore([&](int curIndex, int job, const vector<int> &order) {
-		return !jobAfterInOrder(job, curIndex, order) && !hasSuccNotAfterInOrder(job, curIndex, order);
+		return !jobBeforeInOrder(job, curIndex, order) && !hasSuccNotBeforeInOrder(job, curIndex, order);
 	});
 }
 

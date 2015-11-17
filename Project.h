@@ -48,9 +48,7 @@ public:
 
 	bool jobBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
 	bool hasPredNotBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
-
-	bool jobAfterInOrder(int job, int curIndex, const vector<int>& order) const;
-	bool hasSuccNotAfterInOrder(int job, int curIndex, const vector<int>& order) const;
+	bool hasSuccNotBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
 
 	bool isOrderFeasible(const vector<int> &order) const;
 
