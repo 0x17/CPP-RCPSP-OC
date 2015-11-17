@@ -31,10 +31,14 @@ void FixedDeadlineGA::mutate(DeadlineLambda &i) {
 }
 
 float FixedDeadlineGA::fitness(DeadlineLambda &i) {
-    auto pair = p.serialSGSWithDeadline(i.deadline, i.order);
-    return profitForSGSResult(pair);
+    auto res = p.serialSGSWithDeadline(i.deadline, i.order);
+	if(res.first) return profitForSGSResult(res.second);
+	return numeric_limits<float>::lowest();
 }
 
 vector<int> FixedDeadlineGA::decode(DeadlineLambda &i) {
-    return p.serialSGSWithDeadline(i.deadline, i.order).first;
+	auto res = p.serialSGSWithDeadline(i.deadline, i.order);
+	if(res.first) return res.second.first;	
+	vector<int> sts(p.numJobs, -1);
+	return sts;
 }

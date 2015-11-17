@@ -230,19 +230,17 @@ bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(vector<int>& sts,
 	return true;
 }
 
-SGSResult ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<int> &order) const {
+pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<int> &order) const {
     Matrix<int> resRem(numRes, numPeriods);
     eachResPeriodConst([&](int r, int t) { resRem(r,t) = capacities[r]; });
 	vector<int> sts(numJobs, -1);
 
-    for(int i=0; i<numJobs; i++) {
+    for(int job : order) {
 		vector<int> cests = earliestStartingTimesForPartial(sts);
-		vector<int> clfts = latestFinishingTimesForPartial(sts);
-
-		int job = order[i];
+		vector<int> clfts = latestFinishingTimesForPartial(sts, deadline);
 		list<int> decisionTimes = decisionTimesForResDevProblem(sts, cests, clfts, job);
 
-		int t = 0;
+		int t = -1;
 		float minCosts = numeric_limits<float>::max();
 
 		if(!decisionTimes.empty()) {
@@ -255,12 +253,15 @@ SGSResult ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<
 					}
 				}
 			}
-		}              
+		}
+
+		if(t == -1)
+			return make_pair(false, make_pair(sts, resRem));
 
         sts[job] = t;
     }
 
-    return make_pair(sts, resRem);
+	return make_pair(true, make_pair(sts, resRem));
 }
 
 vector<int> ProjectWithOvertime::earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const {

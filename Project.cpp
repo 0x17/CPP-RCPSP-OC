@@ -336,14 +336,14 @@ vector<int> Project::earliestStartingTimesForPartial(const vector<int>& sts) con
 	return ests;
 }
 
-vector<int> Project::latestFinishingTimesForPartial(const vector<int>& sts) const {
+vector<int> Project::latestFinishingTimesForPartial(const vector<int>& sts, int deadline) const {
 	vector<int> lfts(numJobs);
 
     transferAlreadyScheduled(lfts, sts);
 
 	for (int i : revTopOrder) {
         if (sts[i] != UNSCHEDULED) continue;
-		lfts[i] = T;
+		lfts[i] = deadline;
 		eachJobConst([&](int j){
 			if(adjMx(i, j))
 				lfts[i] = Utils::min(lfts[i], lfts[j] - durations[j]);

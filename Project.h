@@ -76,7 +76,7 @@ public:
     int earliestStartingTimeInPartial(const vector<int> &sts) const;
 
     vector<int> earliestStartingTimesForPartial(const vector<int> &sts) const;
-    vector<int> latestFinishingTimesForPartial(const vector<int> &sts) const;
+    vector<int> latestFinishingTimesForPartial(const vector<int> &sts, int deadline) const;
 
 protected:
     void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem) const;
