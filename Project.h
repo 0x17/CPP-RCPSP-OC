@@ -86,6 +86,7 @@ protected:
     int computeFirstSuccStartingTime(const vector<int> &sts, int job) const;
     int computeLastPredFinishingTimeForPartial(const vector<int> &fts, int job) const;
     void scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, Matrix<int> &resRem) const;
+	void scheduleJobAt(int job, int t, vector<int> &sts, Matrix<int> &resRem) const;
 
 	vector<int> earliestStartSchedule(Matrix<int> & resRem) const;
 

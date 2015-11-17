@@ -217,6 +217,8 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &o
 }
 
 bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(vector<int>& sts, vector<int>& cests, vector<int>& clfts, Matrix<int> &resRem, int j, int stj) const {
+	if(stj + durations[j] >= numPeriods) return false;
+
 	for(int tau = stj + 1; tau <= stj + durations[j]; tau++) {
 		for (int r = 0; r < numRes; r++) {
 			int baseIntervalDemands = 0;
@@ -229,6 +231,7 @@ bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(vector<int>& sts,
 				return false; 
 		}
 	}
+
 	return true;
 }
 
@@ -260,7 +263,7 @@ pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, c
 		if(t == -1)
 			return make_pair(false, make_pair(sts, resRem));
 
-        sts[job] = t;
+		scheduleJobAt(job, t, sts, resRem);
     }
 
 	return make_pair(true, make_pair(sts, resRem));

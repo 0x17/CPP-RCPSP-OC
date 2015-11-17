@@ -25,11 +25,19 @@ int main(int argc, const char * argv[]) {
 	//BranchAndBound bb(p, false);
 	//auto sts = bb.solve(true);
 
-	auto result = GARunners::runSpecific(p, params, 5);
-	vector<int> sts = result.sts;
+	//auto result = GARunners::runSpecific(p, params, 5);
+	//vector<int> sts = result.sts;
 
-	Utils::serializeSchedule(sts, "myschedulebiatch.txt");
-	system(("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe " + pfilename + " myschedulebiatch.txt").c_str());
+	int dline = p.makespan(p.serialSGS(p.topOrder));
+	auto res = p.serialSGSWithDeadline(dline, p.topOrder);
+	if (res.first) {
+		auto sts = res.second.first;
+		Utils::serializeSchedule(sts, "myschedulebiatch.txt");
+		system(("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe " + pfilename + " myschedulebiatch.txt").c_str());
+	}
+	else
+		throw runtime_error("FAIL!");
+	
 
 	//auto res = GARunners::runSpecific(p, params, 0);	
 	//Utils::serializeSchedule(res.sts, "myschedulebiatch.txt");

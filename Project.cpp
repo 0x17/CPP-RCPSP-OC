@@ -158,6 +158,11 @@ void Project::scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, 
     eachResConst([&](int r) { for (int tau = t + 1; tau <= fts[job]; tau++) resRem(r,tau) -= demands(job,r); });
 }
 
+void Project::scheduleJobAt(int job, int t, vector<int>& sts, Matrix<int>& resRem) const {
+	sts[job] = t;
+	eachResConst([&](int r) { for (int tau = t + 1; tau <= t + durations[job]; tau++) resRem(r, tau) -= demands(job, r); });
+}
+
 bool Project::jobBeforeInOrder(int job, int curIndex, const vector<int>& order) const {
 	for(int k = 0; k < curIndex; k++)
 		if(order[k] == job)
