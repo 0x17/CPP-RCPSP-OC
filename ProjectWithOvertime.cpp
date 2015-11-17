@@ -78,11 +78,11 @@ void ProjectWithOvertime::computeRevenueFunction() {
     eachPeriod([&](int t) { revenue[t] = static_cast<float>(maxCosts - maxCosts / pow(maxMs-minMs, 2) * pow(t-minMs, 2)); });
 }
 
-int ProjectWithOvertime::computeTKappa() {
+int ProjectWithOvertime::computeTKappa() const {
     int tkappa = 0;
-    eachRes([&](int r) {
+    eachResConst([&](int r) {
 		float tkappar = 0.0f;
-        eachJob([&](int j) { tkappar += durations[j] * demands(j,r); });
+        eachJobConst([&](int j) { tkappar += durations[j] * demands(j,r); });
 		tkappar /= static_cast<float>(capacities[r] + zmax[r]);
 		tkappar = ceil(tkappar);
 		tkappa = Utils::max(tkappa, static_cast<int>(tkappar));
@@ -126,9 +126,9 @@ int ProjectWithOvertime::selectBestStartingTime(vector<int>& sts, int j, const l
 	return bestT;
 }
 
-SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order) {
+SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order) const {
     Matrix<int> resRem(numRes, numPeriods);
-    eachResPeriod([&](int r, int t) { resRem(r,t) = capacities[r]; });
+    eachResPeriodConst([&](int r, int t) { resRem(r,t) = capacities[r]; });
 
     vector<int> sts(numJobs), fts(numJobs), ftsTmp(numJobs);
     for (int k=0; k<numJobs; k++) {
@@ -173,9 +173,9 @@ bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, const
     return true;
 }
 
-SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta) {
+SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta) const {
     Matrix<int> resRem(numRes, numPeriods);
-    eachResPeriod([&](int r, int t) {resRem(r,t) = capacities[r]; });
+    eachResPeriodConst([&](int r, int t) {resRem(r,t) = capacities[r]; });
 
     vector<int> sts(numJobs), fts(numJobs);
     for (int k=0; k<numJobs; k++) {
@@ -194,9 +194,9 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &ord
     return make_pair(sts, resRem);
 }
 
-SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau) {
+SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau) const {
     Matrix<int> resRem(numRes, numPeriods);
-    eachResPeriod([&](int r, int t) { resRem(r,t) = capacities[r]; });
+    eachResPeriodConst([&](int r, int t) { resRem(r,t) = capacities[r]; });
 
     vector<int> sts(numJobs), fts(numJobs);
     for (int k=0; k<numJobs; k++) {
@@ -214,10 +214,25 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &o
     return make_pair(sts, resRem);
 }
 
-// FIXME: Implement me!
-SGSResult ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<int> order) {
+bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(vector<int>& sts, vector<int>& cests, vector<int>& clfts, Matrix<int> &resRem, int j, int stj) const {
+	for(int tau = stj + 1; tau <= stj + durations[j]; tau++) {
+		for (int r = 0; r < numRes; r++) {
+			int baseIntervalDemands = 0;
+
+			for (int i = 0; i < numJobs; i++)
+				if (sts[i] == UNSCHEDULED && tau >= clfts[i] - durations[i] && tau <= cests[i] + durations[i])
+					baseIntervalDemands += demands(i, r);
+
+			if (baseIntervalDemands + demands(j, r) > resRem(r, tau))
+				return false; 
+		}
+	}
+	return true;
+}
+
+SGSResult ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<int> &order) const {
     Matrix<int> resRem(numRes, numPeriods);
-    eachResPeriod([&](int r, int t) { resRem(r,t) = capacities[r]; });
+    eachResPeriodConst([&](int r, int t) { resRem(r,t) = capacities[r]; });
 	vector<int> sts(numJobs, -1);
 
     for(int i=0; i<numJobs; i++) {
@@ -226,10 +241,21 @@ SGSResult ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<
 
 		int job = order[i];
 		list<int> decisionTimes = decisionTimesForResDevProblem(sts, cests, clfts, job);
-		if(!decisionTimes.empty()) {
-		}       
 
-        int t = 0;
+		int t = 0;
+		float minCosts = numeric_limits<float>::max();
+
+		if(!decisionTimes.empty()) {
+			for(auto dt : decisionTimes) {
+				if(enoughCapacityForJobWithBaseInterval(sts, cests, clfts, resRem, job, dt)) {
+					float extCosts = extensionCosts(resRem, job, dt);
+					if(extCosts < minCosts) {
+						minCosts = extCosts;
+						t = dt;
+					}
+				}
+			}
+		}              
 
         sts[job] = t;
     }

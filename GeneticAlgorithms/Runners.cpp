@@ -11,7 +11,7 @@
 
 namespace GARunners {
 
-    vector<GAResult(*)(ProjectWithOvertime &, GAParameters &)> funcs = { runTwBorderGA, runTwArbitraryGA, runFixedCapaGA, runTimeVaryCapaGA, runCompAltsGA/*, runFixedDeadlineGA*/ };
+    vector<GAResult(*)(ProjectWithOvertime &, GAParameters &)> funcs = { runTwBorderGA, runTwArbitraryGA, runFixedCapaGA, runTimeVaryCapaGA, runCompAltsGA, runFixedDeadlineGA };
 
     GAResult runSpecific(ProjectWithOvertime &p, GAParameters &params, int index) {
         auto gafunc = funcs[index];
