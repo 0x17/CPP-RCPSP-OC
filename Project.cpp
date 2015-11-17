@@ -28,6 +28,7 @@ Project::Project(string filename) {
     capacities = Utils::extractIntsFromLine(lines[18+numJobs*2+4+3]);
 
 	topOrder = computeTopOrder();
+	revTopOrder = computeReverseTopOrder();
 
     computeELSFTs();
 }
