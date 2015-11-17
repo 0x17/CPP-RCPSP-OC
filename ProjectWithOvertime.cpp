@@ -100,6 +100,8 @@ list<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>& 
 		});
 	}
 
+	decisionTimes.sort();
+	decisionTimes.unique();
 	return decisionTimes;
 }
 
