@@ -91,9 +91,10 @@ int ProjectWithOvertime::computeTKappa() const {
 }
 
 list<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>& sts, const vector<int>& ests, const vector<int>& lfts, int j) const {
-	list<int> decisionTimes = { ests[j], lfts[j] };
+	int lstj = lfts[j] - durations[j];
+	list<int> decisionTimes = { ests[j], lstj };
 
-	for(int tau = ests[j]; tau <= lfts[j]; tau++) {
+	for(int tau = ests[j]; tau <= lstj; tau++) {
 		eachJobConst([&](int i) {
 			if (sts[i] + durations[i] == tau || tau + durations[j] == sts[i])
 				decisionTimes.push_back(tau);
@@ -227,8 +228,8 @@ bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(vector<int>& sts,
 				if (sts[i] == UNSCHEDULED && tau >= clfts[i] - durations[i] && tau <= cests[i] + durations[i])
 					baseIntervalDemands += demands(i, r);
 
-			if (baseIntervalDemands + demands(j, r) > resRem(r, tau))
-				return false; 
+			if (baseIntervalDemands + demands(j, r) > resRem(r, tau) + zmax[r])
+				return false;
 		}
 	}
 
@@ -243,6 +244,10 @@ pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, c
     for(int job : order) {
 		vector<int> cests = earliestStartingTimesForPartial(sts);
 		vector<int> clfts = latestFinishingTimesForPartial(sts, deadline);
+
+		if(cests[job] > clfts[job] - durations[job])
+			return make_pair(false, make_pair(sts, resRem));
+
 		list<int> decisionTimes = decisionTimesForResDevProblem(sts, cests, clfts, job);
 
 		int t = -1;

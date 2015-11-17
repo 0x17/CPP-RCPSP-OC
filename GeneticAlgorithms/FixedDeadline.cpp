@@ -32,7 +32,7 @@ void FixedDeadlineGA::mutate(DeadlineLambda &i) {
 
 float FixedDeadlineGA::fitness(DeadlineLambda &i) {
     auto res = p.serialSGSWithDeadline(i.deadline, i.order);
-	if(res.first) return profitForSGSResult(res.second);
+	if (res.first) return profitForSGSResult(res.second);
 	return numeric_limits<float>::lowest();
 }
 
