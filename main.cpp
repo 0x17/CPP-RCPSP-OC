@@ -19,14 +19,16 @@ int main(int argc, const char * argv[]) {
     params.timeLimit = -1.0;
 	
 	//string pfilename = "../../Projekte/j30/j301_1.sm";
-	string pfilename = "QBWLBeispiel.DAT";
+	//string pfilename = "QBWLBeispiel.DAT";
+	string pfilename = "../../Projekte/j60/j601_1.sm";
     ProjectWithOvertime p(pfilename);
 
-	//BranchAndBound bb(p, false);
-	//auto sts = bb.solve(true);
+	BranchAndBound bb(p, false);
+	auto sts = bb.solve(false);
 
-	auto result = GARunners::runSpecific(p, params, 5);
-	vector<int> sts = result.sts;
+	//auto result = GARunners::runSpecific(p, params, 2);
+	//vector<int> sts = result.sts;
+
 	Utils::serializeSchedule(sts, "myschedulebiatch.txt");
 	system(("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe " + pfilename + " myschedulebiatch.txt").c_str());
 	

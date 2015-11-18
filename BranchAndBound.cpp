@@ -174,7 +174,7 @@ void BranchAndBound::foundLeaf(vector<int> &sts) {
 
 void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 	if(chrono::duration<double, std::milli>(chrono::system_clock::now() - lupdate).count() > 1000.0) {
-		cout << "Nodes visited = " << nodeCtr << ", Boundings = " << boundCtr << ", Opt = " << lb << endl;
+		cout << "Nodes visited = " << nodeCtr << ", Boundings = " << boundCtr << ", Opt = " << lb << ", Time = " << sw.look() << endl;
         lupdate = chrono::system_clock::now();
 	}
 

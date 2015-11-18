@@ -158,7 +158,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 
 		sort(pop.begin(), pop.end(), [](auto &left, auto &right) { return left.second < right.second; });
 
-		//cout << "\rGeneration " << (i + 1) << " Obj=" << -pop[0].second;
+		//cout << "\rGeneration " << (i + 1) << " Obj=" << -pop[0].second << " Time=" << sw.look() << endl;
     }
 
     auto best = pop[0];
