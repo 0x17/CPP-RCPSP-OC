@@ -201,13 +201,13 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 
 				if(feas.first) {
 					// fathom redundant schedules
-					if (t < maxSt) {
-						boundCtr++;
-						break;
-					}
+					/*if (t < maxSt) {
+						//boundCtr++;
+						//continue;
+					}*/
 					
 					sts[j] = t;
-                    float ub = upperBoundForPartial2(sts);
+                    float ub = upperBoundForPartialSimple(sts);
 					sts[j] = Project::UNSCHEDULED;
 
 					// fathom proven suboptimal schedules

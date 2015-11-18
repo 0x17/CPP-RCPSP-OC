@@ -19,11 +19,11 @@ int main(int argc, const char * argv[]) {
     params.timeLimit = -1.0;
 	
 	//string pfilename = "../../Projekte/j30/j301_1.sm";
-	//string pfilename = "QBWLBeispiel.DAT";
-	string pfilename = "../../Projekte/j60/j601_1.sm";
+	string pfilename = "QBWLBeispiel.DAT";
+	//string pfilename = "../../Projekte/j60/j601_1.sm";
     ProjectWithOvertime p(pfilename);
 
-	BranchAndBound bb(p, false);
+	BranchAndBound bb(p, true);
 	auto sts = bb.solve(false);
 
 	//auto result = GARunners::runSpecific(p, params, 2);
