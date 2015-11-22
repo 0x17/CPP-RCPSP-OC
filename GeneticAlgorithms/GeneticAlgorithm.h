@@ -29,6 +29,8 @@ public:
 
     void setParameters(GAParameters _params);
 
+    virtual string getName() const = 0;
+
 protected:
     GAParameters params = {200, 100, 5, -1.0, false};
 

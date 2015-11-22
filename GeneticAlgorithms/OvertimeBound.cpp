@@ -88,3 +88,11 @@ void FixedCapacityGA::mutateOvertime(vector<int> &z) {
         });
     });
 }
+
+string TimeVaryingCapacityGA::getName() const {
+    return "TimeVaryingCapacityGA";
+}
+
+string FixedCapacityGA::getName() const {
+    return "FixedCapacityGA";
+}

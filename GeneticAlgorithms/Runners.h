@@ -46,6 +46,7 @@ namespace GARunners {
     void runAll(ProjectWithOvertime &p, GAParameters &params);
     GAResult runSpecific(ProjectWithOvertime &p, GAParameters &params, int index);
     void runRange(ProjectWithOvertime &p, GAParameters &params, int startIx, int endIx);
+    void batchRunSpecific(const string path, GAParameters &params, int index);
 }
 
 
