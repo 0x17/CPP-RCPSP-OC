@@ -202,8 +202,8 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 				if(feas.first) {
 					// fathom redundant schedules
 					/*if (t < maxSt) {
-						//boundCtr++;
-						//continue;
+						boundCtr++;
+						continue;
 					}*/
 					
 					sts[j] = t;

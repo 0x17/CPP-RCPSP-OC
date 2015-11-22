@@ -4,26 +4,26 @@
 #include "GeneticAlgorithms/Runners.h"
 #include "BranchAndBound.h"
 
-void convertArgFileToLSP(int argc, char * argv[]) {
+void convertArgFileToLSP(int argc, const char * argv[]) {
     if (argc == 2) {
 		ProjectWithOvertime p(argv[1]);
-		LSSolver::writeLSPModelParamFile(p, "LSInstance.txt");
+		LSSolver::writeLSPModelParamFile(p, string(argv[1])+".txt");
 	}
 }
 
 int main(int argc, const char * argv[]) {
-	GAParameters params;
+	/*GAParameters params;
     params.popSize = 80;
     params.numGens = 100;
     params.pmutate = 5;
     params.timeLimit = -1.0;
 	
-	//string pfilename = "../../Projekte/j30/j301_1.sm";
-	string pfilename = "QBWLBeispiel.DAT";
+	string pfilename = "../../Projekte/j30/j301_1.sm";
+	//string pfilename = "QBWLBeispiel.DAT";
 	//string pfilename = "../../Projekte/j60/j601_1.sm";
     ProjectWithOvertime p(pfilename);
 
-	BranchAndBound bb(p, true);
+	BranchAndBound bb(p, false);
 	auto sts = bb.solve(false);
 
 	//auto result = GARunners::runSpecific(p, params, 2);
@@ -51,7 +51,13 @@ int main(int argc, const char * argv[]) {
     //p.reorderDispositionMethod();
     //GARunners::runAll(p, params);
 
-    //GARunners::runRange(p, params, 0, 4);
+    //GARunners::runRange(p, params, 0, 4);*/
+
+	//convertArgFileToLSP(argc, argv);
+
+	auto filenames = Utils::filenamesInDirWithExt(".", ".cpp");
+    for(auto filename : filenames)
+        cout << "Filename = " << filename << endl;
 		
     return 0;
 }

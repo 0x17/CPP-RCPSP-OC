@@ -4,7 +4,14 @@
 
 #include <regex>
 #include <fstream>
+#include <iostream>
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+
 #include "Utils.h"
+
+namespace fs = boost::filesystem;
+namespace algo = boost::algorithm;
 
 vector<string> Utils::readLines(string filename) {
     vector<string> lines;
@@ -76,4 +83,19 @@ void Utils::spit(const string s, const string filename) {
         f << s;
         f.close();
     }
+}
+
+list<string> Utils::filenamesInDirWithExt(const string dir, const string ext) {
+	list<string> fnames;
+	fs::path p(dir);
+	for(auto it = fs::directory_iterator(p); it != fs::directory_iterator(); ++it) {
+        auto entry = *it;
+        string filename = entry.path().string();
+        if(fs::is_regular_file(entry) && algo::ends_with(filename, ext)) {
+            cout << filename << endl;
+            fnames.push_back(filename);
+        }
+
+	}
+	return fnames;
 }

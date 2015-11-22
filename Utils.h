@@ -5,8 +5,10 @@
 #ifndef SSGS_UTILS_H
 #define SSGS_UTILS_H
 
+#include <string>
 #include <vector>
 #include <cstdlib>
+#include <list>
 
 using namespace std;
 
@@ -66,6 +68,8 @@ namespace Utils {
         }
         return r;
     }
+
+	list<string> filenamesInDirWithExt(const string dir, const string ext);
 }
 
 #endif //SSGS_UTILS_H

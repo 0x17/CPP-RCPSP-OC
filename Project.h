@@ -37,7 +37,7 @@ public:
 
     enum { UNSCHEDULED = -1 };
 
-	explicit Project(string filename);
+	explicit Project(const string filename);
     virtual ~Project() {}
 
 	vector<int> serialSGS(const vector<int>& order) const;

@@ -9,7 +9,7 @@
 #include <string>
 #include "Project.h"
 
-Project::Project(string filename) {
+Project::Project(const string filename) {
     auto lines = Utils::readLines(filename);
 
     numJobs = Utils::extractIntFromStr(lines[5], "jobs \\(incl. supersource\\/sink \\):  (\\d+)");
