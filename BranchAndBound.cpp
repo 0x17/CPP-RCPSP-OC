@@ -7,6 +7,7 @@
 #include <numeric>
 #include <map>
 #include <cmath>
+#include <fstream>
 
 BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, bool _writeGraph) : p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph) {}
 
@@ -264,3 +265,15 @@ void BranchAndBound::graphPreamble() {
     dotGraph = "digraph precedence{\n";
 }
 
+void BranchAndBound::solvePath(const string path) {
+    auto instanceFilenames = Utils::filenamesInDirWithExt(path, ".sm");
+    ofstream outFile("branchandboundresults.csv");
+    if(!outFile.is_open()) return;
+    for(auto instanceFn : instanceFilenames) {
+        ProjectWithOvertime p(instanceFn);
+        BranchAndBound bandb(p);
+        auto sts = bandb.solve(true);
+        outFile << instanceFn << ";" << to_string(p.calcProfit(sts)) << endl;
+    }
+    outFile.close();
+}

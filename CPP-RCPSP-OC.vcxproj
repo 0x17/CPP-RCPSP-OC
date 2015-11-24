@@ -108,8 +108,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\boost_1_59_0;C:\localsolver_6_0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\localsolver_6_0\bin;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Boost\include\boost-1_59;C:\localsolver_6_0\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Boost\lib;C:\localsolver_6_0\bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\localsolver_6_0\include;$(IncludePath)</IncludePath>
@@ -174,7 +174,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>localsolver.dll.lib;C:\boost_1_59_0\bin.v2\libs\filesystem\build\msvc-14.0\release\link-static\threading-multi\libboost_filesystem-vc140-mt-1_59.lib;C:\boost_1_59_0\bin.v2\libs\system\build\msvc-14.0\release\link-static\threading-multi\libboost_system-vc140-mt-1_59.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>localsolver.dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

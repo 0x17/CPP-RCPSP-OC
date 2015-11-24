@@ -16,6 +16,8 @@ public:
 	explicit BranchAndBound(ProjectWithOvertime& _p, bool _writeGraph = false);
 	vector<int> solve(bool seedWithGA = false);
 
+    static void solvePath(const string path);
+
 private:
 	Stopwatch sw;
 	ProjectWithOvertime &p;
