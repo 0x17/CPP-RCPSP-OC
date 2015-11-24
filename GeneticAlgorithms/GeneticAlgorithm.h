@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iostream>
 #include <thread>
+#include <boost/format.hpp>
 #include "../ProjectWithOvertime.h"
 #include "../Stopwatch.h"
 
@@ -28,8 +29,6 @@ public:
     pair<vector<int>, float> solve();
 
     void setParameters(GAParameters _params);
-
-    virtual string getName() const = 0;
 
 protected:
     GAParameters params = {200, 100, 5, -1.0, false};
@@ -137,7 +136,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 		pop[i].second = i < params.popSize ? -fitness(pop[i].first) : 0.0f;
     }
 
-    for(int i=0; (params.numGens == -1 || i<params.numGens) && (params.timeLimit == -1.0 || sw.look() < params.timeLimit); i++) {		
+    for(int i=0; (params.numGens == -1 || i<params.numGens) && (params.timeLimit == -1.0 || sw.look() < params.timeLimit * 1000.0); i++) {		
         generateChildren(pop);
 
         if(useThreads) {
@@ -160,7 +159,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 
 		sort(pop.begin(), pop.end(), [](auto &left, auto &right) { return left.second < right.second; });
 
-		//cout << "\rGeneration " << (i + 1) << " Obj=" << -pop[0].second << " Time=" << sw.look() << endl;
+		cout << "\rGeneration " << (i + 1) << " Obj=" << -pop[0].second << " Time=" << (boost::format("%.2f") % (sw.look() / 1000.0)) << "       ";
     }
 
     auto best = pop[0];

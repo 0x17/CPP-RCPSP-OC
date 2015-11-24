@@ -22,7 +22,6 @@ class TimeWindowBordersGA : public GeneticAlgorithm<LambdaBeta> {
 protected:
 public:
     TimeWindowBordersGA(ProjectWithOvertime &_p);
-    virtual string getName() const override;
 protected:
     virtual LambdaBeta init(int ix) override;
     virtual void crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) override;
@@ -34,7 +33,6 @@ protected:
 class TimeWindowArbitraryGA : public GeneticAlgorithm<LambdaTau> {
 public:
     TimeWindowArbitraryGA(ProjectWithOvertime &_p);
-    virtual string getName() const override;
 private:
     virtual LambdaTau init(int ix) override;
     virtual void crossover(LambdaTau &mother, LambdaTau &father, LambdaTau &daughter) override;
@@ -46,7 +44,6 @@ private:
 class CompareAlternativesGA : public GeneticAlgorithm<vector<int>> {
 public:
     CompareAlternativesGA(ProjectWithOvertime &_p);
-    virtual string getName() const override;
 private:
     virtual vector<int> init(int ix) override;
     virtual void crossover(vector<int> &mother, vector<int> &father, vector<int> &daughter) override;

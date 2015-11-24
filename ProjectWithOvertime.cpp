@@ -21,35 +21,29 @@ ProjectWithOvertime::ProjectWithOvertime(string filename) :
 
 inline float ProjectWithOvertime::totalCosts(const Matrix<int> & resRem) const {
 	float costs = 0.0f;
-    eachResPeriodConst([&](int r, int t) { costs += Utils::max(0, -resRem(r,t)) * kappa[r]; });
+    EACH_RES_PERIOD(costs += Utils::max(0, -resRem(r,t)) * kappa[r])
 	return costs;
 }
 
 float ProjectWithOvertime::totalCosts(const vector<int> &sts) const {
 	float costs = 0.0f;
 	int cdemand;
-	eachResPeriodConst([&](int r, int t) {
+	EACH_RES_PERIOD(
 		cdemand = 0;
-		eachJobConst([&](int j) {
-			if (sts[j] < t && t <= sts[j] + durations[j])
-				cdemand += demands(j, r);
-		});
+		EACH_JOB(if (sts[j] < t && t <= sts[j] + durations[j]) cdemand += demands(j, r))
 		costs += Utils::max(0, cdemand - capacities[r]) * kappa[r];
-	});
+    )
 	return costs;
 }
 
 float ProjectWithOvertime::totalCostsForPartial(const vector<int> &sts) const {
     float costs = 0.0f;
     int cdemand;
-    eachResPeriodConst([&](int r, int t) {
+    EACH_RES_PERIOD(
         cdemand = 0;
-        eachJobConst([&](int j) {
-            if (sts[j] != UNSCHEDULED && sts[j] < t && t <= sts[j] + durations[j])
-                cdemand += demands(j, r);
-        });
+        EACH_JOB(if (sts[j] != UNSCHEDULED && sts[j] < t && t <= sts[j] + durations[j]) cdemand += demands(j, r))
         costs += Utils::max(0, cdemand - capacities[r]) * kappa[r];
-    });
+    )
     return costs;
 }
 
@@ -65,7 +59,7 @@ void ProjectWithOvertime::computeRevenueFunction() {
     int tkappa = computeTKappa();
     Matrix<int> resRem(numRes, numPeriods);
 
-    eachResPeriod([&](int r, int t) { resRem(r,t) = capacities[r]; });
+    EACH_RES_PERIOD(resRem(r,t) = capacities[r])
     vector<int> ess = earliestStartSchedule(resRem);
 
     float maxCosts = totalCosts(resRem);
@@ -75,18 +69,18 @@ void ProjectWithOvertime::computeRevenueFunction() {
     auto sts = serialSGS(topOrder);
     int maxMs = makespan(sts);
 
-    eachPeriod([&](int t) { revenue[t] = static_cast<float>(maxCosts - maxCosts / pow(maxMs-minMs, 2) * pow(t-minMs, 2)); });
+    EACH_PERIOD(revenue[t] = static_cast<float>(maxCosts - maxCosts / pow(maxMs-minMs, 2) * pow(t-minMs, 2)))
 }
 
 int ProjectWithOvertime::computeTKappa() const {
     int tkappa = 0;
-    eachResConst([&](int r) {
+    EACH_RES(
 		float tkappar = 0.0f;
-        eachJobConst([&](int j) { tkappar += durations[j] * demands(j,r); });
+        EACH_JOB(tkappar += durations[j] * demands(j,r))
 		tkappar /= static_cast<float>(capacities[r] + zmax[r]);
 		tkappar = ceil(tkappar);
 		tkappa = Utils::max(tkappa, static_cast<int>(tkappar));
-	});
+    )
     return tkappa;
 }
 
@@ -95,10 +89,7 @@ list<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>& 
 	list<int> decisionTimes = { ests[j], lstj };
 
 	for(int tau = ests[j]; tau <= lstj; tau++) {
-		eachJobConst([&](int i) {
-			if (sts[i] + durations[i] == tau || tau + durations[j] == sts[i])
-				decisionTimes.push_back(tau);
-		});
+		EACH_JOBi(if(sts[i] + durations[i] == tau || tau + durations[j] == sts[i]) decisionTimes.push_back(tau))
 	}
 
 	decisionTimes.sort();
@@ -108,25 +99,8 @@ list<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>& 
 
 float ProjectWithOvertime::extensionCosts(const Matrix<int> &resRem, int j, int stj) const {
 	float costs = 0.0f;
-	eachResConst([&](int r) {
-		for (int tau = stj + 1; tau <= stj + durations[j]; tau++) {
-			costs += Utils::min(0, demands(j,r) - resRem(r,tau)) * kappa[r];
-		}
-	});	
+    EACH_RES(ACTIVE_PERIODS(j, stj, costs += Utils::min(0, demands(j,r) - resRem(r,tau)) * kappa[r]))
 	return costs;
-}
-
-int ProjectWithOvertime::selectBestStartingTime(vector<int>& sts, int j, const list<int>& decisionTimes, const Matrix<int> &resRem) const {
-	int bestT = -1;
-	float bestCosts = numeric_limits<float>::max(), costs;
-	for(auto dt : decisionTimes) {
-		costs = extensionCosts(resRem, j, dt);
-		if(costs < bestCosts) {
-			bestCosts = costs;
-			bestT = dt;
-		}
-	}
-	return bestT;
 }
 
 SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order) const {
@@ -168,17 +142,12 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order) c
 }
 
 bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, const Matrix<int> & resRem) const {
-    for(int tau = t + 1; tau <= t + durations[job]; tau++) {
-        for(int r=0; r<numRes; r++)
-            if(demands(job,r) > resRem(r,tau) + zmax[r])
-                return false;
-    }
+    ACTIVE_PERIODS(job, t, EACH_RES(if(demands(job,r) > resRem(r,tau) + zmax[r]) return false))
     return true;
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta) const {
-    Matrix<int> resRem(numRes, numPeriods);
-    eachResPeriodConst([&](int r, int t) {resRem(r,t) = capacities[r]; });
+    Matrix<int> resRem(numRes, numPeriods, [this](int r, int t) { return capacities[r]; });
 
     vector<int> sts(numJobs), fts(numJobs);
     for (int k=0; k<numJobs; k++) {
@@ -198,8 +167,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &ord
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau) const {
-    Matrix<int> resRem(numRes, numPeriods);
-    eachResPeriodConst([&](int r, int t) { resRem(r,t) = capacities[r]; });
+    Matrix<int> resRem(numRes, numPeriods, [this](int r, int t) { return capacities[r]; });
 
     vector<int> sts(numJobs), fts(numJobs);
     for (int k=0; k<numJobs; k++) {
@@ -237,8 +205,7 @@ bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(vector<int>& sts,
 }
 
 pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<int> &order) const {
-    Matrix<int> resRem(numRes, numPeriods);
-    eachResPeriodConst([&](int r, int t) { resRem(r,t) = capacities[r]; });
+    Matrix<int> resRem(numRes, numPeriods, [this](int r, int t) { return capacities[r]; });
 	vector<int> sts(numJobs, -1);
 
     for(int job : order) {
@@ -282,9 +249,7 @@ vector<int> ProjectWithOvertime::earliestStartingTimesForPartialRespectZmax(cons
     for(int j : topOrder) {
         if(sts[j] != UNSCHEDULED) continue;
         ests[j] = 0;
-        for (int i = 0; i<numJobs; i++)
-            if (adjMx(i, j))
-                ests[j] = Utils::max(ests[j], relaxedEsts[i] + durations[i]);
+        EACH_JOBi(if(adjMx(i, j)) ests[j] = Utils::max(ests[j], relaxedEsts[i] + durations[i]))
 
         int tau;
         for(tau = ests[j]; !enoughCapacityForJobWithOvertime(j, tau, resRem); tau++) ;

@@ -99,15 +99,3 @@ float CompareAlternativesGA::fitness(vector<int> &i) {
 vector<int> CompareAlternativesGA::decode(vector<int>& i) {
 	return p.serialSGSWithOvertime(i).first;
 }
-
-string TimeWindowBordersGA::getName() const {
-    return "TimeWindowBordersGA";
-}
-
-string TimeWindowArbitraryGA::getName() const {
-    return "TimeWindowArbitraryGA";
-}
-
-string CompareAlternativesGA::getName() const {
-    return "CompareAlternativesGA";
-}

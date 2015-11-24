@@ -8,6 +8,26 @@
 #include "Utils.h"
 #include "Matrix.h"
 
+#define EACH_COMMON(ix, ubExcl, code) \
+    for(int ix=0; ix<ubExcl; ix++) {\
+        code; \
+    }
+
+#define EACH_COMMON_2D(ix1, ix2, ub1Excl, ub2Excl, code) \
+    for(int ix1=0; ix1<ub1Excl; ix1++) \
+        for(int ix2=0; ix2<ub2Excl; ix2++) {\
+            code; \
+        }
+
+#define EACH_JOB(code) EACH_COMMON(j, numJobs, code)
+#define EACH_JOBi(code) EACH_COMMON(i, numJobs, code)
+#define EACH_RES(code) EACH_COMMON(r, numRes, code)
+#define EACH_PERIOD(code) EACH_COMMON(t, numPeriods, code)
+
+#define EACH_RES_PERIOD(code) EACH_COMMON_2D(r, t, numRes, numPeriods, code)
+#define EACH_JOB_RES(code) EACH_COMMON_2D(j, r, numJobs, numRes, code)
+#define EACH_JOB_PAIR(code) EACH_COMMON_2D(i, j, numJobs, numJobs, code)
+
 #define EACH_FUNC(name, constname, it, ub) \
     template<class Func> \
     void name(Func code) { for(int it=0; it<ub; it++) { code(it); }} \
@@ -19,6 +39,11 @@
     void name(Func code) { for(int it1=0; it1<ub1; it1++) { for(int it2=0; it2<ub2; it2++) { code(it1, it2); } }} \
     template<class Func> \
     void constname(Func code) const { for(int it1=0; it1<ub1; it1++) { for(int it2=0; it2<ub2; it2++) { code(it1, it2); } }}
+
+#define ACTIVE_PERIODS(j, stj, code) \
+    for(int tau = stj + 1; tau <= stj + durations[j]; tau++) { \
+        code; \
+    }
 
 typedef pair<vector<int>, Matrix<int>> SGSResult;
 

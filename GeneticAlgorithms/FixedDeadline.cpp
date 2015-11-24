@@ -42,7 +42,3 @@ vector<int> FixedDeadlineGA::decode(DeadlineLambda &i) {
 	vector<int> sts(p.numJobs, -1);
 	return sts;
 }
-
-string FixedDeadlineGA::getName() const {
-    return "FixedDeadlineGA";
-}

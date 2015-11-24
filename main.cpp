@@ -12,13 +12,13 @@ void convertArgFileToLSP(int argc, const char * argv[]) {
 }
 
 int main(int argc, const char * argv[]) {
-	/*GAParameters params;
+	GAParameters params;
     params.popSize = 80;
-    params.numGens = 100;
+    params.numGens = -1;
     params.pmutate = 5;
-    params.timeLimit = -1.0;
+	params.timeLimit = 60.0;
 	
-	string pfilename = "../../Projekte/j30/j301_1.sm";
+	/*string pfilename = "../../Projekte/j30/j301_1.sm";
 	//string pfilename = "QBWLBeispiel.DAT";
 	//string pfilename = "../../Projekte/j60/j601_1.sm";
     ProjectWithOvertime p(pfilename);
@@ -55,9 +55,7 @@ int main(int argc, const char * argv[]) {
 
 	//convertArgFileToLSP(argc, argv);
 
-	auto filenames = Utils::filenamesInDirWithExt(".", ".cpp");
-    for(auto filename : filenames)
-        cout << "Filename = " << filename << endl;
+	GARunners::batchRunRange("../../Projekte/j60", params, 0, 4);
 		
     return 0;
 }

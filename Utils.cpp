@@ -91,10 +91,8 @@ list<string> Utils::filenamesInDirWithExt(const string dir, const string ext) {
 	for(auto it = fs::directory_iterator(p); it != fs::directory_iterator(); ++it) {
         auto entry = *it;
         string filename = entry.path().string();
-        if(fs::is_regular_file(entry) && algo::ends_with(filename, ext)) {
-            cout << filename << endl;
-            fnames.push_back(filename);
-        }
+        if(fs::is_regular_file(entry) && algo::ends_with(filename, ext))
+			fnames.push_back(filename);
 
 	}
 	return fnames;

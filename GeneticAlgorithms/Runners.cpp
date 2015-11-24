@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <string>
-#include <fstream>
+#include <sstream>
 #include "Runners.h"
 #include "TimeWindow.h"
 #include "OvertimeBound.h"
@@ -16,16 +16,16 @@ namespace GARunners {
     vector<GAResult(*)(ProjectWithOvertime &, GAParameters &)> funcs = { runTwBorderGA, runTwArbitraryGA, runFixedCapaGA, runTimeVaryCapaGA, runCompAltsGA, runFixedDeadlineGA };
 
     void batchRunSpecific(const string path, GAParameters &params, int index) {
+		cout << "Solving instances in " << path << " with " << gaNames[index] << endl;
         auto instanceFilenames = Utils::filenamesInDirWithExt(path, ".sm");
-        ofstream outFile(gaNames[index] + "_Results.csv");
-        if(!outFile.is_open()) return;
+		stringstream outStr;
         for(auto instanceFn : instanceFilenames) {
             ProjectWithOvertime p(instanceFn);
             auto res = runSpecific(p, params, index);
-            outFile << instanceFn << ";" << to_string(res.profit) << endl;
+            outStr << instanceFn << ";" << to_string(res.profit) << endl;
 
         }
-        outFile.close();
+		Utils::spit(outStr.str(), gaNames[index] + "_Results.csv");
     }
 
     void batchRunAll(const string path, GAParameters &params) {
@@ -33,10 +33,15 @@ namespace GARunners {
             batchRunSpecific(path, params, i);
     }
 
-    GAResult runSpecific(ProjectWithOvertime &p, GAParameters &params, int index) {
+	void batchRunRange(const string path, GAParameters& params, int startIx, int endIx) {
+		for(int i = startIx; i <= endIx; i++)
+			batchRunSpecific(path, params, i);
+	}
+
+	GAResult runSpecific(ProjectWithOvertime &p, GAParameters &params, int index) {
         auto gafunc = funcs[index];
         auto result = gafunc(p, params);
-        cout << "Representation=" << result.name << " Profit=" << result.profit << " Solvetime=" << result.solvetime << endl;
+        cout << endl << "Representation=" << result.name << " Profit=" << result.profit << " Solvetime=" << result.solvetime << endl;
         return result;
     }
 

@@ -22,7 +22,6 @@ struct LambdaZrt {
 class TimeVaryingCapacityGA : public GeneticAlgorithm<LambdaZrt> {
 public:
     TimeVaryingCapacityGA(ProjectWithOvertime &_p);
-    virtual string getName() const override;
 private:
     virtual LambdaZrt init(int ix) override;
     virtual void crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter) override;
@@ -36,7 +35,6 @@ private:
 class FixedCapacityGA : public GeneticAlgorithm<LambdaZr> {
 public:
     FixedCapacityGA(ProjectWithOvertime &_p);
-    virtual string getName() const override;
 private:
     virtual LambdaZr init(int ix) override;
 	virtual void crossover(LambdaZr &mother, LambdaZr &father, LambdaZr &daughter) override;	

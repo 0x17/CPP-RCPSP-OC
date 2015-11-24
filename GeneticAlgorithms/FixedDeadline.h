@@ -17,7 +17,6 @@ struct DeadlineLambda {
 class FixedDeadlineGA : public GeneticAlgorithm<DeadlineLambda> {
 public:
     FixedDeadlineGA(ProjectWithOvertime &_p);
-    virtual string getName() const override;
 
 private:
     virtual DeadlineLambda init(int ix) override;
