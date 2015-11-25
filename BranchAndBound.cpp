@@ -143,7 +143,7 @@ float BranchAndBound::upperBoundForPartial2(const vector<int> &sts) const {
     while(true) {
         float additionalCostsLb = 0.0f;
         for (int r = 0; r < p.numRes; r++) {
-            additionalCostsLb += fmax(0, data.missingDemand[r] - (data.freeArea[r] + p.capacities[r] * delayPeriods)) * p.kappa[r];
+            additionalCostsLb += static_cast<float>(fmax(0, data.missingDemand[r] - (data.freeArea[r] + p.capacities[r] * delayPeriods))) * p.kappa[r];
         }
 
         float profit = p.revenue[essFeasMakespan + delayPeriods] - (fixedCosts + additionalCostsLb);

@@ -12,7 +12,11 @@ void convertArgFileToLSP(int argc, const char * argv[]) {
 }
 
 int main(int argc, const char * argv[]) {
-	ProjectWithOvertime p("../../Projekte/j30/j301_1.sm");
-	LSSolver::solve(p);
+	//string projFilename = "../../Projekte/j30/j301_1.sm";
+	string projFilename = "QBWLBeispiel.DAT";
+	ProjectWithOvertime p(projFilename);
+	auto sts = LSSolver::solve(p);
+	Utils::serializeSchedule(sts, "myschedulebiatch.txt");
+	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedulebiatch.txt");
     return 0;
 }

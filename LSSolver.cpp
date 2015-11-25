@@ -10,60 +10,21 @@
 
 using namespace localsolver;
 
-class SchedulingNativeFunction : public LSNativeFunction {
-protected:
-    ProjectWithOvertime &p;
-public:
-	explicit SchedulingNativeFunction(ProjectWithOvertime &_p) : p(_p) {}
-    ~SchedulingNativeFunction() {}
-};
-
-class RevenueFunction : public SchedulingNativeFunction {
-public:
-	explicit RevenueFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
-    virtual lsdouble call(const LSNativeContext &context) override;
-};
-
-class CumulatedDemandFunction : public SchedulingNativeFunction {
-public:
-	explicit CumulatedDemandFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) { }
-    virtual lsdouble call(const LSNativeContext &context) override;
-};
-
-lsdouble RevenueFunction::call(const LSNativeContext &context) {
-    return p.revenue[context.getIntValue(0)];
-}
-
-lsdouble CumulatedDemandFunction::call(const LSNativeContext &context) {
-    int demand = 0;
-
-    lsint r = context.getIntValue(0);
-    lsint t = context.getIntValue(1);
-
-    p.eachJob([&](int j) {
-        lsint Sj = context.getIntValue(j + 2);
-        if (Sj < t && t <= Sj + p.durations[j])
-            demand += p.demands(j, static_cast<int>(r));
-    });
-
-    return demand;
-}
-
-vector<int> LSSolver::solve(ProjectWithOvertime& p) {
-	vector<int> sts(p.numJobs);
-
-	LocalSolver ls;
+pair<LSModel, Matrix<LSExpression>> buildModel(ProjectWithOvertime &p, LocalSolver &ls) {
 	auto model = ls.getModel();
+	auto dummyExpr = model.createConstant(0LL);
 
 	// Decision variables
-	Matrix<LSExpression> x(p.numJobs, p.numPeriods, [&](int j, int t) { return model.boolVar(); });
+	Matrix<LSExpression> x(p.numJobs, p.numPeriods, [&](int j, int t) {
+		return (t >= p.efts[j] && t <= p.lfts[j]) ? model.boolVar() : dummyExpr;
+	});
 
-	// Derived expression
+	// Derived expressions
 	Matrix<LSExpression> cumulatedDemand(p.numRes, p.numPeriods, [&](int r, int t) {
 		LSExpression s = model.sum();
 		p.eachJobConst([&](int j) {
 			for (int tau = t; tau < t + p.durations[j]; tau++)
-				if(tau >= p.efts[j] && tau <= p.lfts[j])
+				if (tau >= p.efts[j] && tau <= p.lfts[j])
 					s += p.demands(j, r) * x(j, tau);
 		});
 		return s;
@@ -94,7 +55,7 @@ vector<int> LSSolver::solve(ProjectWithOvertime& p) {
 	p.eachJob([&](int j) {
 		auto latestPredFt = model.max(0);
 		p.eachJob([&](int i) {
-			if(p.adjMx(i, j)) latestPredFt.addOperand(ft[i]);
+			if (p.adjMx(i, j)) latestPredFt.addOperand(ft[i]);
 		});
 		model.constraint(ft[j] - p.durations[j] >= latestPredFt);
 	});
@@ -107,31 +68,80 @@ vector<int> LSSolver::solve(ProjectWithOvertime& p) {
 	model.addObjective(objfunc, OD_Maximize);
 	model.close();
 
-	ls.createPhase().setTimeLimit(60);
+	return make_pair(model, x);
+}
+
+vector<int> parseSolution(ProjectWithOvertime &p, Matrix<LSExpression> &x, LSSolution &sol) {
+	vector<int> sts(p.numJobs);
+	p.eachJobTimeWindow([&](int j, int t) {
+		if (sol.getValue(x(j, t)) == 1)
+			sts[j] = t - p.durations[j];
+	});
+	return sts;
+}
+
+vector<int> LSSolver::solve(ProjectWithOvertime& p) {
+	LocalSolver ls;
+
+	auto pair = buildModel(p, ls);
+	auto model = pair.first;
+	auto x = pair.second;
+
+	ls.createPhase().setTimeLimit(2);
 	auto param = ls.getParam();
 	param.setNbThreads(8);
 	param.setVerbosity(2);
+
 	ls.solve();
 
-	auto sol = ls.getSolution();
-	p.eachJob([&](int j) {
-		for (int t = 0; t<p.numPeriods; t++) {
-			if (sol.getValue(x(j, t)) == 1) {
-				sts[j] = t - p.durations[j];
-				break;
-			}
-		}
-	});
-
-	auto status = sol.getStatus();
-	if (status != SS_Feasible) {
+	auto sol = ls.getSolution();	
+	if (sol.getStatus() != SS_Feasible) {
 		throw runtime_error("No feasible solution found!");
 	}
 
 	auto solvetime = ls.getStatistics().getRunningTime();
 	cout << "Solvetime = " << solvetime << endl;
 
-	return sts;
+	return parseSolution(p, x, sol);
+}
+
+class SchedulingNativeFunction : public LSNativeFunction {
+protected:
+	ProjectWithOvertime &p;
+public:
+	explicit SchedulingNativeFunction(ProjectWithOvertime &_p) : p(_p) {}
+	~SchedulingNativeFunction() {}
+};
+
+class RevenueFunction : public SchedulingNativeFunction {
+public:
+	explicit RevenueFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
+	virtual lsdouble call(const LSNativeContext &context) override;
+};
+
+class CumulatedDemandFunction : public SchedulingNativeFunction {
+public:
+	explicit CumulatedDemandFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) { }
+	virtual lsdouble call(const LSNativeContext &context) override;
+};
+
+lsdouble RevenueFunction::call(const LSNativeContext &context) {
+	return p.revenue[context.getIntValue(0)];
+}
+
+lsdouble CumulatedDemandFunction::call(const LSNativeContext &context) {
+	int demand = 0;
+
+	lsint r = context.getIntValue(0);
+	lsint t = context.getIntValue(1);
+
+	p.eachJob([&](int j) {
+		lsint Sj = context.getIntValue(j + 2);
+		if (Sj < t && t <= Sj + p.durations[j])
+			demand += p.demands(j, static_cast<int>(r));
+	});
+
+	return demand;
 }
 
 vector<int> LSSolver::solveNative(ProjectWithOvertime &p) {

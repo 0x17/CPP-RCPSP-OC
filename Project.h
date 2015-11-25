@@ -90,6 +90,8 @@ public:
 
     template<class Func>
     void timeWindow(int j, Func code) const;
+	template<class Func>
+	void eachJobTimeWindow(Func code) const;
 
 	Matrix<int> resRemForPartial(const vector<int> &sts) const;
 
@@ -136,6 +138,15 @@ private:
 template<class Func>
 inline void Project::timeWindow(int j, Func code) const {
     for(int t=efts[j]; t<=lfts[j]; t++) { code(t); }
+}
+
+template <class Func>
+inline void Project::eachJobTimeWindow(Func code) const {
+	eachJobConst([&](int j) {
+		for(int t = efts[j]; t <= lfts[j]; t++) {
+			code(j, t);
+		}
+	});
 }
 
 inline int Project::makespan(const vector<int>& sts) const {
