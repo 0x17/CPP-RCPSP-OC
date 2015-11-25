@@ -49,119 +49,92 @@ lsdouble CumulatedDemandFunction::call(const LSNativeContext &context) {
     return demand;
 }
 
-vector<int> LSSolver::solve3(ProjectWithOvertime &p) {
-	vector<int> sts(p.numJobs);
-
-	LocalSolver ls;
-	auto model = ls.getModel();
-
-	// Decision variables (primary)
-	vector<LSExpression> S(p.numJobs);
-    p.eachJob([&](int j) { S[j] = model.intVar(0, p.numPeriods - 1); });
-
-	// Intermediate expressions
-	Matrix<LSExpression> cumDemandExpr(p.numRes, p.numPeriods);
-    p.eachResPeriod([&](int r, int t) {
-        cumDemandExpr(r,t) = model.sum();
-        p.eachJob([&](int j) { cumDemandExpr(r,t) += p.demands(j,r) * (t > S[j] && t <= S[j] + p.durations[j]); });
-    });
-
-
-	// Revenue function parameter
-	LSExpression revenueArray = model.array();
-	p.eachPeriod([&](int t){revenueArray.addOperand(p.revenue[t]); });
-
-	// Objective function
-	LSExpression objfunc = model.sum();
-	objfunc += model.at(revenueArray, S[p.numJobs - 1]);
-    p.eachResPeriod([&](int r, int t) {objfunc += -p.kappa[r] * model.max(0, cumDemandExpr(r,t) - p.capacities[r]); });
-
-	// Precedence restriction
-    p.eachJob([&](int j) {
-        LSExpression lastPred = model.max(0);
-        for (int i = 0; i < p.numJobs; i++) {
-            if (p.adjMx(i, j)) lastPred.addOperand(S[i] + p.durations[i]);
-        }
-        model.constraint(lastPred <= S[j]);
-    });
-
-	// Capacity restriction
-    p.eachResPeriod([&](int r, int t) { model.constraint(cumDemandExpr(r,t) <= p.capacities[r] + p.zmax[r]); });
-
-	model.addObjective(objfunc, OD_Maximize);
-	model.close();
-
-	ls.createPhase().setTimeLimit(5);
-	auto param = ls.getParam();
-	param.setNbThreads(8);
-	param.setVerbosity(2);
-	ls.solve();
-
-	auto sol = ls.getSolution();
-	p.eachJob([&](int j) { sts[j] = static_cast<int>(sol.getIntValue(S[j])); });
-
-	//auto status = sol.getStatus();
-	//auto solvetime = ls.getStatistics().getRunningTime();
-
-	return sts;
-}
-
-vector<int> LSSolver::solve2(ProjectWithOvertime &p) {
+vector<int> LSSolver::solve(ProjectWithOvertime& p) {
 	vector<int> sts(p.numJobs);
 
 	LocalSolver ls;
 	auto model = ls.getModel();
 
 	// Decision variables
-	vector<LSExpression> S(p.numJobs);
-	p.eachJob([&](int j) { S[j] = model.intVar(0, p.numPeriods - 1); });
+	Matrix<LSExpression> x(p.numJobs, p.numPeriods, [&](int j, int t) { return model.boolVar(); });
 
-	Matrix<LSExpression> zrt(p.numRes, p.numPeriods);
-	p.eachResPeriod([&](int r, int t) { zrt(r,t) = model.intVar(0, p.zmax[r]); });
+	// Derived expression
+	Matrix<LSExpression> cumulatedDemand(p.numRes, p.numPeriods, [&](int r, int t) {
+		LSExpression s = model.sum();
+		p.eachJobConst([&](int j) {
+			for (int tau = t; tau < t + p.durations[j]; tau++)
+				if(tau >= p.efts[j] && tau <= p.lfts[j])
+					s += p.demands(j, r) * x(j, tau);
+		});
+		return s;
+	});
 
-	// Revenue function parameter
-	LSExpression revenueArray = model.array();
-    p.eachPeriod([&](int t) { revenueArray.addOperand(p.revenue[t]); });
+	vector<LSExpression> ft(p.numJobs);
+	p.eachJobConst([&](int j) {
+		auto s = model.sum();
+		p.timeWindow(j, [&](int t) { s += t * x(j, t); });
+		ft[j] = s;
+	});
 
 	// Objective function
-	LSExpression objfunc = model.sum();
-	objfunc += model.at(revenueArray, S[p.numJobs - 1]);
-	p.eachResPeriod([&](int r, int t) { objfunc += -p.kappa[r] * zrt(r,t); });
-	
-	// Precedence restriction
+	auto objfunc = model.sum();
+	p.timeWindow(p.numJobs - 1, [&](int t) { objfunc += p.revenue[t] * x(p.numJobs - 1, t); });
+	p.eachResPeriod([&](int r, int t) { objfunc += -p.kappa[r] * model.max(0, cumulatedDemand(r, t) - p.capacities[r]); });
+
+	// Constraints
+
+	// Each job once
 	p.eachJob([&](int j) {
-		LSExpression lastPred = model.max(0);
-        for(int i=0; i<p.numJobs; i++)
-		    if (p.adjMx(i,j)) lastPred.addOperand(S[i] + p.durations[i]);
-		model.constraint(lastPred <= S[j]);
-    });
+		auto xsum = model.sum();
+		p.timeWindow(j, [&](int t) { xsum += x(j, t); });
+		model.constraint(xsum == 1.0);
+	});
 
-	// Capacity restriction
-	p.eachResPeriod([&](int r, int t) {
-        LSExpression cumDemandExpr = model.sum();
-        p.eachJob([&](int j) { cumDemandExpr += p.demands(j, r) * (t > S[j] && t <= S[j] + p.durations[j]); });
-        model.constraint(cumDemandExpr <= p.capacities[r] + zrt(r, t));
-    });
+	// Precedence restrictions
+	p.eachJob([&](int j) {
+		auto latestPredFt = model.max(0);
+		p.eachJob([&](int i) {
+			if(p.adjMx(i, j)) latestPredFt.addOperand(ft[i]);
+		});
+		model.constraint(ft[j] - p.durations[j] >= latestPredFt);
+	});
 
-    model.addObjective(objfunc, OD_Maximize);
+	// Capacity restrictions
+	p.eachResPeriodConst([&](int r, int t) {
+		model.constraint(cumulatedDemand(r, t) <= model.sum(p.capacities[r], p.zmax[r]));
+	});
+
+	model.addObjective(objfunc, OD_Maximize);
 	model.close();
 
-	ls.createPhase().setTimeLimit(5);
+	ls.createPhase().setTimeLimit(60);
 	auto param = ls.getParam();
 	param.setNbThreads(8);
 	param.setVerbosity(2);
 	ls.solve();
 
 	auto sol = ls.getSolution();
-    p.eachJob([&](int j){ sts[j] = static_cast<int>(sol.getIntValue(S[j])); });
+	p.eachJob([&](int j) {
+		for (int t = 0; t<p.numPeriods; t++) {
+			if (sol.getValue(x(j, t)) == 1) {
+				sts[j] = t - p.durations[j];
+				break;
+			}
+		}
+	});
 
-	//auto status = sol.getStatus();
-	//auto solvetime = ls.getStatistics().getRunningTime();
+	auto status = sol.getStatus();
+	if (status != SS_Feasible) {
+		throw runtime_error("No feasible solution found!");
+	}
+
+	auto solvetime = ls.getStatistics().getRunningTime();
+	cout << "Solvetime = " << solvetime << endl;
 
 	return sts;
 }
 
-vector<int> LSSolver::solve(ProjectWithOvertime &p) {
+vector<int> LSSolver::solveNative(ProjectWithOvertime &p) {
     vector<int> sts(p.numJobs);
 
     LocalSolver ls;
@@ -217,84 +190,6 @@ vector<int> LSSolver::solve(ProjectWithOvertime &p) {
 
     //auto status = sol.getStatus();
     //auto solvetime = ls.getStatistics().getRunningTime();
-
-    return sts;
-}
-
-vector<int> LSSolver::solveMIPStyle(ProjectWithOvertime &p) {
-    vector<int> sts(p.numJobs);
-
-    LocalSolver ls;
-    auto model = ls.getModel();
-
-    // Decision variables
-    Matrix<LSExpression> x(p.numJobs, p.numPeriods), z(p.numRes, p.numPeriods);
-    p.eachJob([&](int j) { p.eachPeriod([&](int t){ x(j,t) = model.boolVar(); }); });
-    p.eachResPeriod([&](int r, int t) { z(r,t) = model.intVar(0, p.zmax[r]); });
-
-    // Objective function
-    auto objfunc = model.sum();
-    p.timeWindow(p.numJobs-1, [&](int t) { objfunc += p.revenue[t] * x(p.numJobs-1,t); });
-    p.eachResPeriod([&](int r, int t) { objfunc += -p.kappa[r] * z(r,t); });
-
-    // Constraints
-
-    // Each job once
-    p.eachJob([&](int j) {
-        auto xsum = model.sum();
-        p.timeWindow(j, [&](int t){ xsum += x(j,t); });
-        model.constraint(xsum == 1.0);
-    });
-
-    // Precedence restrictions
-    p.eachJobPair([&](int i, int j) {
-        if(p.adjMx(i,j)) {
-            auto predFt = model.sum();
-            p.timeWindow(i, [&](int t) { predFt += t * x(i,t); });
-            auto jobSt = model.sum();
-            p.timeWindow(j, [&](int t) { jobSt += t * x(j,t); });
-            jobSt += -p.durations[j];
-            model.constraint(predFt <= jobSt);
-        }
-    });
-            
-
-    // Capacity restrictions
-    p.eachRes([&](int r){
-        p.eachPeriod([&](int t){
-            auto cumulatedDemand = model.sum();
-            p.eachJob([&](int j) {
-                for(int tau = t; tau < Utils::min(t + p.durations[j], p.numPeriods); tau++)
-                    cumulatedDemand += x(j,tau) * p.demands(j,r); });
-            auto totalCapacity = model.sum(p.capacities[r], z(r,t));
-            model.constraint(cumulatedDemand <= totalCapacity); }); });
-
-    model.addObjective(objfunc, OD_Maximize);
-    model.close();
-
-    ls.createPhase().setTimeLimit(2);
-	auto param = ls.getParam();
-	param.setNbThreads(8);
-	param.setVerbosity(2);
-    ls.solve();
-
-    auto sol = ls.getSolution();
-    p.eachJob([&](int j) {
-        for(int t=0; t<p.numPeriods; t++) {
-            if(sol.getValue(x(j,t)) == 1) {
-                sts[j] = t - p.durations[j];
-                break;
-            }
-        }
-    });
-
-    auto status = sol.getStatus();
-    if(status != SS_Feasible) {
-        throw runtime_error("No feasible solution found!");
-    }
-
-    auto solvetime = ls.getStatistics().getRunningTime();
-    cout << "Solvetime = " << solvetime << endl;
 
     return sts;
 }

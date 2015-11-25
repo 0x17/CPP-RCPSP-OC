@@ -9,11 +9,8 @@
 #include "ProjectWithOvertime.h"
 
 namespace LSSolver {
-    vector<int> solve(ProjectWithOvertime &p);
-	vector<int> solve2(ProjectWithOvertime &p);
-	vector<int> solve3(ProjectWithOvertime &p);
-	vector<int> solveMIPStyle(ProjectWithOvertime &p);
-
+	vector<int> solve(ProjectWithOvertime &p);
+    vector<int> solveNative(ProjectWithOvertime &p);
 	void writeLSPModelParamFile(ProjectWithOvertime &p, string outFilename);
 };
 

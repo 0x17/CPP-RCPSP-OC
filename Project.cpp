@@ -236,6 +236,7 @@ void Project::complementPartialWithSSGS(const vector<int> &order, int startIx, v
 	}
 }
 
+#pragma warning (disable : 4068) 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "InfiniteRecursion"
 void Project::computeNodeDepths(int root, int curDepth, vector<int> &nodeDepths) {

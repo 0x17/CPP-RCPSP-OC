@@ -12,50 +12,7 @@ void convertArgFileToLSP(int argc, const char * argv[]) {
 }
 
 int main(int argc, const char * argv[]) {
-	GAParameters params;
-    params.popSize = 80;
-    params.numGens = -1;
-    params.pmutate = 5;
-	params.timeLimit = 60.0;
-	
-	/*string pfilename = "../../Projekte/j30/j301_1.sm";
-	//string pfilename = "QBWLBeispiel.DAT";
-	//string pfilename = "../../Projekte/j60/j601_1.sm";
-    ProjectWithOvertime p(pfilename);
-
-	BranchAndBound bb(p, false);
-	auto sts = bb.solve(false);
-
-	//auto result = GARunners::runSpecific(p, params, 2);
-	//vector<int> sts = result.sts;
-
-	Utils::serializeSchedule(sts, "myschedulebiatch.txt");
-	system(("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe " + pfilename + " myschedulebiatch.txt").c_str());
-	
-	//auto res = GARunners::runSpecific(p, params, 0);	
-	//Utils::serializeSchedule(res.sts, "myschedulebiatch.txt");
-	//system(("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe " + pfilename + " myschedulebiatch.txt").c_str());
-
-    //cout << p.calcProfit(sts) << endl;
-
-    //ProjectWithOvertime p("../../Projekte/j30/j301_1.sm");
-
-    //auto res = GARunners::runSpecific(p, params, 0);
-
-    //Visualization::drawScheduleToPDF(p, res.sts, "myschedule.pdf");
-
-    //Visualization::drawActivityOnNodeGraphToPDF(p, "j301_1.pdf");
-
-    //ProjectWithOvertime p("QBWLBeispiel.DAT");
-
-    //p.reorderDispositionMethod();
-    //GARunners::runAll(p, params);
-
-    //GARunners::runRange(p, params, 0, 4);*/
-
-	//convertArgFileToLSP(argc, argv);
-
-	GARunners::batchRunRange("../../Projekte/j60", params, 0, 4);
-		
+	ProjectWithOvertime p("../../Projekte/j30/j301_1.sm");
+	LSSolver::solve(p);
     return 0;
 }
