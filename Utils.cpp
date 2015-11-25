@@ -97,3 +97,11 @@ list<string> Utils::filenamesInDirWithExt(const string dir, const string ext) {
 	}
 	return fnames;
 }
+
+void Utils::spitAppend(const string s, const string filename) {
+    ofstream f(filename, ios_base::app);
+    if(f.is_open()) {
+        f << s;
+        f.close();
+    }
+}

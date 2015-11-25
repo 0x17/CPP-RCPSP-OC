@@ -58,6 +58,7 @@ namespace Utils {
 	int pickWithDistribution(vector<float> probs);
 
     void spit(const string s, const string filename);
+    void spitAppend(const string s, const string filename);
 
     template<class Func>
     float maxInRangeIncl(int lb, int ub, Func transform) {
