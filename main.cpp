@@ -20,7 +20,7 @@ void commandLineRunner(int argc, const char * argv[]) {
         string solMethod = argv[1];
         string outFn = "";
 
-        if(boost::starts_with(solMethod, "BranchAndBound")) {
+        if(boost::equal(solMethod, "BranchAndBound")) {
             BranchAndBound b(p);
             sts = b.solve(true);
             outFn = "BranchAndBoundResults.txt";
@@ -34,6 +34,9 @@ void commandLineRunner(int argc, const char * argv[]) {
             auto res = GARunners::runSpecific(p, params, gaIndex);
             sts = res.sts;
             outFn = "GA" + to_string(gaIndex) + "Results.txt";
+        } else if(boost::equal(solMethod, "LocalSolver")) {
+			sts = LSSolver::solve(p);
+			outFn = "LocalSolverResults.txt";
         }
 
         Utils::spitAppend(string(argv[2])+";"+to_string(p.calcProfit(sts)), outFn);

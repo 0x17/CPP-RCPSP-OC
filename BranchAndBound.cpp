@@ -20,7 +20,7 @@ vector<int> BranchAndBound::solve(bool seedWithGA) {
 		auto res = ga.solve();
 		candidate = res.first;
 		lb = res.second;
-		cout << "Lower bound seeded by genetic algorithm = " << lb << endl;
+		cout << endl << "Lower bound seeded by genetic algorithm = " << lb << endl;
 	}
 
 	nodeCtr = 0;
@@ -178,6 +178,9 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 		cout << "Nodes visited = " << nodeCtr << ", Boundings = " << boundCtr << ", Opt = " << lb << ", Time = " << sw.look() << endl;
         lupdate = chrono::system_clock::now();
 	}
+
+	if(sw.look() >= timeLimit * 1000.0)
+		return;
 
 	sts[job] = stj;
 
