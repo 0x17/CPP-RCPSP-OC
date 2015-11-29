@@ -13,10 +13,16 @@ using namespace localsolver;
 pair<LSModel, Matrix<LSExpression>> buildModel(ProjectWithOvertime &p, LocalSolver &ls) {
 	auto model = ls.getModel();
 	auto dummyExpr = model.createConstant(0LL);
+    auto sts = p.serialSGS(p.topOrder);
 
 	// Decision variables
 	Matrix<LSExpression> x(p.numJobs, p.numPeriods, [&](int j, int t) {
-		return (t >= p.efts[j] && t <= p.lfts[j]) ? model.boolVar() : dummyExpr;
+        if(t >= p.efts[j] && t <= p.lfts[j]) {
+            auto v = model.boolVar();
+            v.setValue(sts[j] == t - p.durations[j] ? 1LL : 0LL);
+            return v;
+        }
+        return dummyExpr;
 	});
 
 	// Derived expressions
@@ -87,7 +93,7 @@ vector<int> LSSolver::solve(ProjectWithOvertime& p) {
 	auto model = pair.first;
 	auto x = pair.second;
 
-	ls.createPhase().setTimeLimit(2);
+	ls.createPhase().setTimeLimit(60);
 	auto param = ls.getParam();
 	param.setNbThreads(8);
 	param.setVerbosity(2);
@@ -96,7 +102,9 @@ vector<int> LSSolver::solve(ProjectWithOvertime& p) {
 
 	auto sol = ls.getSolution();	
 	if (sol.getStatus() != SS_Feasible) {
-		throw runtime_error("No feasible solution found!");
+		//throw runtime_error("No feasible solution found!");
+		vector<int> sts(-1);
+		return sts;
 	}
 
 	auto solvetime = ls.getStatistics().getRunningTime();

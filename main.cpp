@@ -20,26 +20,29 @@ void commandLineRunner(int argc, const char * argv[]) {
         string solMethod = argv[1];
         string outFn = "";
 
-        if(boost::equal(solMethod, "BranchAndBound")) {
+        if(!solMethod.compare("BranchAndBound")) {
             BranchAndBound b(p);
-            sts = b.solve(true);
+            sts = b.solve(false);
             outFn = "BranchAndBoundResults.txt";
         } else if(boost::starts_with(solMethod, "GA")) {
             GAParameters params;
             params.fitnessBasedPairing = true;
-            params.numGens = 100;
+            params.numGens = -1;
             params.popSize = 80;
             params.timeLimit = 60;
             int gaIndex = stoi(solMethod.substr(2, 1));
             auto res = GARunners::runSpecific(p, params, gaIndex);
             sts = res.sts;
             outFn = "GA" + to_string(gaIndex) + "Results.txt";
-        } else if(boost::equal(solMethod, "LocalSolver")) {
+        } else if(!solMethod.compare("LocalSolver")) {
 			sts = LSSolver::solve(p);
 			outFn = "LocalSolverResults.txt";
+        } else {
+			throw runtime_error("Unknown method: " + solMethod + "!");
         }
 
-        Utils::spitAppend(string(argv[2])+";"+to_string(p.calcProfit(sts)), outFn);
+		string resStr = (sts[0] == -1) ? "infes" : to_string(p.calcProfit(sts));
+        Utils::spitAppend(string(argv[2])+";"+resStr, outFn);
     }
 }
 

@@ -21,7 +21,10 @@ vector<int> BranchAndBound::solve(bool seedWithGA) {
 		candidate = res.first;
 		lb = res.second;
 		cout << endl << "Lower bound seeded by genetic algorithm = " << lb << endl;
-	}
+	} else {
+        candidate = p.serialSGS(p.topOrder);
+        lb = p.calcProfit(candidate);
+    }
 
 	nodeCtr = 0;
 	boundCtr = 0;

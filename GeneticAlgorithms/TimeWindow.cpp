@@ -11,8 +11,8 @@ TimeWindowArbitraryGA::TimeWindowArbitraryGA(ProjectWithOvertime &_p) : GeneticA
 
 LambdaTau TimeWindowArbitraryGA::init(int ix) {
     LambdaTau indiv(p);
-    indiv.order = Sampling::naiveSampling(p);
-    p.eachJob([&](int j) { indiv.tau[j] = Utils::randUnitFloat(); });
+    indiv.order = ix == 0 ? p.topOrder : Sampling::naiveSampling(p);
+    p.eachJob([&](int j) { indiv.tau[j] = ix == 0 ? 0.0f : Utils::randUnitFloat(); });
     return indiv;
 }
 
@@ -46,8 +46,8 @@ TimeWindowBordersGA::TimeWindowBordersGA(ProjectWithOvertime &_p) : GeneticAlgor
 
 LambdaBeta TimeWindowBordersGA::init(int ix) {
     LambdaBeta indiv(p);
-    indiv.order = Sampling::naiveSampling(p);
-    p.eachJob([&](int j) { indiv.beta[j] = rand() % 2; });
+    indiv.order = ix == 0 ? p.topOrder : Sampling::naiveSampling(p);
+    p.eachJob([&](int j) { indiv.beta[j] = ix == 0 ? 0 : rand() % 2; });
     return indiv;
 }
 
@@ -80,7 +80,7 @@ CompareAlternativesGA::CompareAlternativesGA(ProjectWithOvertime &_p) : GeneticA
 }
 
 vector<int> CompareAlternativesGA::init(int ix) {
-    return Sampling::naiveSampling(p);
+    return ix == 0 ? p.topOrder : Sampling::naiveSampling(p);
 }
 
 void CompareAlternativesGA::crossover(vector<int> &mother, vector<int> &father, vector<int> &daughter) {
