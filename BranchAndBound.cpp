@@ -9,7 +9,7 @@
 #include <cmath>
 #include <fstream>
 
-BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, bool _writeGraph) : p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph) {}
+BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, double _timeLimit, bool _writeGraph) : p(_p), timeLimit(_timeLimit), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph) {}
 
 vector<int> BranchAndBound::solve(bool seedWithGA) {
     lupdate = chrono::system_clock::now();

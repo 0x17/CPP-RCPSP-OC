@@ -13,15 +13,16 @@ void convertArgFileToLSP(int argc, const char * argv[]) {
 }
 
 void commandLineRunner(int argc, const char * argv[]) {
-    if(argc == 3) {
+    if(argc == 4) {
         vector<int> sts;
 
-        ProjectWithOvertime p(argv[2]);
         string solMethod = argv[1];
+        double timeLimit = atof(argv[2]);
+        ProjectWithOvertime p(argv[3]);
         string outFn = "";
 
         if(!solMethod.compare("BranchAndBound")) {
-            BranchAndBound b(p);
+            BranchAndBound b(p, timeLimit);
             sts = b.solve(false);
             outFn = "BranchAndBoundResults.txt";
         } else if(boost::starts_with(solMethod, "GA")) {
@@ -29,20 +30,20 @@ void commandLineRunner(int argc, const char * argv[]) {
             params.fitnessBasedPairing = true;
             params.numGens = -1;
             params.popSize = 80;
-            params.timeLimit = 60;
+            params.timeLimit = timeLimit;
             int gaIndex = stoi(solMethod.substr(2, 1));
             auto res = GARunners::runSpecific(p, params, gaIndex);
             sts = res.sts;
             outFn = "GA" + to_string(gaIndex) + "Results.txt";
         } else if(!solMethod.compare("LocalSolver")) {
-			sts = LSSolver::solve(p);
+			sts = LSSolver::solve(p, timeLimit);
 			outFn = "LocalSolverResults.txt";
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");
         }
 
 		string resStr = (sts[0] == -1) ? "infes" : to_string(p.calcProfit(sts));
-        Utils::spitAppend(string(argv[2])+";"+resStr, outFn);
+        Utils::spitAppend(string(argv[3])+";"+resStr, outFn);
     }
 }
 

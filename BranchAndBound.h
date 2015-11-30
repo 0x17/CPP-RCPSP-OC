@@ -13,7 +13,7 @@ class Stopwatch;
 
 class BranchAndBound {
 public:
-	explicit BranchAndBound(ProjectWithOvertime& _p, bool _writeGraph = false);
+	explicit BranchAndBound(ProjectWithOvertime& _p, double _timeLimit = 60.0, bool _writeGraph = false);
 	vector<int> solve(bool seedWithGA = false);
 
     static void solvePath(const string path);
@@ -27,7 +27,7 @@ private:
 	string dotGraph, leafsStr;
 	bool writeGraph;
     TimePoint lupdate;
-	double timeLimit = 60.0;
+	double timeLimit;
 	
 	bool isEligible(vector<int> &sts, int j);
 	pair<bool,bool> resourceFeasibilityCheck(vector<int> &sts, int j, int stj);

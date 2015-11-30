@@ -17,12 +17,7 @@ pair<LSModel, Matrix<LSExpression>> buildModel(ProjectWithOvertime &p, LocalSolv
 
 	// Decision variables
 	Matrix<LSExpression> x(p.numJobs, p.numPeriods, [&](int j, int t) {
-        if(t >= p.efts[j] && t <= p.lfts[j]) {
-            auto v = model.boolVar();
-            v.setValue(sts[j] == t - p.durations[j] ? 1LL : 0LL);
-            return v;
-        }
-        return dummyExpr;
+        return (t >= p.efts[j] && t <= p.lfts[j]) ? model.boolVar() : dummyExpr;
 	});
 
 	// Derived expressions
@@ -74,6 +69,10 @@ pair<LSModel, Matrix<LSExpression>> buildModel(ProjectWithOvertime &p, LocalSolv
 	model.addObjective(objfunc, OD_Maximize);
 	model.close();
 
+    p.eachJobTimeWindow([&](int j, int t) {
+        x(j, t).setValue(sts[j] == t - p.durations[j] ? 1LL : 0LL);
+    });
+
 	return make_pair(model, x);
 }
 
@@ -86,14 +85,14 @@ vector<int> parseSolution(ProjectWithOvertime &p, Matrix<LSExpression> &x, LSSol
 	return sts;
 }
 
-vector<int> LSSolver::solve(ProjectWithOvertime& p) {
+vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit) {
 	LocalSolver ls;
 
 	auto pair = buildModel(p, ls);
 	auto model = pair.first;
 	auto x = pair.second;
 
-	ls.createPhase().setTimeLimit(60);
+	ls.createPhase().setTimeLimit(static_cast<int>(timeLimit));
 	auto param = ls.getParam();
 	param.setNbThreads(8);
 	param.setVerbosity(2);
