@@ -43,15 +43,15 @@ void commandLineRunner(int argc, const char * argv[]) {
         }
 
 		string resStr = (sts[0] == -1) ? "infes" : to_string(p.calcProfit(sts));
-        Utils::spitAppend(string(argv[3])+";"+resStr, outFn);
+        Utils::spitAppend(string(argv[3])+";"+resStr+"\n", outFn);
     }
 }
 
 int main(int argc, const char * argv[]) {
-	//string projFilename = "../../Projekte/j30/j301_1.sm";
-	/*string projFilename = "QBWLBeispiel.DAT";
-	ProjectWithOvertime p(projFilename);
-	auto sts = LSSolver::solve(p);
+	//string projFilename = "../../Projekte/j30/j3010_9.sm";
+	//string projFilename = "QBWLBeispiel.DAT";
+	//ProjectWithOvertime p(projFilename);
+	/*auto sts = LSSolver::solve(p);
 	Utils::serializeSchedule(sts, "myschedulebiatch.txt");
 	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedulebiatch.txt");*/
 

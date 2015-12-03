@@ -69,7 +69,7 @@ void ProjectWithOvertime::computeRevenueFunction() {
     auto sts = serialSGS(topOrder);
     int maxMs = makespan(sts);
 
-    EACH_PERIOD(revenue[t] = static_cast<float>(maxCosts - maxCosts / pow(maxMs-minMs, 2) * pow(t-minMs, 2)))
+    EACH_PERIOD(revenue[t] = static_cast<float>((minMs == maxMs) ? maxMs-t :  maxCosts - maxCosts / pow(maxMs-minMs, 2) * pow(t-minMs, 2)))
 }
 
 int ProjectWithOvertime::computeTKappa() const {

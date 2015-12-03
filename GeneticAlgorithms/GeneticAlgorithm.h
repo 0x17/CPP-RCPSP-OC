@@ -15,6 +15,8 @@
 
 using namespace std;
 
+const bool FORCE_SINGLE_THREAD = true;
+
 struct GAParameters {
     int numGens, popSize, pmutate;
     double timeLimit;
@@ -139,7 +141,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
     for(int i=0; (params.numGens == -1 || i<params.numGens) && (params.timeLimit == -1.0 || sw.look() < params.timeLimit * 1000.0); i++) {		
         generateChildren(pop);
 
-        if(useThreads) {
+        if(useThreads && !FORCE_SINGLE_THREAD) {
             for(int tix = 0; tix < NUM_THREADS; tix++) {
                 int six = params.popSize+tix*numPerThread;
                 int eix = params.popSize+(tix+1)*numPerThread-1;

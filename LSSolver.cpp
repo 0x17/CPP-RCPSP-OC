@@ -94,7 +94,7 @@ vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit) {
 
 	ls.createPhase().setTimeLimit(static_cast<int>(timeLimit));
 	auto param = ls.getParam();
-	param.setNbThreads(8);
+	param.setNbThreads(1);
 	param.setVerbosity(2);
 
 	ls.solve();
@@ -102,7 +102,7 @@ vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit) {
 	auto sol = ls.getSolution();	
 	if (sol.getStatus() != SS_Feasible) {
 		//throw runtime_error("No feasible solution found!");
-		vector<int> sts(-1);
+		vector<int> sts(p.numJobs, -1);
 		return sts;
 	}
 
