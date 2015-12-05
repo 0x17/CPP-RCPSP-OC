@@ -138,7 +138,14 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 		pop[i].second = i < params.popSize ? -fitness(pop[i].first) : 0.0f;
     }
 
+	TimePoint lupdate;
+
     for(int i=0; (params.numGens == -1 || i<params.numGens) && (params.timeLimit == -1.0 || sw.look() < params.timeLimit * 1000.0); i++) {		
+		if (chrono::duration<double, std::milli>(chrono::system_clock::now() - lupdate).count() > 1000.0) {
+			cout << "Generations = " << (i + 1) << ", Obj = " << -pop[0].second << ", Time = " << (boost::format("%.2f") % (sw.look() / 1000.0)) << endl;
+			lupdate = chrono::system_clock::now();
+		}
+
         generateChildren(pop);
 
         if(useThreads && !FORCE_SINGLE_THREAD) {
@@ -161,7 +168,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 
 		sort(pop.begin(), pop.end(), [](auto &left, auto &right) { return left.second < right.second; });
 
-		cout << "\rGeneration " << (i + 1) << " Obj=" << -pop[0].second << " Time=" << (boost::format("%.2f") % (sw.look() / 1000.0)) << "       ";
+		//cout << "\rGeneration " << (i + 1) << " Obj=" << -pop[0].second << " Time=" << (boost::format("%.2f") % (sw.look() / 1000.0)) << "       ";
     }
 
     auto best = pop[0];

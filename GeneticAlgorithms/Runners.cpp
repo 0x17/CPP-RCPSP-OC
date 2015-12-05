@@ -41,7 +41,7 @@ namespace GARunners {
 	GAResult runSpecific(ProjectWithOvertime &p, GAParameters &params, int index) {
         auto gafunc = funcs[index];
         auto result = gafunc(p, params);
-        cout << endl << "Representation=" << result.name << " Profit=" << result.profit << " Solvetime=" << result.solvetime << endl;
+        cout << "Representation=" << result.name << " Profit=" << result.profit << " Solvetime=" << result.solvetime << endl;
         return result;
     }
 
