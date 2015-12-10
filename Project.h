@@ -49,6 +49,8 @@ typedef pair<vector<int>, Matrix<int>> SGSResult;
 
 class Project {
 public:
+    const string name;
+
     int numJobs, numRes, numPeriods, T, lastJob;
     Matrix<char> adjMx;
     vector<int> durations, capacities;

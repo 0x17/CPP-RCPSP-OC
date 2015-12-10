@@ -5,6 +5,7 @@
 #include <list>
 #include <localsolver.h>
 #include "LSSolver.h"
+#include "Stopwatch.h"
 #include <fstream>
 #include <iostream>
 
@@ -85,18 +86,43 @@ vector<int> parseSolution(ProjectWithOvertime &p, Matrix<LSExpression> &x, LSSol
 	return sts;
 }
 
-vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit) {
+class TraceCallback : public LSCallback {
+    Utils::Tracer &tr;
+    double secCtr;
+public:
+    TraceCallback(Utils::Tracer &_tr) : tr(_tr), secCtr(0.0) {}
+    virtual void callback(LocalSolver &solver, LSCallbackType type) override;
+    virtual ~TraceCallback();
+};
+
+void TraceCallback::callback(LocalSolver &solver, LSCallbackType type) {
+    if(type == CT_Ticked) {
+		secCtr += MSECS_BETWEEN_TRACES;
+        lsdouble objval = solver.getModel().getObjective(0).getDoubleValue();
+        tr.trace(secCtr, static_cast<float>(objval));
+    }
+}
+
+TraceCallback::~TraceCallback() {
+}
+
+vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, bool traceobj) {
 	LocalSolver ls;
+	Utils::Tracer tr("LocalSolverTrace");
+	tr.trace(0.0, 0.0f);
 
 	auto pair = buildModel(p, ls);
 	auto model = pair.first;
 	auto x = pair.second;
 
+    TraceCallback cback(tr);
+    ls.addCallback(CT_Ticked, &cback);
+
 	ls.createPhase().setTimeLimit(static_cast<int>(timeLimit));
 	auto param = ls.getParam();
 	param.setNbThreads(1);
 	param.setVerbosity(2);
-
+    param.setTimeBetweenDisplays(static_cast<int>(MSECS_BETWEEN_TRACES/1000.0));
 	ls.solve();
 
 	auto sol = ls.getSolution();	

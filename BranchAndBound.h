@@ -4,6 +4,7 @@
 #include <vector>
 #include "matrix.h"
 #include "Stopwatch.h"
+#include "Utils.h"
 #include <string>
 
 using namespace std;
@@ -14,7 +15,8 @@ class Stopwatch;
 class BranchAndBound {
 public:
 	explicit BranchAndBound(ProjectWithOvertime& _p, double _timeLimit = 60.0, bool _writeGraph = false);
-	vector<int> solve(bool seedWithGA = false);
+    ~BranchAndBound();
+	vector<int> solve(bool seedWithGA = false, bool traceobj = false);
 
     static void solvePath(const string path);
 
@@ -28,6 +30,8 @@ private:
 	bool writeGraph;
     TimePoint lupdate;
 	double timeLimit;
+    bool traceobj;
+    Utils::Tracer *tr;
 	
 	bool isEligible(vector<int> &sts, int j);
 	pair<bool,bool> resourceFeasibilityCheck(vector<int> &sts, int j, int stj);

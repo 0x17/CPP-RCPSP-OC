@@ -9,47 +9,41 @@
 #include "GeneticAlgorithm.h"
 #include <vector>
 
-#define RUN_GA_FUNC_SIGN(funcname, gaType, indivType) \
+#define RUN_GA_FUNC_SIGN(funcname, gaType) \
 	GAResult funcname(ProjectWithOvertime &p, GAParameters &params);
 
-#define RUN_GA_FUNC_IMPL(funcname, gaType, indivType) \
+#define RUN_GA_FUNC_IMPL(funcname, gaType) \
 	GAResult funcname(ProjectWithOvertime &p, GAParameters &params) { \
 		gaType ga(p); \
         ga.setParameters(params); \
-		return runGeneticAlgorithm<indivType>(ga, #indivType); \
+		return runGeneticAlgorithm<gaType>(ga); \
 	}
 
 namespace GARunners {
     struct GAResult {
-        std::vector<int> sts;
+        vector<int> sts;
         float profit;
         double solvetime;
         string name;
     };
 
     template<class T>
-    GAResult runGeneticAlgorithm(GeneticAlgorithm<T> &ga, string name) {
+    GAResult runGeneticAlgorithm(T &ga) {
         Stopwatch sw;
         sw.start();
         auto pair = ga.solve();
         double solvetime = sw.look();
-        return{ pair.first, pair.second, solvetime, name };
+        return{ pair.first, pair.second, solvetime, ga.getName() };
     }
 
-    RUN_GA_FUNC_SIGN(runTwBorderGA, TimeWindowBordersGA, LambdaBeta)
-    RUN_GA_FUNC_SIGN(runTwArbitraryGA, TimeWindowArbitraryGA, LambdaTau)
-    RUN_GA_FUNC_SIGN(runFixedCapaGA, FixedCapacityGA, LambdaZr)
-    RUN_GA_FUNC_SIGN(runTimeVaryCapaGA, TimeVaryingCapacityGA, LambdaZrt)
-    RUN_GA_FUNC_SIGN(runCompAltsGA, CompareAlternativesGA, vector<int>)
-    RUN_GA_FUNC_SIGN(runFixedDeadlineGA, FixedDeadlineGA, DeadlineLambda)
+    RUN_GA_FUNC_SIGN(runTwBorderGA, TimeWindowBordersGA)
+    RUN_GA_FUNC_SIGN(runTwArbitraryGA, TimeWindowArbitraryGA)
+    RUN_GA_FUNC_SIGN(runFixedCapaGA, FixedCapacityGA)
+    RUN_GA_FUNC_SIGN(runTimeVaryCapaGA, TimeVaryingCapacityGA)
+    RUN_GA_FUNC_SIGN(runCompAltsGA, CompareAlternativesGA)
+    RUN_GA_FUNC_SIGN(runFixedDeadlineGA, FixedDeadlineGA)
 
-    void runAll(ProjectWithOvertime &p, GAParameters &params);
-    GAResult runSpecific(ProjectWithOvertime &p, GAParameters &params, int index);
-    void runRange(ProjectWithOvertime &p, GAParameters &params, int startIx, int endIx);
-
-    void batchRunSpecific(const string path, GAParameters &params, int index);
-	void batchRunAll(const string path, GAParameters &params);
-	void batchRunRange(const string path, GAParameters &params, int startIx, int endIx);
+    GAResult run(ProjectWithOvertime &p, GAParameters &params, int index);
 }
 
 

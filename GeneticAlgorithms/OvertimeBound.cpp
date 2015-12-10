@@ -5,7 +5,7 @@
 #include "OvertimeBound.h"
 #include "Sampling.h"
 
-TimeVaryingCapacityGA::TimeVaryingCapacityGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) {
+TimeVaryingCapacityGA::TimeVaryingCapacityGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "TimeVaryingCapacityGA") {
     useThreads = false;
 }
 
@@ -48,7 +48,7 @@ void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) {
 
 //===========================================================================================================
 
-FixedCapacityGA::FixedCapacityGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) {
+FixedCapacityGA::FixedCapacityGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "FixedCapacityGA") {
     useThreads = false;
 }
 

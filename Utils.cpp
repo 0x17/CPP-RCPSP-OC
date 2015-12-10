@@ -105,3 +105,19 @@ void Utils::spitAppend(const string s, const string filename) {
         f.close();
     }
 }
+
+namespace Utils {
+    Tracer::Tracer(const string filePrefix) : f(filePrefix + ".txt") {
+        if(!f.is_open())
+            throw runtime_error("Unable to create " + filePrefix + ".txt!");
+        f << "slvtime,bks_objval\n";
+    }
+
+    Tracer::~Tracer() {
+        f.close();
+    }
+
+    void Tracer::trace(double slvtime, float bks_objval) {
+		f << (boost::format("%.2f") % (slvtime / 1000.0)) << "," << bks_objval << endl;
+    }
+}

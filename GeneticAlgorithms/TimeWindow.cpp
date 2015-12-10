@@ -5,7 +5,7 @@
 #include "TimeWindow.h"
 #include "Sampling.h"
 
-TimeWindowArbitraryGA::TimeWindowArbitraryGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) {
+TimeWindowArbitraryGA::TimeWindowArbitraryGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "TimeWindowArbitraryGA") {
     useThreads = false;
 }
 
@@ -40,7 +40,7 @@ vector<int> TimeWindowArbitraryGA::decode(LambdaTau& i)  {
 
 //======================================================================================================================
 
-TimeWindowBordersGA::TimeWindowBordersGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) {
+TimeWindowBordersGA::TimeWindowBordersGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "TimeWindowBordersGA") {
     useThreads = false;
 }
 
@@ -75,7 +75,7 @@ vector<int> TimeWindowBordersGA::decode(LambdaBeta& i) {
 
 //======================================================================================================================
 
-CompareAlternativesGA::CompareAlternativesGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p) {
+CompareAlternativesGA::CompareAlternativesGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "CompareAlternativesGA") {
     useThreads = true;
 }
 

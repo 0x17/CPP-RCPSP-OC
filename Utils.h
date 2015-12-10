@@ -9,6 +9,8 @@
 #include <vector>
 #include <cstdlib>
 #include <list>
+#include <boost/format.hpp>
+#include <fstream>
 
 using namespace std;
 
@@ -71,6 +73,14 @@ namespace Utils {
     }
 
 	list<string> filenamesInDirWithExt(const string dir, const string ext);
+
+    class Tracer {
+        ofstream f;
+    public:
+        Tracer(const string filePrefix = "SolverTrace");
+        ~Tracer();
+        void trace(double slvtime, float bks_objval);
+    };
 }
 
 #endif //SSGS_UTILS_H

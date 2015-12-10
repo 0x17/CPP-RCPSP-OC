@@ -9,9 +9,20 @@
 #include <cmath>
 #include <fstream>
 
-BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, double _timeLimit, bool _writeGraph) : p(_p), timeLimit(_timeLimit), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph) {}
+BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, double _timeLimit, bool _writeGraph)
+	: p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph), timeLimit(_timeLimit), traceobj(false), tr(nullptr) {}
 
-vector<int> BranchAndBound::solve(bool seedWithGA) {
+BranchAndBound::~BranchAndBound() {
+    if(tr != nullptr) delete tr;
+}
+
+vector<int> BranchAndBound::solve(bool seedWithGA, bool traceobj) {
+    this->traceobj = traceobj;
+    if(traceobj && tr == nullptr) {
+        tr = new Utils::Tracer("BranchAndBoundTrace");
+		tr->trace(0.0, 0.0f);
+    }
+
     lupdate = chrono::system_clock::now();
     sw.start();
     
@@ -177,13 +188,14 @@ void BranchAndBound::foundLeaf(vector<int> &sts) {
 }
 
 void BranchAndBound::branch(vector<int> sts, int job, int stj) {
-	if(chrono::duration<double, std::milli>(chrono::system_clock::now() - lupdate).count() > 1000.0) {
+	if (sw.look() >= timeLimit * 1000.0)
+		return;
+
+	if(chrono::duration<double, std::milli>(chrono::system_clock::now() - lupdate).count() > MSECS_BETWEEN_TRACES) {
 		cout << "Nodes visited = " << nodeCtr << ", Boundings = " << boundCtr << ", Opt = " << lb << ", Time = " << (boost::format("%.2f") % (sw.look() / 1000.0)) << endl;
         lupdate = chrono::system_clock::now();
+        if(traceobj) tr->trace(sw.look(), lb);
 	}
-
-	if(sw.look() >= timeLimit * 1000.0)
-		return;
 
 	sts[job] = stj;
 
@@ -283,3 +295,4 @@ void BranchAndBound::solvePath(const string path) {
     }
     outFile.close();
 }
+

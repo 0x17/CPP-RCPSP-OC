@@ -5,7 +5,7 @@
 #include <cmath>
 #include "FixedDeadline.h"
 
-FixedDeadlineGA::FixedDeadlineGA(ProjectWithOvertime &_p): GeneticAlgorithm(_p) {
+FixedDeadlineGA::FixedDeadlineGA(ProjectWithOvertime &_p): GeneticAlgorithm(_p, "FixedDeadlineGA") {
     useThreads = true;
     deadlineUB = p.makespan(p.serialSGS(p.topOrder));
     deadlineLB = p.makespan(p.serialSGS(p.topOrder, p.zmax).first);

@@ -20,26 +20,31 @@ const bool FORCE_SINGLE_THREAD = true;
 struct GAParameters {
     int numGens, popSize, pmutate;
     double timeLimit;
-    bool fitnessBasedPairing;
+    bool fitnessBasedPairing, traceobj;
 };
 
 template<class Individual>
 class GeneticAlgorithm {
 public:
-	virtual ~GeneticAlgorithm() {}
+    virtual ~GeneticAlgorithm();
 
     pair<vector<int>, float> solve();
 
     void setParameters(GAParameters _params);
 
+	string getName() const { return name; };
+
 protected:
-    GAParameters params = {200, 100, 5, -1.0, false};
+    Utils::Tracer *tr;
+
+    GAParameters params = {200, 100, 5, -1.0, true, false};
 
     ProjectWithOvertime &p;
 
     bool useThreads = false;
+	const string name;
 
-    GeneticAlgorithm(ProjectWithOvertime &_p) : p(_p) {}
+    GeneticAlgorithm(ProjectWithOvertime &_p, string _name = "GenericGA") : p(_p), tr(nullptr), name(_name) {}
 
 	void generateChildren(vector<pair<Individual, float>> & population);
 
@@ -75,6 +80,11 @@ protected:
 };
 
 template<class Individual>
+GeneticAlgorithm<Individual>::~GeneticAlgorithm() {
+    if(tr != NULL) delete tr;
+}
+
+template<class Individual>
 template<class Func>
 inline void GeneticAlgorithm<Individual>::withMutProb(Func code) {
     if(Utils::randRangeIncl(1, 100) <= params.pmutate) { code(); }
@@ -83,6 +93,9 @@ inline void GeneticAlgorithm<Individual>::withMutProb(Func code) {
 template<class Individual>
 void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
     params = _params;
+    if(params.traceobj && tr == NULL) {
+        tr = new Utils::Tracer(name+"Trace");
+    }
 }
 
 template<class Individual>
@@ -138,12 +151,14 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 		pop[i].second = i < params.popSize ? -fitness(pop[i].first) : 0.0f;
     }
 
-	TimePoint lupdate;
+	TimePoint lupdate = chrono::system_clock::now();
+	if(params.traceobj) tr->trace(0.0, 0.0f);
 
     for(int i=0; (params.numGens == -1 || i<params.numGens) && (params.timeLimit == -1.0 || sw.look() < params.timeLimit * 1000.0); i++) {		
-		if (chrono::duration<double, std::milli>(chrono::system_clock::now() - lupdate).count() > 1000.0) {
+		if (chrono::duration<double, std::milli>(chrono::system_clock::now() - lupdate).count() > MSECS_BETWEEN_TRACES) {
 			cout << "Generations = " << (i + 1) << ", Obj = " << -pop[0].second << ", Time = " << (boost::format("%.2f") % (sw.look() / 1000.0)) << endl;
 			lupdate = chrono::system_clock::now();
+            if(params.traceobj) tr->trace(sw.look(), -pop[0].second);
 		}
 
         generateChildren(pop);
