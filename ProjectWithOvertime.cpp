@@ -212,8 +212,10 @@ pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, c
 		vector<int> cests = earliestStartingTimesForPartial(sts);
 		vector<int> clfts = latestFinishingTimesForPartial(sts, deadline);
 
-		if(cests[job] > clfts[job] - durations[job])
-			return make_pair(false, make_pair(sts, resRem));
+		if(cests[job] > clfts[job] - durations[job]) {
+            //printf("Time window feasibility fail!");
+            return make_pair(false, make_pair(sts, resRem));
+        }
 
 		list<int> decisionTimes = decisionTimesForResDevProblem(sts, cests, clfts, job);
 
@@ -224,7 +226,7 @@ pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, c
 			for(auto dt : decisionTimes) {
 				if(enoughCapacityForJobWithBaseInterval(sts, cests, clfts, resRem, job, dt)) {
 					float extCosts = extensionCosts(resRem, job, dt);
-					if(extCosts < minCosts) {
+					if(extCosts <= minCosts) {
 						minCosts = extCosts;
 						t = dt;
 					}
@@ -232,12 +234,15 @@ pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, c
 			}
 		}
 
-		if(t == -1)
-			return make_pair(false, make_pair(sts, resRem));
+		if(t == -1) {
+            //printf("Resource capacity feasibility fail!\n");
+            return make_pair(false, make_pair(sts, resRem));
+        }
 
 		scheduleJobAt(job, t, sts, resRem);
     }
 
+    printf("Found feasible schedule!\n");
 	return make_pair(true, make_pair(sts, resRem));
 }
 

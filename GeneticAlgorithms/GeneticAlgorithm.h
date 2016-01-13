@@ -41,6 +41,7 @@ protected:
 
     ProjectWithOvertime &p;
 
+	// also consider FORCE_SINGLE_THREAD!
     bool useThreads = false;
 	const string name;
 
@@ -138,6 +139,9 @@ void GeneticAlgorithm<Individual>::mutateAndFitnessRange(vector<pair<Individual,
 
 template<class Individual>
 pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
+    assert(params.pmutate > 0);
+    assert(params.popSize > 0);
+
 	Stopwatch sw;
 	sw.start();
     vector<pair<Individual, float>> pop(params.popSize*2);
@@ -153,6 +157,8 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 
 	TimePoint lupdate = chrono::system_clock::now();
 	if(params.traceobj) tr->trace(0.0, 0.0f);
+
+    float lastBestVal = numeric_limits<float>::max();
 
     for(int i=0; (params.numGens == -1 || i<params.numGens) && (params.timeLimit == -1.0 || sw.look() < params.timeLimit * 1000.0); i++) {		
 		if (chrono::duration<double, std::milli>(chrono::system_clock::now() - lupdate).count() > MSECS_BETWEEN_TRACES) {
@@ -184,6 +190,12 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 		sort(pop.begin(), pop.end(), [](auto &left, auto &right) { return left.second < right.second; });
 
 		//cout << "\rGeneration " << (i + 1) << " Obj=" << -pop[0].second << " Time=" << (boost::format("%.2f") % (sw.look() / 1000.0)) << "       ";
+
+        if(pop[0].second < lastBestVal) {
+            cout << "Lé improvement by " << to_string(lastBestVal - pop[0].second) << endl;
+        }
+
+        lastBestVal = pop[0].second;
     }
 
     auto best = pop[0];

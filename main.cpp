@@ -21,6 +21,8 @@ void showUsage() {
 	for (auto method : solMethods) cout << "\t" << method << endl;
 }
 
+int computeMinMaxMakespanDifference(ProjectWithOvertime &p);
+
 void commandLineRunner(int argc, const char * argv[]) {
     if(argc >= 4) {
         vector<int> sts;
@@ -29,6 +31,11 @@ void commandLineRunner(int argc, const char * argv[]) {
         double timeLimit = atof(argv[2]);
         ProjectWithOvertime p(argv[3]);
         string outFn = "";
+
+        if(computeMinMaxMakespanDifference(p) <= 0) {
+            cout << "maxMs - minMs <= 0... ---> skipping!" << endl;
+            return;
+        }
 
         bool traceobj = (argc == 5 && !string("traceobj").compare(argv[4]));
 
@@ -41,6 +48,7 @@ void commandLineRunner(int argc, const char * argv[]) {
             params.fitnessBasedPairing = true;
             params.numGens = -1;
             params.popSize = 80;
+			params.pmutate = 5;
             params.timeLimit = timeLimit;
             params.traceobj = traceobj;
             int gaIndex = stoi(solMethod.substr(2, 1));
@@ -62,15 +70,32 @@ void commandLineRunner(int argc, const char * argv[]) {
 	else showUsage();
 }
 
-int main(int argc, const char * argv[]) {
-	//string projFilename = "../../Projekte/j30/j3010_9.sm";
-	//string projFilename = "QBWLBeispiel.DAT";
-	//ProjectWithOvertime p(projFilename);
-	/*auto sts = LSSolver::solve(p);
-	Utils::serializeSchedule(sts, "myschedulebiatch.txt");
-	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedulebiatch.txt");*/
+int computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
+    int maxMs = p.makespan(p.serialSGS(p.topOrder));
+    int minMs = p.makespan(p.serialSGS(p.topOrder, p.zmax).first);
+    return maxMs - minMs;
+}
 
-    commandLineRunner(argc, argv);
+int main(int argc, const char * argv[]) {
+	string projFilename = "../../Projekte/j30/j301_1.sm";
+	//string projFilename = "QBWLBeispiel.DAT";
+	//string projFilename = "MiniBeispiel.DAT";
+	
+	ProjectWithOvertime p(projFilename);
+
+	GAParameters params = { -1, 100, 5, 30, true, false };
+	auto res = GARunners::run(p, params, 5);
+	auto sts = res.sts;
+
+	/*auto sts = LSSolver::solve(p);*/	
+
+	//BranchAndBound bandb(p, 99999999.0, false);
+	//auto sts = bandb.solve();
+
+	//Utils::serializeSchedule(sts, "myschedulebiatch.txt");
+	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe MiniBeispiel.DAT myschedulebiatch.txt");
+
+    //commandLineRunner(argc, argv);
 
     return 0;
 }
