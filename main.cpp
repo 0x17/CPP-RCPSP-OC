@@ -21,7 +21,11 @@ void showUsage() {
 	for (auto method : solMethods) cout << "\t" << method << endl;
 }
 
-int computeMinMaxMakespanDifference(ProjectWithOvertime &p);
+int computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
+	int maxMs = p.makespan(p.serialSGS(p.topOrder));
+	int minMs = p.makespan(p.serialSGS(p.topOrder, p.zmax).first);
+	return maxMs - minMs;
+}
 
 void commandLineRunner(int argc, const char * argv[]) {
     if(argc >= 4) {
@@ -70,32 +74,19 @@ void commandLineRunner(int argc, const char * argv[]) {
 	else showUsage();
 }
 
-int computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
-    int maxMs = p.makespan(p.serialSGS(p.topOrder));
-    int minMs = p.makespan(p.serialSGS(p.topOrder, p.zmax).first);
-    return maxMs - minMs;
-}
-
-int main(int argc, const char * argv[]) {
-	string projFilename = "../../Projekte/j30/j301_1.sm";
+void testFixedDeadlineHeuristic() {
+	//string projFilename = "../../Projekte/j30/j301_1.sm";
 	//string projFilename = "QBWLBeispiel.DAT";
-	//string projFilename = "MiniBeispiel.DAT";
-	
+	string projFilename = "MiniBeispiel.DAT";	
 	ProjectWithOvertime p(projFilename);
-
 	GAParameters params = { -1, 100, 5, 30, true, false };
 	auto res = GARunners::run(p, params, 5);
 	auto sts = res.sts;
-
-	/*auto sts = LSSolver::solve(p);*/	
-
-	//BranchAndBound bandb(p, 99999999.0, false);
-	//auto sts = bandb.solve();
-
 	//Utils::serializeSchedule(sts, "myschedulebiatch.txt");
 	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe MiniBeispiel.DAT myschedulebiatch.txt");
+}
 
-    //commandLineRunner(argc, argv);
-
+int main(int argc, const char * argv[]) {
+    commandLineRunner(argc, argv);
     return 0;
 }

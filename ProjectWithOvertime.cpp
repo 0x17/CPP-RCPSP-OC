@@ -99,7 +99,7 @@ list<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>& 
 
 float ProjectWithOvertime::extensionCosts(const Matrix<int> &resRem, int j, int stj) const {
 	float costs = 0.0f;
-    EACH_RES(ACTIVE_PERIODS(j, stj, costs += Utils::min(0, demands(j,r) - resRem(r,tau)) * kappa[r]))
+    EACH_RES(ACTIVE_PERIODS(j, stj, costs += Utils::max(0, demands(j,r) - resRem(r,tau)) * kappa[r]))
 	return costs;
 }
 
@@ -193,7 +193,7 @@ bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(vector<int>& sts,
 			int baseIntervalDemands = 0;
 
 			for (int i = 0; i < numJobs; i++)
-				if (sts[i] == UNSCHEDULED && tau >= clfts[i] - durations[i] && tau <= cests[i] + durations[i])
+				if (sts[i] == UNSCHEDULED && tau >= clfts[i] - durations[i] + 1 && tau <= cests[i] + durations[i])
 					baseIntervalDemands += demands(i, r);
 
 			if (baseIntervalDemands + demands(j, r) > resRem(r, tau) + zmax[r])
@@ -226,7 +226,7 @@ pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, c
 			for(auto dt : decisionTimes) {
 				if(enoughCapacityForJobWithBaseInterval(sts, cests, clfts, resRem, job, dt)) {
 					float extCosts = extensionCosts(resRem, job, dt);
-					if(extCosts <= minCosts) {
+					if(extCosts < minCosts) {
 						minCosts = extCosts;
 						t = dt;
 					}
