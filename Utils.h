@@ -30,6 +30,7 @@ namespace Utils {
 	inline int min(int a, int b, int c) { return min(min(a, b), c); }
 
 	void serializeSchedule(vector<int> & sts, const string filename);
+	void serializeProfit(float profit, const string filename);
 
     inline int randRangeIncl(int lb, int ub) {
         return lb + rand() % (ub-lb+1);

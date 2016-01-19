@@ -76,17 +76,23 @@ void commandLineRunner(int argc, const char * argv[]) {
 
 void testFixedDeadlineHeuristic() {
 	//string projFilename = "../../Projekte/j30/j301_1.sm";
-	//string projFilename = "QBWLBeispiel.DAT";
-	string projFilename = "MiniBeispiel.DAT";	
+	string projFilename = "QBWLBeispiel.DAT";
+	//string projFilename = "MiniBeispiel.DAT";	
 	ProjectWithOvertime p(projFilename);
-	GAParameters params = { -1, 100, 5, 30, true, false };
-	auto res = GARunners::run(p, params, 5);
-	auto sts = res.sts;
-	//Utils::serializeSchedule(sts, "myschedulebiatch.txt");
-	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe MiniBeispiel.DAT myschedulebiatch.txt");
+
+	BranchAndBound bb(p);
+	auto sts = bb.solve();
+
+	//GAParameters params = { -1, 100, 5, 30, true, false };
+	//auto res = GARunners::run(p, params, 5);
+	//auto sts = res.sts;
+	Utils::serializeSchedule(sts, "myschedule.txt");
+	Utils::serializeProfit(p.calcProfit(sts), "myprofit.txt");
+	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedule.txt");
 }
 
 int main(int argc, const char * argv[]) {
     commandLineRunner(argc, argv);
+	//testFixedDeadlineHeuristic();
     return 0;
 }
