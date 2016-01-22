@@ -59,9 +59,13 @@ void commandLineRunner(int argc, const char * argv[]) {
             auto res = GARunners::run(p, params, gaIndex);
             sts = res.sts;
             outFn = "GA" + to_string(gaIndex) + "Results.txt";
-        } else if(!solMethod.compare("LocalSolver")) {
+		}
+		else if (!solMethod.compare("LocalSolver")) {
 			sts = LSSolver::solve(p, timeLimit, traceobj);
 			outFn = "LocalSolverResults.txt";
+		} else if(!solMethod.compare("LocalSolverNative")) {
+			sts = LSSolver::solveListVarNative(p, timeLimit, traceobj);
+			outFn = "LocalSolverNativeResults.txt";
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");
         }

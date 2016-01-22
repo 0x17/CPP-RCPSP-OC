@@ -11,6 +11,7 @@
 namespace LSSolver {
 	vector<int> solve(ProjectWithOvertime &p, double timeLimit = 60.0, bool traceobj = false);
     vector<int> solveNative(ProjectWithOvertime &p);
+	vector<int> solveListVarNative(ProjectWithOvertime &p, double timeLimit = 60.0 ,bool traceobj = false);
 	void writeLSPModelParamFile(ProjectWithOvertime &p, string outFilename);
 };
 

@@ -150,6 +150,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &ord
     Matrix<int> resRem(numRes, numPeriods, [this](int r, int t) { return capacities[r]; });
 
     vector<int> sts(numJobs), fts(numJobs);
+	
     for (int k=0; k<numJobs; k++) {
         int job = order[k];
         int lastPredFinished = computeLastPredFinishingTime(fts, job);
@@ -164,6 +165,28 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &ord
     }
 
     return make_pair(sts, resRem);
+}
+
+SGSResult ProjectWithOvertime::serialSGSTimeWindowBordersRobust(const vector<int> &order, const vector<int> &beta) const {
+	Matrix<int> resRem(numRes, numPeriods, [this](int r, int t) { return capacities[r]; });
+
+	vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs);
+	for (int k = 0; k<numJobs; k++) {
+		int job = chooseEligibleWithLowestIndex(sts, order);
+
+		int lastPredFinished = computeLastPredFinishingTime(fts, job);
+		int t;
+		if (beta[k] == 1) {
+			for (t = lastPredFinished; !enoughCapacityForJobWithOvertime(job, t, resRem); t++);
+		}
+		else {
+			for (t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++);
+		}
+
+		scheduleJobAt(job, t, sts, fts, resRem);
+	}
+
+	return make_pair(sts, resRem);
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau) const {
@@ -262,4 +285,36 @@ vector<int> ProjectWithOvertime::earliestStartingTimesForPartialRespectZmax(cons
     }
 
     return ests;
+}
+
+bool ProjectWithOvertime::allPredsScheduled(int j, const vector<int>& sts) const {
+	for (int i = 0; i < numJobs; i++) {
+		if (adjMx(i, j) && sts[i] == UNSCHEDULED)
+			return false;
+	}
+	return true;
+}
+
+int indexOfJobInOrder(int j, const vector<int> &order) {
+	for (int ix = 0; ix < order.size(); ix++) {
+		if (order[ix] == j)
+			return ix;
+	}
+	return -1;
+}
+
+int ProjectWithOvertime::chooseEligibleWithLowestIndex(const vector<int>& sts, const vector<int>& order) const {
+	int minIx = numeric_limits<int>::max();
+	int minJob = -1;
+	for (int j = 0; j < numJobs; j++) {
+		if (sts[j] != UNSCHEDULED || !allPredsScheduled(j, sts))  continue;
+
+		int ix = indexOfJobInOrder(j, order);
+		if(ix < minIx) {
+			minIx = ix;
+			minJob = j;
+		}
+
+	}
+	return 0;
 }

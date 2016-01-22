@@ -146,6 +146,12 @@ public:
 	~SchedulingNativeFunction() {}
 };
 
+class SerialSGSBetaFunction : public SchedulingNativeFunction {
+public:
+	explicit SerialSGSBetaFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
+	virtual lsdouble call(const LSNativeContext &context) override;
+};
+
 class RevenueFunction : public SchedulingNativeFunction {
 public:
 	explicit RevenueFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
@@ -157,6 +163,16 @@ public:
 	explicit CumulatedDemandFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) { }
 	virtual lsdouble call(const LSNativeContext &context) override;
 };
+
+lsdouble SerialSGSBetaFunction::call(const LSNativeContext &context) {
+	vector<int> order(p.numJobs), beta(p.numJobs);
+	for(int i=0; i<p.numJobs; i++) {
+		order[i] = static_cast<int>(context.getIntValue(i));
+		beta[i] = static_cast<int>(context.getIntValue(p.numJobs + i));
+	}
+	auto result = p.serialSGSTimeWindowBorders(order, beta);
+	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
+}
 
 lsdouble RevenueFunction::call(const LSNativeContext &context) {
 	return p.revenue[context.getIntValue(0)];
@@ -235,6 +251,52 @@ vector<int> LSSolver::solveNative(ProjectWithOvertime &p) {
     //auto solvetime = ls.getStatistics().getRunningTime();
 
     return sts;
+}
+
+vector<int> LSSolver::solveListVarNative(ProjectWithOvertime& p, double timeLimit, bool traceobj) {
+	LocalSolver ls;
+	auto model = ls.getModel();
+	
+	SerialSGSBetaFunction sgsFunc(p);
+    LSExpression sgsFuncExpr = model.createNativeFunction(&sgsFunc);
+	
+	LSExpression objExpr = model.createExpression(O_Call, sgsFuncExpr);
+
+	LSExpression activityList = model.listVar(p.numJobs);
+	model.constraint(model.count(activityList) == p.numJobs);
+	vector<LSExpression> listElems(p.numJobs);
+	for (int i = 0; i < p.numJobs; i++)
+		listElems[i] = activityList(i);
+
+	vector<LSExpression> betaVar(p.numJobs);
+	for (int i = 0; i < p.numJobs; i++)
+		betaVar[i] = model.boolVar();
+
+	for (int i = 0; i < p.numJobs; i++) {
+		objExpr.addOperand(listElems[i]);
+	}
+
+	for (int i = 0; i < p.numJobs; i++) {
+		objExpr.addOperand(betaVar[i]);
+	}
+	
+	ls.createPhase().setTimeLimit(static_cast<int>(timeLimit));
+	auto param = ls.getParam();
+	param.setNbThreads(8);
+	param.setVerbosity(2);
+    ls.solve();
+
+    auto sol = ls.getSolution();
+	
+	vector<int> order(p.numJobs), beta(p.numJobs);
+	for(int i=0; i<p.numJobs; i++) {
+		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
+		beta[i] = static_cast<int>(sol.getIntValue(betaVar[i]));
+	}
+	
+	auto sts = p.serialSGSTimeWindowBordersRobust(order, beta).first;
+	
+	return sts;
 }
 
 void LSSolver::writeLSPModelParamFile(ProjectWithOvertime &p, string outFilename) {
