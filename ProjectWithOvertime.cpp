@@ -208,6 +208,25 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &o
     return make_pair(sts, resRem);
 }
 
+SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitraryRobust(const vector<int> &order, const vector<double> & tau) const {
+	Matrix<int> resRem(numRes, numPeriods, [this](int r, int t) { return capacities[r]; });
+
+	vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs);
+	for (int k = 0; k<numJobs; k++) {
+		int job = chooseEligibleWithLowestIndex(sts, order);
+		int lastPredFinished = computeLastPredFinishingTime(fts, job);
+		int t;
+		for (t = lastPredFinished; !enoughCapacityForJobWithOvertime(job, t, resRem); t++);
+		int tmin = t;
+		for (; !enoughCapacityForJob(job, t, resRem); t++);
+		int tmax = t;
+		for (t = tmax - static_cast<int>(round(static_cast<double>(tmax - tmin) * tau[k])); !enoughCapacityForJobWithOvertime(job, t, resRem); t++);
+		scheduleJobAt(job, t, sts, fts, resRem);
+	}
+
+	return make_pair(sts, resRem);
+}
+
 bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(vector<int>& sts, vector<int>& cests, vector<int>& clfts, Matrix<int> &resRem, int j, int stj) const {
 	if(stj + durations[j] >= numPeriods) return false;
 
@@ -316,5 +335,5 @@ int ProjectWithOvertime::chooseEligibleWithLowestIndex(const vector<int>& sts, c
 		}
 
 	}
-	return 0;
+	return minJob;
 }

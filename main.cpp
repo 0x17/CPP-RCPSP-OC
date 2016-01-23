@@ -13,7 +13,7 @@ void convertArgFileToLSP(int argc, const char * argv[]) {
 }
 
 void showUsage() {
-	list<string> solMethods = { "BranchAndBound", "LocalSolver" };
+	list<string> solMethods = { "BranchAndBound", "LocalSolver", "LocalSolverNative" };
 	for (int i = 0; i < 5; i++) solMethods.push_back("GA" + to_string(i));
 	cout << "Number of arguments must be >= 3" << endl;
 	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ProjectFileSM [traceobj]" << endl;
@@ -64,7 +64,7 @@ void commandLineRunner(int argc, const char * argv[]) {
 			sts = LSSolver::solve(p, timeLimit, traceobj);
 			outFn = "LocalSolverResults.txt";
 		} else if(!solMethod.compare("LocalSolverNative")) {
-			sts = LSSolver::solveListVarNative(p, timeLimit, traceobj);
+			sts = LSSolver::solveListVarNative(0, p, timeLimit, traceobj);
 			outFn = "LocalSolverNativeResults.txt";
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");
@@ -95,8 +95,17 @@ void testFixedDeadlineHeuristic() {
 	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedule.txt");
 }
 
+void testLocalSolverNative(int seed) {
+	string projFilename = "../../Projekte/j30/j301_1.sm";
+	ProjectWithOvertime p(projFilename);
+	auto sts = LSSolver::solveListVarNative3(seed ,p, 60.0);
+	Utils::serializeSchedule(sts, "myschedule.txt");
+	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe ../../Projekte/j30/j301_1.sm myschedule.txt");
+}
+
 int main(int argc, const char * argv[]) {
-    commandLineRunner(argc, argv);
+    //commandLineRunner(argc, argv);
 	//testFixedDeadlineHeuristic();
+	testLocalSolverNative(0 /*atoi(argv[1])*/);
     return 0;
 }

@@ -26,6 +26,7 @@ public:
     SGSResult serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta) const;
 	SGSResult serialSGSTimeWindowBordersRobust(const vector<int> &order, const vector<int> &beta) const;
     SGSResult serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau) const;
+	SGSResult serialSGSTimeWindowArbitraryRobust(const vector<int>& order, const vector<double>& tau) const;
 	bool enoughCapacityForJobWithBaseInterval(vector<int> &sts, vector<int> &cests, vector<int> &clfts, Matrix<int> &resRem, int j, int stj) const;
 	pair<bool, SGSResult> serialSGSWithDeadline(int deadline, const vector<int> &order) const;
     vector<int> earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const;
