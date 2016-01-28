@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include <string>
-#include <sstream>
 #include "Runners.h"
 #include "TimeWindow.h"
 #include "OvertimeBound.h"

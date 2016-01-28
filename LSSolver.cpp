@@ -185,32 +185,32 @@ lsdouble SerialSGSBetaFunction::call(const LSNativeContext &context) {
 		order[i] = static_cast<int>(context.getIntValue(i));
 		beta[i] = static_cast<int>(context.getIntValue(p.numJobs + i));
 	}
-	auto result = p.serialSGSTimeWindowBordersRobust(order, beta);
+	auto result = p.serialSGSTimeWindowBorders(order, beta, true);
 	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
 }
 
 lsdouble SerialSGSIntegerFunction::call(const LSNativeContext &context) {
 	vector<int> order(p.numJobs);
-	vector<double> tau(p.numJobs);
+	vector<float> tau(p.numJobs);
 	if (context.count() < 2 * p.numJobs) return numeric_limits<double>::lowest();
 	for (int i = 0; i<p.numJobs; i++) {
 		order[i] = static_cast<int>(context.getIntValue(i));
 		int beta = static_cast<int>(context.getIntValue(p.numJobs + i));
-		tau[i] = static_cast<double>(beta) / static_cast<double>(IV_COUNT-1);
+		tau[i] = (float) (static_cast<double>(beta) / static_cast<double>(IV_COUNT - 1));
 	}
-	auto result = p.serialSGSTimeWindowArbitraryRobust(order, tau);
+	auto result = p.serialSGSTimeWindowArbitrary(order, tau, true);
 	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
 }
 
 lsdouble SerialSGSTauFunction::call(const LSNativeContext &context) {
 	vector<int> order(p.numJobs);
-	vector<double> tau(p.numJobs);
+	vector<float> tau(p.numJobs);
 	if (context.count() < 2 * p.numJobs) return numeric_limits<double>::lowest();
 	for (int i = 0; i<p.numJobs; i++) {
 		order[i] = static_cast<int>(context.getIntValue(i));
-		tau[i] = context.getDoubleValue(p.numJobs + i);
+		tau[i] = (float) context.getDoubleValue(p.numJobs + i);
 	}
-	auto result = p.serialSGSTimeWindowArbitraryRobust(order, tau);
+	auto result = p.serialSGSTimeWindowArbitrary(order, tau, true);
 	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
 }
 
@@ -280,7 +280,7 @@ vector<int> LSSolver::solveNative(ProjectWithOvertime &p) {
 
     ls.createPhase().setTimeLimit(30);
 	auto param = ls.getParam();
-	param.setNbThreads(8);
+	param.setNbThreads(1);
 	param.setVerbosity(2);
     ls.solve();
 
@@ -321,7 +321,7 @@ vector<int> LSSolver::solveListVarNative2(int seed, ProjectWithOvertime& p, doub
 
 	ls.createPhase().setTimeLimit(static_cast<int>(timeLimit));
 	auto param = ls.getParam();
-	param.setNbThreads(4);
+	param.setNbThreads(1);
 	param.setSeed(seed);
 	param.setVerbosity(2);
 	ls.solve();
@@ -329,18 +329,18 @@ vector<int> LSSolver::solveListVarNative2(int seed, ProjectWithOvertime& p, doub
 	auto sol = ls.getSolution();
 
 	vector<int> order(p.numJobs);
-	vector<double> tau(p.numJobs);
+	vector<float> tau(p.numJobs);
 	for (int i = 0; i<p.numJobs; i++) {
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
-		tau[i] = sol.getDoubleValue(tauVar[i]);
+		tau[i] = (float)sol.getDoubleValue(tauVar[i]);
 	}
 
-	auto sts = p.serialSGSTimeWindowArbitraryRobust(order, tau).first;
+	auto sts = p.serialSGSTimeWindowArbitrary(order, tau, true).first;
 
 	return sts;
 }
 
-vector<int> LSSolver::solveListVarNative(int seed ,ProjectWithOvertime& p, double timeLimit, bool traceobj) {
+vector<int> LSSolver::solveListVarNative(int seed, ProjectWithOvertime& p, double timeLimit, bool traceobj) {
 	LocalSolver ls;
 	auto model = ls.getModel();
 	
@@ -367,7 +367,7 @@ vector<int> LSSolver::solveListVarNative(int seed ,ProjectWithOvertime& p, doubl
 
 	ls.createPhase().setTimeLimit(static_cast<int>(timeLimit));
 	auto param = ls.getParam();
-	param.setNbThreads(4);
+	param.setNbThreads(1);
 	param.setSeed(seed);
 	param.setVerbosity(2);
     ls.solve();
@@ -380,7 +380,7 @@ vector<int> LSSolver::solveListVarNative(int seed ,ProjectWithOvertime& p, doubl
 		beta[i] = static_cast<int>(sol.getIntValue(betaVar[i]));
 	}
 	
-	auto sts = p.serialSGSTimeWindowBordersRobust(order, beta).first;
+	auto sts = p.serialSGSTimeWindowBorders(order, beta, true).first;
 	
 	return sts;
 }
@@ -412,7 +412,7 @@ vector<int> LSSolver::solveListVarNative3(int seed, ProjectWithOvertime& p, doub
 
 	ls.createPhase().setTimeLimit(static_cast<int>(timeLimit));
 	auto param = ls.getParam();
-	param.setNbThreads(4);
+	param.setNbThreads(1);
 	param.setSeed(seed);
 	param.setVerbosity(2);
 	ls.solve();
@@ -420,13 +420,13 @@ vector<int> LSSolver::solveListVarNative3(int seed, ProjectWithOvertime& p, doub
 	auto sol = ls.getSolution();
 
 	vector<int> order(p.numJobs);
-	vector<double> tau(p.numJobs);
+	vector<float> tau(p.numJobs);
 	for (int i = 0; i<p.numJobs; i++) {
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
-		tau[i] = static_cast<double>(sol.getIntValue(betaVar[i])) / static_cast<double>(IV_COUNT-1);
+		tau[i] = (float) (static_cast<double>(sol.getIntValue(betaVar[i])) / static_cast<double>(IV_COUNT - 1));
 	}
 
-	auto sts = p.serialSGSTimeWindowArbitraryRobust(order, tau).first;
+	auto sts = p.serialSGSTimeWindowArbitrary(order, tau, true).first;
 
 	return sts;
 }

@@ -13,8 +13,9 @@ void convertArgFileToLSP(int argc, const char * argv[]) {
 }
 
 void showUsage() {
-	list<string> solMethods = { "BranchAndBound", "LocalSolver", "LocalSolverNative" };
+	list<string> solMethods = { "BranchAndBound", "LocalSolver" };
 	for (int i = 0; i < 5; i++) solMethods.push_back("GA" + to_string(i));
+	for (int i = 0; i < 3; i++) solMethods.push_back("LocalSolverNative" + to_string(i));
 	cout << "Number of arguments must be >= 3" << endl;
 	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ProjectFileSM [traceobj]" << endl;
 	cout << "Solution methods: " << endl;
@@ -27,7 +28,7 @@ int computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
 	return maxMs - minMs;
 }
 
-void commandLineRunner(int argc, const char * argv[]) {
+void commandLineRunner(int argc, char * argv[]) {
     if(argc >= 4) {
         vector<int> sts;
 
@@ -63,9 +64,15 @@ void commandLineRunner(int argc, const char * argv[]) {
 		else if (!solMethod.compare("LocalSolver")) {
 			sts = LSSolver::solve(p, timeLimit, traceobj);
 			outFn = "LocalSolverResults.txt";
-		} else if(!solMethod.compare("LocalSolverNative")) {
-			sts = LSSolver::solveListVarNative(0, p, timeLimit, traceobj);
-			outFn = "LocalSolverNativeResults.txt";
+		} else if(boost::starts_with(solMethod, "LocalSolverNative")) {
+			int lsnIndex = stoi(solMethod.substr(17, 1));
+			vector<vector<int>(*)(int, ProjectWithOvertime&, double, bool)> lsfuncs = {
+				LSSolver::solveListVarNative,
+				LSSolver::solveListVarNative2,
+				LSSolver::solveListVarNative3,
+			};
+			sts = lsfuncs[lsnIndex](0, p, timeLimit, traceobj);
+			outFn = "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");
         }
@@ -103,9 +110,9 @@ void testLocalSolverNative(int seed) {
 	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe ../../Projekte/j30/j301_1.sm myschedule.txt");
 }
 
-int main(int argc, const char * argv[]) {
-    //commandLineRunner(argc, argv);
+int main(int argc, char * argv[]) {
+	commandLineRunner(argc, argv);
 	//testFixedDeadlineHeuristic();
-	testLocalSolverNative(0 /*atoi(argv[1])*/);
+	//testLocalSolverNative(0 /*atoi(argv[1])*/);
     return 0;
 }

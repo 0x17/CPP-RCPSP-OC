@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CPP-RCPSP-OC", "CPP-RCPSP-OC.vcxproj", "{79EF54FB-DEF8-4F61-9C71-C3CF7F899037}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CPP-RCPSP-OC-Test", "CPP-RCPSP-OC-Test\CPP-RCPSP-OC-Test.vcxproj", "{C49B66AB-A4EC-451A-89BF-FC4FB06D0024}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,14 @@ Global
 		{79EF54FB-DEF8-4F61-9C71-C3CF7F899037}.Release|x64.Build.0 = Release|x64
 		{79EF54FB-DEF8-4F61-9C71-C3CF7F899037}.Release|x86.ActiveCfg = Release|Win32
 		{79EF54FB-DEF8-4F61-9C71-C3CF7F899037}.Release|x86.Build.0 = Release|Win32
+		{C49B66AB-A4EC-451A-89BF-FC4FB06D0024}.Debug|x64.ActiveCfg = Debug|x64
+		{C49B66AB-A4EC-451A-89BF-FC4FB06D0024}.Debug|x64.Build.0 = Debug|x64
+		{C49B66AB-A4EC-451A-89BF-FC4FB06D0024}.Debug|x86.ActiveCfg = Debug|Win32
+		{C49B66AB-A4EC-451A-89BF-FC4FB06D0024}.Debug|x86.Build.0 = Debug|Win32
+		{C49B66AB-A4EC-451A-89BF-FC4FB06D0024}.Release|x64.ActiveCfg = Release|x64
+		{C49B66AB-A4EC-451A-89BF-FC4FB06D0024}.Release|x64.Build.0 = Release|x64
+		{C49B66AB-A4EC-451A-89BF-FC4FB06D0024}.Release|x86.ActiveCfg = Release|Win32
+		{C49B66AB-A4EC-451A-89BF-FC4FB06D0024}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
