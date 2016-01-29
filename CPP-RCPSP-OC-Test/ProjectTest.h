@@ -12,11 +12,11 @@ class ProjectTest : public testing::Test {
 protected:
     Project *p;
 
-    virtual void SetUp() {
+	void SetUp() override {
         p = new Project("MiniBeispiel.DAT");
     }
 
-    virtual void TearDown() {
+	void TearDown() override {
         delete p;
     }
 

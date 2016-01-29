@@ -49,6 +49,13 @@ public:
             r[j] = data[i*n+j];
         return r;
     }
+
+	std::vector<T> column(int j) const {
+		std::vector<T> c(m);
+		for (int i = 0; i<m; i++)
+			c[i] = data[i*n + j];
+		return c;
+    }
 };
 
 template<class T>

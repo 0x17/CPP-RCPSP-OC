@@ -31,6 +31,8 @@
     <ClCompile Include="..\Stopwatch.cpp" />
     <ClCompile Include="..\Utils.cpp" />
     <ClCompile Include="..\Visualization.cpp" />
+    <ClCompile Include="ProjectTest.cpp" />
+    <ClCompile Include="TestHelpers.cpp" />
     <ClCompile Include="testmain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -48,6 +50,8 @@
     <ClInclude Include="..\Stopwatch.h" />
     <ClInclude Include="..\Utils.h" />
     <ClInclude Include="..\Visualization.h" />
+    <ClInclude Include="ProjectTest.h" />
+    <ClInclude Include="TestHelpers.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C49B66AB-A4EC-451A-89BF-FC4FB06D0024}</ProjectGuid>

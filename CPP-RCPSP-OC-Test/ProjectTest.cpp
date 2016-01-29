@@ -13,5 +13,9 @@ TEST_F(ProjectTest, testConstructor) {
     vector<int> expDurations = { 0, 2, 2, 2, 0 };
     TestHelpers::ArrayEquals(expDurations, p->durations);
 
-    // TODO: Finish
+	vector<int> expDemands = { 0, 1, 1, 2, 0 };
+	vector<int> actDemands = p->demands.column(0);
+	TestHelpers::ArrayEquals(expDemands, actDemands);
+
+	//Matrix<int> expAdjMx = { {} };
 }
