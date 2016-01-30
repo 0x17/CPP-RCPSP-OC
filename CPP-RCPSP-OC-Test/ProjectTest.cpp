@@ -11,11 +11,30 @@ TEST_F(ProjectTest, testConstructor) {
     ASSERT_EQ(1, p->numRes);
 
     vector<int> expDurations = { 0, 2, 2, 2, 0 };
-    TestHelpers::ArrayEquals(expDurations, p->durations);
+    TestHelpers::arrayEquals(expDurations, p->durations);
 
 	vector<int> expDemands = { 0, 1, 1, 2, 0 };
 	vector<int> actDemands = p->demands.column(0);
-	TestHelpers::ArrayEquals(expDemands, actDemands);
+	TestHelpers::arrayEquals(expDemands, actDemands);
 
-	//Matrix<int> expAdjMx = { {} };
+	vector<vector<char>> expAdjVecs = {
+            { 0, 1, 0, 1, 0 },
+            { 0, 0, 1, 0, 0 },
+            { 0, 0, 0, 0, 1 },
+            { 0, 0, 0, 0, 1 },
+            { 0, 0, 0, 0, 0 }
+    };
+    Matrix<char> expAdjMx(expAdjVecs);
+    TestHelpers::matrixEquals(expAdjMx, p->adjMx);
+
+    ASSERT_EQ(1, p->capacities.size());
+    ASSERT_EQ(2, p->capacities[0]);
+
+    ASSERT_EQ(p->T, 6);
+}
+
+TEST_F(ProjectTest, testSerialSGS) {
+    auto actualSts = p->serialSGS({0, 1, 2, 3, 4});
+    vector<int> expSts = { 0, 0, 2, 4, 6 };
+    TestHelpers::arrayEquals(expSts, actualSts);
 }

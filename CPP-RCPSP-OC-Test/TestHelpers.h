@@ -7,15 +7,25 @@
 
 #include <vector>
 #include <gtest/gtest.h>
+#include "../Matrix.h"
 
 class TestHelpers {
 public:
     template<class T>
-    static void ArrayEquals(std::vector<T> &expected, std::vector<T> &actual) {
+    static void arrayEquals(std::vector<T> &expected, std::vector<T> &actual) {
         ASSERT_EQ(expected.size(), actual.size());
         for(int i=0; i<actual.size(); i++) {
             ASSERT_EQ(expected[i], actual[i]);
         }
+    }
+
+    template<class T>
+    static void matrixEquals(Matrix<T> &expected, Matrix<T> &actual) {
+        ASSERT_EQ(expected.getM(), actual.getM());
+        ASSERT_EQ(expected.getN(), actual.getN());
+        for(int i=0; i<actual.getM(); i++)
+            for(int j=0; j<actual.getN(); j++)
+                ASSERT_EQ(expected(i, j), actual(i, j));
     }
 };
 
