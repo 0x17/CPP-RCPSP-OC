@@ -6,6 +6,7 @@
 #define CPP_RCPSP_OC_TESTHELPERS_H
 
 #include <vector>
+#include <list>
 #include <gtest/gtest.h>
 #include "../Matrix.h"
 
@@ -17,6 +18,12 @@ public:
         for(int i=0; i<actual.size(); i++) {
             ASSERT_EQ(expected[i], actual[i]);
         }
+    }
+
+    template<class T>
+    static void listEquals(std::list<T> &expected, std::list<T> &actual) {
+        ASSERT_EQ(expected.size(), actual.size());
+        ASSERT_TRUE(expected == actual);
     }
 
     template<class T>

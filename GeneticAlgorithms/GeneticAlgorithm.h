@@ -214,7 +214,7 @@ void GeneticAlgorithm<Individual>::swap(vector<T> &order, int i1, int i2) {
 	int q = Utils::randRangeIncl(0, static_cast<int>(order.mother.size()) - 1); \
 	for(int i = 0; i <= q; i++) { assignFromMother; } \
 	for(int i = 0, ctr = q + 1; i<order.father.size(); i++) { \
-		if(!Utils::rangeContains(order.mother, 0, q, order.father[i])) { \
+		if(!Utils::rangeInclContains(order.mother, 0, q, order.father[i])) { \
 			assignFromFather; \
 			ctr++; \
 		} \
@@ -222,19 +222,19 @@ void GeneticAlgorithm<Individual>::swap(vector<T> &order, int i1, int i2) {
 
 template<class Individual>
 void GeneticAlgorithm<Individual>::onePointCrossover(CrossoverData<vector<int>> order) {
-	OPC_COMMON(
-		order.daughter[i] = order.mother[i],
-		order.daughter[ctr] = order.father[i])
+    OPC_COMMON(
+            order.daughter[i] = order.mother[i],
+            order.daughter[ctr] = order.father[i])
 }
 
 template <class Individual>
 template <class T, class U>
 void GeneticAlgorithm<Individual>::onePointCrossoverAssociated(CrossoverData<T> order, CrossoverData<U> associated) {
-	OPC_COMMON(
-		order.daughter[i] = order.mother[i];
-		associated.daughter[i] = associated.mother[i],
-		order.daughter[ctr] = order.father[i];
-		associated.daughter[i] = associated.father[i])
+    OPC_COMMON(
+            order.daughter[i] = order.mother[i];
+            associated.daughter[i] = associated.mother[i],
+            order.daughter[ctr] = order.father[i];
+                    associated.daughter[i] = associated.father[i])
 }
 
 #define SWAP_COMMON(code) \

@@ -66,7 +66,7 @@ void Utils::serializeProfit(float profit, const string filename) {
 	spit(to_string(profit), filename);
 }
 
-int Utils::pickWithDistribution(vector<float> probs) {
+int Utils::pickWithDistribution(vector<float> &probs) {
 	int len = static_cast<int>(probs.size());
 	float q = randUnitFloat();
 

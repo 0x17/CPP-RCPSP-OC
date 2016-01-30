@@ -41,7 +41,7 @@ namespace Utils {
     }
 
     template<class T>
-    bool rangeContains(const vector<T> &elems, int lb, int ub, int e) {
+    bool rangeInclContains(const vector<T> &elems, int lb, int ub, int e) {
         for(int i=lb; i<=ub; i++)
             if(elems[i] == e) return true;
         return false;
@@ -58,7 +58,7 @@ namespace Utils {
 		throw runtime_error("No nth found!");
 	}
 
-	int pickWithDistribution(vector<float> probs);
+	int pickWithDistribution(vector<float> &probs);
 
     void spit(const string s, const string filename);
     void spitAppend(const string s, const string filename);
