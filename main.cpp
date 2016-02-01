@@ -4,6 +4,7 @@
 #include "GeneticAlgorithms/Runners.h"
 #include "BranchAndBound.h"
 #include <boost/algorithm/string.hpp>
+#include <cmath>
 
 void convertArgFileToLSP(int argc, const char * argv[]) {
     if (argc == 2) {
@@ -113,9 +114,27 @@ void testLocalSolverNative(int seed) {
 	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe ../../Projekte/j30/j301_1.sm myschedule.txt");
 }
 
+void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
+    string projFilename = "../../Projekte/j30/j301_1.sm";
+    ProjectWithOvertime p(projFilename);
+
+    GAParameters params;
+    params.popSize = 80;
+    params.timeLimit = -1.0;
+    params.numGens = static_cast<int>(std::floor(static_cast<float>(iterLimit) / static_cast<float>(params.popSize)));
+    params.fitnessBasedPairing = false;
+    params.pmutate = 5;
+    params.traceobj = false;
+
+    auto res = GARunners::run(p, params, gaIndex);
+}
+
 int main(int argc, char * argv[]) {
-	commandLineRunner(argc, argv);
+	//commandLineRunner(argc, argv);
+
 	//testFixedDeadlineHeuristic();
 	//testLocalSolverNative(0 /*atoi(argv[1])*/);
+
+    benchmarkGeneticAlgorithm(0, 2400);
     return 0;
 }

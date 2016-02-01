@@ -192,7 +192,10 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 		//cout << "\rGeneration " << (i + 1) << " Obj=" << -pop[0].second << " Time=" << (boost::format("%.2f") % (sw.look() / 1000.0)) << "       ";
 
         if(pop[0].second < lastBestVal) {
-            cout << "Lé improvement by " << to_string(lastBestVal - pop[0].second) << endl;
+            if(lastBestVal == numeric_limits<float>::max())
+                cout << "Initial improvement by " << to_string(-pop[0].second) << endl;
+            else
+                cout << "Improvement by " << to_string(lastBestVal - pop[0].second) << endl;
         }
 
         lastBestVal = pop[0].second;

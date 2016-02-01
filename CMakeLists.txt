@@ -12,5 +12,5 @@ set(SOURCE_FILES_COMMON Utils.h Utils.cpp Project.cpp Project.h ProjectWithOvert
 set(SOURCE_FILES ${SOURCE_FILES_COMMON} main.cpp)
 add_executable(CPP-RCPSP-OC ${SOURCE_FILES})
 
-set(TEST_SOURCE_FILES ${SOURCE_FILES_COMMON} CPP-RCPSP-OC-Test/testmain.cpp CPP-RCPSP-OC-Test/ProjectTest.cpp CPP-RCPSP-OC-Test/ProjectTest.h CPP-RCPSP-OC-Test/TestHelpers.cpp CPP-RCPSP-OC-Test/TestHelpers.h CPP-RCPSP-OC-Test/UtilsTest.cpp CPP-RCPSP-OC-Test/UtilsTest.h)
+set(TEST_SOURCE_FILES ${SOURCE_FILES_COMMON} CPP-RCPSP-OC-Test/testmain.cpp CPP-RCPSP-OC-Test/ProjectTest.cpp CPP-RCPSP-OC-Test/ProjectTest.h CPP-RCPSP-OC-Test/TestHelpers.cpp CPP-RCPSP-OC-Test/TestHelpers.h CPP-RCPSP-OC-Test/UtilsTest.cpp CPP-RCPSP-OC-Test/UtilsTest.h CPP-RCPSP-OC-Test/SamplingTest.cpp CPP-RCPSP-OC-Test/SamplingTest.h)
 add_executable(CPP-RCPSP-OC-Tests ${TEST_SOURCE_FILES})
