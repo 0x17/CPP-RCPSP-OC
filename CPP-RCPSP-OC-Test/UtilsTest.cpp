@@ -6,12 +6,16 @@
 #include "../Utils.h"
 #include "TestHelpers.h"
 #include <cstdio>
+#include <boost/algorithm/string.hpp>
+
+using namespace boost::algorithm;
 
 TEST(UtilsTest, testReadLines) {
     auto actLines = Utils::readLines("MiniBeispiel.DAT");
-    ASSERT_EQ("************************************************************************\r", actLines[0]);
-    ASSERT_EQ("projects                      :  1\r", actLines[4]);
-    ASSERT_EQ("1->1\r", actLines[actLines.size()-2]);
+	auto actLinesTr = Utils::mapVec<string(string), string, string>([](string line) { return trim_copy(line); }, actLines);
+    ASSERT_EQ("************************************************************************", actLinesTr[0]);
+    ASSERT_EQ("projects                      :  1", actLinesTr[4]);
+    ASSERT_EQ("1->1", actLinesTr[actLinesTr.size()-2]);
 }
 
 TEST(UtilsTest, testExtractIntFromStr) {
@@ -76,7 +80,7 @@ TEST(UtilsTest, testSerializeSchedule) {
 }
 
 TEST(UtilsTest, testSerializeProfit) {
-    float profit = 3.141;
+    float profit = 3.141f;
     string tmpFile = "TMP_PROFIT.txt";
     Utils::serializeProfit(profit, tmpFile);
     auto lines = Utils::readLines(tmpFile);
@@ -152,13 +156,34 @@ TEST(UtilsTest, testSpitAppend) {
 }
 
 TEST(UtilsTest, testMaxInRangeIncl) {
-    ASSERT_EQ(0, Utils::maxInRangeIncl(0, 5, [](int x) { return -x; }));
-    vector<int> nums = { 1, 4, 2, 20, 8, 1, 0 };
+    ASSERT_EQ(0, Utils::maxInRangeIncl(0, 5, [](int x) { return static_cast<float>(-x); }));
+    vector<float> nums = { 1.0f, 4.0f, 2.0f, 20.0f, 8.0f, 1.0f, 0.0f };
     ASSERT_EQ(20, Utils::maxInRangeIncl(0, nums.size()-1, [&](int i) { return nums[i]; }));
+}
+
+string removeWhitespace(string s) {
+	return replace_all_copy(replace_all_copy(replace_all_copy(s, ".", ""), "\\", ""), "/", "");
 }
 
 TEST(UtilsTest, testFilenamesInDirWithExt) {
     auto fnames = Utils::filenamesInDirWithExt(".", "DAT");
-    list<string> expFnames = { "./MiniBeispiel.DAT", "./QBWLBeispiel.DAT" };
-    TestHelpers::listEquals(expFnames, fnames);
+    list<string> expFnames = { "MiniBeispiel.DAT", "QBWLBeispiel.DAT" };
+	auto expFnamesRplced = Utils::mapLst<string(string), string, string>(removeWhitespace, expFnames);
+    TestHelpers::listEquals(expFnamesRplced, fnames);
+}
+
+TEST(UtilsTest, testMapVec) {
+	vector<int> nums = { 1, 2, 4, 8, 16 };
+	vector<int> doubled = { 2, 4, 8, 16, 32 };
+	auto actualApplied = Utils::mapVec<int(int), int, int>([](int x) { return x * 2; }, nums);
+	TestHelpers::arrayEquals(doubled, actualApplied);
+	ASSERT_EQ(1, nums[0]);
+}
+
+TEST(UtilsTest, testMapLst) {
+	list<int> nums = { 1, 2, 4, 8, 16 };
+	list <int> doubled = { 2, 4, 8, 16, 32 };
+	auto actualApplied = Utils::mapLst<int(int), int, int>([](int x) { return x * 2; }, nums);
+	TestHelpers::listEquals(doubled, actualApplied);
+	ASSERT_EQ(1, nums.front());
 }

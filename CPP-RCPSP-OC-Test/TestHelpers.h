@@ -23,7 +23,7 @@ public:
     template<class T>
     static void listEquals(std::list<T> &expected, std::list<T> &actual) {
         ASSERT_EQ(expected.size(), actual.size());
-        ASSERT_TRUE(expected == actual);
+		equal(expected.begin(), expected.end(), actual.begin(), actual.end());
     }
 
     template<class T>

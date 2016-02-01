@@ -73,6 +73,22 @@ namespace Utils {
         return r;
     }
 
+	template<class Func, class A, class B>
+	vector<B> mapVec(Func f, vector<A> &elems) {
+		vector<B> res(elems.size());
+		for (int i = 0; i < elems.size(); i++)
+			res[i] = f(elems[i]);
+		return res;
+    }
+
+	template<class Func, class A, class B>
+	list<B> mapLst(Func f, list<A> &elems) {
+		list<B> res;
+		for(auto elem : elems)
+			res.push_back(elem);
+		return res;
+	}
+
 	list<string> filenamesInDirWithExt(const string dir, const string ext);
 
     class Tracer {

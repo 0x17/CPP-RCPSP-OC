@@ -38,3 +38,35 @@ TEST_F(ProjectTest, testSerialSGS) {
     vector<int> expSts = { 0, 0, 2, 4, 6 };
     TestHelpers::arrayEquals(expSts, actualSts);
 }
+
+TEST_F(ProjectTest, testJobBeforeInOrder) {
+    vector<int> order = { 0, 1, 2, 3, 4, 5 };
+    ASSERT_TRUE(p->jobBeforeInOrder(1, 2, order));
+    ASSERT_FALSE(p->jobBeforeInOrder(1, 1, order));
+    ASSERT_TRUE(p->jobBeforeInOrder(4, 5, order));
+    ASSERT_FALSE(p->jobBeforeInOrder(5, 5, order));
+    for(int i=1; i<order.size(); i++)
+        ASSERT_TRUE(p->jobBeforeInOrder(0, i, order));
+}
+
+TEST_F(ProjectTest, testHasPredNotBeforeInOrder) {
+    vector<int> order = { 0, 1, 2, 3, 4 };
+    ASSERT_TRUE(p->hasPredNotBeforeInOrder(4, 0, order));
+    ASSERT_FALSE(p->hasPredNotBeforeInOrder(4, 4, order));
+    ASSERT_FALSE(p->hasPredNotBeforeInOrder(2, 2, order));
+}
+
+TEST_F(ProjectTest, testMakespan) {
+    vector<int> sts = { 0, 0, 2, 4, 6 };
+    ASSERT_EQ(6, p->makespan(sts));
+}
+
+TEST_F(ProjectTest, testEachJob) {
+    list<int> jobs;
+    p->eachJob([&](int j) { jobs.push_back(j); });
+    ASSERT_EQ(p->numJobs, jobs.size());
+    int i;
+    list<int>::iterator jit;
+    for(i=0, jit = jobs.begin(); i<p->numJobs; i++, ++jit)
+        ASSERT_EQ(i, (*jit));
+}
