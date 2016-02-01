@@ -81,6 +81,9 @@ void commandLineRunner(int argc, char * argv[]) {
             string resStr = (sts[0] == -1) ? "infes" : to_string(p.calcProfit(sts));
             Utils::spitAppend(string(argv[3])+";"+resStr+"\n", outFn);
         }
+
+		Utils::serializeSchedule(sts, "myschedule.txt");
+		Utils::serializeProfit(p.calcProfit(sts), "myprofit.txt");
 	}
 	else showUsage();
 }
