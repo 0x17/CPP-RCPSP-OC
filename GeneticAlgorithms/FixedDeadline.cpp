@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include "FixedDeadline.h"
+#include "GeneticOperators.h"
 
 FixedDeadlineGA::FixedDeadlineGA(ProjectWithOvertime &_p): GeneticAlgorithm(_p, "FixedDeadlineGA") {
     useThreads = true;
@@ -20,13 +21,13 @@ DeadlineLambda FixedDeadlineGA::init(int ix) {
 }
 
 void FixedDeadlineGA::crossover(DeadlineLambda &mother, DeadlineLambda &father, DeadlineLambda &daughter) {
-    onePointCrossover({mother.order, father.order, daughter.order});
+	GeneticOperators::onePointCrossover({mother.order, father.order, daughter.order});
     daughter.deadline = static_cast<int>(std::round(static_cast<float>(mother.deadline - father.deadline) / 2.0f)) + father.deadline;
 }
 
 void FixedDeadlineGA::mutate(DeadlineLambda &i) {
     for(int ix=1; ix<p.numJobs; ix++)
-        withMutProb([&] { swap(i.order, ix-1, ix); });
+        withMutProb([&] { GeneticOperators::swap(i.order, ix-1, ix); });
     withMutProb([&] { i.deadline = (rand() % 2 == 0) ? max(deadlineLB, i.deadline-1) : min(deadlineUB, i.deadline+1); });
 }
 

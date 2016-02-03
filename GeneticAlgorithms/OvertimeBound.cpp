@@ -4,6 +4,7 @@
 
 #include "OvertimeBound.h"
 #include "Sampling.h"
+#include "GeneticOperators.h"
 
 TimeVaryingCapacityGA::TimeVaryingCapacityGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "TimeVaryingCapacityGA") {
     useThreads = false;
@@ -17,12 +18,12 @@ LambdaZrt TimeVaryingCapacityGA::init(int ix) {
 }
 
 void TimeVaryingCapacityGA::crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter) {
-	onePointCrossover({ mother.order, father.order, daughter.order });
+	GeneticOperators::onePointCrossover({ mother.order, father.order, daughter.order });
     p.eachResPeriod([&](int r, int t) { daughter.z(r,t) = rand() % 2 == 0 ? mother.z(r,t) : father.z(r,t); });
 }
 
 void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
-    neighborhoodSwap(i.order);
+	GeneticOperators::neighborhoodSwap(p.adjMx, i.order, params.pmutate);
 	mutateOvertime(i.z);
 }
 
@@ -60,12 +61,12 @@ LambdaZr FixedCapacityGA::init(int ix) {
 }
 
 void FixedCapacityGA::crossover(LambdaZr &mother, LambdaZr &father, LambdaZr &daughter) {
-	onePointCrossover({ mother.order, father.order, daughter.order });
+	GeneticOperators::onePointCrossover({ mother.order, father.order, daughter.order });
     p.eachRes([&](int r){ daughter.z[r] = rand() % 2 == 0 ? mother.z[r] : father.z[r]; });
 }
 
 void FixedCapacityGA::mutate(LambdaZr &i) {
-    neighborhoodSwap(i.order);
+	GeneticOperators::neighborhoodSwap(p.adjMx, i.order, params.pmutate);
 	mutateOvertime(i.z);
 }
 

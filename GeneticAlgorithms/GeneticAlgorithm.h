@@ -53,22 +53,7 @@ protected:
     virtual void crossover(Individual &mother, Individual &father, Individual &daughter) = 0;
     virtual void mutate(Individual &i) = 0;
     virtual float fitness(Individual &i) = 0;
-	virtual vector<int> decode(Individual &i) = 0;
-	    
-	void neighborhoodSwap(vector<int> &order);
-	template<class T>
-	void neighborhoodSwapAssociated(vector<int> &order, vector<T> &associated);
-
-	template<class T>
-	struct CrossoverData {
-		T &mother, &father, &daughter;
-	};	
-    void onePointCrossover(CrossoverData<vector<int>> order);	
-	template<class T, class U>
-	void onePointCrossoverAssociated(CrossoverData<T> order, CrossoverData<U> associated);
-
-	template<class T>
-    inline void swap(vector<T> &order, int i1, int i2);
+	virtual vector<int> decode(Individual &i) = 0;	
 
     pair<int, int> computePair(vector<pair<Individual, float>> &pop, vector<bool> &alreadySelected);
 
@@ -205,56 +190,6 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 	return make_pair(decode(best.first), -best.second);
 }
 
-template<class Individual>
-template<class T>
-void GeneticAlgorithm<Individual>::swap(vector<T> &order, int i1, int i2) {
-    T tmp = order[i1];
-    order[i1] = order[i2];
-    order[i2] = tmp;
-}
 
-#define OPC_COMMON(assignFromMother, assignFromFather) \
-	int q = Utils::randRangeIncl(0, static_cast<int>(order.mother.size()) - 1); \
-	for(int i = 0; i <= q; i++) { assignFromMother; } \
-	for(int i = 0, ctr = q + 1; i<order.father.size(); i++) { \
-		if(!Utils::rangeInclContains(order.mother, 0, q, order.father[i])) { \
-			assignFromFather; \
-			ctr++; \
-		} \
-	}
-
-template<class Individual>
-void GeneticAlgorithm<Individual>::onePointCrossover(CrossoverData<vector<int>> order) {
-    OPC_COMMON(
-            order.daughter[i] = order.mother[i],
-            order.daughter[ctr] = order.father[i])
-}
-
-template <class Individual>
-template <class T, class U>
-void GeneticAlgorithm<Individual>::onePointCrossoverAssociated(CrossoverData<T> order, CrossoverData<U> associated) {
-    OPC_COMMON(
-            order.daughter[i] = order.mother[i];
-            associated.daughter[i] = associated.mother[i],
-            order.daughter[ctr] = order.father[i];
-                    associated.daughter[i] = associated.father[i])
-}
-
-#define SWAP_COMMON(code) \
-	for(int i=1; i<p.numJobs; i++) \
-	if(Utils::randRangeIncl(1, 100) <= params.pmutate && !p.adjMx(order[i - 1], order[i])) { code; }
-
-template<class Individual>
-void GeneticAlgorithm<Individual>::neighborhoodSwap(vector<int> &order) {
-	SWAP_COMMON(swap(order, i - 1, i))
-}
-
-template<class Individual>
-template<class T>
-void GeneticAlgorithm<Individual>::neighborhoodSwapAssociated(vector<int> &order, vector<T> &associated) {
-	SWAP_COMMON(
-		swap(order, i - 1, i);
-		swap(associated, i - 1, i))
-}
 
 #endif //CPP_RCPSP_OC_GENETICALGORITHMS_H
