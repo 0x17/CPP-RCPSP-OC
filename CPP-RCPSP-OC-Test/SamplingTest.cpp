@@ -51,8 +51,7 @@ TEST(SamplingTest, testNaiveSampling) {
 
 TEST(SamplingTest, testRegretBasedBiasedRandomSampling) {
     auto sfunc = [](Project &p) {
-        vector<float> lftsFloat = lftsToFloat(p);
-        return Sampling::regretBasedBiasedRandomSampling(p, lftsFloat);
+        return Sampling::regretBasedBiasedRandomSampling(p, p.lfts);
     };
     testSamplingCommon(sfunc);
 }

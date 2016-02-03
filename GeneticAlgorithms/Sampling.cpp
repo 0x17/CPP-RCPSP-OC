@@ -37,6 +37,11 @@ int Sampling::pickFromDecisionSet(vector<bool> &eligible, vector<float> &priorit
 	return Utils::pickWithDistribution(probs);
 }
 
+vector<int> Sampling::regretBasedBiasedRandomSampling(Project &p, vector<int> &priorityValues) {
+	vector<float> pvalsFloat = Utils::mapVec<float(int), int, float>([](int pval) { return static_cast<float>(pval); }, priorityValues);
+	return regretBasedBiasedRandomSampling(p, pvalsFloat);
+}
+
 vector<int> Sampling::regretBasedBiasedRandomSampling(Project &p, vector<float> &priorityValues) {
 	vector<bool> eligible(p.numJobs);
 	vector<int> order(p.numJobs);
