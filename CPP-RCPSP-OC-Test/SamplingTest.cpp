@@ -2,7 +2,6 @@
 // Created by André Schnabel on 01.02.16.
 //
 
-#include "SamplingTest.h"
 #include <gtest/gtest.h>
 #include <numeric>
 #include "../Project.h"

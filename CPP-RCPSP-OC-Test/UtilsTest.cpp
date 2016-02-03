@@ -2,9 +2,9 @@
 // Created by André Schnabel on 30.01.16.
 //
 
-#include "UtilsTest.h"
 #include "../Utils.h"
 #include "TestHelpers.h"
+#include <gtest/gtest.h>
 #include <cstdio>
 #include <boost/algorithm/string.hpp>
 
