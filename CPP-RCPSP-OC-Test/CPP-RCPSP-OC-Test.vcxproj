@@ -33,6 +33,7 @@
     <ClCompile Include="..\Visualization.cpp" />
     <ClCompile Include="ProjectTest.cpp" />
     <ClCompile Include="ProjectWithOvertimeTest.cpp" />
+    <ClCompile Include="SamplingTest.cpp" />
     <ClCompile Include="TestHelpers.cpp" />
     <ClCompile Include="testmain.cpp" />
     <ClCompile Include="UtilsTest.cpp" />
@@ -54,6 +55,7 @@
     <ClInclude Include="..\Visualization.h" />
     <ClInclude Include="ProjectTest.h" />
     <ClInclude Include="ProjectWithOvertimeTest.h" />
+    <ClInclude Include="SamplingTest.h" />
     <ClInclude Include="TestHelpers.h" />
     <ClInclude Include="UtilsTest.h" />
   </ItemGroup>
