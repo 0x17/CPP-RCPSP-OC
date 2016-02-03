@@ -273,26 +273,11 @@ bool ProjectWithOvertime::allPredsScheduled(int j, const vector<int>& sts) const
 	return true;
 }
 
-int indexOfJobInOrder(int j, const vector<int> &order) {
-	for (int ix = 0; ix < order.size(); ix++) {
-		if (order[ix] == j)
-			return ix;
-	}
-	return -1;
-}
-
 int ProjectWithOvertime::chooseEligibleWithLowestIndex(const vector<int>& sts, const vector<int>& order) const {
-	int minIx = numeric_limits<int>::max();
-	int minJob = -1;
-	for (int j = 0; j < numJobs; j++) {
-		if (sts[j] != UNSCHEDULED || !allPredsScheduled(j, sts))  continue;
-
-		int ix = indexOfJobInOrder(j, order);
-		if(ix < minIx) {
-			minIx = ix;
-			minJob = j;
-		}
-
+	for (int i = 0; i < numJobs; i++) {
+        int j = order[i];
+		if(sts[j] == UNSCHEDULED && allPredsScheduled(j, sts))
+            return j;
 	}
-	return minJob;
+    throw runtime_error("No eligible job found!");
 }

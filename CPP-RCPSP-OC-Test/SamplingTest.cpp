@@ -25,6 +25,11 @@ vector<float> lftsToFloat(Project &p) {
 }
 
 TEST(SamplingTest, testPickFromDecisionSet) {
+    Project p("MiniBeispiel.DAT");
+    vector<float> lftsFloat = lftsToFloat(p);
+    vector<bool> eligs(p.numJobs, false);
+    eligs[0] = true;
+    ASSERT_EQ(0, Sampling::pickFromDecisionSet(eligs, lftsFloat));
 }
 
 TEST(SamplingTest, testComputeProbsForDecisionSet) {

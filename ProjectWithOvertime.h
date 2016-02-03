@@ -29,9 +29,10 @@ public:
 	pair<bool, SGSResult> serialSGSWithDeadline(int deadline, const vector<int> &order) const;
     vector<int> earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const;
 
+    int chooseEligibleWithLowestIndex( const vector<int> &sts, const vector<int> &order) const;
+
 private:
 	bool allPredsScheduled(int j, const vector<int> &sts) const;
-	int chooseEligibleWithLowestIndex( const vector<int> &sts, const vector<int> &order) const;
     void computeRevenueFunction();
     int computeTKappa() const;
 	bool enoughCapacityForJobWithOvertime(int job, int t, const Matrix<int> & resRem) const;

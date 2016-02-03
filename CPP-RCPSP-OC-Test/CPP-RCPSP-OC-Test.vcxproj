@@ -32,6 +32,7 @@
     <ClCompile Include="..\Utils.cpp" />
     <ClCompile Include="..\Visualization.cpp" />
     <ClCompile Include="ProjectTest.cpp" />
+    <ClCompile Include="ProjectWithOvertimeTest.cpp" />
     <ClCompile Include="TestHelpers.cpp" />
     <ClCompile Include="testmain.cpp" />
     <ClCompile Include="UtilsTest.cpp" />
@@ -52,6 +53,7 @@
     <ClInclude Include="..\Utils.h" />
     <ClInclude Include="..\Visualization.h" />
     <ClInclude Include="ProjectTest.h" />
+    <ClInclude Include="ProjectWithOvertimeTest.h" />
     <ClInclude Include="TestHelpers.h" />
     <ClInclude Include="UtilsTest.h" />
   </ItemGroup>
@@ -146,6 +148,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>localsolver.dll.lib;gtest.lib;gtest_main.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

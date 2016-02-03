@@ -67,16 +67,17 @@ void Utils::serializeProfit(float profit, const string filename) {
 }
 
 int Utils::pickWithDistribution(vector<float> &probs) {
-	int len = static_cast<int>(probs.size());
 	float q = randUnitFloat();
 
-	vector<float> cumulatedProbs(len);
-	for (int i = 0; i < len; i++)
-		cumulatedProbs[i] = (i == 0 ? 0 : cumulatedProbs[i - 1]) + probs[i];
+	if(q >= 0 && q <= probs[0])
+		return 0;
 
-	for (int i = 0; i < len; i++)
-		if((i == 0 || q >= cumulatedProbs[i]) && (i == len || q < cumulatedProbs[i+1]))
+	float cumulatedProbs = probs[0];
+	for(int i = 1; i < probs.size(); i++) {
+		cumulatedProbs += probs[i];
+		if (q >= probs[i - 1] && q <= cumulatedProbs)
 			return i;
+	}
 
 	throw runtime_error("No element picked!");
 }
