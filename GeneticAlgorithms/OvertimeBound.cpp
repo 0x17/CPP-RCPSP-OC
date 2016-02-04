@@ -18,7 +18,7 @@ LambdaZrt TimeVaryingCapacityGA::init(int ix) {
 }
 
 void TimeVaryingCapacityGA::crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter) {
-	GeneticOperators::onePointCrossover({ mother.order, father.order, daughter.order });
+	GeneticOperators::randomOnePointCrossover({ mother.order, father.order, daughter.order });
     p.eachResPeriod([&](int r, int t) { daughter.z(r,t) = rand() % 2 == 0 ? mother.z(r,t) : father.z(r,t); });
 }
 
@@ -61,7 +61,7 @@ LambdaZr FixedCapacityGA::init(int ix) {
 }
 
 void FixedCapacityGA::crossover(LambdaZr &mother, LambdaZr &father, LambdaZr &daughter) {
-	GeneticOperators::onePointCrossover({ mother.order, father.order, daughter.order });
+	GeneticOperators::randomOnePointCrossover({ mother.order, father.order, daughter.order });
     p.eachRes([&](int r){ daughter.z[r] = rand() % 2 == 0 ? mother.z[r] : father.z[r]; });
 }
 

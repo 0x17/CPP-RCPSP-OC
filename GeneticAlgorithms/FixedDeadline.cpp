@@ -21,7 +21,7 @@ DeadlineLambda FixedDeadlineGA::init(int ix) {
 }
 
 void FixedDeadlineGA::crossover(DeadlineLambda &mother, DeadlineLambda &father, DeadlineLambda &daughter) {
-	GeneticOperators::onePointCrossover({mother.order, father.order, daughter.order});
+	GeneticOperators::randomOnePointCrossover({mother.order, father.order, daughter.order});
     daughter.deadline = static_cast<int>(std::round(static_cast<float>(mother.deadline - father.deadline) / 2.0f)) + father.deadline;
 }
 

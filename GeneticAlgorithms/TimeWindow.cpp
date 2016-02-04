@@ -18,7 +18,7 @@ LambdaTau TimeWindowArbitraryGA::init(int ix) {
 }
 
 void TimeWindowArbitraryGA::crossover(LambdaTau &mother, LambdaTau &father, LambdaTau &daughter) {
-	GeneticOperators::onePointCrossoverAssociated<vector<int>, vector<float>>({ mother.order, father.order, daughter.order }, { mother.tau, father.tau, daughter.tau });
+	GeneticOperators::randomOnePointCrossoverAssociated<vector<float>>({ mother.order, father.order, daughter.order }, { mother.tau, father.tau, daughter.tau });
 }
 
 void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
@@ -53,7 +53,7 @@ LambdaBeta TimeWindowBordersGA::init(int ix) {
 }
 
 void TimeWindowBordersGA::crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) {
-	GeneticOperators::onePointCrossoverAssociated<vector<int>, vector<int>>({ mother.order, father.order, daughter.order }, { mother.beta, father.beta, daughter.beta });
+	GeneticOperators::randomOnePointCrossoverAssociated<vector<int>>({ mother.order, father.order, daughter.order }, { mother.beta, father.beta, daughter.beta });
 }
 
 void TimeWindowBordersGA::mutate(LambdaBeta &i) {
@@ -85,7 +85,7 @@ vector<int> CompareAlternativesGA::init(int ix) {
 }
 
 void CompareAlternativesGA::crossover(vector<int> &mother, vector<int> &father, vector<int> &daughter) {
-	GeneticOperators::onePointCrossover({ mother, father, daughter });
+	GeneticOperators::randomOnePointCrossover({ mother, father, daughter });
 }
 
 void CompareAlternativesGA::mutate(vector<int> &i) {
