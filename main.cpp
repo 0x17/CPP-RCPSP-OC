@@ -51,12 +51,13 @@ void commandLineRunner(int argc, char * argv[]) {
             outFn = "BranchAndBoundResults.txt";
         } else if(boost::starts_with(solMethod, "GA")) {
             GAParameters params;
-            params.fitnessBasedPairing = true;
+            params.fitnessBasedPairing = false;
             params.numGens = -1;
             params.popSize = 80;
 			params.pmutate = 5;
             params.timeLimit = timeLimit;
             params.traceobj = traceobj;
+			params.selectionMethod = SelectionMethod::BEST;
             int gaIndex = stoi(solMethod.substr(2, 1));
             auto res = GARunners::run(p, params, gaIndex);
             sts = res.sts;
@@ -125,6 +126,7 @@ void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
     params.fitnessBasedPairing = false;
     params.pmutate = 5;
     params.traceobj = false;
+	params.selectionMethod = SelectionMethod::BEST;
 
     auto res = GARunners::run(p, params, gaIndex);
 }

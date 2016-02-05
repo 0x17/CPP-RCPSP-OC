@@ -13,7 +13,7 @@
 #define OPC_COMMON(assignFromMother, assignFromFather, q) \
 	for(int i = 0; i <= q; i++) { assignFromMother; } \
 	for(int i = 0, ctr = q + 1; i<order.father.size(); i++) { \
-		if(!Utils::rangeInclContains(order.mother, 0, q, order.father[i])) { \
+		if(!Utils::rangeInclContains(order.daughter, 0, q, order.father[i])) { \
 			assignFromFather; \
 			ctr++; \
 		} \
@@ -32,6 +32,7 @@ namespace GeneticOperators
 
     void randomOnePointCrossover(CrossoverData<std::vector<int>> order);
 	void onePointCrossover(CrossoverData<std::vector<int>> order, int q);
+	void twoPointCrossover(CrossoverData<std::vector<int>> order, int q1, int q2);
 
     template<class U>
     void randomOnePointCrossoverAssociated(CrossoverData<std::vector<int>> order, CrossoverData<U> associated);

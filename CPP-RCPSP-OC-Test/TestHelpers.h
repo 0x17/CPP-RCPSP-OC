@@ -16,7 +16,9 @@ public:
     static void arrayEquals(std::vector<T> &expected, std::vector<T> &actual) {
         ASSERT_EQ(expected.size(), actual.size());
         for(int i=0; i<actual.size(); i++) {
-            ASSERT_EQ(expected[i], actual[i]);
+			ASSERT_EQ(expected[i], actual[i])
+				<< "expected[" << i << "]=" << expected[i]
+				<< " != actual[" << i << "] = " << actual[i] << "!";
         }
     }
 

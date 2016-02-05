@@ -17,10 +17,26 @@ using namespace std;
 
 const bool FORCE_SINGLE_THREAD = true;
 
+enum class SelectionMethod {
+	BEST,
+	DUEL
+};
+
 struct GAParameters {
+	GAParameters() {
+		numGens = 200;
+		popSize = 100;
+		pmutate = 5;
+		timeLimit = -1.0;
+		fitnessBasedPairing = false;
+		traceobj = false;
+		selectionMethod = SelectionMethod::BEST;
+	}
+
     int numGens, popSize, pmutate;
     double timeLimit;
     bool fitnessBasedPairing, traceobj;
+	SelectionMethod selectionMethod;
 };
 
 template<class Individual>
@@ -35,11 +51,10 @@ public:
 	string getName() const { return name; };
 
 protected:
-    Utils::Tracer *tr;
+	GAParameters params;
+	ProjectWithOvertime &p;
 
-    GAParameters params = {200, 100, 5, -1.0, true, false};
-
-    ProjectWithOvertime &p;
+    Utils::Tracer *tr;   
 
 	// also consider FORCE_SINGLE_THREAD!
     bool useThreads = false;
@@ -60,6 +75,9 @@ protected:
     float profitForSGSResult(pair<vector<int>, Matrix<int>> &result) const;
 
     void mutateAndFitnessRange(vector<pair<Individual, float>> *pop, int startIx, int endIx);
+
+	void selectBest(vector<pair<Individual, float>> &pop);
+	void selectDuel(vector<pair<Individual, float>> &pop);
 
     template<class Func>
     void withMutProb(Func code);
@@ -123,6 +141,50 @@ void GeneticAlgorithm<Individual>::mutateAndFitnessRange(vector<pair<Individual,
 }
 
 template<class Individual>
+void GeneticAlgorithm<Individual>::selectBest(vector<pair<Individual, float>> &pop) {
+	sort(pop.begin(), pop.end(), [](auto &left, auto &right) { return left.second < right.second; });
+}
+
+template<class T>
+void swapIndividuals(vector<T> &pop, int ix1, int ix2) {
+	T tmp = pop[ix1];
+	pop[ix1] = pop[ix2];
+	pop[ix2] = pop[ix1];
+}
+
+template<class T>
+void swapBestIndividualToFront(vector<T> &pop) {
+	int ixOfBest = 0;
+	for (int i = 1; i < pop.size() / 2; i++) {
+		if (pop[i].second < pop[ixOfBest].second) {
+			ixOfBest = i;
+		}
+	}
+	swapIndividuals(pop, 0, ixOfBest);
+}
+
+template<class Individual>
+void GeneticAlgorithm<Individual>::selectDuel(vector<pair<Individual, float>> &pop) {
+	vector<bool> alreadySelected(params.popSize*2);
+
+	for (int i = 0; i < params.popSize; i++) {
+		pair<int, int> p;
+		do {
+			p.first = Utils::randRangeIncl(0, params.popSize - 1);
+		} while (alreadySelected[p.first]);
+		do {
+			p.second = Utils::randRangeIncl(params.popSize, params.popSize * 2 - 1);
+		} while (alreadySelected[p.second] || p.first == p.second);
+
+		if(pop[p.first].second > pop[p.second].second) {
+			swapIndividuals(pop, p.first, p.second);
+		}
+	}
+
+	swapBestIndividualToFront(pop);
+}
+
+template<class Individual>
 pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
     assert(params.pmutate > 0);
     assert(params.popSize > 0);
@@ -135,6 +197,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
     thread *threads[NUM_THREADS];
     int numPerThread = params.popSize / NUM_THREADS;
 
+	// Compute initial population
     for(int i=0; i<params.popSize*2; i++) {
         pop[i].first = init(i);
 		pop[i].second = i < params.popSize ? -fitness(pop[i].first) : 0.0f;
@@ -152,8 +215,10 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
             if(params.traceobj) tr->trace(sw.look(), -pop[0].second);
 		}
 
+		// Pairing and crossover
         generateChildren(pop);
 
+		// Mutation and fitness computation
         if(useThreads && !FORCE_SINGLE_THREAD) {
             for(int tix = 0; tix < NUM_THREADS; tix++) {
                 int six = params.popSize+tix*numPerThread;
@@ -172,17 +237,25 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
             }
         }
 
-		sort(pop.begin(), pop.end(), [](auto &left, auto &right) { return left.second < right.second; });
+		// Selection
+		switch(params.selectionMethod) {
+		case SelectionMethod::BEST:
+			selectBest(pop);
+			break;
+		case SelectionMethod::DUEL:
+			selectDuel(pop);
+			break;
+		}
 
 		//cout << "\rGeneration " << (i + 1) << " Obj=" << -pop[0].second << " Time=" << (boost::format("%.2f") % (sw.look() / 1000.0)) << "       ";
 
+		// Show improvements
         if(pop[0].second < lastBestVal) {
             if(lastBestVal == numeric_limits<float>::max())
                 cout << "Initial improvement by " << to_string(-pop[0].second) << endl;
             else
                 cout << "Improvement by " << to_string(lastBestVal - pop[0].second) << endl;
         }
-
         lastBestVal = pop[0].second;
     }
 
