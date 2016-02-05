@@ -123,10 +123,12 @@ pair<int, int> GeneticAlgorithm<Individual>::computePair(vector<pair<Individual,
 
 template<class Individual>
 void GeneticAlgorithm<Individual>::generateChildren(vector<pair<Individual, float>> & pop) {
-    vector<bool> alreadySelected(params.popSize);
+    vector<bool> alreadySelected(params.popSize, false);
 
     for(int childIx=params.popSize; childIx<params.popSize*2; childIx +=2) {
         pair<int, int> parentIndices = computePair(pop, alreadySelected);
+        alreadySelected[parentIndices.first] = true;
+        alreadySelected[parentIndices.second] = true;
         crossover(pop[parentIndices.first].first, pop[parentIndices.second].first, pop[childIx].first);
         crossover(pop[parentIndices.second].first, pop[parentIndices.first].first, pop[childIx+1].first);
     }
@@ -165,7 +167,7 @@ void swapBestIndividualToFront(vector<T> &pop) {
 
 template<class Individual>
 void GeneticAlgorithm<Individual>::selectDuel(vector<pair<Individual, float>> &pop) {
-	vector<bool> alreadySelected(params.popSize*2);
+	vector<bool> alreadySelected(params.popSize*2, false);
 
 	for (int i = 0; i < params.popSize; i++) {
 		pair<int, int> p;
@@ -179,6 +181,9 @@ void GeneticAlgorithm<Individual>::selectDuel(vector<pair<Individual, float>> &p
 		if(pop[p.first].second > pop[p.second].second) {
 			swapIndividuals(pop, p.first, p.second);
 		}
+
+        alreadySelected[p.first] = true;
+        alreadySelected[p.second] = true;
 	}
 
 	swapBestIndividualToFront(pop);

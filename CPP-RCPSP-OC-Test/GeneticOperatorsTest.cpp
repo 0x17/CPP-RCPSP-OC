@@ -48,3 +48,30 @@ TEST(GeneticOperatorsTest, testTwoPointCrossover) {
 	vector<int> expSon = { 0, 1, 4, 2, 3 };
 	TestHelpers::arrayEquals(expSon, son);
 }
+
+TEST(GeneticOperatorsTest, testOnePointCrossoverAssociated) {
+	vector<int> mother, father, daughter(5, -1), son(5, -1);
+	vector<bool> motherB, fatherB, daughterB(5, false), sonB(5, false);
+
+	CrossoverData<vector<int>> dataDaughter = { mother, father, daughter };
+	CrossoverData<vector<bool>> dataDaughterB = { motherB, fatherB , daughterB };
+	CrossoverData<vector<int>> dataSon = { father, mother, son };
+	CrossoverData<vector<bool>> dataSonB = { fatherB, motherB, sonB };
+
+	mother = { 0, 4, 2, 1, 3 };
+	motherB = { false, true, false, true, false };
+	father = { 0, 1, 2, 3, 4 };
+	fatherB = { true, false, true, false, true };
+
+	onePointCrossoverAssociated(dataDaughter, dataDaughterB, 2);
+	vector<int> expDaughter = { 0, 4, 2, 1, 3 };
+	vector<bool> expDaughterB = { false, false, false, false, false };
+	TestHelpers::arrayEquals(expDaughter, daughter);
+	TestHelpers::arrayEquals(expDaughterB, daughterB);
+
+	onePointCrossoverAssociated(dataSon, dataSonB, 1);
+	vector<int> expSon = { 0, 1, 4, 2, 3 };
+	vector<bool> expSonB = { true, false, false, true, false };
+	TestHelpers::arrayEquals(expSon, son);
+	TestHelpers::arrayEquals(expSonB, sonB);
+}
