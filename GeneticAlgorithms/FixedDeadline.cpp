@@ -21,7 +21,6 @@ DeadlineLambda FixedDeadlineGA::init(int ix) {
 
 void FixedDeadlineGA::crossover(DeadlineLambda &mother, DeadlineLambda &father, DeadlineLambda &daughter) {
     mother.randomOnePointCrossover(mother, father);
-
 }
 
 void FixedDeadlineGA::mutate(DeadlineLambda &i) {

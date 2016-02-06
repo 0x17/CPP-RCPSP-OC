@@ -58,6 +58,7 @@ void commandLineRunner(int argc, char * argv[]) {
             params.timeLimit = timeLimit;
             params.traceobj = traceobj;
 			params.selectionMethod = SelectionMethod::BEST;
+            params.rbbrs = false;
             int gaIndex = stoi(solMethod.substr(2, 1));
             auto res = GARunners::run(p, params, gaIndex);
             sts = res.sts;
@@ -126,7 +127,8 @@ void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
     params.fitnessBasedPairing = false;
     params.pmutate = 5;
     params.traceobj = false;
-	params.selectionMethod = SelectionMethod::BEST;
+	params.selectionMethod = SelectionMethod::DUEL;
+    params.rbbrs = true;
 
     auto res = GARunners::run(p, params, gaIndex);
 }

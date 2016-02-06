@@ -11,7 +11,7 @@ TimeVaryingCapacityGA::TimeVaryingCapacityGA(ProjectWithOvertime &_p) : GeneticA
 
 LambdaZrt TimeVaryingCapacityGA::init(int ix) {
     LambdaZrt indiv(p.numJobs, p.numRes, p.numPeriods);
-    indiv.order = ix == 0 ? p.topOrder : Sampling::naiveSampling(p);
+    indiv.order = ix == 0 ? p.topOrder : Sampling::sample(params.rbbrs, p);
     p.eachResPeriod([&](int r, int t){ indiv.z(r,t) = ix == 0 ? 0 : Utils::randRangeIncl(0, p.zmax[r]); });
     return indiv;
 }
@@ -54,7 +54,7 @@ FixedCapacityGA::FixedCapacityGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p,
 
 LambdaZr FixedCapacityGA::init(int ix) {
     LambdaZr indiv(p.numJobs, p.numRes);
-    indiv.order = ix == 0 ? p.topOrder : Sampling::naiveSampling(p);
+    indiv.order = ix == 0 ? p.topOrder : Sampling::sample(params.rbbrs, p);
     p.eachRes([&](int r){ indiv.z[r] = ix == 0 ? 0 : Utils::randRangeIncl(0, p.zmax[r]); });
     return indiv;
 }

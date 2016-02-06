@@ -70,3 +70,11 @@ vector<int> Sampling::naiveSampling(Project& p) {
 	}
 	return order;
 }
+
+vector<int> Sampling::regretBasedBiasedRandomSamplingForLfts(Project &p){
+    return regretBasedBiasedRandomSamplingInv(p, p.lfts);
+}
+
+vector<int> Sampling::sample(bool rbbrs, Project &p) {
+    return rbbrs ? Sampling::regretBasedBiasedRandomSamplingForLfts(p) : Sampling::naiveSampling(p);
+}

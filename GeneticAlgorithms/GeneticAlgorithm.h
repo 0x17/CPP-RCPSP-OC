@@ -31,12 +31,14 @@ struct GAParameters {
 		fitnessBasedPairing = false;
 		traceobj = false;
 		selectionMethod = SelectionMethod::BEST;
+        rbbrs = false;
 	}
 
     int numGens, popSize, pmutate;
     double timeLimit;
     bool fitnessBasedPairing, traceobj;
 	SelectionMethod selectionMethod;
+    bool rbbrs;
 };
 
 template<class Individual>
