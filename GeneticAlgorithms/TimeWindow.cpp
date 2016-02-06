@@ -4,7 +4,6 @@
 
 #include "TimeWindow.h"
 #include "Sampling.h"
-#include "GeneticOperators.h"
 
 TimeWindowArbitraryGA::TimeWindowArbitraryGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "TimeWindowArbitraryGA") {
     useThreads = false;
@@ -18,11 +17,11 @@ LambdaTau TimeWindowArbitraryGA::init(int ix) {
 }
 
 void TimeWindowArbitraryGA::crossover(LambdaTau &mother, LambdaTau &father, LambdaTau &daughter) {
-	GeneticOperators::randomOnePointCrossoverAssociated<vector<float>>({ mother.order, father.order, daughter.order }, { mother.tau, father.tau, daughter.tau });
+    daughter.randomOnePointCrossover(mother, father);
 }
 
 void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
-	GeneticOperators::neighborhoodSwapAssociated(p.adjMx, i.order, i.tau, params.pmutate);
+    i.neighborhoodSwap(p.adjMx, params.pmutate);
 	p.eachJob([&](int j) {
         withMutProb([&] {
             i.tau[j] = 1.0f - i.tau[j];
@@ -53,11 +52,11 @@ LambdaBeta TimeWindowBordersGA::init(int ix) {
 }
 
 void TimeWindowBordersGA::crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) {
-	GeneticOperators::randomOnePointCrossoverAssociated<vector<int>>({ mother.order, father.order, daughter.order }, { mother.beta, father.beta, daughter.beta });
+    daughter.randomOnePointCrossover(mother, father);
 }
 
 void TimeWindowBordersGA::mutate(LambdaBeta &i) {
-	GeneticOperators::neighborhoodSwapAssociated(p.adjMx, i.order, i.beta, params.pmutate);
+    i.neighborhoodSwap(p.adjMx, params.pmutate);
 	p.eachJob([&](int j) {
         withMutProb([&] {
             i.beta[j] = 1-i.beta[j];
@@ -80,23 +79,26 @@ CompareAlternativesGA::CompareAlternativesGA(ProjectWithOvertime &_p) : GeneticA
     useThreads = true;
 }
 
-vector<int> CompareAlternativesGA::init(int ix) {
-    return ix == 0 ? p.topOrder : Sampling::naiveSampling(p);
+Lambda CompareAlternativesGA::init(int ix) {
+    Lambda l;
+    l.order = ix == 0 ? p.topOrder : Sampling::naiveSampling(p);
+    return l;
 }
 
-void CompareAlternativesGA::crossover(vector<int> &mother, vector<int> &father, vector<int> &daughter) {
-	GeneticOperators::randomOnePointCrossover({ mother, father, daughter });
+void CompareAlternativesGA::crossover(Lambda &mother, Lambda &father, Lambda &daughter) {
+    daughter.randomOnePointCrossover(mother, father);
 }
 
-void CompareAlternativesGA::mutate(vector<int> &i) {
-	GeneticOperators::neighborhoodSwap(p.adjMx, i, params.pmutate);
+void CompareAlternativesGA::mutate(Lambda &i) {
+    i.neighborhoodSwap(p.adjMx, params.pmutate);
 }
 
-float CompareAlternativesGA::fitness(vector<int> &i) {
-    auto pair = p.serialSGSWithOvertime(i);
+float CompareAlternativesGA::fitness(Lambda &i) {
+    auto pair = p.serialSGSWithOvertime(i.order);
     return profitForSGSResult(pair);
 }
 
-vector<int> CompareAlternativesGA::decode(vector<int>& i) {
-	return p.serialSGSWithOvertime(i).first;
+vector<int> CompareAlternativesGA::decode(Lambda& i) {
+	return p.serialSGSWithOvertime(i.order).first;
 }
+

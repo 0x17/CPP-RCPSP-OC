@@ -6,18 +6,7 @@
 #define CPP_RCPSP_OC_OVERTIMEBOUNDGAS_H
 
 #include "GeneticAlgorithm.h"
-
-struct LambdaZr {
-	LambdaZr(Project &p) : order(p.numJobs), z(p.numRes) {}
-	LambdaZr() {}
-	vector<int> order, z;
-};
-struct LambdaZrt {
-	LambdaZrt(Project &p) : order(p.numJobs), z(p.numRes, p.numPeriods) {}
-	LambdaZrt() {}
-	vector<int> order;
-	Matrix<int> z;
-};
+#include "Representations.h"
 
 class TimeVaryingCapacityGA : public GeneticAlgorithm<LambdaZrt> {
 public:

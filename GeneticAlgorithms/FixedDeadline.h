@@ -6,13 +6,7 @@
 #define CPP_RCPSP_OC_FIXEDDEADLINE_H
 
 #include "GeneticAlgorithm.h"
-
-struct DeadlineLambda {
-    DeadlineLambda(Project &p) : deadline(0), order(p.numJobs) {}
-    DeadlineLambda() : deadline(0) {}
-    int deadline;
-    vector<int> order;
-};
+#include "Representations.h"
 
 class FixedDeadlineGA : public GeneticAlgorithm<DeadlineLambda> {
 public:

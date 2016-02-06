@@ -6,17 +6,7 @@
 #define CPP_RCPSP_OC_TIMEWINDOWGAS_H
 
 #include "GeneticAlgorithm.h"
-
-struct LambdaBeta {
-	LambdaBeta(Project &p) : order(p.numJobs), beta(p.numJobs) {}
-	LambdaBeta() {}
-	vector<int> order, beta;
-};
-struct LambdaTau {
-	LambdaTau(Project &p) : order(p.numJobs), tau(p.numJobs) {}
-	LambdaTau() {}
-	vector<int> order; vector<float> tau;
-};
+#include "Representations.h"
 
 class TimeWindowBordersGA : public GeneticAlgorithm<LambdaBeta> {
 protected:
@@ -41,15 +31,15 @@ private:
 	virtual vector<int> decode(LambdaTau& i) override;
 };
 
-class CompareAlternativesGA : public GeneticAlgorithm<vector<int>> {
+class CompareAlternativesGA : public GeneticAlgorithm<Lambda> {
 public:
     CompareAlternativesGA(ProjectWithOvertime &_p);
 private:
-    virtual vector<int> init(int ix) override;
-    virtual void crossover(vector<int> &mother, vector<int> &father, vector<int> &daughter) override;
-    virtual void mutate(vector<int> &i) override;
-    virtual float fitness(vector<int> &i) override;
-	virtual vector<int> decode(vector<int>& i) override;
+    virtual Lambda init(int ix) override;
+    virtual void crossover(Lambda &mother, Lambda &father, Lambda &daughter) override;
+    virtual void mutate(Lambda &i) override;
+    virtual float fitness(Lambda &i) override;
+	virtual vector<int> decode(Lambda& i) override;
 };
 
 
