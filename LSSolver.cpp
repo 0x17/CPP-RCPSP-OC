@@ -293,54 +293,7 @@ vector<int> LSSolver::solveNative(ProjectWithOvertime &p) {
     return sts;
 }
 
-
-vector<int> LSSolver::solveListVarNative2(int seed, ProjectWithOvertime& p, double timeLimit, bool traceobj) {
-	LocalSolver ls;
-	auto model = ls.getModel();
-
-	SerialSGSTauFunction sgsFunc(p);
-	LSExpression sgsFuncExpr = model.createNativeFunction(&sgsFunc);
-
-	LSExpression objExpr = model.createExpression(O_Call, sgsFuncExpr);
-
-	LSExpression activityList = model.listVar(p.numJobs);
-	model.constraint(model.count(activityList) == p.numJobs);
-
-	vector<LSExpression> listElems(p.numJobs), tauVar(p.numJobs);
-	for (int i = 0; i < p.numJobs; i++) {
-		listElems[i] = model.at(activityList, i);
-		tauVar[i] = model.floatVar(0.0, 1.0);
-		objExpr.addOperand(listElems[i]);
-	}
-
-	for (int i = 0; i < p.numJobs; i++)
-		objExpr.addOperand(tauVar[i]);
-
-	model.addObjective(objExpr, OD_Maximize);
-	model.close();
-
-	ls.createPhase().setTimeLimit(static_cast<int>(timeLimit));
-	auto param = ls.getParam();
-	param.setNbThreads(1);
-	param.setSeed(seed);
-	param.setVerbosity(2);
-	ls.solve();
-
-	auto sol = ls.getSolution();
-
-	vector<int> order(p.numJobs);
-	vector<float> tau(p.numJobs);
-	for (int i = 0; i<p.numJobs; i++) {
-		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
-		tau[i] = (float)sol.getDoubleValue(tauVar[i]);
-	}
-
-	auto sts = p.serialSGSTimeWindowArbitrary(order, tau, true).first;
-
-	return sts;
-}
-
-vector<int> LSSolver::solveListVarNative(int seed, ProjectWithOvertime& p, double timeLimit, bool traceobj) {
+vector<int> LSSolver::solveListVarBinVar(int seed, ProjectWithOvertime &p, double timeLimit, bool traceobj) {
 	LocalSolver ls;
 	auto model = ls.getModel();
 	
@@ -385,7 +338,53 @@ vector<int> LSSolver::solveListVarNative(int seed, ProjectWithOvertime& p, doubl
 	return sts;
 }
 
-vector<int> LSSolver::solveListVarNative3(int seed, ProjectWithOvertime& p, double timeLimit, bool traceobj) {
+vector<int> LSSolver::solveListVarFloatVar(int seed, ProjectWithOvertime &p, double timeLimit, bool traceobj) {
+    LocalSolver ls;
+    auto model = ls.getModel();
+
+    SerialSGSTauFunction sgsFunc(p);
+    LSExpression sgsFuncExpr = model.createNativeFunction(&sgsFunc);
+
+    LSExpression objExpr = model.createExpression(O_Call, sgsFuncExpr);
+
+    LSExpression activityList = model.listVar(p.numJobs);
+    model.constraint(model.count(activityList) == p.numJobs);
+
+    vector<LSExpression> listElems(p.numJobs), tauVar(p.numJobs);
+    for (int i = 0; i < p.numJobs; i++) {
+        listElems[i] = model.at(activityList, i);
+        tauVar[i] = model.floatVar(0.0, 1.0);
+        objExpr.addOperand(listElems[i]);
+    }
+
+    for (int i = 0; i < p.numJobs; i++)
+        objExpr.addOperand(tauVar[i]);
+
+    model.addObjective(objExpr, OD_Maximize);
+    model.close();
+
+    ls.createPhase().setTimeLimit(static_cast<int>(timeLimit));
+    auto param = ls.getParam();
+    param.setNbThreads(1);
+    param.setSeed(seed);
+    param.setVerbosity(2);
+    ls.solve();
+
+    auto sol = ls.getSolution();
+
+    vector<int> order(p.numJobs);
+    vector<float> tau(p.numJobs);
+    for (int i = 0; i<p.numJobs; i++) {
+        order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
+        tau[i] = (float)sol.getDoubleValue(tauVar[i]);
+    }
+
+    auto sts = p.serialSGSTimeWindowArbitrary(order, tau, true).first;
+
+    return sts;
+}
+
+vector<int> LSSolver::solveListVarIntVar(int seed, ProjectWithOvertime &p, double timeLimit, bool traceobj) {
 	LocalSolver ls;
 	auto model = ls.getModel();
 

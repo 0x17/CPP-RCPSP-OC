@@ -13,16 +13,16 @@ class Lambda {
 public:
     vector<int> order;
 
-    Lambda(int numJobs) : order(numJobs) {}
-    Lambda(vector<int> _order) : order(_order) {}
-    Lambda() {}
-
+    Lambda(int numJobs);
+    Lambda(vector<int> _order);
+    Lambda();
     virtual ~Lambda() {}
 
     virtual void neighborhoodSwap(Matrix<char> &adjMx, int pmutate);
     virtual void randomOnePointCrossover(Lambda &mother, Lambda& father);
     virtual void onePointCrossover(Lambda &mother, Lambda& father, int q);
     virtual void inherit(Lambda &parent, int destIx, int srcIx);
+    virtual void swap(int i1, int i2);
     virtual void randomTwoPointCrossover(Lambda &mother, Lambda &father);
     virtual void twoPointCrossover(Lambda &mother, Lambda &father, int q1, int q2);
 };
@@ -32,8 +32,7 @@ public:
     int deadline;
 
     DeadlineLambda(int numJobs);
-    DeadlineLambda() {}
-
+    DeadlineLambda();
     virtual ~DeadlineLambda() {}
 
     virtual void randomOnePointCrossover(Lambda &mother, Lambda &father) override;
@@ -44,8 +43,7 @@ public:
     vector<int> z;
 
     LambdaZr(int numJobs, int numRes);
-    LambdaZr() {}
-
+    LambdaZr();
     virtual ~LambdaZr() {}
 };
 class LambdaZrt : public Lambda  {
@@ -53,8 +51,7 @@ public:
     Matrix<int> z;
 
     LambdaZrt(int numJobs, int numRes, int numPeriods);
-    LambdaZrt() {}
-
+    LambdaZrt();
     virtual ~LambdaZrt() {}
 };
 
@@ -64,10 +61,10 @@ public:
 
     LambdaBeta(int numJobs);
     LambdaBeta() {}
-
     virtual ~LambdaBeta() {}
 
     virtual void inherit(Lambda &parent, int destIx, int srcIx) override;
+    virtual void swap(int i1, int i2) override;
 };
 
 class LambdaTau : public Lambda {
@@ -75,11 +72,11 @@ public:
     vector<float> tau;
 
     LambdaTau(int numJobs);
-    LambdaTau() {}
-
+    LambdaTau();
     virtual ~LambdaTau() {}
 
     virtual void inherit(Lambda &parent, int destIx, int srcIx) override;
+    virtual void swap(int i1, int i2) override;
 };
 
 

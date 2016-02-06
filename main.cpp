@@ -69,9 +69,9 @@ void commandLineRunner(int argc, char * argv[]) {
 		} else if(boost::starts_with(solMethod, "LocalSolverNative")) {
 			int lsnIndex = stoi(solMethod.substr(17, 1));
 			vector<vector<int>(*)(int, ProjectWithOvertime&, double, bool)> lsfuncs = {
-				LSSolver::solveListVarNative,
-				LSSolver::solveListVarNative2,
-				LSSolver::solveListVarNative3,
+				LSSolver::solveListVarBinVar,
+				LSSolver::solveListVarFloatVar,
+				LSSolver::solveListVarIntVar,
 			};
 			sts = lsfuncs[lsnIndex](0, p, timeLimit, traceobj);
 			outFn = "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
@@ -110,7 +110,7 @@ void testFixedDeadlineHeuristic() {
 void testLocalSolverNative(int seed) {
 	string projFilename = "../../Projekte/j30/j301_1.sm";
 	ProjectWithOvertime p(projFilename);
-	auto sts = LSSolver::solveListVarNative3(seed ,p, 60.0);
+	auto sts = LSSolver::solveListVarIntVar(seed, p, 60.0);
 	Utils::serializeSchedule(sts, "myschedule.txt");
 	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe ../../Projekte/j30/j301_1.sm myschedule.txt");
 }

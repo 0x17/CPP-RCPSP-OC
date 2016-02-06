@@ -5,29 +5,16 @@
 #include <cmath>
 #include "Representations.h"
 
-void DeadlineLambda::randomOnePointCrossover(Lambda &mother, Lambda &father) {
-    Lambda::randomOnePointCrossover(mother, father);
-    auto &m = (DeadlineLambda&)mother;
-    auto &f = (DeadlineLambda&)father;
-    deadline = static_cast<int>(std::round(static_cast<float>(m.deadline - f.deadline) / 2.0f)) + f.deadline;
-}
+Lambda::Lambda(int numJobs) : order(numJobs) {}
 
-void LambdaTau::inherit(Lambda &parent, int destIx, int srcIx) {
-    Lambda::inherit(parent, destIx, srcIx);
-    tau[destIx] = ((LambdaTau &)parent).tau[srcIx];
-}
+Lambda::Lambda(vector<int> _order) : order(_order) {}
 
-void LambdaBeta::inherit(Lambda &parent, int destIx, int srcIx) {
-    Lambda::inherit(parent, destIx, srcIx);
-    beta[destIx] = ((LambdaBeta &)parent).beta[srcIx];
-}
+Lambda::Lambda() {}
 
 void Lambda::neighborhoodSwap(Matrix<char> &adjMx, int pmutate) {
     for(int i=1; i<order.size(); i++) {
         if(Utils::randRangeIncl(1, 100) <= pmutate && !adjMx(order[i - 1], order[i])) {
-            int tmp = order[i-1];
-            order[i-1] = order[i];
-            order[i] = tmp;
+            swap(i-1, i);
         }
     }
 }
@@ -80,8 +67,68 @@ void Lambda::twoPointCrossover(Lambda &mother, Lambda &father, int q1, int q2) {
     }
 }
 
+template<class T>
+void swapVec(vector<T> &v, int i1, int i2) {
+    T tmp = v[i1];
+    v[i1] = v[i2];
+    v[i2] = tmp;
+}
+
+void Lambda::swap(int i1, int i2) {
+    swapVec(order, i1, i2);
+}
+
+//======================================================================================================================
+
 DeadlineLambda::DeadlineLambda(int numJobs) : Lambda(numJobs), deadline(0) {}
+
+DeadlineLambda::DeadlineLambda() {}
+
+void DeadlineLambda::randomOnePointCrossover(Lambda &mother, Lambda &father) {
+    Lambda::randomOnePointCrossover(mother, father);
+    auto &m = (DeadlineLambda&)mother;
+    auto &f = (DeadlineLambda&)father;
+    deadline = static_cast<int>(std::round(static_cast<float>(m.deadline - f.deadline) / 2.0f)) + f.deadline;
+}
+
+//======================================================================================================================
+
 LambdaZr::LambdaZr(int numJobs, int numRes) : Lambda(numJobs), z(numRes) {}
+
+LambdaZr::LambdaZr() {}
+
+//======================================================================================================================
+
 LambdaZrt::LambdaZrt(int numJobs, int numRes, int numPeriods) : Lambda(numJobs), z(numRes, numPeriods) {}
+
+LambdaZrt::LambdaZrt() {}
+
+//======================================================================================================================
+
 LambdaBeta::LambdaBeta(int numJobs) : Lambda(numJobs), beta(numJobs) {}
+
+void LambdaBeta::inherit(Lambda &parent, int destIx, int srcIx) {
+    Lambda::inherit(parent, destIx, srcIx);
+    beta[destIx] = ((LambdaBeta &)parent).beta[srcIx];
+}
+
+void LambdaBeta::swap(int i1, int i2) {
+    Lambda::swap(i1, i2);
+    swapVec(beta, i1, i2);
+}
+
+//======================================================================================================================
+
 LambdaTau::LambdaTau(int numJobs) : Lambda(numJobs), tau(numJobs) {}
+
+LambdaTau::LambdaTau() {}
+
+void LambdaTau::inherit(Lambda &parent, int destIx, int srcIx) {
+    Lambda::inherit(parent, destIx, srcIx);
+    tau[destIx] = ((LambdaTau &)parent).tau[srcIx];
+}
+
+void LambdaTau::swap(int i1, int i2) {
+    Lambda::swap(i1, i2);
+    swapVec(tau, i1, i2);
+}
