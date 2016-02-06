@@ -12,7 +12,7 @@ FixedDeadlineGA::FixedDeadlineGA(ProjectWithOvertime &_p): GeneticAlgorithm(_p, 
 }
 
 DeadlineLambda FixedDeadlineGA::init(int ix) {
-    DeadlineLambda indiv(p);
+    DeadlineLambda indiv(p.numJobs);
     indiv.deadline = Utils::randRangeIncl(deadlineLB, deadlineUB);
     indiv.order = p.topOrder;
     random_shuffle(indiv.order.begin(), indiv.order.end());
@@ -21,7 +21,7 @@ DeadlineLambda FixedDeadlineGA::init(int ix) {
 
 void FixedDeadlineGA::crossover(DeadlineLambda &mother, DeadlineLambda &father, DeadlineLambda &daughter) {
     mother.randomOnePointCrossover(mother, father);
-    daughter.deadline = static_cast<int>(std::round(static_cast<float>(mother.deadline - father.deadline) / 2.0f)) + father.deadline;
+
 }
 
 void FixedDeadlineGA::mutate(DeadlineLambda &i) {
