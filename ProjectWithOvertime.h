@@ -22,7 +22,7 @@ public:
 	float totalCosts(const vector<int> &sts) const;
     float totalCostsForPartial(const vector<int> &sts) const;
 
-    SGSResult serialSGSWithOvertime(const vector<int> &order) const;
+    SGSResult serialSGSWithOvertime(const vector<int> &order, bool robust = false) const;
     SGSResult serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, bool robust = false) const;
     SGSResult serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau, bool robust = false) const;
 	bool enoughCapacityForJobWithBaseInterval(vector<int> &sts, vector<int> &cests, vector<int> &clfts, Matrix<int> &resRem, int j, int stj) const;

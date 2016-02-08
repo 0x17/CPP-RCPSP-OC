@@ -67,15 +67,8 @@ void Lambda::twoPointCrossover(Lambda &mother, Lambda &father, int q1, int q2) {
     }
 }
 
-template<class T>
-void swapVec(vector<T> &v, int i1, int i2) {
-    T tmp = v[i1];
-    v[i1] = v[i2];
-    v[i2] = tmp;
-}
-
 void Lambda::swap(int i1, int i2) {
-    swapVec(order, i1, i2);
+    Utils::swap(order, i1, i2);
 }
 
 //======================================================================================================================
@@ -114,7 +107,7 @@ void LambdaBeta::inherit(Lambda &parent, int destIx, int srcIx) {
 
 void LambdaBeta::swap(int i1, int i2) {
     Lambda::swap(i1, i2);
-    swapVec(beta, i1, i2);
+    Utils::swap(beta, i1, i2);
 }
 
 //======================================================================================================================
@@ -130,5 +123,5 @@ void LambdaTau::inherit(Lambda &parent, int destIx, int srcIx) {
 
 void LambdaTau::swap(int i1, int i2) {
     Lambda::swap(i1, i2);
-    swapVec(tau, i1, i2);
+    Utils::swap(tau, i1, i2);
 }

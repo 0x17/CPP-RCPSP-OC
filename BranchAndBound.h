@@ -2,10 +2,11 @@
 #define __BRANCH_AND_BOUND_H__
 
 #include <vector>
+#include <string>
+
 #include "matrix.h"
 #include "Stopwatch.h"
 #include "Utils.h"
-#include <string>
 
 using namespace std;
 

@@ -63,6 +63,13 @@ namespace Utils {
     void spit(const string s, const string filename);
     void spitAppend(const string s, const string filename);
 
+    template<class T>
+    void swap(vector<T> &v, int i1, int i2) {
+        T tmp = v[i1];
+        v[i1] = v[i2];
+        v[i2] = tmp;
+    }
+
     template<class Func>
     float maxInRangeIncl(int lb, int ub, Func transform) {
         float r = numeric_limits<float>::lowest();

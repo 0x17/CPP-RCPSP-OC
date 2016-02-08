@@ -1,13 +1,13 @@
-﻿#include "BranchAndBound.h"
-#include "Utils.h"
-#include "ProjectWithOvertime.h"
-#include "GeneticAlgorithms/OvertimeBound.h"
-#include "Project.h"
-#include <algorithm>
+﻿#include <algorithm>
 #include <numeric>
 #include <map>
 #include <cmath>
 #include <fstream>
+
+#include "BranchAndBound.h"
+#include "Utils.h"
+#include "ProjectWithOvertime.h"
+#include "GeneticAlgorithms/OvertimeBound.h"
 
 BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, double _timeLimit, bool _writeGraph)
 	: p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph), timeLimit(_timeLimit), traceobj(false), tr(nullptr) {}

@@ -3,15 +3,146 @@
 //
 
 #include <list>
-#include <localsolver.h>
-#include "LSSolver.h"
-#include "Stopwatch.h"
 #include <fstream>
 #include <iostream>
 
-using namespace localsolver;
+#include "LSSolver.h"
+#include "Stopwatch.h"
 
-lsint IV_COUNT = 4;
+//======================================================================================================================
+
+ListModel::~ListModel() {
+	if(decoder != nullptr)
+		delete decoder;
+}
+
+vector<int> ListModel::solve(SolverParams params) {
+	buildModel();
+	applyParams(params);
+	ls.solve();
+	auto sol = ls.getSolution();
+	return parseScheduleFromSolution(sol);
+}
+
+void ListModel::buildModel() {
+	if (model.getNbObjectives() == 0) {
+		LSExpression obj = model.createExpression(O_Call, model.createNativeFunction(decoder));
+
+		LSExpression activityList = model.listVar(p.numJobs);
+		model.constraint(model.count(activityList) == p.numJobs);
+
+		for (int i = 0; i < p.numJobs; i++) {
+			listElems[i] = model.at(activityList, i);
+			obj.addOperand(listElems[i]);
+		}
+
+		addAdditionalData(obj);
+
+		model.addObjective(obj, OD_Maximize);
+		model.close();
+	}
+}
+
+void ListModel::applyParams(SolverParams &params) {
+	if (ls.getNbPhases() == 0) {
+		ls.createPhase().setTimeLimit(static_cast<int>(params.timeLimit));
+		auto param = ls.getParam();
+		param.setNbThreads(params.threadCount);
+		param.setSeed(params.seed);
+		param.setVerbosity(params.verbosityLevel);
+	}
+}
+
+//======================================================================================================================
+
+lsdouble ListAlternativesModel::SerialSGSAlternativesDecoder::call(const LSNativeContext& context) {
+	vector<int> order(p.numJobs);
+	if (context.count() < p.numJobs) return numeric_limits<double>::lowest();
+	for (int i = 0; i<p.numJobs; i++) {
+		order[i] = static_cast<int>(context.getIntValue(i));
+	}
+	auto result = p.serialSGSWithOvertime(order, true);
+	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
+}
+
+vector<int> ListAlternativesModel::parseScheduleFromSolution(LSSolution &sol) {
+	vector<int> order(p.numJobs);
+	for (int i = 0; i<p.numJobs; i++) {
+		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
+	}
+	return p.serialSGSWithOvertime(order, true).first;
+}
+
+lsdouble ListBetaModel::SerialSGSBetaFunction::call(const LSNativeContext& context) {
+	vector<int> order(p.numJobs), beta(p.numJobs);
+	if (context.count() < 2 * p.numJobs) return numeric_limits<double>::lowest();
+	for (int i = 0; i<p.numJobs; i++) {
+		order[i] = static_cast<int>(context.getIntValue(i));
+		beta[i] = static_cast<int>(context.getIntValue(p.numJobs + i));
+	}
+	auto result = p.serialSGSTimeWindowBorders(order, beta, true);
+	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
+}
+
+void ListBetaModel::addAdditionalData(LSExpression& obj) {
+	for (int i = 0; i < p.numJobs; i++) {
+		betaVar[i] = model.boolVar();
+		obj.addOperand(betaVar[i]);
+	}
+}
+
+vector<int> ListBetaModel::parseScheduleFromSolution(LSSolution& sol) {
+	vector<int> order(p.numJobs), betaVarVals(p.numJobs);
+	for (int i = 0; i<p.numJobs; i++) {
+		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
+		betaVarVals[i] = static_cast<int>(sol.getIntValue(betaVar[i]));
+	}
+	return p.serialSGSTimeWindowBorders(order, betaVarVals, true).first;
+}
+
+lsdouble ListTauModel::SerialSGSTauFunction::call(const LSNativeContext& context) {
+	vector<int> order(p.numJobs);
+	vector<float> tau(p.numJobs);
+	if (context.count() < 2 * p.numJobs) return numeric_limits<double>::lowest();
+	for (int i = 0; i<p.numJobs; i++) {
+		order[i] = static_cast<int>(context.getIntValue(i));
+		tau[i] = static_cast<float>(context.getDoubleValue(p.numJobs + i));
+	}
+	auto result = p.serialSGSTimeWindowArbitrary(order, tau, true);
+	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
+}
+
+void ListTauModel::addAdditionalData(LSExpression& obj) {
+	for (int i = 0; i < p.numJobs; i++) {
+		tauVar[i] = model.floatVar(0.0, 1.0);
+		obj.addOperand(tauVar[i]);
+	}
+}
+
+vector<int> ListTauModel::parseScheduleFromSolution(LSSolution& sol) {
+	vector<int> order(p.numJobs);
+	vector<float> tau(p.numJobs);
+	for (int i = 0; i<p.numJobs; i++) {
+		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
+		tau[i] = static_cast<float>(sol.getDoubleValue(tauVar[i]));
+	}
+	return p.serialSGSTimeWindowArbitrary(order, tau, true).first;
+}
+
+lsdouble ListTauDiscreteModel::SerialSGSIntegerFunction::call(const LSNativeContext& context) {
+	vector<int> order(p.numJobs);
+	vector<float> tau(p.numJobs);
+	if (context.count() < 2 * p.numJobs) return numeric_limits<double>::lowest();
+	for (int i = 0; i<p.numJobs; i++) {
+		order[i] = static_cast<int>(context.getIntValue(i));
+		int beta = static_cast<int>(context.getIntValue(p.numJobs + i));
+		tau[i] = (float)(static_cast<double>(beta) / static_cast<double>(IV_COUNT - 1));
+	}
+	auto result = p.serialSGSTimeWindowArbitrary(order, tau, true);
+	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
+}
+
+//======================================================================================================================
 
 pair<LSModel, Matrix<LSExpression>> buildModel(ProjectWithOvertime &p, LocalSolver &ls) {
 	auto model = ls.getModel();
@@ -88,6 +219,8 @@ vector<int> parseSolution(ProjectWithOvertime &p, Matrix<LSExpression> &x, LSSol
 	return sts;
 }
 
+//======================================================================================================================
+
 class TraceCallback : public LSCallback {
     Utils::Tracer &tr;
     double secCtr;
@@ -106,6 +239,25 @@ void TraceCallback::callback(LocalSolver &solver, LSCallbackType type) {
 }
 
 TraceCallback::~TraceCallback() {
+}
+
+//======================================================================================================================
+
+void ListTauDiscreteModel::addAdditionalData(LSExpression& obj) {
+	for (int i = 0; i < p.numJobs; i++) {
+		tauVar[i] = model.intVar(0, IV_COUNT - 1);
+		obj.addOperand(tauVar[i]);
+	}
+}
+
+vector<int> ListTauDiscreteModel::parseScheduleFromSolution(LSSolution& sol) {
+	vector<int> order(p.numJobs);
+	vector<float> tau(p.numJobs);
+	for (int i = 0; i<p.numJobs; i++) {
+		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
+		tau[i] = (float)(static_cast<double>(sol.getIntValue(tauVar[i])) / static_cast<double>(IV_COUNT - 1));
+	}
+	return p.serialSGSTimeWindowArbitrary(order, tau, true).first;
 }
 
 vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, bool traceobj) {
@@ -140,31 +292,7 @@ vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, bool trace
 	return parseSolution(p, x, sol);
 }
 
-class SchedulingNativeFunction : public LSNativeFunction {
-protected:
-	ProjectWithOvertime &p;
-public:
-	explicit SchedulingNativeFunction(ProjectWithOvertime &_p) : p(_p) {}
-	~SchedulingNativeFunction() {}
-};
-
-class SerialSGSBetaFunction : public SchedulingNativeFunction {
-public:
-	explicit SerialSGSBetaFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
-	virtual lsdouble call(const LSNativeContext &context) override;
-};
-
-class SerialSGSTauFunction : public SchedulingNativeFunction {
-public:
-	explicit SerialSGSTauFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
-	virtual lsdouble call(const LSNativeContext &context) override;
-};
-
-class SerialSGSIntegerFunction : public SchedulingNativeFunction {
-public:
-	explicit SerialSGSIntegerFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
-	virtual lsdouble call(const LSNativeContext &context) override;
-};
+//======================================================================================================================
 
 class RevenueFunction : public SchedulingNativeFunction {
 public:
@@ -172,66 +300,32 @@ public:
 	virtual lsdouble call(const LSNativeContext &context) override;
 };
 
+lsdouble RevenueFunction::call(const LSNativeContext &context) {
+    return p.revenue[context.getIntValue(0)];
+}
+
 class CumulatedDemandFunction : public SchedulingNativeFunction {
 public:
 	explicit CumulatedDemandFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) { }
 	virtual lsdouble call(const LSNativeContext &context) override;
 };
 
-lsdouble SerialSGSBetaFunction::call(const LSNativeContext &context) {
-	vector<int> order(p.numJobs), beta(p.numJobs);
-	if (context.count() < 2 * p.numJobs) return numeric_limits<double>::lowest();
-	for(int i=0; i<p.numJobs; i++) {
-		order[i] = static_cast<int>(context.getIntValue(i));
-		beta[i] = static_cast<int>(context.getIntValue(p.numJobs + i));
-	}
-	auto result = p.serialSGSTimeWindowBorders(order, beta, true);
-	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
-}
-
-lsdouble SerialSGSIntegerFunction::call(const LSNativeContext &context) {
-	vector<int> order(p.numJobs);
-	vector<float> tau(p.numJobs);
-	if (context.count() < 2 * p.numJobs) return numeric_limits<double>::lowest();
-	for (int i = 0; i<p.numJobs; i++) {
-		order[i] = static_cast<int>(context.getIntValue(i));
-		int beta = static_cast<int>(context.getIntValue(p.numJobs + i));
-		tau[i] = (float) (static_cast<double>(beta) / static_cast<double>(IV_COUNT - 1));
-	}
-	auto result = p.serialSGSTimeWindowArbitrary(order, tau, true);
-	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
-}
-
-lsdouble SerialSGSTauFunction::call(const LSNativeContext &context) {
-	vector<int> order(p.numJobs);
-	vector<float> tau(p.numJobs);
-	if (context.count() < 2 * p.numJobs) return numeric_limits<double>::lowest();
-	for (int i = 0; i<p.numJobs; i++) {
-		order[i] = static_cast<int>(context.getIntValue(i));
-		tau[i] = (float) context.getDoubleValue(p.numJobs + i);
-	}
-	auto result = p.serialSGSTimeWindowArbitrary(order, tau, true);
-	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
-}
-
-lsdouble RevenueFunction::call(const LSNativeContext &context) {
-	return p.revenue[context.getIntValue(0)];
-}
-
 lsdouble CumulatedDemandFunction::call(const LSNativeContext &context) {
-	int demand = 0;
+    int demand = 0;
 
-	lsint r = context.getIntValue(0);
-	lsint t = context.getIntValue(1);
+    lsint r = context.getIntValue(0);
+    lsint t = context.getIntValue(1);
 
-	p.eachJob([&](int j) {
-		lsint Sj = context.getIntValue(j + 2);
-		if (Sj < t && t <= Sj + p.durations[j])
-			demand += p.demands(j, static_cast<int>(r));
-	});
+    p.eachJob([&](int j) {
+        lsint Sj = context.getIntValue(j + 2);
+        if (Sj < t && t <= Sj + p.durations[j])
+            demand += p.demands(j, static_cast<int>(r));
+    });
 
-	return demand;
+    return demand;
 }
+
+//======================================================================================================================
 
 vector<int> LSSolver::solveNative(ProjectWithOvertime &p) {
     vector<int> sts(p.numJobs);
@@ -293,142 +387,7 @@ vector<int> LSSolver::solveNative(ProjectWithOvertime &p) {
     return sts;
 }
 
-vector<int> LSSolver::solveListVarBinVar(int seed, ProjectWithOvertime &p, double timeLimit, bool traceobj) {
-	LocalSolver ls;
-	auto model = ls.getModel();
-	
-	SerialSGSBetaFunction sgsFunc(p);
-    LSExpression sgsFuncExpr = model.createNativeFunction(&sgsFunc);
-	
-	LSExpression objExpr = model.createExpression(O_Call, sgsFuncExpr);
-
-	LSExpression activityList = model.listVar(p.numJobs);
-	model.constraint(model.count(activityList) == p.numJobs);
-
-	vector<LSExpression> listElems(p.numJobs), betaVar(p.numJobs);
-	for (int i = 0; i < p.numJobs; i++) {
-		listElems[i] = model.at(activityList, i);
-		betaVar[i] = model.boolVar();
-		objExpr.addOperand(listElems[i]);
-	}
-
-	for(int i = 0; i < p.numJobs; i++)
-		objExpr.addOperand(betaVar[i]);
-
-	model.addObjective(objExpr, OD_Maximize);
-	model.close();
-
-	ls.createPhase().setTimeLimit(static_cast<int>(timeLimit));
-	auto param = ls.getParam();
-	param.setNbThreads(1);
-	param.setSeed(seed);
-	param.setVerbosity(2);
-    ls.solve();
-
-    auto sol = ls.getSolution();
-	
-	vector<int> order(p.numJobs), beta(p.numJobs);
-	for(int i=0; i<p.numJobs; i++) {
-		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
-		beta[i] = static_cast<int>(sol.getIntValue(betaVar[i]));
-	}
-	
-	auto sts = p.serialSGSTimeWindowBorders(order, beta, true).first;
-	
-	return sts;
-}
-
-vector<int> LSSolver::solveListVarFloatVar(int seed, ProjectWithOvertime &p, double timeLimit, bool traceobj) {
-    LocalSolver ls;
-    auto model = ls.getModel();
-
-    SerialSGSTauFunction sgsFunc(p);
-    LSExpression sgsFuncExpr = model.createNativeFunction(&sgsFunc);
-
-    LSExpression objExpr = model.createExpression(O_Call, sgsFuncExpr);
-
-    LSExpression activityList = model.listVar(p.numJobs);
-    model.constraint(model.count(activityList) == p.numJobs);
-
-    vector<LSExpression> listElems(p.numJobs), tauVar(p.numJobs);
-    for (int i = 0; i < p.numJobs; i++) {
-        listElems[i] = model.at(activityList, i);
-        tauVar[i] = model.floatVar(0.0, 1.0);
-        objExpr.addOperand(listElems[i]);
-    }
-
-    for (int i = 0; i < p.numJobs; i++)
-        objExpr.addOperand(tauVar[i]);
-
-    model.addObjective(objExpr, OD_Maximize);
-    model.close();
-
-    ls.createPhase().setTimeLimit(static_cast<int>(timeLimit));
-    auto param = ls.getParam();
-    param.setNbThreads(1);
-    param.setSeed(seed);
-    param.setVerbosity(2);
-    ls.solve();
-
-    auto sol = ls.getSolution();
-
-    vector<int> order(p.numJobs);
-    vector<float> tau(p.numJobs);
-    for (int i = 0; i<p.numJobs; i++) {
-        order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
-        tau[i] = (float)sol.getDoubleValue(tauVar[i]);
-    }
-
-    auto sts = p.serialSGSTimeWindowArbitrary(order, tau, true).first;
-
-    return sts;
-}
-
-vector<int> LSSolver::solveListVarIntVar(int seed, ProjectWithOvertime &p, double timeLimit, bool traceobj) {
-	LocalSolver ls;
-	auto model = ls.getModel();
-
-	SerialSGSIntegerFunction sgsFunc(p);
-	LSExpression sgsFuncExpr = model.createNativeFunction(&sgsFunc);
-
-	LSExpression objExpr = model.createExpression(O_Call, sgsFuncExpr);
-
-	LSExpression activityList = model.listVar(p.numJobs);
-	model.constraint(model.count(activityList) == p.numJobs);
-
-	vector<LSExpression> listElems(p.numJobs), betaVar(p.numJobs);
-	for (int i = 0; i < p.numJobs; i++) {
-		listElems[i] = model.at(activityList, i);
-		betaVar[i] = model.intVar(0, IV_COUNT-1);
-		objExpr.addOperand(listElems[i]);
-	}
-
-	for (int i = 0; i < p.numJobs; i++)
-		objExpr.addOperand(betaVar[i]);
-
-	model.addObjective(objExpr, OD_Maximize);
-	model.close();
-
-	ls.createPhase().setTimeLimit(static_cast<int>(timeLimit));
-	auto param = ls.getParam();
-	param.setNbThreads(1);
-	param.setSeed(seed);
-	param.setVerbosity(2);
-	ls.solve();
-
-	auto sol = ls.getSolution();
-
-	vector<int> order(p.numJobs);
-	vector<float> tau(p.numJobs);
-	for (int i = 0; i<p.numJobs; i++) {
-		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
-		tau[i] = (float) (static_cast<double>(sol.getIntValue(betaVar[i])) / static_cast<double>(IV_COUNT - 1));
-	}
-
-	auto sts = p.serialSGSTimeWindowArbitrary(order, tau, true).first;
-
-	return sts;
-}
+//======================================================================================================================
 
 void LSSolver::writeLSPModelParamFile(ProjectWithOvertime &p, string outFilename) {
 	list<string> outLines = {

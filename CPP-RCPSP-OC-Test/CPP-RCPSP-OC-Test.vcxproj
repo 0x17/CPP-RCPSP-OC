@@ -21,8 +21,8 @@
   <ItemGroup>
     <ClCompile Include="..\BranchAndBound.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\FixedDeadline.cpp" />
-    <ClCompile Include="..\GeneticAlgorithms\GeneticOperators.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\OvertimeBound.cpp" />
+    <ClCompile Include="..\GeneticAlgorithms\Representations.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\Runners.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\Sampling.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\TimeWindow.cpp" />
@@ -32,9 +32,9 @@
     <ClCompile Include="..\Stopwatch.cpp" />
     <ClCompile Include="..\Utils.cpp" />
     <ClCompile Include="..\Visualization.cpp" />
-    <ClCompile Include="GeneticOperatorsTest.cpp" />
     <ClCompile Include="ProjectTest.cpp" />
     <ClCompile Include="ProjectWithOvertimeTest.cpp" />
+    <ClCompile Include="RepresentationsTest.cpp" />
     <ClCompile Include="SamplingTest.cpp" />
     <ClCompile Include="TestHelpers.cpp" />
     <ClCompile Include="testmain.cpp" />
@@ -44,8 +44,8 @@
     <ClInclude Include="..\BranchAndBound.h" />
     <ClInclude Include="..\GeneticAlgorithms\FixedDeadline.h" />
     <ClInclude Include="..\GeneticAlgorithms\GeneticAlgorithm.h" />
-    <ClInclude Include="..\GeneticAlgorithms\GeneticOperators.h" />
     <ClInclude Include="..\GeneticAlgorithms\OvertimeBound.h" />
+    <ClInclude Include="..\GeneticAlgorithms\Representations.h" />
     <ClInclude Include="..\GeneticAlgorithms\Runners.h" />
     <ClInclude Include="..\GeneticAlgorithms\Sampling.h" />
     <ClInclude Include="..\GeneticAlgorithms\TimeWindow.h" />
@@ -58,6 +58,7 @@
     <ClInclude Include="..\Visualization.h" />
     <ClInclude Include="ProjectTest.h" />
     <ClInclude Include="ProjectWithOvertimeTest.h" />
+    <ClInclude Include="RepresentationsTest.h" />
     <ClInclude Include="SamplingTest.h" />
     <ClInclude Include="TestHelpers.h" />
     <ClInclude Include="UtilsTest.h" />

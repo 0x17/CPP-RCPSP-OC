@@ -103,13 +103,13 @@ float ProjectWithOvertime::extensionCosts(const Matrix<int> &resRem, int j, int 
 	return costs;
 }
 
-SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order) const {
+SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order, bool robust) const {
     Matrix<int> resRem(numRes, numPeriods);
     eachResPeriodConst([&](int r, int t) { resRem(r,t) = capacities[r]; });
 
     vector<int> sts(numJobs), fts(numJobs), ftsTmp(numJobs);
     for (int k=0; k<numJobs; k++) {
-        int job = order[k];
+		int job = robust ? chooseEligibleWithLowestIndex(sts, order) : order[k];
         int lastPredFinished = computeLastPredFinishingTime(fts, job);
 
         int t;

@@ -69,12 +69,22 @@ void commandLineRunner(int argc, char * argv[]) {
 			outFn = "LocalSolverResults.txt";
 		} else if(boost::starts_with(solMethod, "LocalSolverNative")) {
 			int lsnIndex = stoi(solMethod.substr(17, 1));
-			vector<vector<int>(*)(int, ProjectWithOvertime&, double, bool)> lsfuncs = {
-				LSSolver::solveListVarBinVar,
-				LSSolver::solveListVarFloatVar,
-				LSSolver::solveListVarIntVar,
-			};
-			sts = lsfuncs[lsnIndex](0, p, timeLimit, traceobj);
+			ListModel *lm;
+			switch(lsnIndex) {
+			default:
+			case 0:
+				lm = new ListBetaModel(p);
+				break;
+			case 1:
+				lm = new ListTauModel(p);
+				break;
+			case 2:
+				lm = new ListTauDiscreteModel(p);
+				break;
+			}
+			SolverParams params(timeLimit);
+			sts = lm->solve(params);
+			delete lm;
 			outFn = "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");
@@ -111,7 +121,10 @@ void testFixedDeadlineHeuristic() {
 void testLocalSolverNative(int seed) {
 	string projFilename = "../../Projekte/j30/j301_1.sm";
 	ProjectWithOvertime p(projFilename);
-	auto sts = LSSolver::solveListVarIntVar(seed, p, 60.0);
+	ListBetaModel lbm(p);
+	SolverParams params(60.0);
+	params.seed = seed;
+	auto sts = lbm.solve(params);
 	Utils::serializeSchedule(sts, "myschedule.txt");
 	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe ../../Projekte/j30/j301_1.sm myschedule.txt");
 }

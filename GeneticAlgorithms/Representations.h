@@ -19,12 +19,15 @@ public:
     virtual ~Lambda() {}
 
     virtual void neighborhoodSwap(Matrix<char> &adjMx, int pmutate);
+
     virtual void randomOnePointCrossover(Lambda &mother, Lambda& father);
     virtual void onePointCrossover(Lambda &mother, Lambda& father, int q);
-    virtual void inherit(Lambda &parent, int destIx, int srcIx);
-    virtual void swap(int i1, int i2);
+
     virtual void randomTwoPointCrossover(Lambda &mother, Lambda &father);
     virtual void twoPointCrossover(Lambda &mother, Lambda &father, int q1, int q2);
+
+    virtual void inherit(Lambda &parent, int destIx, int srcIx);
+    virtual void swap(int i1, int i2);
 };
 
 class DeadlineLambda : public Lambda {

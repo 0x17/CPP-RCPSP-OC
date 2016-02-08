@@ -25,17 +25,13 @@ void FixedDeadlineGA::crossover(DeadlineLambda &mother, DeadlineLambda &father, 
 
 void FixedDeadlineGA::mutate(DeadlineLambda &i) {
     for(int ix=1; ix<p.numJobs; ix++)
-        withMutProb([&] {
-            int tmp = i.order[ix-1];
-            i.order[ix-1] = i.order[ix];
-            i.order[ix] = tmp;
-        });
+        withMutProb([&] { Utils::swap(i.order, ix-1, ix); });
     withMutProb([&] { i.deadline = (rand() % 2 == 0) ? max(deadlineLB, i.deadline-1) : min(deadlineUB, i.deadline+1); });
 }
 
 float FixedDeadlineGA::fitness(DeadlineLambda &i) {
     auto res = p.serialSGSWithDeadline(i.deadline, i.order);
-	if (res.first) return profitForSGSResult(res.second);
+	if(res.first) return profitForSGSResult(res.second);
 	return numeric_limits<float>::lowest();
 }
 
