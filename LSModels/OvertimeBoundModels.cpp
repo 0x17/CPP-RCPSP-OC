@@ -5,8 +5,11 @@ lsdouble ListFixedOvertimeModel::SerialSGSZrDecoder::call(const LSNativeContext&
 	vector<int> order(p.numJobs), zr(p.numRes);
 	if (context.count() < p.numJobs + p.numRes) return numeric_limits<double>::lowest();
 
-	for (int i = 0; i<p.numJobs; i++)
+	for (int i = 0; i < p.numJobs; i++) {
 		order[i] = static_cast<int>(context.getIntValue(i));
+		if (order[i] == -1)
+			return numeric_limits<double>::lowest();
+	}
 
 	for (int r = 0; r < p.numRes; r++)
 		zr[r] = static_cast<int>(context.getIntValue(p.numPeriods + r));
@@ -15,7 +18,7 @@ lsdouble ListFixedOvertimeModel::SerialSGSZrDecoder::call(const LSNativeContext&
 	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
 }
 
-void ListFixedOvertimeModel::addAdditionalData(LSExpression& obj) {
+void ListFixedOvertimeModel::addAdditionalData(LSModel &model, LSExpression& obj) {
 	for (int r = 0; r < p.numRes; r++) {
 		zrVar[r] = model.intVar(0, p.zmax[r]);
 		obj.addOperand(zrVar[r]);
@@ -34,13 +37,18 @@ vector<int> ListFixedOvertimeModel::parseScheduleFromSolution(LSSolution& sol) {
 	return p.serialSGS(order, zr, true).first;
 }
 
+//==============================================================================================================
+
 lsdouble ListDynamicOvertimeModel::SerialSGSZrtDecoder::call(const LSNativeContext& context) {
 	vector<int> order(p.numJobs);
 	Matrix<int> zrt(p.numRes, p.numPeriods);
 	if (context.count() < p.numJobs + p.numRes * p.numPeriods) return numeric_limits<double>::lowest();
 
-	for (int i = 0; i<p.numJobs; i++)
+	for (int i = 0; i < p.numJobs; i++) {
 		order[i] = static_cast<int>(context.getIntValue(i));
+		if (order[i] == -1)
+			return numeric_limits<double>::lowest();
+	}
 
 	for (int r = 0; r < p.numRes; r++)
 		for (int t = 0; t < p.numPeriods; t++)
@@ -50,7 +58,7 @@ lsdouble ListDynamicOvertimeModel::SerialSGSZrtDecoder::call(const LSNativeConte
 	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
 }
 
-void ListDynamicOvertimeModel::addAdditionalData(LSExpression& obj) {
+void ListDynamicOvertimeModel::addAdditionalData(LSModel &model, LSExpression& obj) {
 	for (int r = 0; r < p.numRes; r++) {
 		for (int t = 0; t < p.numPeriods; t++) {
 			zrtVar(r, t) = model.intVar(0, p.zmax[r]);

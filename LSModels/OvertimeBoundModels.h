@@ -9,13 +9,16 @@ class ListFixedOvertimeModel : public ListModel {
 		virtual lsdouble call(const LSNativeContext& context) override;
 	};
 
-	void addAdditionalData(LSExpression& obj) override;
+	void addAdditionalData(LSModel &model, LSExpression& obj) override;
 	vector<int> parseScheduleFromSolution(LSSolution& sol) override;
+	SchedulingNativeFunction* genDecoder() override {
+		return new SerialSGSZrDecoder(p);
+	}
 
 	vector<LSExpression> zrVar;
 
 public:
-	ListFixedOvertimeModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSZrDecoder(_p)), zrVar(p.numRes) {}
+	ListFixedOvertimeModel(ProjectWithOvertime &_p) : ListModel(_p), zrVar(p.numRes) {}
 	virtual ~ListFixedOvertimeModel() {}
 };
 
@@ -26,12 +29,16 @@ class ListDynamicOvertimeModel : public ListModel {
 		virtual lsdouble call(const LSNativeContext& context) override;
 	};
 
-	void addAdditionalData(LSExpression& obj) override;
+	void addAdditionalData(LSModel &model, LSExpression& obj) override;
 	vector<int> parseScheduleFromSolution(LSSolution& sol) override;
+	SchedulingNativeFunction* genDecoder() override {
+		return new SerialSGSZrtDecoder(p);
+	}
 
 	Matrix<LSExpression> zrtVar;
 
 public:
-	ListDynamicOvertimeModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSZrtDecoder(_p)), zrtVar(p.numRes, p.numPeriods) {}
+	ListDynamicOvertimeModel(ProjectWithOvertime &_p) : ListModel(_p), zrtVar(p.numRes, p.numPeriods) {
+	}
 	virtual ~ListDynamicOvertimeModel() {}
 };

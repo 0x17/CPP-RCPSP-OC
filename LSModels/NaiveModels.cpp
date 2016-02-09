@@ -99,7 +99,7 @@ public:
 };
 
 void TraceCallback::callback(LocalSolver &solver, LSCallbackType type) {
-	if (type == CT_Ticked) {
+	if (type == CT_TimeTicked) {
 		secCtr += MSECS_BETWEEN_TRACES;
 		lsdouble objval = solver.getModel().getObjective(0).getDoubleValue();
 		tr.trace(secCtr, static_cast<float>(objval));
@@ -107,6 +107,40 @@ void TraceCallback::callback(LocalSolver &solver, LSCallbackType type) {
 }
 
 TraceCallback::~TraceCallback() {
+}
+
+//======================================================================================================================
+
+class MyNatFunc : public LSNativeFunction {
+public:
+	~MyNatFunc() {}
+
+	lsdouble call(const LSNativeContext& context) override {
+		assert(context.count() == 4);
+		vector<int> nums(4);
+		for (int i = 0; i < 4; i++) {
+			nums[i] = (int)context.getIntValue(i);
+			printf("%d\n", nums[i]);
+		}
+		return 0.0;
+	}
+
+};
+
+void minimalLS() {
+	LocalSolver ls;
+	LSModel model = ls.getModel();
+	MyNatFunc f;
+	LSExpression nfunc = model.createNativeFunction(&f);
+	LSExpression obj = model.call(nfunc);
+	auto lvar = model.listVar(4);
+	model.constraint(model.count(lvar) == 4);
+	assert(model.getNbConstraints() == 1);
+	for (int i = 0; i < 4; i++)
+		obj.addOperand(model.at(lvar, i));
+	model.addObjective(obj, OD_Maximize);
+	model.close();
+	ls.solve();
 }
 
 //======================================================================================================================
@@ -121,7 +155,7 @@ vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, bool trace
 	auto x = pair.second;
 
 	TraceCallback cback(tr);
-	ls.addCallback(CT_Ticked, &cback);
+	ls.addCallback(CT_TimeTicked, &cback);
 
 	ls.createPhase().setTimeLimit(static_cast<int>(timeLimit));
 	auto param = ls.getParam();
@@ -152,6 +186,7 @@ public:
 };
 
 lsdouble RevenueFunction::call(const LSNativeContext &context) {
+	assert(context.count() == 1);
 	return p.revenue[context.getIntValue(0)];
 }
 

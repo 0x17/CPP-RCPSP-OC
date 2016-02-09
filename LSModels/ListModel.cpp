@@ -1,5 +1,6 @@
 #include "ListModel.h"
 
+ListModel::ListModel(ProjectWithOvertime& _p) : p(_p), decoder(nullptr), listElems(_p.numJobs) {}
 
 ListModel::~ListModel() {
 	if (decoder != nullptr)
@@ -14,9 +15,12 @@ vector<int> ListModel::solve(SolverParams params) {
 	return parseScheduleFromSolution(sol);
 }
 
-void ListModel::buildModel() {
+void ListModel::buildModel() {	
+	LSModel model = ls.getModel();
 	if (model.getNbObjectives() == 0) {
-		LSExpression obj = model.createExpression(O_Call, model.createNativeFunction(decoder));
+		decoder = genDecoder();
+		auto nfunc = model.createNativeFunction(decoder);
+		LSExpression obj = model.createExpression(O_Call, nfunc);
 
 		LSExpression activityList = model.listVar(p.numJobs);
 		model.constraint(model.count(activityList) == p.numJobs);
@@ -26,7 +30,7 @@ void ListModel::buildModel() {
 			obj.addOperand(listElems[i]);
 		}
 
-		addAdditionalData(obj);
+		addAdditionalData(model, obj);
 
 		model.addObjective(obj, OD_Maximize);
 		model.close();

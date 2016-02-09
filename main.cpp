@@ -132,12 +132,12 @@ void testFixedDeadlineHeuristic() {
 void testLocalSolverNative(int seed) {
 	string projFilename = "../../Projekte/j30/j301_1.sm";
 	ProjectWithOvertime p(projFilename);
-	ListBetaModel lbm(p);
+	ListBetaModel lm(p);
 	SolverParams params(60.0);
 	params.seed = seed;
-	auto sts = lbm.solve(params);
+	auto sts = lm.solve(params);
 	Utils::serializeSchedule(sts, "myschedule.txt");
-	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe ../../Projekte/j30/j301_1.sm myschedule.txt");
+	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe ../../Projekte/j30/j301_1.sm myschedule.txt");
 }
 
 void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {

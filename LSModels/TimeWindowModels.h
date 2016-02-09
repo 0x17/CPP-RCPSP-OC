@@ -11,13 +11,18 @@ class ListBetaModel : public ListModel {
 
 	vector<LSExpression> betaVar;
 
-	void addAdditionalData(LSExpression& obj) override;
+	void addAdditionalData(LSModel &model, LSExpression& obj) override;
 	vector<int> parseScheduleFromSolution(LSSolution& sol) override;
 
+	SchedulingNativeFunction* genDecoder() override {
+		return new SerialSGSBetaFunction(p);
+	}
 public:
-	ListBetaModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSBetaFunction(_p)), betaVar(p.numJobs) {}
+	ListBetaModel(ProjectWithOvertime &_p) : ListModel(_p), betaVar(p.numJobs) {}
 	virtual ~ListBetaModel() {}
 };
+
+//==============================================================================================================
 
 class ListTauModel : public ListModel {
 	class SerialSGSTauFunction : public SchedulingNativeFunction {
@@ -28,13 +33,18 @@ class ListTauModel : public ListModel {
 
 	vector<LSExpression> tauVar;
 
-	void addAdditionalData(LSExpression& obj) override;
+	void addAdditionalData(LSModel &model, LSExpression& obj) override;
 	vector<int> parseScheduleFromSolution(LSSolution& sol) override;
 
+	SchedulingNativeFunction* genDecoder() override {
+		return new SerialSGSTauFunction(p);
+	}
 public:
-	ListTauModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSTauFunction(_p)), tauVar(p.numJobs) {}
+	ListTauModel(ProjectWithOvertime &_p) : ListModel(_p), tauVar(p.numJobs) {}
 	virtual ~ListTauModel() {}
 };
+
+//==============================================================================================================
 
 class ListTauDiscreteModel : public ListModel {
 	class SerialSGSIntegerFunction : public SchedulingNativeFunction {
@@ -46,13 +56,18 @@ class ListTauDiscreteModel : public ListModel {
 	static const lsint IV_COUNT = 4;
 	vector<LSExpression> tauVar;
 
-	void addAdditionalData(LSExpression& obj) override;
+	void addAdditionalData(LSModel &model, LSExpression& obj) override;
 	vector<int> parseScheduleFromSolution(LSSolution& sol) override;
 
+	SchedulingNativeFunction* genDecoder() override {
+		return new SerialSGSIntegerFunction(p);
+	}
 public:
-	ListTauDiscreteModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSIntegerFunction(_p)), tauVar(p.numJobs) {}
+	ListTauDiscreteModel(ProjectWithOvertime &_p) : ListModel(_p), tauVar(p.numJobs) {}
 	virtual ~ListTauDiscreteModel() {}
 };
+
+//==============================================================================================================
 
 class ListAlternativesModel : public ListModel {
 	class SerialSGSAlternativesDecoder : public SchedulingNativeFunction {
@@ -62,9 +77,12 @@ class ListAlternativesModel : public ListModel {
 	};
 
 	vector<int> parseScheduleFromSolution(LSSolution &sol) override;
-	void addAdditionalData(LSExpression &obj) override {}
+	void addAdditionalData(LSModel &model, LSExpression &obj) override {}
 
+	SchedulingNativeFunction* genDecoder() override {
+		return new SerialSGSAlternativesDecoder(p);
+	}
 public:
-	ListAlternativesModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSAlternativesDecoder(_p)) {}
+	ListAlternativesModel(ProjectWithOvertime &_p) : ListModel(_p) {}
 	virtual ~ListAlternativesModel() {}
 };

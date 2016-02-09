@@ -28,20 +28,16 @@ struct SolverParams {
 class ListModel {
 protected:
 	ProjectWithOvertime &p;
-
 	LocalSolver ls;
-	LSModel model;
-
+	SchedulingNativeFunction *decoder;
 	vector<LSExpression> listElems;
 
-	SchedulingNativeFunction *decoder;
-
-	virtual void addAdditionalData(LSExpression &obj) = 0;
+	virtual void addAdditionalData(LSModel &model, LSExpression &obj) = 0;
 	virtual vector<int> parseScheduleFromSolution(LSSolution &sol) = 0;
+	virtual SchedulingNativeFunction *genDecoder() = 0;
 
 public:
-	ListModel(ProjectWithOvertime &_p, SchedulingNativeFunction *_decoder)
-		: p(_p), model(ls.getModel()), listElems(p.numJobs), decoder(_decoder) {}
+	ListModel(ProjectWithOvertime &_p);
 	virtual ~ListModel();
 
 	vector<int> solve(SolverParams params);
