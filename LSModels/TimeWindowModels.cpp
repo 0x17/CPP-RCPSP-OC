@@ -1,18 +1,16 @@
 
 #include "TimeWindowModels.h"
 
-lsdouble ListBetaModel::SerialSGSBetaFunction::call(const LSNativeContext& context) {
-	vector<int> order(p.numJobs), beta(p.numJobs);
-	if (context.count() < 2 * p.numJobs)
-		return numeric_limits<double>::lowest();
+int ListBetaModel::SerialSGSBetaFunction::varCount() {
+	return 2 * p.numJobs;
+}
+
+SGSResult ListBetaModel::SerialSGSBetaFunction::decode(vector<int>& order, const LSNativeContext& context) {
+	vector<int> beta(p.numJobs);
 	for (int i = 0; i<p.numJobs; i++) {
-		order[i] = static_cast<int>(context.getIntValue(i));
-		if(order[i] == -1)
-			return numeric_limits<double>::lowest();
 		beta[i] = static_cast<int>(context.getIntValue(p.numJobs + i));
 	}
-	auto result = p.serialSGSTimeWindowBorders(order, beta, true);
-	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
+	return p.serialSGSTimeWindowBorders(order, beta, true);
 }
 
 void ListBetaModel::addAdditionalData(LSModel &model, LSExpression& obj) {
@@ -33,18 +31,16 @@ vector<int> ListBetaModel::parseScheduleFromSolution(LSSolution& sol) {
 
 //==============================================================================================================
 
-lsdouble ListTauModel::SerialSGSTauFunction::call(const LSNativeContext& context) {
-	vector<int> order(p.numJobs);
+int ListTauModel::SerialSGSTauFunction::varCount() {
+	return 2 * p.numJobs;
+}
+
+SGSResult ListTauModel::SerialSGSTauFunction::decode(vector<int>& order, const LSNativeContext& context) {
 	vector<float> tau(p.numJobs);
-	if (context.count() < 2 * p.numJobs) return numeric_limits<double>::lowest();
 	for (int i = 0; i<p.numJobs; i++) {
-		order[i] = static_cast<int>(context.getIntValue(i));
-		if (order[i] == -1)
-			return numeric_limits<double>::lowest();
 		tau[i] = static_cast<float>(context.getDoubleValue(p.numJobs + i));
 	}
-	auto result = p.serialSGSTimeWindowArbitrary(order, tau, true);
-	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
+	return p.serialSGSTimeWindowArbitrary(order, tau, true);
 }
 
 void ListTauModel::addAdditionalData(LSModel &model, LSExpression& obj) {
@@ -64,23 +60,20 @@ vector<int> ListTauModel::parseScheduleFromSolution(LSSolution& sol) {
 	return p.serialSGSTimeWindowArbitrary(order, tau, true).first;
 }
 
-//==============================================================================================================
+int ListTauDiscreteModel::SerialSGSIntegerFunction::varCount() {
+	return 2 * p.numJobs;
+}
 
-lsdouble ListTauDiscreteModel::SerialSGSIntegerFunction::call(const LSNativeContext& context) {
-	vector<int> order(p.numJobs);
+SGSResult ListTauDiscreteModel::SerialSGSIntegerFunction::decode(vector<int>& order, const LSNativeContext& context) {
 	vector<float> tau(p.numJobs);
-	if (context.count() < 2 * p.numJobs) return numeric_limits<double>::lowest();
 	for (int i = 0; i<p.numJobs; i++) {
-		order[i] = static_cast<int>(context.getIntValue(i));
-		if (order[i] == -1)
-			return numeric_limits<double>::lowest();
 		int beta = static_cast<int>(context.getIntValue(p.numJobs + i));
 		tau[i] = (float)(static_cast<double>(beta) / static_cast<double>(IV_COUNT - 1));
 	}
-	auto result = p.serialSGSTimeWindowArbitrary(order, tau, true);
-	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
+	return p.serialSGSTimeWindowArbitrary(order, tau, true);			
 }
 
+//==============================================================================================================
 void ListTauDiscreteModel::addAdditionalData(LSModel &model, LSExpression& obj) {
 	for (int i = 0; i < p.numJobs; i++) {
 		tauVar[i] = model.intVar(0, IV_COUNT - 1);
@@ -100,16 +93,12 @@ vector<int> ListTauDiscreteModel::parseScheduleFromSolution(LSSolution& sol) {
 
 //==============================================================================================================
 
-lsdouble ListAlternativesModel::SerialSGSAlternativesDecoder::call(const LSNativeContext& context) {
-	vector<int> order(p.numJobs);
-	if(context.count() < p.numJobs) return numeric_limits<double>::lowest();
-	for (int i = 0; i<p.numJobs; i++) {
-		order[i] = static_cast<int>(context.getIntValue(i));
-		if (order[i] == -1)
-			return numeric_limits<double>::lowest();
-	}
-	auto result = p.serialSGSWithOvertime(order, true);
-	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
+int ListAlternativesModel::SerialSGSAlternativesDecoder::varCount() {
+	return p.numJobs;
+}
+
+SGSResult ListAlternativesModel::SerialSGSAlternativesDecoder::decode(vector<int>& order, const LSNativeContext& context) {
+	return p.serialSGSWithOvertime(order, true);
 }
 
 vector<int> ListAlternativesModel::parseScheduleFromSolution(LSSolution &sol) {

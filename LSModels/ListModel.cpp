@@ -1,6 +1,21 @@
 #include "ListModel.h"
 
-ListModel::ListModel(ProjectWithOvertime& _p) : p(_p), decoder(nullptr), listElems(_p.numJobs) {}
+lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
+	vector<int> order(p.numJobs);
+	if (context.count() < varCount()) return numeric_limits<double>::lowest();
+
+	for (int i = 0; i < p.numJobs; i++) {
+		order[i] = static_cast<int>(context.getIntValue(i));
+		if (order[i] == -1)
+			return numeric_limits<double>::lowest();
+	}
+
+	SGSResult result = decode(order, context);
+	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
+}
+
+ListModel::ListModel(ProjectWithOvertime& _p, SchedulingNativeFunction *_decoder) : p(_p), decoder(_decoder), listElems(_p.numJobs) {
+}
 
 ListModel::~ListModel() {
 	if (decoder != nullptr)
@@ -18,9 +33,8 @@ vector<int> ListModel::solve(SolverParams params) {
 void ListModel::buildModel() {	
 	LSModel model = ls.getModel();
 	if (model.getNbObjectives() == 0) {
-		decoder = genDecoder();
 		auto nfunc = model.createNativeFunction(decoder);
-		LSExpression obj = model.createExpression(O_Call, nfunc);
+		LSExpression obj = model.call(nfunc);
 
 		LSExpression activityList = model.listVar(p.numJobs);
 		model.constraint(model.count(activityList) == p.numJobs);
@@ -34,6 +48,11 @@ void ListModel::buildModel() {
 
 		model.addObjective(obj, OD_Maximize);
 		model.close();
+
+		// initial solution 0, 1, ..., njobs
+		auto coll = activityList.getCollectionValue();
+		for (int i = 0; i < p.numJobs; i++)
+			coll.add(i);
 	}
 }
 

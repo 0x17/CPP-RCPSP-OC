@@ -111,40 +111,6 @@ TraceCallback::~TraceCallback() {
 
 //======================================================================================================================
 
-class MyNatFunc : public LSNativeFunction {
-public:
-	~MyNatFunc() {}
-
-	lsdouble call(const LSNativeContext& context) override {
-		assert(context.count() == 4);
-		vector<int> nums(4);
-		for (int i = 0; i < 4; i++) {
-			nums[i] = (int)context.getIntValue(i);
-			printf("%d\n", nums[i]);
-		}
-		return 0.0;
-	}
-
-};
-
-void minimalLS() {
-	LocalSolver ls;
-	LSModel model = ls.getModel();
-	MyNatFunc f;
-	LSExpression nfunc = model.createNativeFunction(&f);
-	LSExpression obj = model.call(nfunc);
-	auto lvar = model.listVar(4);
-	model.constraint(model.count(lvar) == 4);
-	assert(model.getNbConstraints() == 1);
-	for (int i = 0; i < 4; i++)
-		obj.addOperand(model.at(lvar, i));
-	model.addObjective(obj, OD_Maximize);
-	model.close();
-	ls.solve();
-}
-
-//======================================================================================================================
-
 vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, bool traceobj) {
 	LocalSolver ls;
 	Utils::Tracer tr("LocalSolverTrace");
@@ -179,9 +145,9 @@ vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, bool trace
 
 //======================================================================================================================
 
-class RevenueFunction : public SchedulingNativeFunction {
+class RevenueFunction : public BaseSchedulingNativeFunction {
 public:
-	explicit RevenueFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
+	explicit RevenueFunction(ProjectWithOvertime &_p) : BaseSchedulingNativeFunction(_p) {}
 	virtual lsdouble call(const LSNativeContext &context) override;
 };
 
@@ -190,9 +156,9 @@ lsdouble RevenueFunction::call(const LSNativeContext &context) {
 	return p.revenue[context.getIntValue(0)];
 }
 
-class CumulatedDemandFunction : public SchedulingNativeFunction {
+class CumulatedDemandFunction : public BaseSchedulingNativeFunction {
 public:
-	explicit CumulatedDemandFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) { }
+	explicit CumulatedDemandFunction(ProjectWithOvertime &_p) : BaseSchedulingNativeFunction(_p) { }
 	virtual lsdouble call(const LSNativeContext &context) override;
 };
 

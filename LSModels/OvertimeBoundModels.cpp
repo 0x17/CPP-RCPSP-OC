@@ -1,21 +1,13 @@
 
 #include "OvertimeBoundModels.h"
 
-lsdouble ListFixedOvertimeModel::SerialSGSZrDecoder::call(const LSNativeContext& context) {
-	vector<int> order(p.numJobs), zr(p.numRes);
-	if (context.count() < p.numJobs + p.numRes) return numeric_limits<double>::lowest();
+int ListFixedOvertimeModel::SerialSGSZrDecoder::varCount() { return p.numJobs + p.numRes; }
 
-	for (int i = 0; i < p.numJobs; i++) {
-		order[i] = static_cast<int>(context.getIntValue(i));
-		if (order[i] == -1)
-			return numeric_limits<double>::lowest();
-	}
-
+SGSResult ListFixedOvertimeModel::SerialSGSZrDecoder::decode(vector<int>& order, const LSNativeContext& context) {
+	vector<int> zr(p.numRes);
 	for (int r = 0; r < p.numRes; r++)
 		zr[r] = static_cast<int>(context.getIntValue(p.numPeriods + r));
-
-	auto result = p.serialSGS(order, zr, true);
-	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
+	return p.serialSGS(order, zr, true);
 }
 
 void ListFixedOvertimeModel::addAdditionalData(LSModel &model, LSExpression& obj) {
@@ -39,23 +31,18 @@ vector<int> ListFixedOvertimeModel::parseScheduleFromSolution(LSSolution& sol) {
 
 //==============================================================================================================
 
-lsdouble ListDynamicOvertimeModel::SerialSGSZrtDecoder::call(const LSNativeContext& context) {
-	vector<int> order(p.numJobs);
-	Matrix<int> zrt(p.numRes, p.numPeriods);
-	if (context.count() < p.numJobs + p.numRes * p.numPeriods) return numeric_limits<double>::lowest();
+int ListDynamicOvertimeModel::SerialSGSZrtDecoder::varCount() {
+	return p.numJobs + p.numRes * p.numPeriods;
+}
 
-	for (int i = 0; i < p.numJobs; i++) {
-		order[i] = static_cast<int>(context.getIntValue(i));
-		if (order[i] == -1)
-			return numeric_limits<double>::lowest();
-	}
+SGSResult ListDynamicOvertimeModel::SerialSGSZrtDecoder::decode(vector<int>& order, const LSNativeContext& context) {
+	Matrix<int> zrt(p.numRes, p.numPeriods);
 
 	for (int r = 0; r < p.numRes; r++)
 		for (int t = 0; t < p.numPeriods; t++)
 			zrt(r, t) = static_cast<int>(context.getIntValue(p.numJobs + r * p.numPeriods + t));
 
-	auto result = p.serialSGS(order, zrt, true);
-	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
+	return p.serialSGS(order, zrt, true);
 }
 
 void ListDynamicOvertimeModel::addAdditionalData(LSModel &model, LSExpression& obj) {

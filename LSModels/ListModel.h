@@ -6,12 +6,24 @@
 
 using namespace localsolver;
 
-class SchedulingNativeFunction : public LSNativeFunction {
+class BaseSchedulingNativeFunction : public LSNativeFunction {
 protected:
 	ProjectWithOvertime &p;
 public:
-	explicit SchedulingNativeFunction(ProjectWithOvertime &_p) : p(_p) {}
+	explicit BaseSchedulingNativeFunction(ProjectWithOvertime &_p) : p(_p) {}
+	virtual ~BaseSchedulingNativeFunction() {}
+};
+
+class SchedulingNativeFunction : public BaseSchedulingNativeFunction {
+
+public:
+	explicit SchedulingNativeFunction(ProjectWithOvertime &_p) : BaseSchedulingNativeFunction(_p) {}
 	virtual ~SchedulingNativeFunction() {}
+
+	virtual int varCount() = 0;
+	virtual SGSResult decode(vector<int> &order, const LSNativeContext &context) = 0;
+
+	virtual lsdouble call(const LSNativeContext& context) override;
 };
 
 struct SolverParams {
@@ -34,10 +46,9 @@ protected:
 
 	virtual void addAdditionalData(LSModel &model, LSExpression &obj) = 0;
 	virtual vector<int> parseScheduleFromSolution(LSSolution &sol) = 0;
-	virtual SchedulingNativeFunction *genDecoder() = 0;
 
 public:
-	ListModel(ProjectWithOvertime &_p);
+	ListModel(ProjectWithOvertime &_p, SchedulingNativeFunction *_decoder);
 	virtual ~ListModel();
 
 	vector<int> solve(SolverParams params);
