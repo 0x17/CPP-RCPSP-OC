@@ -46,7 +46,7 @@ TimeWindowBordersGA::TimeWindowBordersGA(ProjectWithOvertime &_p) : GeneticAlgor
 
 LambdaBeta TimeWindowBordersGA::init(int ix) {
     LambdaBeta indiv(p.numJobs);
-    indiv.order = ix == 0 ? p.topOrder : Sampling::naiveSampling(p);
+    indiv.order = ix == 0 ? p.topOrder : Sampling::sample(params.rbbrs, p);
     p.eachJob([&](int j) { indiv.beta[j] = ix == 0 ? 0 : rand() % 2; });
     return indiv;
 }
