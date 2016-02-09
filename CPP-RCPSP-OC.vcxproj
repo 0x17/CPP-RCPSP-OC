@@ -26,7 +26,10 @@
     <ClCompile Include="GeneticAlgorithms\Runners.cpp" />
     <ClCompile Include="GeneticAlgorithms\Sampling.cpp" />
     <ClCompile Include="GeneticAlgorithms\TimeWindow.cpp" />
-    <ClCompile Include="LSSolver.cpp" />
+    <ClCompile Include="LSModels\ListModel.cpp" />
+    <ClCompile Include="LSModels\NaiveModels.cpp" />
+    <ClCompile Include="LSModels\OvertimeBoundModels.cpp" />
+    <ClCompile Include="LSModels\TimeWindowModels.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="ProjectWithOvertime.cpp" />
@@ -43,7 +46,10 @@
     <ClInclude Include="GeneticAlgorithms\Runners.h" />
     <ClInclude Include="GeneticAlgorithms\Sampling.h" />
     <ClInclude Include="GeneticAlgorithms\TimeWindow.h" />
-    <ClInclude Include="LSSolver.h" />
+    <ClInclude Include="LSModels\ListModel.h" />
+    <ClInclude Include="LSModels\NaiveModels.h" />
+    <ClInclude Include="LSModels\OvertimeBoundModels.h" />
+    <ClInclude Include="LSModels\TimeWindowModels.h" />
     <ClInclude Include="matrix.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="ProjectWithOvertime.h" />

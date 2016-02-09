@@ -1,5 +1,7 @@
 #include "ProjectWithOvertime.h"
-#include "LSSolver.h"
+#include "LSModels/NaiveModels.h"
+#include "LSModels/OvertimeBoundModels.h"
+#include "LSModels/TimeWindowModels.h"
 #include "GeneticAlgorithms/OvertimeBound.h"
 #include "GeneticAlgorithms/Runners.h"
 #include "BranchAndBound.h"
@@ -159,8 +161,8 @@ int main(int argc, char * argv[]) {
 	//commandLineRunner(argc, argv);
 
 	//testFixedDeadlineHeuristic();
-	//testLocalSolverNative(0 /*atoi(argv[1])*/);
+	testLocalSolverNative(0 /*atoi(argv[1])*/);
 
-    benchmarkGeneticAlgorithm(0, 2400);
+    //benchmarkGeneticAlgorithm(0, 2400);
     return 0;
 }
