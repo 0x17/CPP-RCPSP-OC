@@ -81,6 +81,15 @@ void commandLineRunner(int argc, char * argv[]) {
 			case 2:
 				lm = new ListTauDiscreteModel(p);
 				break;
+            case 3:
+                lm = new ListAlternativesModel(p);
+                break;
+			case 4:
+				lm = new ListFixedOvertimeModel(p);
+				break;
+			case 5:
+				lm = new ListDynamicOvertimeModel(p);
+				break;
 			}
 			SolverParams params(timeLimit);
 			sts = lm->solve(params);

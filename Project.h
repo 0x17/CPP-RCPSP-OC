@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by André Schnabel on 23.10.15.
 //
 
@@ -70,8 +70,8 @@ public:
 	vector<int> serialSGS(const vector<int>& order) const;
 	pair<vector<int>, Matrix<int>> serialSGSForPartial(const vector<int> &sts, const vector<int> &order, Matrix<int> &resRem) const;
     pair<vector<int>, Matrix<int>> serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const;
-	SGSResult serialSGS(const vector<int>& order, const vector<int>& zr) const;
-	SGSResult serialSGS(const vector<int>& order, const Matrix<int>& zrt) const;
+	SGSResult serialSGS(const vector<int>& order, const vector<int>& zr, bool robust = false) const;
+	SGSResult serialSGS(const vector<int>& order, const Matrix<int>& zrt, bool robust = false) const;
 
 	bool jobBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
 	bool hasPredNotBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
@@ -105,10 +105,14 @@ public:
     vector<int> earliestStartingTimesForPartial(const vector<int> &sts) const;
     vector<int> latestFinishingTimesForPartial(const vector<int> &sts, int deadline) const;
 
+	int chooseEligibleWithLowestIndex(const vector<int> &sts, const vector<int> &order) const;
+
 protected:
+	bool allPredsScheduled(int j, const vector<int> &sts) const;
+
     void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem) const;
 
-	vector<int> serialSGSCore(const vector<int>& order, Matrix<int> &resRem) const;
+	vector<int> serialSGSCore(const vector<int>& order, Matrix<int> &resRem, bool robust = false) const;
 
     bool enoughCapacityForJob(int job, int t, Matrix<int> & resRem) const;
 

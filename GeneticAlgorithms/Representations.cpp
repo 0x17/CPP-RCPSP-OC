@@ -75,12 +75,12 @@ void Lambda::swap(int i1, int i2) {
 
 DeadlineLambda::DeadlineLambda(int numJobs) : Lambda(numJobs), deadline(0) {}
 
-DeadlineLambda::DeadlineLambda() {}
+DeadlineLambda::DeadlineLambda(): deadline(0) {}
 
 void DeadlineLambda::randomOnePointCrossover(Lambda &mother, Lambda &father) {
     Lambda::randomOnePointCrossover(mother, father);
-    auto &m = (DeadlineLambda&)mother;
-    auto &f = (DeadlineLambda&)father;
+    auto &m = static_cast<DeadlineLambda&>(mother);
+    auto &f = static_cast<DeadlineLambda&>(father);
     deadline = static_cast<int>(std::round(static_cast<float>(m.deadline - f.deadline) / 2.0f)) + f.deadline;
 }
 
@@ -102,7 +102,7 @@ LambdaBeta::LambdaBeta(int numJobs) : Lambda(numJobs), beta(numJobs) {}
 
 void LambdaBeta::inherit(Lambda &parent, int destIx, int srcIx) {
     Lambda::inherit(parent, destIx, srcIx);
-    beta[destIx] = ((LambdaBeta &)parent).beta[srcIx];
+    beta[destIx] = static_cast<LambdaBeta &>(parent).beta[srcIx];
 }
 
 void LambdaBeta::swap(int i1, int i2) {
@@ -118,7 +118,7 @@ LambdaTau::LambdaTau() {}
 
 void LambdaTau::inherit(Lambda &parent, int destIx, int srcIx) {
     Lambda::inherit(parent, destIx, srcIx);
-    tau[destIx] = ((LambdaTau &)parent).tau[srcIx];
+    tau[destIx] = static_cast<LambdaTau &>(parent).tau[srcIx];
 }
 
 void LambdaTau::swap(int i1, int i2) {

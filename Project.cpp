@@ -75,21 +75,39 @@ Matrix<int> Project::resRemForPartial(const vector<int> &sts) const {
     return resRem;
 }
 
-pair<vector<int>, Matrix<int>> Project::serialSGS(const vector<int>& order, const vector<int>& z) const {
+pair<vector<int>, Matrix<int>> Project::serialSGS(const vector<int>& order, const vector<int>& z, bool robust) const {
     Matrix<int> resRem(numRes, numPeriods, [&](int r, int t) { return capacities[r] + z[r]; });
-	vector<int> sts = serialSGSCore(order, resRem);
+	vector<int> sts = serialSGSCore(order, resRem, robust);
 	return make_pair(sts, resRem);
 }
 
-pair<vector<int>, Matrix<int>> Project::serialSGS(const vector<int>& order, const Matrix<int>& z) const {
+pair<vector<int>, Matrix<int>> Project::serialSGS(const vector<int>& order, const Matrix<int>& z, bool robust) const {
     Matrix<int> resRem(numRes, numPeriods, [&](int r, int t) { return capacities[r] + z(r,t); });
-	vector<int> sts = serialSGSCore(order, resRem);
+	vector<int> sts = serialSGSCore(order, resRem, robust);
 	return make_pair(sts, resRem);
 }
 
-vector<int> Project::serialSGSCore(const vector<int>& order, Matrix<int>& resRem) const {
+int Project::chooseEligibleWithLowestIndex(const vector<int>& sts, const vector<int>& order) const {
+	for (int i = 0; i < numJobs; i++) {
+		int j = order[i];
+		if (sts[j] == UNSCHEDULED && allPredsScheduled(j, sts))
+			return j;
+	}
+	throw runtime_error("No eligible job found!");
+}
+
+bool Project::allPredsScheduled(int j, const vector<int>& sts) const {
+	for (int i = 0; i < numJobs; i++) {
+		if (adjMx(i, j) && sts[i] == UNSCHEDULED)
+			return false;
+	}
+	return true;
+}
+
+vector<int> Project::serialSGSCore(const vector<int>& order, Matrix<int>& resRem, bool robust) const {
 	vector<int> sts(numJobs), fts(numJobs);
-	for (int job : order) {
+	for (int i = 0; i < numJobs; i++) {
+		int job = robust ? chooseEligibleWithLowestIndex(sts, order) : order[i];
 		int lastPredFinished = computeLastPredFinishingTime(fts, job);
 		int t;
 		for (t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++);

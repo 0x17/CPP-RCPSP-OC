@@ -265,19 +265,4 @@ vector<int> ProjectWithOvertime::earliestStartingTimesForPartialRespectZmax(cons
     return ests;
 }
 
-bool ProjectWithOvertime::allPredsScheduled(int j, const vector<int>& sts) const {
-	for (int i = 0; i < numJobs; i++) {
-		if (adjMx(i, j) && sts[i] == UNSCHEDULED)
-			return false;
-	}
-	return true;
-}
 
-int ProjectWithOvertime::chooseEligibleWithLowestIndex(const vector<int>& sts, const vector<int>& order) const {
-	for (int i = 0; i < numJobs; i++) {
-        int j = order[i];
-		if(sts[j] == UNSCHEDULED && allPredsScheduled(j, sts))
-            return j;
-	}
-    throw runtime_error("No eligible job found!");
-}
