@@ -132,7 +132,7 @@ void testFixedDeadlineHeuristic() {
 void testLocalSolverNative(int seed) {
 	string projFilename = "../../Projekte/j30/j301_1.sm";
 	ProjectWithOvertime p(projFilename);
-	ListBetaModel lm(p);
+	ListTauModel lm(p);
 	SolverParams params(60.0);
 	params.seed = seed;
 	auto sts = lm.solve(params);
@@ -148,7 +148,7 @@ void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
     params.popSize = 80;
     params.timeLimit = -1.0;
     params.numGens = static_cast<int>(std::floor(static_cast<float>(iterLimit) / static_cast<float>(params.popSize)));
-    params.fitnessBasedPairing = false;
+    params.fitnessBasedPairing = true;
     params.pmutate = 5;
     params.traceobj = false;
 	params.selectionMethod = SelectionMethod::DUEL;
@@ -161,8 +161,8 @@ int main(int argc, char * argv[]) {
 	//commandLineRunner(argc, argv);
 
 	//testFixedDeadlineHeuristic();
-	//testLocalSolverNative(0 /*atoi(argv[1])*/);
 
-    benchmarkGeneticAlgorithm(0, 4800);
+	testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
+    //benchmarkGeneticAlgorithm(0, 2400);
     return 0;
 }

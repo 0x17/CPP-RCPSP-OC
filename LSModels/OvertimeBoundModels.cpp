@@ -6,7 +6,7 @@ int ListFixedOvertimeModel::SerialSGSZrDecoder::varCount() { return p.numJobs + 
 SGSResult ListFixedOvertimeModel::SerialSGSZrDecoder::decode(vector<int>& order, const LSNativeContext& context) {
 	vector<int> zr(p.numRes);
 	for (int r = 0; r < p.numRes; r++)
-		zr[r] = static_cast<int>(context.getIntValue(p.numPeriods + r));
+		zr[r] = static_cast<int>(context.getIntValue(p.numJobs + r));
 	return p.serialSGS(order, zr, true);
 }
 

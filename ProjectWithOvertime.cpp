@@ -107,7 +107,7 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order, b
     Matrix<int> resRem(numRes, numPeriods);
     eachResPeriodConst([&](int r, int t) { resRem(r,t) = capacities[r]; });
 
-    vector<int> sts(numJobs), fts(numJobs), ftsTmp(numJobs);
+    vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs), ftsTmp(numJobs);
     for (int k=0; k<numJobs; k++) {
 		int job = robust ? chooseEligibleWithLowestIndex(sts, order) : order[k];
         int lastPredFinished = computeLastPredFinishingTime(fts, job);
