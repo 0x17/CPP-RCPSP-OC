@@ -79,7 +79,8 @@ int Utils::pickWithDistribution(vector<float> &probs) {
 			return i;
 	}
 
-	throw runtime_error("No element picked!");
+	return 0;
+	//throw runtime_error("No element picked!");
 }
 
 void Utils::spit(const string s, const string filename) {

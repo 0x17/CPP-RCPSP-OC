@@ -243,9 +243,9 @@ void Project::computeELSFTs() {
     }
 }
 
-void Project::complementPartialWithSSGS(const vector<int> &order, int startIx, vector<int> &fts, Matrix<int> &resRem) const {
+void Project::complementPartialWithSSGS(const vector<int> &order, int startIx, vector<int> &fts, Matrix<int> &resRem, bool robust) const {
     for(int i=startIx; i<numJobs; i++) {
-		int job = order[i];
+		int job = robust ? chooseEligibleWithLowestIndex(fts, order) : order[i];
 		int lastPredFinished = computeLastPredFinishingTime(fts, job);
 		int t;
 		for (t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++);

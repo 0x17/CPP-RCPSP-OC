@@ -15,7 +15,6 @@
 pair<LSModel, Matrix<LSExpression>> buildModel(ProjectWithOvertime &p, LocalSolver &ls) {
 	auto model = ls.getModel();
 	auto dummyExpr = model.createConstant(0LL);
-	auto sts = p.serialSGS(p.topOrder);
 
 	// Decision variables
 	Matrix<LSExpression> x(p.numJobs, p.numPeriods, [&](int j, int t) {
@@ -71,10 +70,6 @@ pair<LSModel, Matrix<LSExpression>> buildModel(ProjectWithOvertime &p, LocalSolv
 	model.addObjective(objfunc, OD_Maximize);
 	model.close();
 
-	p.eachJobTimeWindow([&](int j, int t) {
-		x(j, t).setValue(sts[j] == t - p.durations[j] ? 1LL : 0LL);
-	});
-
 	return make_pair(model, x);
 }
 
@@ -120,6 +115,11 @@ vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, bool trace
 	auto model = pair.first;
 	auto x = pair.second;
 
+	auto sts = p.serialSGS(p.topOrder);
+	p.eachJobTimeWindow([&](int j, int t) {
+		x(j, t).setValue(sts[j] + p.durations[j] == t ? 1LL : 0LL);
+	});
+
 	TraceCallback cback(tr);
 	ls.addCallback(CT_TimeTicked, &cback);
 
@@ -131,10 +131,10 @@ vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, bool trace
 	ls.solve();
 
 	auto sol = ls.getSolution();
-	if (sol.getStatus() != SS_Feasible) {
+	if (sol.getStatus() == SS_Infeasible) {
 		//throw runtime_error("No feasible solution found!");
-		vector<int> sts(p.numJobs, -1);
-		return sts;
+		vector<int> invalidSts(p.numJobs, -1);
+		return invalidSts;
 	}
 
 	auto solvetime = ls.getStatistics().getRunningTime();

@@ -18,7 +18,7 @@ void convertArgFileToLSP(int argc, const char * argv[]) {
 void showUsage() {
 	list<string> solMethods = { "BranchAndBound", "LocalSolver" };
 	for (int i = 0; i < 5; i++) solMethods.push_back("GA" + to_string(i));
-	for (int i = 0; i < 3; i++) solMethods.push_back("LocalSolverNative" + to_string(i));
+	for (int i = 0; i < 6; i++) solMethods.push_back("LocalSolverNative" + to_string(i));
 	cout << "Number of arguments must be >= 3" << endl;
 	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ProjectFileSM [traceobj]" << endl;
 	cout << "Solution methods: " << endl;
@@ -53,14 +53,14 @@ void commandLineRunner(int argc, char * argv[]) {
             outFn = "BranchAndBoundResults.txt";
         } else if(boost::starts_with(solMethod, "GA")) {
             GAParameters params;
-            params.fitnessBasedPairing = false;
+            params.fitnessBasedPairing = true;
             params.numGens = -1;
             params.popSize = 80;
 			params.pmutate = 5;
             params.timeLimit = timeLimit;
             params.traceobj = traceobj;
 			params.selectionMethod = SelectionMethod::BEST;
-            params.rbbrs = false;
+            params.rbbrs = true;
             int gaIndex = stoi(solMethod.substr(2, 1));
             auto res = GARunners::run(p, params, gaIndex);
             sts = res.sts;
@@ -130,13 +130,14 @@ void testFixedDeadlineHeuristic() {
 }
 
 void testLocalSolverNative(int seed) {
-	string projFilename = "../../Projekte/j30/j301_1.sm";
+	string projFilename = "../../Projekte/j30/j3010_1.sm";
 	ProjectWithOvertime p(projFilename);
-	ListTauModel lm(p);
-	SolverParams params(60.0);
+	ListAlternativesModel lm(p);
+	SolverParams params(15.0);
 	params.seed = seed;
 	auto sts = lm.solve(params);
 	Utils::serializeSchedule(sts, "myschedule.txt");
+	Utils::serializeProfit(p.calcProfit(sts), "myprofit.txt");
 	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe ../../Projekte/j30/j301_1.sm myschedule.txt");
 }
 
@@ -151,18 +152,16 @@ void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
     params.fitnessBasedPairing = true;
     params.pmutate = 5;
     params.traceobj = false;
-	params.selectionMethod = SelectionMethod::DUEL;
+	params.selectionMethod = SelectionMethod::BEST;
     params.rbbrs = true;
 
     auto res = GARunners::run(p, params, gaIndex);
 }
 
 int main(int argc, char * argv[]) {
-	//commandLineRunner(argc, argv);
-
+	commandLineRunner(argc, argv);
 	//testFixedDeadlineHeuristic();
-
-	testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
+	//testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
     //benchmarkGeneticAlgorithm(0, 2400);
     return 0;
 }

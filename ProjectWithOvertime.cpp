@@ -107,7 +107,7 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order, b
     Matrix<int> resRem(numRes, numPeriods);
     eachResPeriodConst([&](int r, int t) { resRem(r,t) = capacities[r]; });
 
-    vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs), ftsTmp(numJobs);
+    vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs, UNSCHEDULED);
     for (int k=0; k<numJobs; k++) {
 		int job = robust ? chooseEligibleWithLowestIndex(sts, order) : order[k];
         int lastPredFinished = computeLastPredFinishingTime(fts, job);
@@ -122,10 +122,10 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order, b
                 continue;
 
             Matrix<int> resRemTmp(resRem);
-            ftsTmp.swap(fts);
-            complementPartialWithSSGS(order, k, ftsTmp, resRemTmp);
+			vector<int> ftsTmp(fts);
+            complementPartialWithSSGS(order, k, ftsTmp, resRemTmp, robust);
 
-            float p = calcProfit(makespan(fts), resRemTmp);
+            float p = calcProfit(makespan(ftsTmp), resRemTmp);
             if(p > bestT.second) {
                 bestT.first = t;
                 bestT.second = p;

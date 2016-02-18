@@ -110,7 +110,7 @@ public:
 protected:
 	bool allPredsScheduled(int j, const vector<int> &sts) const;
 
-    void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem) const;
+    void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem, bool robust = false) const;
 
 	vector<int> serialSGSCore(const vector<int>& order, Matrix<int> &resRem, bool robust = false) const;
 
