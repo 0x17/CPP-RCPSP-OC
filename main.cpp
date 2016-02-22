@@ -142,7 +142,7 @@ void testLocalSolverNative(int seed) {
 }
 
 void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
-    string projFilename = "../../Projekte/j30/j301_1.sm";
+    string projFilename = "../../Projekte/j30/j3022_7.sm";
     ProjectWithOvertime p(projFilename);
 
     GAParameters params;
@@ -159,9 +159,9 @@ void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
 }
 
 int main(int argc, char * argv[]) {
-	commandLineRunner(argc, argv);
+	//commandLineRunner(argc, argv);
 	//testFixedDeadlineHeuristic();
 	//testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
-    //benchmarkGeneticAlgorithm(0, 2400);
+    benchmarkGeneticAlgorithm(4, 2400);
     return 0;
 }

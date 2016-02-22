@@ -107,8 +107,7 @@ float ProjectWithOvertime::extensionCosts(const Matrix<int> &resRem, int j, int 
 }
 
 SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order, bool robust) const {
-    Matrix<int> resRem(numRes, numPeriods);
-    eachResPeriodConst([&](int r, int t) { resRem(r,t) = capacities[r]; });
+    Matrix<int> resRem(numRes, numPeriods, [this](int r, int t) { return capacities[r]; });
 
     vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs, UNSCHEDULED);
     for (int k=0; k<numJobs; k++) {

@@ -70,3 +70,12 @@ TEST_F(ProjectTest, testEachJob) {
     for(i=0, jit = jobs.begin(); i<p->numJobs; i++, ++jit)
         ASSERT_EQ(i, (*jit));
 }
+
+TEST_F(ProjectTest, testComplementPartialWithSSGS) {
+    vector<int> order = {0, 1, 2, 3, 4};
+    vector<int> fts(p->numJobs, Project::UNSCHEDULED);
+    Matrix<int> resRem(p->numRes, p->numPeriods, [this](int r, int t) { return p->capacities[r]; });
+    p->complementPartialWithSSGS(order, 0, fts, resRem, false);
+    vector<int> expFts = { 0, 2, 4, 6, 6 };
+    TestHelpers::arrayEquals(expFts, fts);
+}
