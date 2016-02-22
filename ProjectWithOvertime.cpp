@@ -125,7 +125,9 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order, b
 
             Matrix<int> resRemTmp(resRem);
 			vector<int> ftsTmp(fts);
-            complementPartialWithSSGS(order, k, ftsTmp, resRemTmp, robust);
+            ftsTmp[job] = t;
+            EACH_RES(ACTIVE_PERIODS(job, t, resRemTmp(r, tau) -= demands(job, r)))
+            complementPartialWithSSGS(order, k+1, ftsTmp, resRemTmp, robust);
 
             float p = calcProfit(makespan(ftsTmp), resRemTmp);
             if(p > bestT.second) {
