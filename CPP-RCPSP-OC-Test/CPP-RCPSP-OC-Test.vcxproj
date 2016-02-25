@@ -65,9 +65,7 @@
     <ClInclude Include="ProjectTest.h" />
     <ClInclude Include="ProjectWithOvertimeTest.h" />
     <ClInclude Include="RepresentationsTest.h" />
-    <ClInclude Include="SamplingTest.h" />
     <ClInclude Include="TestHelpers.h" />
-    <ClInclude Include="UtilsTest.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C49B66AB-A4EC-451A-89BF-FC4FB06D0024}</ProjectGuid>

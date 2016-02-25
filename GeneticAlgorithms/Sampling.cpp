@@ -47,26 +47,33 @@ vector<int> Sampling::regretBasedBiasedRandomSamplingInv(Project &p, vector<int>
 	return regretBasedBiasedRandomSampling(p, pvalsFloat);
 }
 
+void Sampling::updateEligible(Project &p, vector<int> &order, int curIndex, vector<bool> &eligible) {
+	eligible[order[curIndex]] = false;
+	for (int j = 0; j < p.numJobs; j++)
+		if (p.adjMx(order[curIndex], j))
+			eligible[j] = !p.hasPredNotBeforeInOrder(j, curIndex+1, order);
+}
+
 vector<int> Sampling::regretBasedBiasedRandomSampling(Project &p, vector<float> &priorityValues) {
-	vector<bool> eligible(p.numJobs);
+	vector<bool> eligible(p.numJobs, false);
 	vector<int> order(p.numJobs);
 	eligible[0] = true;
 	for (int i = 0; i < p.numJobs; i++) {
 		order[i] = pickFromDecisionSet(eligible, priorityValues);
-        p.eachJob([&](int j){ eligible[j] = !p.jobBeforeInOrder(j, i + 1, order) && !p.hasPredNotBeforeInOrder(j, i + 1, order); });
+		updateEligible(p, order, i, eligible);
 	}
 
 	return order;
 }
 
 vector<int> Sampling::naiveSampling(Project& p) {
-	vector<bool> eligible(p.numJobs);
+	vector<bool> eligible(p.numJobs, false);
 	vector<int> order(p.numJobs);
 	eligible[0] = true;
 	for(int i = 0; i < p.numJobs; i++) {
 		int nth = Utils::randRangeIncl(0, static_cast<int>(count(eligible.begin(), eligible.end(), true))-1);
 		order[i] = Utils::indexOfNthEqualTo(nth, true, eligible);
-        p.eachJob([&](int j) { eligible[j] = !p.jobBeforeInOrder(j, i+1, order) && !p.hasPredNotBeforeInOrder(j, i+1, order); });
+		updateEligible(p, order, i, eligible);
 	}
 	return order;
 }

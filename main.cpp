@@ -142,7 +142,8 @@ void testLocalSolverNative(int seed) {
 }
 
 void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
-    string projFilename = "../../Projekte/j30/j3022_7.sm";
+    //string projFilename = "../../Projekte/j60/j6011_2.sm";
+	string projFilename = "../../Projekte/j30/j301_1.sm";
     ProjectWithOvertime p(projFilename);
 
     GAParameters params;
@@ -153,15 +154,15 @@ void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
     params.pmutate = 5;
     params.traceobj = false;
 	params.selectionMethod = SelectionMethod::BEST;
-    params.rbbrs = true;
+	params.rbbrs = false;//true;
 
     auto res = GARunners::run(p, params, gaIndex);
 }
 
 int main(int argc, char * argv[]) {
-	commandLineRunner(argc, argv);
+	//commandLineRunner(argc, argv);
 	//testFixedDeadlineHeuristic();
 	//testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
-    //benchmarkGeneticAlgorithm(4, 2400);
+    benchmarkGeneticAlgorithm(3, 32000);
     return 0;
 }
