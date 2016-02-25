@@ -43,6 +43,12 @@ TEST_F(SamplingTest, testComputeProbsForDecisionSet) {
     for(int i=1; i<p->numJobs; i++) {
         ASSERT_EQ(0.0f, probs[i]);
     }
+
+	eligs[0] = false;
+	eligs[1] = true;
+	eligs[3] = true;
+	probs = Sampling::computeProbsForDecisionSet(eligs, lftsFloat);
+	ASSERT_EQ(1.0f, accumulate(probs.begin(), probs.end(), 0.0f));
 }
 
 TEST_F(SamplingTest, testNaiveSampling) {
