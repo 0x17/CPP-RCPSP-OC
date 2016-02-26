@@ -66,20 +66,16 @@ void Utils::serializeProfit(float profit, const string filename) {
 	spit(to_string(profit), filename);
 }
 
-int Utils::pickWithDistribution(vector<float> &probs) {
-	float q = randUnitFloat();
-
-	if(q >= 0 && q <= probs[0])
-		return 0;
-
-	float cumulatedProbs = probs[0];
-	for(int i = 1; i < probs.size(); i++) {
-		cumulatedProbs += probs[i];
-		if (q >= probs[i - 1] && q <= cumulatedProbs)
+int Utils::pickWithDistribution(vector<float> &probs, float q) {
+	float cumulatedProbs = 0.0f;
+	int lastPossibleIx = 0;
+	for(int i = 0; i < probs.size(); i++) {
+		if (probs[i] > 0.0f && q >= cumulatedProbs && q <= cumulatedProbs + probs[i])
 			return i;
+		cumulatedProbs += probs[i];
+		if(probs[i] > 0.0f) lastPossibleIx = i;
 	}
-
-	return probs.size() - 1;
+	return lastPossibleIx;
 }
 
 void Utils::spit(const string s, const string filename) {

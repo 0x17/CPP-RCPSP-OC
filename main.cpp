@@ -142,9 +142,9 @@ void testLocalSolverNative(int seed) {
 }
 
 void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
-//    string projFilename = "../../Projekte/j60/j6011_2.sm";
+    string projFilename = "../../Projekte/j60/j6014_7.sm";
 	//string projFilename = "../../Projekte/j30/j301_1.sm";
-    string projFilename = "QBWLBeispiel.DAT";
+    //string projFilename = "QBWLBeispiel.DAT";
     ProjectWithOvertime p(projFilename);
 
     GAParameters params;

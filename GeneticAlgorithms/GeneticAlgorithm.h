@@ -206,6 +206,8 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 
 	// Compute initial population
     for(int i=0; i<params.popSize*2; i++) {
+		if (i == 20)
+			printf(")");
         pop[i].first = init(i);
 		pop[i].second = i < params.popSize ? -fitness(pop[i].first) : 0.0f;
     }

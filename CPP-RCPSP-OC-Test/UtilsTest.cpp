@@ -124,6 +124,7 @@ TEST(UtilsTest, testIndexOfNthEqualTo) {
 }
 
 TEST(UtilsTest, testPickWithDistribution) {
+	int q;
     vector<float> probs = { 1.0f, 0.0f, 0.0f };
 	for (int i = 0; i < 10; i++) {
 		ASSERT_EQ(0, Utils::pickWithDistribution(probs));
@@ -131,15 +132,23 @@ TEST(UtilsTest, testPickWithDistribution) {
 
     probs = { 0.5f, 0.5f, 0.0f };
 	for (int i = 0; i < 100; i++) {
-		int q = Utils::pickWithDistribution(probs);
+		q = Utils::pickWithDistribution(probs);
 		ASSERT_TRUE(q == 0 || q == 1);
 	}
 
 	probs = { 0.0f, 0.25f, 0.0f, 0.75f, 0.0f };
 	for (int i = 0; i < 100; i++) {		
-		int q = Utils::pickWithDistribution(probs);
+		q = Utils::pickWithDistribution(probs);
 		ASSERT_TRUE(q == 1 || q == 3);
 	}
+	q = Utils::pickWithDistribution(probs, 0.0f);
+	ASSERT_TRUE(q == 1);
+	q = Utils::pickWithDistribution(probs, 1.0f);
+	ASSERT_TRUE(q == 3);
+	q = Utils::pickWithDistribution(probs, 0.75f);
+	ASSERT_TRUE(q == 3);
+	q = Utils::pickWithDistribution(probs, 0.1f);
+	ASSERT_TRUE(q == 1);
 }
 
 TEST(UtilsTest, testSpit) {

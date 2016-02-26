@@ -58,7 +58,7 @@ namespace Utils {
 		throw runtime_error("No nth found!");
 	}
 
-	int pickWithDistribution(vector<float> &probs);
+	int pickWithDistribution(vector<float> &probs, float q = randUnitFloat());
 
     void spit(const string s, const string filename);
     void spitAppend(const string s, const string filename);
