@@ -161,9 +161,9 @@ void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
 }
 
 int main(int argc, char * argv[]) {
-	//commandLineRunner(argc, argv);
+	commandLineRunner(argc, argv);
 	//testFixedDeadlineHeuristic();
 	//testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
-    benchmarkGeneticAlgorithm(3, 32000);
+    //benchmarkGeneticAlgorithm(3, 32000);
     return 0;
 }

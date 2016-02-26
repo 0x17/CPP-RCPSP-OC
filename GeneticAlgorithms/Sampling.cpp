@@ -60,8 +60,6 @@ vector<int> Sampling::regretBasedBiasedRandomSampling(Project &p, vector<float> 
 	vector<int> order(p.numJobs);
 	eligible[0] = true;
 	for (int i = 0; i < p.numJobs; i++) {
-		if (i == 5)
-			printf("");
 		order[i] = pickFromDecisionSet(eligible, priorityValues);
 		updateEligible(p, order, i, eligible);
 	}
