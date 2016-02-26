@@ -105,7 +105,7 @@ bool Project::allPredsScheduled(int j, const vector<int>& sts) const {
 }
 
 vector<int> Project::serialSGSCore(const vector<int>& order, Matrix<int>& resRem, bool robust) const {
-	vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs);
+	vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs, UNSCHEDULED);
 	for (int i = 0; i < numJobs; i++) {
 		int job = robust ? chooseEligibleWithLowestIndex(sts, order) : order[i];
 		int lastPredFinished = computeLastPredFinishingTime(fts, job);

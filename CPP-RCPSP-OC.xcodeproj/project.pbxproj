@@ -9,12 +9,16 @@
 /* Begin PBXBuildFile section */
 		422C02971BEF805300322C01 /* Visualization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 422C02951BEF805300322C01 /* Visualization.cpp */; };
 		424D0E801BEC04BD009D199C /* Stopwatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 424D0E7E1BEC04BD009D199C /* Stopwatch.cpp */; };
-		425E99CD1BE040AD0057A1E3 /* LSSolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C11BE040AD0057A1E3 /* LSSolver.cpp */; };
 		425E99CE1BE040AD0057A1E3 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C31BE040AD0057A1E3 /* main.cpp */; };
 		425E99CF1BE040AD0057A1E3 /* Project.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C41BE040AD0057A1E3 /* Project.cpp */; };
 		425E99D01BE040AD0057A1E3 /* ProjectWithOvertime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99C61BE040AD0057A1E3 /* ProjectWithOvertime.cpp */; };
 		425E99D21BE040AD0057A1E3 /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 425E99CA1BE040AD0057A1E3 /* Utils.cpp */; };
 		425E99D41BE043400057A1E3 /* QBWLBeispiel.DAT in CopyFiles */ = {isa = PBXBuildFile; fileRef = 425E99D31BE041DC0057A1E3 /* QBWLBeispiel.DAT */; };
+		427808221C7FD50C00A765F3 /* Representations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 427808201C7FD50C00A765F3 /* Representations.cpp */; };
+		4278082C1C7FD64200A765F3 /* ListModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 427808241C7FD64200A765F3 /* ListModel.cpp */; };
+		4278082D1C7FD64200A765F3 /* NaiveModels.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 427808261C7FD64200A765F3 /* NaiveModels.cpp */; };
+		4278082E1C7FD64200A765F3 /* OvertimeBoundModels.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 427808281C7FD64200A765F3 /* OvertimeBoundModels.cpp */; };
+		4278082F1C7FD64200A765F3 /* TimeWindowModels.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4278082A1C7FD64200A765F3 /* TimeWindowModels.cpp */; };
 		428E0ABD1BF51E180089A79E /* BranchAndBound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 428E0ABB1BF51E180089A79E /* BranchAndBound.cpp */; };
 		428F06241BED3EE800DC47F5 /* FixedDeadline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 428F06191BED3EE800DC47F5 /* FixedDeadline.cpp */; };
 		428F06251BED3EE800DC47F5 /* OvertimeBound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 428F061C1BED3EE800DC47F5 /* OvertimeBound.cpp */; };
@@ -42,8 +46,6 @@
 		424D0E7D1BEC04BD009D199C /* Matrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Matrix.h; sourceTree = "<group>"; };
 		424D0E7E1BEC04BD009D199C /* Stopwatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Stopwatch.cpp; sourceTree = "<group>"; };
 		424D0E7F1BEC04BD009D199C /* Stopwatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Stopwatch.h; sourceTree = "<group>"; };
-		425E99C11BE040AD0057A1E3 /* LSSolver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LSSolver.cpp; sourceTree = "<group>"; };
-		425E99C21BE040AD0057A1E3 /* LSSolver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSSolver.h; sourceTree = "<group>"; };
 		425E99C31BE040AD0057A1E3 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		425E99C41BE040AD0057A1E3 /* Project.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Project.cpp; sourceTree = "<group>"; };
 		425E99C51BE040AD0057A1E3 /* Project.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Project.h; sourceTree = "<group>"; };
@@ -52,6 +54,16 @@
 		425E99CA1BE040AD0057A1E3 /* Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
 		425E99CB1BE040AD0057A1E3 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
 		425E99D31BE041DC0057A1E3 /* QBWLBeispiel.DAT */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = QBWLBeispiel.DAT; sourceTree = "<group>"; };
+		427808201C7FD50C00A765F3 /* Representations.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Representations.cpp; path = GeneticAlgorithms/Representations.cpp; sourceTree = "<group>"; };
+		427808211C7FD50C00A765F3 /* Representations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Representations.h; path = GeneticAlgorithms/Representations.h; sourceTree = "<group>"; };
+		427808241C7FD64200A765F3 /* ListModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ListModel.cpp; path = LSModels/ListModel.cpp; sourceTree = "<group>"; };
+		427808251C7FD64200A765F3 /* ListModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ListModel.h; path = LSModels/ListModel.h; sourceTree = "<group>"; };
+		427808261C7FD64200A765F3 /* NaiveModels.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = NaiveModels.cpp; path = LSModels/NaiveModels.cpp; sourceTree = "<group>"; };
+		427808271C7FD64200A765F3 /* NaiveModels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NaiveModels.h; path = LSModels/NaiveModels.h; sourceTree = "<group>"; };
+		427808281C7FD64200A765F3 /* OvertimeBoundModels.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OvertimeBoundModels.cpp; path = LSModels/OvertimeBoundModels.cpp; sourceTree = "<group>"; };
+		427808291C7FD64200A765F3 /* OvertimeBoundModels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OvertimeBoundModels.h; path = LSModels/OvertimeBoundModels.h; sourceTree = "<group>"; };
+		4278082A1C7FD64200A765F3 /* TimeWindowModels.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TimeWindowModels.cpp; path = LSModels/TimeWindowModels.cpp; sourceTree = "<group>"; };
+		4278082B1C7FD64200A765F3 /* TimeWindowModels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TimeWindowModels.h; path = LSModels/TimeWindowModels.h; sourceTree = "<group>"; };
 		428E0ABB1BF51E180089A79E /* BranchAndBound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BranchAndBound.cpp; sourceTree = "<group>"; };
 		428E0ABC1BF51E180089A79E /* BranchAndBound.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BranchAndBound.h; sourceTree = "<group>"; };
 		428F06191BED3EE800DC47F5 /* FixedDeadline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FixedDeadline.cpp; path = GeneticAlgorithms/FixedDeadline.cpp; sourceTree = "<group>"; };
@@ -79,9 +91,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		427808231C7FD63700A765F3 /* LocalSolver */ = {
+			isa = PBXGroup;
+			children = (
+				427808241C7FD64200A765F3 /* ListModel.cpp */,
+				427808251C7FD64200A765F3 /* ListModel.h */,
+				427808261C7FD64200A765F3 /* NaiveModels.cpp */,
+				427808271C7FD64200A765F3 /* NaiveModels.h */,
+				427808281C7FD64200A765F3 /* OvertimeBoundModels.cpp */,
+				427808291C7FD64200A765F3 /* OvertimeBoundModels.h */,
+				4278082A1C7FD64200A765F3 /* TimeWindowModels.cpp */,
+				4278082B1C7FD64200A765F3 /* TimeWindowModels.h */,
+			);
+			name = LocalSolver;
+			sourceTree = "<group>";
+		};
 		428F06291BED3F0B00DC47F5 /* GeneticAlgorithms */ = {
 			isa = PBXGroup;
 			children = (
+				427808201C7FD50C00A765F3 /* Representations.cpp */,
+				427808211C7FD50C00A765F3 /* Representations.h */,
 				428F06191BED3EE800DC47F5 /* FixedDeadline.cpp */,
 				428F061A1BED3EE800DC47F5 /* FixedDeadline.h */,
 				428F061B1BED3EE800DC47F5 /* GeneticAlgorithm.h */,
@@ -100,6 +129,7 @@
 		42DB20FB1BE04034009242D4 = {
 			isa = PBXGroup;
 			children = (
+				427808231C7FD63700A765F3 /* LocalSolver */,
 				428F06291BED3F0B00DC47F5 /* GeneticAlgorithms */,
 				424D0E7D1BEC04BD009D199C /* Matrix.h */,
 				428E0ABB1BF51E180089A79E /* BranchAndBound.cpp */,
@@ -107,8 +137,6 @@
 				424D0E7E1BEC04BD009D199C /* Stopwatch.cpp */,
 				424D0E7F1BEC04BD009D199C /* Stopwatch.h */,
 				425E99D31BE041DC0057A1E3 /* QBWLBeispiel.DAT */,
-				425E99C11BE040AD0057A1E3 /* LSSolver.cpp */,
-				425E99C21BE040AD0057A1E3 /* LSSolver.h */,
 				425E99C31BE040AD0057A1E3 /* main.cpp */,
 				425E99C41BE040AD0057A1E3 /* Project.cpp */,
 				425E99C51BE040AD0057A1E3 /* Project.h */,
@@ -193,12 +221,16 @@
 				425E99D01BE040AD0057A1E3 /* ProjectWithOvertime.cpp in Sources */,
 				425E99D21BE040AD0057A1E3 /* Utils.cpp in Sources */,
 				428F06261BED3EE800DC47F5 /* Runners.cpp in Sources */,
-				425E99CD1BE040AD0057A1E3 /* LSSolver.cpp in Sources */,
+				4278082D1C7FD64200A765F3 /* NaiveModels.cpp in Sources */,
 				428F06251BED3EE800DC47F5 /* OvertimeBound.cpp in Sources */,
 				422C02971BEF805300322C01 /* Visualization.cpp in Sources */,
+				4278082C1C7FD64200A765F3 /* ListModel.cpp in Sources */,
 				425E99CE1BE040AD0057A1E3 /* main.cpp in Sources */,
 				425E99CF1BE040AD0057A1E3 /* Project.cpp in Sources */,
+				4278082F1C7FD64200A765F3 /* TimeWindowModels.cpp in Sources */,
 				428F06271BED3EE800DC47F5 /* Sampling.cpp in Sources */,
+				427808221C7FD50C00A765F3 /* Representations.cpp in Sources */,
+				4278082E1C7FD64200A765F3 /* OvertimeBoundModels.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,9 +320,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				HEADER_SEARCH_PATHS = /opt/localsolver_6_0/include;
-				LIBRARY_SEARCH_PATHS = /opt/localsolver_6_0/bin;
-				OTHER_LDFLAGS = "-llocalsolver";
+				HEADER_SEARCH_PATHS = (
+					/opt/localsolver_6_0/include,
+					/usr/local/include/,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					/opt/localsolver_6_0/bin,
+					"/usr/local/Cellar/boost/1.58.0/lib\n/usr/local/Cellar/boost/1.58.0/lib\n/usr/local/Cellar/boost/1.58.0/lib\n",
+				);
+				OTHER_LDFLAGS = (
+					"-llocalsolver",
+					"-lboost_system",
+					"-lboost_filesystem",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -299,9 +341,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				HEADER_SEARCH_PATHS = /opt/localsolver_6_0/include;
-				LIBRARY_SEARCH_PATHS = /opt/localsolver_6_0/bin;
-				OTHER_LDFLAGS = "-llocalsolver";
+				HEADER_SEARCH_PATHS = (
+					/opt/localsolver_6_0/include,
+					/usr/local/include/,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					/opt/localsolver_6_0/bin,
+					"/usr/local/Cellar/boost/1.58.0/lib\n/usr/local/Cellar/boost/1.58.0/lib\n/usr/local/Cellar/boost/1.58.0/lib\n",
+				);
+				OTHER_LDFLAGS = (
+					"-llocalsolver",
+					"-lboost_system",
+					"-lboost_filesystem",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
