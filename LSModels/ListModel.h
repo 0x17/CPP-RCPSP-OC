@@ -31,9 +31,11 @@ struct SolverParams {
 	double timeLimit;
 	int threadCount;
 	int verbosityLevel;
+    bool trace;
+    int solverIx;
 
 	SolverParams(double _tlimit)
-		: seed(0), timeLimit(_tlimit), threadCount(1), verbosityLevel(2)
+		: seed(0), timeLimit(_tlimit), threadCount(1), verbosityLevel(2), trace(false), solverIx(0)
 	{}
 };
 
@@ -56,6 +58,15 @@ public:
 private:
 	void buildModel();
 	void applyParams(SolverParams &params);
+};
+
+class TraceCallback : public LSCallback {
+    Utils::Tracer &tr;
+    double secCtr;
+public:
+    TraceCallback(Utils::Tracer &_tr);
+    virtual void callback(LocalSolver &solver, LSCallbackType type) override;
+    virtual ~TraceCallback();
 };
 
 #endif

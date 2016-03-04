@@ -53,7 +53,7 @@ public:
 	string getName() const { return name; };
 
 protected:
-	GAParameters params;
+    GAParameters params;
 	ProjectWithOvertime &p;
 
     Utils::Tracer *tr;   

@@ -26,7 +26,7 @@ void FixedDeadlineGA::crossover(DeadlineLambda &mother, DeadlineLambda &father, 
 void FixedDeadlineGA::mutate(DeadlineLambda &i) {
     for(int ix=1; ix<p.numJobs; ix++)
         withMutProb([&] { Utils::swap(i.order, ix-1, ix); });
-    withMutProb([&] { i.deadline = (rand() % 2 == 0) ? max(deadlineLB, i.deadline-1) : min(deadlineUB, i.deadline+1); });
+    withMutProb([&] { i.deadline = Utils::randBool() ? max(deadlineLB, i.deadline-1) : min(deadlineUB, i.deadline+1); });
 }
 
 float FixedDeadlineGA::fitness(DeadlineLambda &i) {

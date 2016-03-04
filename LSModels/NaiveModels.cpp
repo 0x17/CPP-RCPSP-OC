@@ -1,5 +1,5 @@
 //
-// Created by André Schnabel on 24.10.15.
+// Created by Andrï¿½ Schnabel on 24.10.15.
 //
 
 #include <list>
@@ -80,28 +80,6 @@ vector<int> parseSolution(ProjectWithOvertime &p, Matrix<LSExpression> &x, LSSol
 			sts[j] = t - p.durations[j];
 	});
 	return sts;
-}
-
-//======================================================================================================================
-
-class TraceCallback : public LSCallback {
-	Utils::Tracer &tr;
-	double secCtr;
-public:
-	TraceCallback(Utils::Tracer &_tr) : tr(_tr), secCtr(0.0) {}
-	virtual void callback(LocalSolver &solver, LSCallbackType type) override;
-	virtual ~TraceCallback();
-};
-
-void TraceCallback::callback(LocalSolver &solver, LSCallbackType type) {
-	if (type == CT_TimeTicked) {
-		secCtr += MSECS_BETWEEN_TRACES;
-		lsdouble objval = solver.getModel().getObjective(0).getDoubleValue();
-		tr.trace(secCtr, static_cast<float>(objval));
-	}
-}
-
-TraceCallback::~TraceCallback() {
 }
 
 //======================================================================================================================

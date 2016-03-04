@@ -94,6 +94,8 @@ void commandLineRunner(int argc, char * argv[]) {
 				break;
 			}
 			SolverParams params(timeLimit);
+            params.trace = traceobj;
+            params.solverIx = lsnIndex;
 			sts = lm->solve(params);
 			delete lm;
 			outFn = "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
@@ -164,6 +166,6 @@ int main(int argc, char * argv[]) {
 	commandLineRunner(argc, argv);
 	//testFixedDeadlineHeuristic();
 	//testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
-    //benchmarkGeneticAlgorithm(3, 32000);
+    //benchmarkGeneticAlgorithm(0, 32000);
     return 0;
 }

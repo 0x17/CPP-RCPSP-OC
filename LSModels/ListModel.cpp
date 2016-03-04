@@ -1,4 +1,5 @@
 #include "ListModel.h"
+#include "../Stopwatch.h"
 
 lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 	vector<int> order(p.numJobs);
@@ -23,10 +24,17 @@ ListModel::~ListModel() {
 }
 
 vector<int> ListModel::solve(SolverParams params) {
+    Utils::Tracer *tr = nullptr;
 	buildModel();
 	applyParams(params);
+    if(params.trace) {
+        tr = new Utils::Tracer("LocalSolverLVNativeTrace" + to_string(params.solverIx));
+        TraceCallback cback(*tr);
+        ls.addCallback(CT_TimeTicked, &cback);
+    }
 	ls.solve();
 	auto sol = ls.getSolution();
+    if(tr != nullptr) delete tr;
 	return parseScheduleFromSolution(sol);
 }
 
@@ -63,5 +71,21 @@ void ListModel::applyParams(SolverParams &params) {
 		param.setNbThreads(params.threadCount);
 		param.setSeed(params.seed);
 		param.setVerbosity(params.verbosityLevel);
+        if(params.trace)
+            param.setTimeBetweenDisplays(static_cast<int>(MSECS_BETWEEN_TRACES / 1000.0));
 	}
 }
+
+TraceCallback::TraceCallback(Utils::Tracer &_tr) : tr(_tr), secCtr(0.0) {}
+
+void TraceCallback::callback(LocalSolver &solver, LSCallbackType type) {
+    if (type == CT_TimeTicked) {
+        secCtr += MSECS_BETWEEN_TRACES;
+        lsdouble objval = solver.getModel().getObjective(0).getDoubleValue();
+        tr.trace(secCtr, static_cast<float>(objval));
+    }
+}
+
+TraceCallback::~TraceCallback() {
+}
+

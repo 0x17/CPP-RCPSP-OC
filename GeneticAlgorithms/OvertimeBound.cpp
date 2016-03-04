@@ -18,7 +18,7 @@ LambdaZrt TimeVaryingCapacityGA::init(int ix) {
 
 void TimeVaryingCapacityGA::crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter) {
     daughter.randomOnePointCrossover(mother, father);
-    p.eachResPeriod([&](int r, int t) { daughter.z(r,t) = rand() % 2 == 0 ? mother.z(r,t) : father.z(r,t); });
+    p.eachResPeriod([&](int r, int t) { daughter.z(r,t) = Utils::randBool() ? mother.z(r,t) : father.z(r,t); });
 }
 
 void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
@@ -39,7 +39,7 @@ vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
 void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) {
     p.eachResPeriod([&](int r, int t) {
         withMutProb([&]{
-            if (rand() % 2 == 0) z(r,t)++;
+            if (Utils::randBool()) z(r,t)++;
             else z(r,t)--;
             z(r,t) = z(r,t) < 0 ? 0 : (z(r,t) > p.zmax[r] ? p.zmax[r] : z(r,t));
         });
@@ -61,7 +61,7 @@ LambdaZr FixedCapacityGA::init(int ix) {
 
 void FixedCapacityGA::crossover(LambdaZr &mother, LambdaZr &father, LambdaZr &daughter) {
     daughter.randomOnePointCrossover(mother, father);
-    p.eachRes([&](int r){ daughter.z[r] = rand() % 2 == 0 ? mother.z[r] : father.z[r]; });
+    p.eachRes([&](int r){ daughter.z[r] = Utils::randBool() ? mother.z[r] : father.z[r]; });
 }
 
 void FixedCapacityGA::mutate(LambdaZr &i) {
@@ -82,7 +82,7 @@ vector<int> FixedCapacityGA::decode(LambdaZr& i) {
 void FixedCapacityGA::mutateOvertime(vector<int> &z) {
     p.eachRes([&](int r) {
         withMutProb([&]{
-            if (rand() % 2 == 0) z[r]++;
+            if (Utils::randBool()) z[r]++;
             else z[r]--;
             z[r] = z[r] < 0 ? 0 : (z[r] > p.zmax[r] ? p.zmax[r] : z[r]);
         });

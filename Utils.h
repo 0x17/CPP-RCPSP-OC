@@ -32,6 +32,10 @@ namespace Utils {
 	void serializeSchedule(vector<int> & sts, const string filename);
 	void serializeProfit(float profit, const string filename);
 
+    inline bool randBool() {
+        return rand() % 2 == 0;
+    }
+
     inline int randRangeIncl(int lb, int ub) {
         return lb + rand() % (ub-lb+1);
     }
@@ -39,6 +43,8 @@ namespace Utils {
     inline float randUnitFloat() {
         return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
     }
+
+    int pickWithDistribution(vector<float> &probs, float q = randUnitFloat());
 
     template<class T>
     bool rangeInclContains(const vector<T> &elems, int lb, int ub, int e) {
@@ -57,8 +63,6 @@ namespace Utils {
 			}
 		throw runtime_error("No nth found!");
 	}
-
-	int pickWithDistribution(vector<float> &probs, float q = randUnitFloat());
 
     void spit(const string s, const string filename);
     void spitAppend(const string s, const string filename);
