@@ -25,15 +25,17 @@ ListModel::~ListModel() {
 
 vector<int> ListModel::solve(SolverParams params) {
     Utils::Tracer *tr = nullptr;
+	TraceCallback *cback = nullptr;
 	buildModel();
 	applyParams(params);
     if(params.trace) {
-        tr = new Utils::Tracer("LocalSolverLVNativeTrace" + to_string(params.solverIx));
-        TraceCallback cback(*tr);
-        ls.addCallback(CT_TimeTicked, &cback);
+        tr = new Utils::Tracer("LocalSolverNative"+to_string(params.solverIx)+"Trace");
+		cback = new TraceCallback(*tr);
+        ls.addCallback(CT_TimeTicked, cback);
     }
 	ls.solve();
 	auto sol = ls.getSolution();
+	if(cback != nullptr) delete cback;
     if(tr != nullptr) delete tr;
 	return parseScheduleFromSolution(sol);
 }
@@ -71,8 +73,10 @@ void ListModel::applyParams(SolverParams &params) {
 		param.setNbThreads(params.threadCount);
 		param.setSeed(params.seed);
 		param.setVerbosity(params.verbosityLevel);
-        if(params.trace)
-            param.setTimeBetweenDisplays(static_cast<int>(MSECS_BETWEEN_TRACES / 1000.0));
+		if (params.trace) {
+			int timeBetweenDisplays = static_cast<int>(MSECS_BETWEEN_TRACES / 1000.0);
+			param.setTimeBetweenDisplays(timeBetweenDisplays);
+		}
 	}
 }
 

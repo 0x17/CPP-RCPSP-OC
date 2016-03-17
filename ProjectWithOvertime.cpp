@@ -87,16 +87,26 @@ int ProjectWithOvertime::computeTKappa() const {
     return tkappa;
 }
 
-list<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>& sts, const vector<int>& ests, const vector<int>& lfts, int j) const {
+list<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>& sts, const vector<int>& ests, const vector<int>& lfts, const Matrix<int> &resRem, int j) const {
 	int lstj = lfts[j] - durations[j];
-	list<int> decisionTimes = { ests[j], lstj };
+    int estj = ests[j];
+
+    while(!enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, estj)) estj++;
+    while(!enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, lstj)) lstj--;
+
+	list<int> decisionTimes = { estj, lstj };
 
 	for(int tau = ests[j]; tau <= lstj; tau++) {
-		EACH_JOBi(if(sts[i] + durations[i] == tau || tau + durations[j] == sts[i]) decisionTimes.push_back(tau))
+		EACH_JOBi(if(sts[i] != UNSCHEDULED
+                     && (sts[i] + durations[i] == tau || tau + durations[j] == sts[i])
+                     && enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, tau))
+                      decisionTimes.push_back(tau))
 	}
 
+	// set type available?
 	decisionTimes.sort();
 	decisionTimes.unique();
+
 	return decisionTimes;
 }
 
@@ -190,7 +200,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &o
     return make_pair(sts, resRem);
 }
 
-bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(vector<int>& sts, vector<int>& cests, vector<int>& clfts, Matrix<int> &resRem, int j, int stj) const {
+bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(const vector<int>& sts, const vector<int>& cests, const vector<int>& clfts, const Matrix<int> & resRem, int j, int stj) const {
 	if(stj + durations[j] >= numPeriods) return false;
 
 	for(int tau = stj + 1; tau <= stj + durations[j]; tau++) {
@@ -211,43 +221,39 @@ bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(vector<int>& sts,
 
 pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<int> &order) const {
     Matrix<int> resRem(numRes, numPeriods, [this](int r, int t) { return capacities[r]; });
-	vector<int> sts(numJobs, -1);
+	vector<int> sts(numJobs, UNSCHEDULED);
 
     for(int job : order) {
 		vector<int> cests = earliestStartingTimesForPartial(sts);
 		vector<int> clfts = latestFinishingTimesForPartial(sts, deadline);
 
 		if(cests[job] > clfts[job] - durations[job]) {
-            //printf("Time window feasibility fail!");
             return make_pair(false, make_pair(sts, resRem));
         }
 
-		list<int> decisionTimes = decisionTimesForResDevProblem(sts, cests, clfts, job);
+		// decision times for quasistable schedules
+		list<int> decisionTimes = decisionTimesForResDevProblem(sts, cests, clfts, resRem, job);
 
 		int t = -1;
 		float minCosts = numeric_limits<float>::max();
 
 		if(!decisionTimes.empty()) {
 			for(auto dt : decisionTimes) {
-				if(enoughCapacityForJobWithBaseInterval(sts, cests, clfts, resRem, job, dt)) {
-					float extCosts = extensionCosts(resRem, job, dt);
-					if(extCosts < minCosts) {
-						minCosts = extCosts;
-						t = dt;
-					}
-				}
+                float extCosts = extensionCosts(resRem, job, dt);
+                if(extCosts <= minCosts) {
+                    minCosts = extCosts;
+                    t = dt;
+                }
 			}
 		}
 
 		if(t == -1) {
-            //printf("Resource capacity feasibility fail!\n");
             return make_pair(false, make_pair(sts, resRem));
         }
 
 		scheduleJobAt(job, t, sts, resRem);
     }
 
-    printf("Found feasible schedule!\n");
 	return make_pair(true, make_pair(sts, resRem));
 }
 

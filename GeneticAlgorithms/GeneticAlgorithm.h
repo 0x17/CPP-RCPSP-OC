@@ -100,7 +100,7 @@ template<class Individual>
 void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
     params = _params;
     if(params.traceobj && tr == nullptr) {
-        tr = new Utils::Tracer(name+"Trace");
+        tr = new Utils::Tracer("GA"+name+"Trace");
     }
 }
 

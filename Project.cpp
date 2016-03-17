@@ -317,7 +317,7 @@ int Project::earliestStartingTimeInPartial(const vector<int> &sts) const {
 }
 
 vector<int> Project::earliestStartingTimesForPartial(const vector<int>& sts) const {
-	vector<int> ests(numJobs);
+	vector<int> ests(numJobs, UNSCHEDULED);
 
 	transferAlreadyScheduled(ests, sts);
 
@@ -331,7 +331,7 @@ vector<int> Project::earliestStartingTimesForPartial(const vector<int>& sts) con
 }
 
 vector<int> Project::latestFinishingTimesForPartial(const vector<int>& sts, int deadline) const {
-	vector<int> lfts(numJobs);
+	vector<int> lfts(numJobs, UNSCHEDULED);
 
     transferAlreadyScheduled(lfts, sts);
 

@@ -5,9 +5,13 @@ int ListFixedOvertimeModel::SerialSGSZrDecoder::varCount() { return p.numJobs + 
 
 SGSResult ListFixedOvertimeModel::SerialSGSZrDecoder::decode(vector<int>& order, const LSNativeContext& context) {
 	vector<int> zr(p.numRes);
+
 	for (int r = 0; r < p.numRes; r++)
 		zr[r] = static_cast<int>(context.getIntValue(p.numJobs + r));
-	return p.serialSGS(order, zr, true);
+
+	auto res = p.serialSGS(order, zr, true);
+	p.eachResPeriod([&](int r, int t) { res.second(r, t) -= zr[r]; });
+	return res;
 }
 
 void ListFixedOvertimeModel::addAdditionalData(LSModel &model, LSExpression& obj) {
@@ -42,7 +46,9 @@ SGSResult ListDynamicOvertimeModel::SerialSGSZrtDecoder::decode(vector<int>& ord
 		for (int t = 0; t < p.numPeriods; t++)
 			zrt(r, t) = static_cast<int>(context.getIntValue(p.numJobs + r * p.numPeriods + t));
 
-	return p.serialSGS(order, zrt, true);
+	auto res = p.serialSGS(order, zrt, true);
+	p.eachResPeriod([&](int r, int t) { res.second(r, t) -= zrt(r,t); });
+	return res;
 }
 
 void ListDynamicOvertimeModel::addAdditionalData(LSModel &model, LSExpression& obj) {

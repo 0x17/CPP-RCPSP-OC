@@ -134,8 +134,10 @@ void testFixedDeadlineHeuristic() {
 void testLocalSolverNative(int seed) {
 	string projFilename = "../../Projekte/j30/j3010_1.sm";
 	ProjectWithOvertime p(projFilename);
-	ListAlternativesModel lm(p);
+	//ListAlternativesModel lm(p);
+	ListDynamicOvertimeModel lm(p);
 	SolverParams params(15.0);
+	params.trace = true;
 	params.seed = seed;
 	auto sts = lm.solve(params);
 	Utils::serializeSchedule(sts, "myschedule.txt");
@@ -163,9 +165,9 @@ void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
 }
 
 int main(int argc, char * argv[]) {
-	commandLineRunner(argc, argv);
+	//commandLineRunner(argc, argv);
 	//testFixedDeadlineHeuristic();
 	//testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
-    //benchmarkGeneticAlgorithm(0, 32000);
+    benchmarkGeneticAlgorithm(5, 32000);
     return 0;
 }
