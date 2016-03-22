@@ -3,6 +3,7 @@
 //
 
 #include "ProjectWithOvertimeTest.h"
+#include "TestHelpers.h"
 
 TEST_F(ProjectWithOvertimeTest, testChooseEligibleWithLowestIndex) {
     vector<int> sts(p->numJobs, Project::UNSCHEDULED);
@@ -21,10 +22,14 @@ TEST_F(ProjectWithOvertimeTest, testSerialSGSWithDeadline) {
 }
 
 TEST_F(ProjectWithOvertimeTest, testDecisionTimesForResDevProblem) {
-	vector<int> sts(p->numJobs, p->UNSCHEDULED);
+	vector<int> sts = p->emptySchedule();	
+	Matrix<int> resRem = p->normalCapacityProfile();
+
 	auto ests = p->earliestStartingTimesForPartial(sts);
 	auto lfts = p->latestFinishingTimesForPartial(sts, p->numPeriods);
-	Matrix<int> resRem(p->numRes, p->numPeriods, [this](int r, int t) { return p->capacities[r]; });
 
 	auto dtimes = p->decisionTimesForResDevProblem(sts, ests, lfts, resRem, 0);
+	ASSERT_FALSE(dtimes.empty());
+	list<int> expTimes = { 0, 3 };
+	TestHelpers::listEquals(expTimes, dtimes);
 }

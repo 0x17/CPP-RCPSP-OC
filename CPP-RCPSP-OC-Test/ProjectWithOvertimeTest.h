@@ -17,7 +17,7 @@ protected:
     }
 
     void TearDown() override {
-        delete p;
+		if(p != nullptr) delete p;
     }
 
 };

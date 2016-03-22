@@ -345,7 +345,7 @@ vector<int> Project::earliestStartingTimesForPartial(const vector<int>& sts) con
 vector<int> Project::latestFinishingTimesForPartial(const vector<int>& sts, int deadline) const {
 	vector<int> lfts(numJobs, UNSCHEDULED);
 
-    transferAlreadyScheduled(lfts, sts);
+    transferAlreadyScheduledToFts(lfts, sts);
 
 	for (int i : revTopOrder) {
         if (sts[i] != UNSCHEDULED) continue;
@@ -360,3 +360,6 @@ void Project::transferAlreadyScheduled(vector<int> &destSts, const vector<int> &
     EACH_JOBi(if(partialSts[i] != UNSCHEDULED) destSts[i] = partialSts[i])
 }
 
+void Project::transferAlreadyScheduledToFts(vector<int> &destFts, const vector<int> &partialSts) const {
+	EACH_JOBi(if (partialSts[i] != UNSCHEDULED) destFts[i] = partialSts[i] + durations[i])
+}

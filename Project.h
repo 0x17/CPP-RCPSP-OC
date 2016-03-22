@@ -128,6 +128,7 @@ protected:
 	vector<int> earliestStartSchedule(Matrix<int> & resRem) const;
 
     void transferAlreadyScheduled(vector<int> &destSts, const vector<int> &partialSts) const;
+	void transferAlreadyScheduledToFts(vector<int> &destFts, const vector<int> &partialSts) const;
 
 private:
     void parsePrecedenceRelation(const vector<string> &lines);

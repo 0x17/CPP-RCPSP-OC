@@ -10,14 +10,14 @@
 
 class ProjectTest : public testing::Test {
 protected:
-    Project *p;
+    Project *p = nullptr;
 
 	void SetUp() override {
         p = new Project("MiniBeispiel.DAT");
     }
 
 	void TearDown() override {
-        delete p;
+		if(p != nullptr) delete p;
     }
 
 };

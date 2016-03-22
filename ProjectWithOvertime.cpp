@@ -244,7 +244,7 @@ pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, c
 		if(!decisionTimes.empty()) {
 			for(auto dt : decisionTimes) {
                 float extCosts = extensionCosts(resRem, job, dt);
-                if(extCosts <= minCosts) {
+                if(extCosts < minCosts) {
                     minCosts = extCosts;
                     t = dt;
                 }

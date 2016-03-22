@@ -79,3 +79,27 @@ TEST_F(ProjectTest, testComplementPartialWithSSGS) {
     vector<int> expFts = { 0, 2, 4, 6, 6 };
     TestHelpers::arrayEquals(expFts, fts);
 }
+
+TEST_F(ProjectTest, testEarliestStartingTimesForPartial) {
+	vector<int> sts = p->emptySchedule();
+	auto pests = p->earliestStartingTimesForPartial(sts);
+	vector<int> aests = { 0, 0, 2, 0, 4 };
+	TestHelpers::arrayEquals(aests, pests);
+
+	sts[1] = 4;
+	aests = { 0, 4, 6, 0, 8 };
+	pests = p->earliestStartingTimesForPartial(sts);
+	TestHelpers::arrayEquals(aests, pests);
+}
+
+TEST_F(ProjectTest, testLatestFinishingTimesForPartial) {
+	vector<int> sts = p->emptySchedule();
+	auto plfts = p->latestFinishingTimesForPartial(sts, 6);
+	vector<int> alfts = { 2, 4, 6, 6, 6 };
+	TestHelpers::arrayEquals(alfts, plfts);
+
+	sts[2] = 2;
+	plfts = p->latestFinishingTimesForPartial(sts, 6);
+	alfts = { 0, 2, 4, 6, 6 };
+	TestHelpers::arrayEquals(alfts, plfts);
+}
