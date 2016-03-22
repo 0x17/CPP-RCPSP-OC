@@ -33,3 +33,26 @@ TEST_F(ProjectWithOvertimeTest, testDecisionTimesForResDevProblem) {
 	list<int> expTimes = { 0, 3 };
 	TestHelpers::listEquals(expTimes, dtimes);
 }
+
+TEST_F(ProjectWithOvertimeTest, testEnoughCapacityForJobWithBaseInterval) {
+	auto sts = p->emptySchedule();
+	auto cests = p->earliestStartingTimesForPartial(sts);
+	auto clfts = p->latestFinishingTimesForPartial(sts, 4);
+	auto resRem = p->normalCapacityProfile();
+
+	ASSERT_TRUE(p->enoughCapacityForJobWithBaseInterval(sts, cests, clfts, resRem, 0, 0));
+
+	sts = { 0, Project::UNSCHEDULED, 2, Project::UNSCHEDULED, 4 };
+	cests = p->earliestStartingTimesForPartial(sts);
+	clfts = p->latestFinishingTimesForPartial(sts, 4);
+	resRem = p->resRemForPartial(sts);
+
+	ASSERT_TRUE(p->enoughCapacityForJobWithBaseInterval(sts, cests, clfts, resRem, 3, 0));
+
+	sts = { 0, Project::UNSCHEDULED, 2, 0, 4 };
+	cests = p->earliestStartingTimesForPartial(sts);
+	clfts = p->latestFinishingTimesForPartial(sts, 4);
+	resRem = p->resRemForPartial(sts);
+
+	ASSERT_FALSE(p->enoughCapacityForJobWithBaseInterval(sts, cests, clfts, resRem, 1, 0));
+}
