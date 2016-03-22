@@ -10,7 +10,6 @@ SGSResult ListFixedOvertimeModel::SerialSGSZrDecoder::decode(vector<int>& order,
 		zr[r] = static_cast<int>(context.getIntValue(p.numJobs + r));
 
 	auto res = p.serialSGS(order, zr, true);
-	p.eachResPeriod([&](int r, int t) { res.second(r, t) -= zr[r]; });
 	return res;
 }
 
@@ -47,7 +46,6 @@ SGSResult ListDynamicOvertimeModel::SerialSGSZrtDecoder::decode(vector<int>& ord
 			zrt(r, t) = static_cast<int>(context.getIntValue(p.numJobs + r * p.numPeriods + t));
 
 	auto res = p.serialSGS(order, zrt, true);
-	p.eachResPeriod([&](int r, int t) { res.second(r, t) -= zrt(r,t); });
 	return res;
 }
 

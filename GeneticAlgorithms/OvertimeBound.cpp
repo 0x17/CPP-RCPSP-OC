@@ -28,7 +28,6 @@ void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
 
 float TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
 	auto pair = p.serialSGS(i.order, i.z);
-	p.eachResPeriod([&](int r, int t) { pair.second(r,t) -= i.z(r,t); });
 	return profitForSGSResult(pair);
 }
 
@@ -71,7 +70,6 @@ void FixedCapacityGA::mutate(LambdaZr &i) {
 
 float FixedCapacityGA::fitness(LambdaZr &i) {
 	auto pair = p.serialSGS(i.order, i.z);
-	p.eachResPeriod([&](int r, int t) {pair.second(r,t) -= i.z[r]; });
 	return profitForSGSResult(pair);
 }
 

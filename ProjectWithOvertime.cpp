@@ -91,10 +91,13 @@ list<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>& 
 	int lstj = lfts[j] - durations[j];
     int estj = ests[j];
 
-    while(!enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, estj)) estj++;
-    while(!enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, lstj)) lstj--;
+	list<int> decisionTimes;
 
-	list<int> decisionTimes = { estj, lstj };
+    while(!enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, estj) && estj <= lstj) estj++;
+    while(!enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, lstj) && lstj >= estj) lstj--;
+
+	if(enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, estj)) decisionTimes.push_back(estj);
+	if(enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, lstj)) decisionTimes.push_back(lstj);
 
 	for(int tau = ests[j]; tau <= lstj; tau++) {
 		EACH_JOBi(if(sts[i] != UNSCHEDULED
@@ -117,9 +120,10 @@ float ProjectWithOvertime::extensionCosts(const Matrix<int> &resRem, int j, int 
 }
 
 SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order, bool robust) const {
-    Matrix<int> resRem(numRes, numPeriods, [this](int r, int t) { return capacities[r]; });
+	Matrix<int> resRem = normalCapacityProfile();
 
-    vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs, UNSCHEDULED);
+	vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs, UNSCHEDULED);
+
     for (int k=0; k<numJobs; k++) {
 		int job = robust ? chooseEligibleWithLowestIndex(sts, order) : order[k];
         int lastPredFinished = computeLastPredFinishingTime(fts, job);
@@ -161,7 +165,7 @@ bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, const
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, bool robust) const {
-    Matrix<int> resRem(numRes, numPeriods, [this](int r, int t) { return capacities[r]; });
+	Matrix<int> resRem = normalCapacityProfile();
 
     vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs);
 	
@@ -182,7 +186,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &ord
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau, bool robust) const {
-    Matrix<int> resRem(numRes, numPeriods, [this](int r, int t) { return capacities[r]; });
+	Matrix<int> resRem = normalCapacityProfile();
 
     vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs);
     for (int k=0; k<numJobs; k++) {
@@ -220,7 +224,7 @@ bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(const vector<int>
 }
 
 pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<int> &order) const {
-    Matrix<int> resRem(numRes, numPeriods, [this](int r, int t) { return capacities[r]; });
+	Matrix<int> resRem = normalCapacityProfile();
 	vector<int> sts(numJobs, UNSCHEDULED);
 
     for(int job : order) {

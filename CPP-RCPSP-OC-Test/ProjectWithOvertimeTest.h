@@ -10,7 +10,7 @@
 
 class ProjectWithOvertimeTest : public testing::Test {
 protected:
-    ProjectWithOvertime *p;
+    ProjectWithOvertime *p = nullptr;
 
     void SetUp() override {
         p = new ProjectWithOvertime("MiniBeispiel.DAT");

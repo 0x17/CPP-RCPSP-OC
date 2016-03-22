@@ -14,3 +14,17 @@ TEST_F(ProjectWithOvertimeTest, testChooseEligibleWithLowestIndex) {
     sts[1] = 0;
     ASSERT_EQ(2, p->chooseEligibleWithLowestIndex(sts, order));
 }
+
+TEST_F(ProjectWithOvertimeTest, testSerialSGSWithDeadline) {
+	auto res = p->serialSGSWithDeadline(p->numPeriods, p->topOrder);
+	ASSERT_TRUE(res.first);
+}
+
+TEST_F(ProjectWithOvertimeTest, testDecisionTimesForResDevProblem) {
+	vector<int> sts(p->numJobs, p->UNSCHEDULED);
+	auto ests = p->earliestStartingTimesForPartial(sts);
+	auto lfts = p->latestFinishingTimesForPartial(sts, p->numPeriods);
+	Matrix<int> resRem(p->numRes, p->numPeriods, [this](int r, int t) { return p->capacities[r]; });
+
+	auto dtimes = p->decisionTimesForResDevProblem(sts, ests, lfts, resRem, 0);
+}
