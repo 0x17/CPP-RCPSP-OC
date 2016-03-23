@@ -7,7 +7,7 @@ lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 
 	for (int i = 0; i < p.numJobs; i++) {
 		order[i] = static_cast<int>(context.getIntValue(i));
-		if (order[i] == -1)
+		if (order[i] == Project::UNSCHEDULED)
 			return numeric_limits<double>::lowest();
 	}
 

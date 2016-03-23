@@ -14,7 +14,7 @@ FixedDeadlineGA::FixedDeadlineGA(ProjectWithOvertime &_p): GeneticAlgorithm(_p, 
 
 DeadlineLambda FixedDeadlineGA::init(int ix) {
     DeadlineLambda indiv(p.numJobs);
-	indiv.deadline = (ix == 0) ? p.numPeriods : Utils::randRangeIncl(deadlineLB, deadlineUB);
+	indiv.deadline = (ix == 0) ? p.numPeriods - 1 : Utils::randRangeIncl(deadlineLB, deadlineUB);
     indiv.order = p.topOrder;
 	if(ix > 0) random_shuffle(indiv.order.begin(), indiv.order.end());
     return indiv;

@@ -108,7 +108,7 @@ void commandLineRunner(int argc, char * argv[]) {
         }
 
         if(!traceobj) {
-            string resStr = (sts[0] == -1) ? "infes" : to_string(p.calcProfit(sts));
+            string resStr = (sts[0] == Project::UNSCHEDULED) ? "infes" : to_string(p.calcProfit(sts));
             Utils::spitAppend(string(argv[3])+";"+resStr+"\n", outFn);
         }
 
@@ -136,7 +136,8 @@ void testFixedDeadlineHeuristic() {
 }
 
 void testLocalSolverNative(int seed) {
-	string projFilename = "../../Projekte/j30/j3010_1.sm";
+	//string projFilename = "../../Projekte/j30/j3010_1.sm";
+	string projFilename = "../../Projekte/j30/j301_1.sm";
 	ProjectWithOvertime p(projFilename);
 	//ListAlternativesModel lm(p);
 	ListDeadlineModel lm(p);
@@ -150,9 +151,11 @@ void testLocalSolverNative(int seed) {
 }
 
 void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
-    string projFilename = "../../Projekte/j60/j6014_7.sm";
+    //string projFilename = "../../Projekte/j60/j6014_7.sm";
 	//string projFilename = "../../Projekte/j30/j301_1.sm";
     //string projFilename = "QBWLBeispiel.DAT";
+	//string projFilename = "../../Projekte/j30/j3010_1.sm";
+	string projFilename = "../../Projekte/j30/j301_1.sm";
     ProjectWithOvertime p(projFilename);
 
     GAParameters params;
@@ -169,9 +172,9 @@ void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
 }
 
 int main(int argc, char * argv[]) {
-	commandLineRunner(argc, argv);
+	//commandLineRunner(argc, argv);
 	//testFixedDeadlineHeuristic();
 	//testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
-    //benchmarkGeneticAlgorithm(5, 32000);
+    benchmarkGeneticAlgorithm(5, 256000);
     return 0;
 }

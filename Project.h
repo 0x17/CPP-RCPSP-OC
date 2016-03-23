@@ -62,7 +62,7 @@ public:
 
     const bool USE_DISPOSITION_METHOD = false;
 
-    enum { UNSCHEDULED = -1 };
+	enum { UNSCHEDULED = -1 };
 
 	explicit Project(const string filename);
     virtual ~Project() {}

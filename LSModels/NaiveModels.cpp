@@ -111,8 +111,7 @@ vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, bool trace
 	auto sol = ls.getSolution();
 	if (sol.getStatus() == SS_Infeasible) {
 		//throw runtime_error("No feasible solution found!");
-		vector<int> invalidSts(p.numJobs, -1);
-		return invalidSts;
+		return p.emptySchedule();
 	}
 
 	auto solvetime = ls.getStatistics().getRunningTime();

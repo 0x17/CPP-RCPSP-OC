@@ -39,12 +39,8 @@ vector<int> Project::serialSGS(const vector<int>& order) const {
 }
 
 pair<vector<int>, Matrix<int>> Project::serialSGSForPartial(const vector<int>& sts, const vector<int>& order, Matrix<int>& resRem) const {
-	vector<int> fts(numJobs), nsts;
-	nsts = sts;
-	EACH_JOB(
-		if (sts[j] != UNSCHEDULED) fts[j] = sts[j] + durations[j];
-		else fts[j] = -1;
-    )
+	vector<int> fts(numJobs, UNSCHEDULED), nsts = sts;
+	transferAlreadyScheduledToFts(fts, sts);
 
 	for(int job : order) {
 		if (sts[job] == UNSCHEDULED) {
