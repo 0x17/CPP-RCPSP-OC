@@ -18,8 +18,8 @@ void convertArgFileToLSP(int argc, const char * argv[]) {
 
 void showUsage() {
 	list<string> solMethods = { "BranchAndBound", "LocalSolver" };
-	for (int i = 0; i < 5; i++) solMethods.push_back("GA" + to_string(i));
-	for (int i = 0; i < 6; i++) solMethods.push_back("LocalSolverNative" + to_string(i));
+	for (int i = 0; i < 6; i++) solMethods.push_back("GA" + to_string(i));
+	for (int i = 0; i < 7; i++) solMethods.push_back("LocalSolverNative" + to_string(i));
 	cout << "Number of arguments must be >= 3" << endl;
 	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ProjectFileSM [traceobj]" << endl;
 	cout << "Solution methods: " << endl;
@@ -92,6 +92,9 @@ void commandLineRunner(int argc, char * argv[]) {
 				break;
 			case 5:
 				lm = new ListDynamicOvertimeModel(p);
+				break;
+			case 6:
+				lm = new ListDeadlineModel(p);
 				break;
 			}
 			SolverParams params(timeLimit);

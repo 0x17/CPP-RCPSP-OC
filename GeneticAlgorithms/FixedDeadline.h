@@ -20,6 +20,7 @@ private:
     virtual vector<int> decode(DeadlineLambda &i) override;
 
     int deadlineLB, deadlineUB;
+	vector<int> fallbackSts;
 };
 
 
