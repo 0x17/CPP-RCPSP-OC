@@ -93,22 +93,30 @@ list<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>& 
 
 	list<int> decisionTimes;
 
-    while(!enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, estj) && estj <= lstj) estj++;
-    while(!enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, lstj) && lstj >= estj) lstj--;
-
-	if(enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, estj)) decisionTimes.push_back(estj);
-	if(enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, lstj)) decisionTimes.push_back(lstj);
-
-	for(int tau = ests[j]; tau <= lstj; tau++) {
-		EACH_JOBi(if(sts[i] != UNSCHEDULED
-                     && (sts[i] + durations[i] == tau || tau + durations[j] == sts[i])
-                     && enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, tau))
-                      decisionTimes.push_back(tau))
+	while(true) {
+		if(estj > lstj) return decisionTimes;
+		if(enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, estj)) break;
+		estj++;
 	}
 
-	// set type available?
-	decisionTimes.sort();
-	decisionTimes.unique();
+	while(true) {
+		if(lstj < estj) return decisionTimes;
+		if(enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, lstj)) break;
+		lstj--;
+	}
+
+	decisionTimes.push_back(estj);
+
+	for(int tau = estj+1; tau <= lstj-1; tau++) {
+		EACH_JOBi(
+			if(i != j && sts[i] != UNSCHEDULED
+				&& (sts[i] + durations[i] == tau || tau + durations[j] == sts[i])
+				&& enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, tau)) {
+			decisionTimes.push_back(tau);
+		})
+	}
+
+	decisionTimes.push_back(lstj);
 
 	return decisionTimes;
 }
@@ -244,7 +252,7 @@ pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, c
 		if(!decisionTimes.empty()) {
 			for(auto dt : decisionTimes) {
                 float extCosts = extensionCosts(resRem, job, dt);
-                if(extCosts < minCosts) {
+                if(extCosts <= minCosts) {
                     minCosts = extCosts;
                     t = dt;
                 }
