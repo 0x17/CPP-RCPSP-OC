@@ -38,6 +38,5 @@ float FixedDeadlineGA::fitness(DeadlineLambda &i) {
 vector<int> FixedDeadlineGA::decode(DeadlineLambda &i) {
 	auto res = p.serialSGSWithDeadline(i.deadline, i.order);
 	if(res.first) return res.second.first;	
-	vector<int> sts(p.numJobs, -1);
-	return sts;
+	return p.emptySchedule();
 }

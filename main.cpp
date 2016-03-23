@@ -7,6 +7,7 @@
 #include "BranchAndBound.h"
 #include <boost/algorithm/string.hpp>
 #include <cmath>
+#include "LSModels/FixedDeadlineModels.h"
 
 void convertArgFileToLSP(int argc, const char * argv[]) {
     if (argc == 2) {
@@ -135,7 +136,7 @@ void testLocalSolverNative(int seed) {
 	string projFilename = "../../Projekte/j30/j3010_1.sm";
 	ProjectWithOvertime p(projFilename);
 	//ListAlternativesModel lm(p);
-	ListDynamicOvertimeModel lm(p);
+	ListDeadlineModel lm(p);
 	SolverParams params(15.0);
 	params.trace = true;
 	params.seed = seed;
@@ -165,9 +166,9 @@ void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
 }
 
 int main(int argc, char * argv[]) {
-	//commandLineRunner(argc, argv);
+	commandLineRunner(argc, argv);
 	//testFixedDeadlineHeuristic();
 	//testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
-    benchmarkGeneticAlgorithm(5, 32000);
+    //benchmarkGeneticAlgorithm(5, 32000);
     return 0;
 }
