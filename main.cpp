@@ -136,11 +136,13 @@ void testFixedDeadlineHeuristic() {
 }
 
 void testLocalSolverNative(int seed) {
-	//string projFilename = "../../Projekte/j30/j3010_1.sm";
-	string projFilename = "../../Projekte/j30/j301_1.sm";
+	string projFilename = "../../Projekte/j30/j3010_1.sm";
+	//string projFilename = "../../Projekte/j30/j301_1.sm";
+	//string projFilename = "QBWLBeispiel.DAT";
+	//string projFilename = "MiniBeispiel.DAT";
 	ProjectWithOvertime p(projFilename);
 	//ListAlternativesModel lm(p);
-	ListDeadlineModel lm(p);
+	ListBetaDeadlineModel lm(p);
 	SolverParams params(15.0);
 	params.trace = true;
 	params.seed = seed;
@@ -153,9 +155,10 @@ void testLocalSolverNative(int seed) {
 void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
     //string projFilename = "../../Projekte/j60/j6014_7.sm";
 	//string projFilename = "../../Projekte/j30/j301_1.sm";
-    //string projFilename = "QBWLBeispiel.DAT";
+    string projFilename = "QBWLBeispiel.DAT";
+	//string projFilename = "MiniBeispiel.DAT";
 	//string projFilename = "../../Projekte/j30/j3010_1.sm";
-	string projFilename = "../../Projekte/j30/j301_1.sm";
+	//string projFilename = "../../Projekte/j30/j301_1.sm";
     ProjectWithOvertime p(projFilename);
 
     GAParameters params;
@@ -174,7 +177,7 @@ void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
 int main(int argc, char * argv[]) {
 	//commandLineRunner(argc, argv);
 	//testFixedDeadlineHeuristic();
-	//testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
-    benchmarkGeneticAlgorithm(5, 256000);
+	testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
+    //benchmarkGeneticAlgorithm(5, 256000);
     return 0;
 }

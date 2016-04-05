@@ -26,16 +26,24 @@ public:
     SGSResult serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, bool robust = false) const;
     SGSResult serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau, bool robust = false) const;
 	bool enoughCapacityForJobWithBaseInterval(const vector<int> & sts, const vector<int> & cests, const vector<int> & clfts, const Matrix<int> & resRem, int j, int stj) const;
-	pair<bool, SGSResult> serialSGSWithDeadline(int deadline, const vector<int> &order) const;
-    vector<int> earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const;
 
-	list<int> decisionTimesForResDevProblem(const vector<int> &sts, const vector<int> &ests, const vector<int> &lfts, const Matrix<int> &resRem, int j) const;
+	template<class Func>
+	pair<bool, SGSResult> serialSGSWithDeadline(int deadline, const vector<int> &order, Func chooseIndex) const;
+
+	pair<bool, SGSResult> serialSGSWithDeadlineEarly(int deadline, const vector<int>& order) const;
+	pair<bool, SGSResult> serialSGSWithDeadlineLate(int deadline, const vector<int>& order) const;
+	pair<bool, SGSResult> serialSGSWithDeadlineBeta(int deadline, const vector<int>& order, const vector<int>& beta) const;
+
+	vector<int> earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const;
+
+	vector<int> decisionTimesForResDevProblem(const vector<int> &sts, const vector<int> &ests, const vector<int> &lfts, const Matrix<int> &resRem, int j) const;
 
 private:
     void computeRevenueFunction();
     int computeTKappa() const;
 	bool enoughCapacityForJobWithOvertime(int job, int t, const Matrix<int> & resRem) const;	
 	float extensionCosts(const Matrix<int> &resRem, int j, int stj) const;
+	static int nthDecisionTimeWithMinCosts(int nth, vector<int> &decisionTimes, vector<float> &assocExtCosts, float minCosts);
 };
 
 

@@ -17,7 +17,7 @@ TEST_F(ProjectWithOvertimeTest, testChooseEligibleWithLowestIndex) {
 }
 
 TEST_F(ProjectWithOvertimeTest, testSerialSGSWithDeadline) {
-	auto res = p->serialSGSWithDeadline(p->numPeriods-1, p->topOrder);
+	auto res = p->serialSGSWithDeadlineEarly(p->numPeriods-1, p->topOrder);
 	ASSERT_TRUE(res.first);
 }
 
@@ -30,8 +30,8 @@ TEST_F(ProjectWithOvertimeTest, testDecisionTimesForResDevProblem) {
 
 	auto dtimes = p->decisionTimesForResDevProblem(sts, ests, lfts, resRem, 0);
 	ASSERT_FALSE(dtimes.empty());
-	list<int> expTimes = { 0, 3 };
-	TestHelpers::listEquals(expTimes, dtimes);
+	vector<int> expTimes = { 0, 3 };
+	TestHelpers::arrayEquals(expTimes, dtimes);
 }
 
 TEST_F(ProjectWithOvertimeTest, testEnoughCapacityForJobWithBaseInterval) {
