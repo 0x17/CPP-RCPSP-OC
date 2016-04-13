@@ -45,7 +45,13 @@
         code; \
     }
 
-typedef pair<vector<int>, Matrix<int>> SGSResult;
+//typedef pair<vector<int>, Matrix<int>> SGSResult;
+struct SGSResult {
+	vector<int> sts;
+	Matrix<int> resRem;
+
+	SGSResult(vector<int> _sts, Matrix<int> _resRem) : sts(_sts), resRem(_resRem) {}
+};
 
 class Project {
 public:

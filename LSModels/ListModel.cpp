@@ -10,9 +10,8 @@ lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 		if (order[i] == Project::UNSCHEDULED)
 			return numeric_limits<double>::lowest();
 	}
-
 	SGSResult result = decode(order, context);
-	return static_cast<lsdouble>(p.calcProfit(p.makespan(result.first), result.second));
+	return static_cast<lsdouble>(p.calcProfit(result));
 }
 
 ListModel::ListModel(ProjectWithOvertime& _p, SchedulingNativeFunction *_decoder) : p(_p), decoder(_decoder), listElems(_p.numJobs) {

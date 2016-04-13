@@ -29,7 +29,7 @@ vector<int> ListFixedOvertimeModel::parseScheduleFromSolution(LSSolution& sol) {
 	for (int r = 0; r < p.numRes; r++)
 		zr[r] = static_cast<int>(sol.getIntValue(zrVar[r]));
 
-	return p.serialSGS(order, zr, true).first;
+	return p.serialSGS(order, zr, true).sts;
 }
 
 //==============================================================================================================
@@ -69,5 +69,5 @@ vector<int> ListDynamicOvertimeModel::parseScheduleFromSolution(LSSolution& sol)
 		for (int t = 0; t < p.numPeriods; t++)
 			zrt(r, t) = static_cast<int>(sol.getIntValue(zrtVar(r, t)));
 
-	return p.serialSGS(order, zrt, true).first;
+	return p.serialSGS(order, zrt, true).sts;
 }

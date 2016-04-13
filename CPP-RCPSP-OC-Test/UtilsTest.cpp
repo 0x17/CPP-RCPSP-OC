@@ -176,7 +176,7 @@ TEST(UtilsTest, testSpitAppend) {
 TEST(UtilsTest, testMaxInRangeIncl) {
     ASSERT_EQ(0, Utils::maxInRangeIncl(0, 5, [](int x) { return static_cast<float>(-x); }));
     vector<float> nums = { 1.0f, 4.0f, 2.0f, 20.0f, 8.0f, 1.0f, 0.0f };
-    ASSERT_EQ(20, Utils::maxInRangeIncl(0, nums.size()-1, [&](int i) { return nums[i]; }));
+    ASSERT_EQ(20, Utils::maxInRangeIncl(0, static_cast<int>(nums.size())-1, [&](int i) { return nums[i]; }));
 }
 
 string removeWhitespace(string s) {

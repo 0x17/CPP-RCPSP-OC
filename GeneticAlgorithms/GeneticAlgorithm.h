@@ -74,8 +74,6 @@ protected:
 
     pair<int, int> computePair(vector<pair<Individual, float>> &pop, vector<bool> &alreadySelected);
 
-    float profitForSGSResult(pair<vector<int>, Matrix<int>> &result) const;
-
     void mutateAndFitnessRange(vector<pair<Individual, float>> *pop, int startIx, int endIx);
 
 	void selectBest(vector<pair<Individual, float>> &pop);
@@ -102,11 +100,6 @@ void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
     if(params.traceobj && tr == nullptr) {
         tr = new Utils::Tracer("GA"+name+"Trace");
     }
-}
-
-template<class Individual>
-float GeneticAlgorithm<Individual>::profitForSGSResult(pair<vector<int>, Matrix<int>> &result) const {
-    return p.calcProfit(p.makespan(result.first), result.second);
 }
 
 template<class Individual>

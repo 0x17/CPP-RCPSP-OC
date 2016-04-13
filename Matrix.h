@@ -22,7 +22,7 @@ public:
     Matrix(const Matrix& mx) : m(mx.m), n(mx.n), data(mx.data) {}
 
     Matrix(const std::vector<std::vector<T>> &rows)
-    : m(rows.size()), n(rows[0].size()), data(m*n) {
+    : m(static_cast<int>(rows.size())), n(static_cast<int>(rows[0].size())), data(m*n) {
         for(int i=0; i<m; i++)
             for(int j=0; j<n; j++)
                 data[i*n+j] = rows[i][j];

@@ -71,18 +71,18 @@ Matrix<int> Project::resRemForPartial(const vector<int> &sts) const {
     return resRem;
 }
 
-pair<vector<int>, Matrix<int>> Project::serialSGS(const vector<int>& order, const vector<int>& z, bool robust) const {
+SGSResult Project::serialSGS(const vector<int>& order, const vector<int>& z, bool robust) const {
     Matrix<int> resRem(numRes, numPeriods, [&](int r, int t) { return capacities[r] + z[r]; });
 	vector<int> sts = serialSGSCore(order, resRem, robust);
 	eachResPeriodConst([&](int r, int t) { resRem(r, t) -= z[r]; });
-	return make_pair(sts, resRem);
+	return{ sts, resRem };
 }
 
-pair<vector<int>, Matrix<int>> Project::serialSGS(const vector<int>& order, const Matrix<int>& z, bool robust) const {
+SGSResult Project::serialSGS(const vector<int>& order, const Matrix<int>& z, bool robust) const {
     Matrix<int> resRem(numRes, numPeriods, [&](int r, int t) { return capacities[r] + z(r,t); });
 	vector<int> sts = serialSGSCore(order, resRem, robust);
 	eachResPeriodConst([&](int r, int t) { resRem(r, t) -= z(r,t); });
-	return make_pair(sts, resRem);
+	return{ sts, resRem };
 }
 
 int Project::chooseEligibleWithLowestIndex(const vector<int>& sts, const vector<int>& order) const {

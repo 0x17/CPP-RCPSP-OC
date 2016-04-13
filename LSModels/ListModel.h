@@ -15,7 +15,6 @@ public:
 };
 
 class SchedulingNativeFunction : public BaseSchedulingNativeFunction {
-
 public:
 	explicit SchedulingNativeFunction(ProjectWithOvertime &_p) : BaseSchedulingNativeFunction(_p) {}
 	virtual ~SchedulingNativeFunction() {}

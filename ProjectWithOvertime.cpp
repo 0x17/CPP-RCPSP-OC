@@ -55,6 +55,10 @@ float ProjectWithOvertime::calcProfit(int makespan, const Matrix<int>& resRem) c
 	return revenue[makespan] - totalCosts(resRem);
 }
 
+float ProjectWithOvertime::calcProfit(const SGSResult& result) const {
+	return calcProfit(makespan(result.sts), result.resRem);
+}
+
 void ProjectWithOvertime::computeRevenueFunction() {
     int tkappa = computeTKappa();
     Matrix<int> resRem(numRes, numPeriods);
@@ -165,7 +169,7 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order, b
         scheduleJobAt(job, bestT.first, sts, fts, resRem);
     }
 
-    return make_pair(sts, resRem);
+	return {sts, resRem};
 }
 
 bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, const Matrix<int> & resRem) const {
@@ -191,7 +195,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &ord
         scheduleJobAt(job, t, sts, fts, resRem);
     }
 
-    return make_pair(sts, resRem);
+	return{ sts, resRem };
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau, bool robust) const {
@@ -210,7 +214,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &o
         scheduleJobAt(job, t, sts, fts, resRem);
     }
 
-    return make_pair(sts, resRem);
+	return{ sts, resRem };
 }
 
 bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(const vector<int>& sts, const vector<int>& cests, const vector<int>& clfts, const Matrix<int> & resRem, int j, int stj) const {
@@ -232,16 +236,20 @@ bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(const vector<int>
 	return true;
 }
 
-pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadlineEarly(int deadline, const vector<int>& order) const {
+SGSDeadlineResult ProjectWithOvertime::serialSGSWithDeadlineEarly(int deadline, const vector<int>& order) const {
 	return serialSGSWithDeadline(deadline, order, [](int j, int count) { return 0; });
 }
 
-pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadlineLate(int deadline, const vector<int>& order) const {
+SGSDeadlineResult ProjectWithOvertime::serialSGSWithDeadlineLate(int deadline, const vector<int>& order) const {
 	return serialSGSWithDeadline(deadline, order, [](int j, int count) { return count-1; });
 }
 
-pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadlineBeta(int deadline, const vector<int>& order, const vector<int>& beta) const {
+SGSDeadlineResult ProjectWithOvertime::serialSGSWithDeadlineBeta(int deadline, const vector<int>& order, const vector<int>& beta) const {
 	return serialSGSWithDeadline(deadline, order, [&beta](int j, int count) { return beta[j] > 0 ? 0 : count - 1; });
+}
+
+SGSDeadlineResult ProjectWithOvertime::serialSGSWithDeadlineTau(int deadline, const vector<int>& order, const vector<float>& tau) const {
+	return serialSGSWithDeadline(deadline, order, [&tau](int j, int count) { return static_cast<int>(round(static_cast<float>(count - 1) * (1.0f - tau[j]))); });
 }
 
 int ProjectWithOvertime::nthDecisionTimeWithMinCosts(int nth, vector<int> &decisionTimes, vector<float> &assocExtCosts, float minCosts) {
@@ -258,7 +266,7 @@ int ProjectWithOvertime::nthDecisionTimeWithMinCosts(int nth, vector<int> &decis
 }
 
 template<class Func>
-pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<int> &order, Func chooseIndex) const {
+SGSDeadlineResult ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<int> &order, Func chooseIndex) const {
 	Matrix<int> resRem = normalCapacityProfile();
 	vector<int> sts(numJobs, UNSCHEDULED);
 
@@ -267,7 +275,7 @@ pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, c
 		vector<int> clfts = latestFinishingTimesForPartial(sts, deadline);
 
 		if(cests[job] > clfts[job] - durations[job]) {
-            return make_pair(false, make_pair(sts, resRem));
+			return{ false, sts, resRem }; //  make_pair(false, make_pair(sts, resRem));
         }
 
 		// decision times for quasistable schedules
@@ -285,20 +293,20 @@ pair<bool, SGSResult> ProjectWithOvertime::serialSGSWithDeadline(int deadline, c
 			}
 
 			float minCosts = *min(assocExtCosts.begin(), assocExtCosts.end());
-			int minCount = count_if(assocExtCosts.begin(), assocExtCosts.end(), [minCosts](float c) { return c == minCosts; });
+			int minCount = static_cast<int>(count_if(assocExtCosts.begin(), assocExtCosts.end(), [minCosts](float c) { return c == minCosts; }));
 
 			int nth = chooseIndex(job, minCount);
 			t = nthDecisionTimeWithMinCosts(nth, decisionTimes, assocExtCosts, minCosts);
 		}
 
 		if(t == -1) {
-            return make_pair(false, make_pair(sts, resRem));
+			return{ false, sts, resRem };
         }
 
 		scheduleJobAt(job, t, sts, resRem);
     }
 
-	return make_pair(true, make_pair(sts, resRem));
+	return{ true, sts, resRem };
 }
 
 vector<int> ProjectWithOvertime::earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const {

@@ -26,7 +26,7 @@ vector<int> ListBetaModel::parseScheduleFromSolution(LSSolution& sol) {
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
 		betaVarVals[i] = static_cast<int>(sol.getIntValue(betaVar[i]));
 	}
-	return p.serialSGSTimeWindowBorders(order, betaVarVals, true).first;
+	return p.serialSGSTimeWindowBorders(order, betaVarVals, true).sts;
 }
 
 //==============================================================================================================
@@ -57,7 +57,7 @@ vector<int> ListTauModel::parseScheduleFromSolution(LSSolution& sol) {
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
 		tau[i] = static_cast<float>(sol.getDoubleValue(tauVar[i]));
 	}
-	return p.serialSGSTimeWindowArbitrary(order, tau, true).first;
+	return p.serialSGSTimeWindowArbitrary(order, tau, true).sts;
 }
 
 int ListTauDiscreteModel::SerialSGSIntegerFunction::varCount() {
@@ -88,7 +88,7 @@ vector<int> ListTauDiscreteModel::parseScheduleFromSolution(LSSolution& sol) {
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
 		tau[i] = (float)(static_cast<double>(sol.getIntValue(tauVar[i])) / static_cast<double>(IV_COUNT - 1));
 	}
-	return p.serialSGSTimeWindowArbitrary(order, tau, true).first;
+	return p.serialSGSTimeWindowArbitrary(order, tau, true).sts;
 }
 
 //==============================================================================================================
@@ -106,5 +106,5 @@ vector<int> ListAlternativesModel::parseScheduleFromSolution(LSSolution &sol) {
 	for (int i = 0; i<p.numJobs; i++) {
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
 	}
-	return p.serialSGSWithOvertime(order, true).first;
+	return p.serialSGSWithOvertime(order, true).sts;
 }

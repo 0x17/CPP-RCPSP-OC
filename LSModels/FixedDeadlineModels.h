@@ -43,3 +43,22 @@ public:
 	ListBetaDeadlineModel(ProjectWithOvertime &_p) : ListDeadlineModel(_p, new QuasistableSGSBetaFunction(_p, computeFallbackResult(_p))), betaVar(_p.numJobs) {}
 	virtual ~ListBetaDeadlineModel() {}
 };
+
+class ListTauDeadlineModel : public ListDeadlineModel {
+	vector<LSExpression> tauVar;
+
+	class QuasistableSGSTauFunction : public SchedulingNativeFunction {
+		SGSResult fallbackResult;
+	public:
+		explicit QuasistableSGSTauFunction(ProjectWithOvertime& _p, SGSResult _fallbackResult);
+		int varCount() override;
+		SGSResult decode(vector<int>& order, const LSNativeContext& context) override;
+	};
+
+	void addAdditionalData(LSModel& model, LSExpression& obj) override;
+	vector<int> parseScheduleFromSolution(LSSolution& sol) override;
+
+public:
+	ListTauDeadlineModel(ProjectWithOvertime &_p) : ListDeadlineModel(_p, new QuasistableSGSTauFunction(_p, computeFallbackResult(_p))), tauVar(_p.numJobs) {}
+	virtual ~ListTauDeadlineModel() {}
+};

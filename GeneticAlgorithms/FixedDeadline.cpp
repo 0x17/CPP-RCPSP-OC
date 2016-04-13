@@ -8,7 +8,7 @@
 FixedDeadlineGA::FixedDeadlineGA(ProjectWithOvertime &_p): GeneticAlgorithm(_p, "FixedDeadlineGA") {
     useThreads = true;
     deadlineUB = p.makespan(p.serialSGS(p.topOrder));
-    deadlineLB = p.makespan(p.serialSGS(p.topOrder, p.zmax).first);
+    deadlineLB = p.makespan(p.serialSGS(p.topOrder, p.zmax).sts);
 	fallbackSts = p.serialSGS(p.topOrder);
 }
 
@@ -32,12 +32,12 @@ void FixedDeadlineGA::mutate(DeadlineLambda &i) {
 
 float FixedDeadlineGA::fitness(DeadlineLambda &i) {
     auto res = p.serialSGSWithDeadlineEarly(i.deadline, i.order);
-	if(res.first) return profitForSGSResult(res.second);
+	if (res.valid) return p.calcProfit(res);
 	return 0.0f;
 }
 
 vector<int> FixedDeadlineGA::decode(DeadlineLambda &i) {
 	auto res = p.serialSGSWithDeadlineEarly(i.deadline, i.order);
-	if(res.first) return res.second.first;	
+	if (res.valid) return res.sts;
 	return fallbackSts;
 }

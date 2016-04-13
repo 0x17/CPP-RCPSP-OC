@@ -18,7 +18,7 @@ TEST_F(ProjectWithOvertimeTest, testChooseEligibleWithLowestIndex) {
 
 TEST_F(ProjectWithOvertimeTest, testSerialSGSWithDeadline) {
 	auto res = p->serialSGSWithDeadlineEarly(p->numPeriods-1, p->topOrder);
-	ASSERT_TRUE(res.first);
+	ASSERT_TRUE(res.valid);
 }
 
 TEST_F(ProjectWithOvertimeTest, testDecisionTimesForResDevProblem) {

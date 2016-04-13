@@ -9,14 +9,32 @@
 #include <cmath>
 #include "LSModels/FixedDeadlineModels.h"
 
-void convertArgFileToLSP(int argc, const char * argv[]) {
+namespace Main {
+	void convertArgFileToLSP(int argc, const char * argv[]);
+	void showUsage();
+	int computeMinMaxMakespanDifference(ProjectWithOvertime &p);
+	void commandLineRunner(int argc, char * argv[]);
+	void testFixedDeadlineHeuristic();
+	void testLocalSolverNative(int seed);
+	void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit);
+}
+
+int main(int argc, char * argv[]) {
+	//Main::commandLineRunner(argc, argv);
+	//Main::testFixedDeadlineHeuristic();
+	Main::testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
+	//Main::benchmarkGeneticAlgorithm(5, 256000);
+	return 0;
+}
+
+void Main::convertArgFileToLSP(int argc, const char * argv[]) {
     if (argc == 2) {
 		ProjectWithOvertime p(argv[1]);
 		LSSolver::writeLSPModelParamFile(p, string(argv[1])+".txt");
 	}
 }
 
-void showUsage() {
+void Main::showUsage() {
 	list<string> solMethods = { "BranchAndBound", "LocalSolver" };
 	for (int i = 0; i < 6; i++) solMethods.push_back("GA" + to_string(i));
 	for (int i = 0; i < 7; i++) solMethods.push_back("LocalSolverNative" + to_string(i));
@@ -26,13 +44,13 @@ void showUsage() {
 	for (auto method : solMethods) cout << "\t" << method << endl;
 }
 
-int computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
+int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
 	int maxMs = p.makespan(p.serialSGS(p.topOrder));
-	int minMs = p.makespan(p.serialSGS(p.topOrder, p.zmax).first);
+	int minMs = p.makespan(p.serialSGS(p.topOrder, p.zmax).sts);
 	return maxMs - minMs;
 }
 
-void commandLineRunner(int argc, char * argv[]) {
+void Main::commandLineRunner(int argc, char * argv[]) {
     if(argc >= 4) {
         vector<int> sts;
 
@@ -118,7 +136,7 @@ void commandLineRunner(int argc, char * argv[]) {
 	else showUsage();
 }
 
-void testFixedDeadlineHeuristic() {
+void Main::testFixedDeadlineHeuristic() {
 	//string projFilename = "../../Projekte/j30/j301_1.sm";
 	string projFilename = "QBWLBeispiel.DAT";
 	//string projFilename = "MiniBeispiel.DAT";	
@@ -135,24 +153,25 @@ void testFixedDeadlineHeuristic() {
 	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedule.txt");
 }
 
-void testLocalSolverNative(int seed) {
-	string projFilename = "../../Projekte/j30/j3010_1.sm";
+void Main::testLocalSolverNative(int seed) {
+	//string projFilename = "../../Projekte/j30/j3010_1.sm";
 	//string projFilename = "../../Projekte/j30/j301_1.sm";
 	//string projFilename = "QBWLBeispiel.DAT";
-	//string projFilename = "MiniBeispiel.DAT";
+	string projFilename = "MiniBeispiel.DAT";
 	ProjectWithOvertime p(projFilename);
 	//ListAlternativesModel lm(p);
 	ListBetaDeadlineModel lm(p);
-	SolverParams params(15.0);
+	SolverParams params(5.0);
 	params.trace = true;
 	params.seed = seed;
+	//params.solverIx = 8;
 	auto sts = lm.solve(params);
 	Utils::serializeSchedule(sts, "myschedule.txt");
 	Utils::serializeProfit(p.calcProfit(sts), "myprofit.txt");
 	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe ../../Projekte/j30/j301_1.sm myschedule.txt");
 }
 
-void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
+void Main::benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
     //string projFilename = "../../Projekte/j60/j6014_7.sm";
 	//string projFilename = "../../Projekte/j30/j301_1.sm";
     string projFilename = "QBWLBeispiel.DAT";
@@ -174,10 +193,4 @@ void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
     auto res = GARunners::run(p, params, gaIndex);
 }
 
-int main(int argc, char * argv[]) {
-	//commandLineRunner(argc, argv);
-	//testFixedDeadlineHeuristic();
-	testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
-    //benchmarkGeneticAlgorithm(5, 256000);
-    return 0;
-}
+

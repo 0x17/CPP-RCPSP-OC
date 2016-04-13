@@ -31,11 +31,11 @@ void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
 
 float TimeWindowArbitraryGA::fitness(LambdaTau &i) {
     auto pair = p.serialSGSTimeWindowArbitrary(i.order, i.tau);
-    return profitForSGSResult(pair);
+	return p.calcProfit(pair);
 }
 
 vector<int> TimeWindowArbitraryGA::decode(LambdaTau& i)  {
-	return p.serialSGSTimeWindowArbitrary(i.order, i.tau).first;
+	return p.serialSGSTimeWindowArbitrary(i.order, i.tau).sts;
 }
 
 //======================================================================================================================
@@ -66,11 +66,11 @@ void TimeWindowBordersGA::mutate(LambdaBeta &i) {
 
 float TimeWindowBordersGA::fitness(LambdaBeta &i) {
     auto pair = p.serialSGSTimeWindowBorders(i.order, i.beta);
-    return profitForSGSResult(pair);
+	return p.calcProfit(pair);
 }
 
 vector<int> TimeWindowBordersGA::decode(LambdaBeta& i) {
-	return p.serialSGSTimeWindowBorders(i.order, i.beta).first;
+	return p.serialSGSTimeWindowBorders(i.order, i.beta).sts;
 }
 
 //======================================================================================================================
@@ -95,10 +95,10 @@ void CompareAlternativesGA::mutate(Lambda &i) {
 
 float CompareAlternativesGA::fitness(Lambda &i) {
     auto pair = p.serialSGSWithOvertime(i.order);
-    return profitForSGSResult(pair);
+	return p.calcProfit(pair);
 }
 
 vector<int> CompareAlternativesGA::decode(Lambda& i) {
-	return p.serialSGSWithOvertime(i.order).first;
+	return p.serialSGSWithOvertime(i.order).sts;
 }
 
