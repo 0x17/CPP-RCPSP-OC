@@ -126,6 +126,71 @@ vector<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>
 	return decisionTimes;
 }
 
+vector<int> ProjectWithOvertime::jobsWithDescendingStartingTimes(const vector<int>& sts) {
+	vector<pair<int, int>> jobToSt(sts.size());
+	for (int i = 0; i < sts.size(); i++)
+		jobToSt[i] = make_pair(i, sts[i]);
+	sort(jobToSt.begin(), jobToSt.end(), [](pair<int, int> &fst, pair<int, int> &snd) { return snd.second < fst.second; });
+	vector<int> descSts(sts.size());
+	for (int i = 0; i < sts.size(); i++)
+		descSts[i] = jobToSt[i].first;
+	return descSts;
+}
+
+list<int> ProjectWithOvertime::feasibleTimeWindowForJobInCompleteSchedule(int j, const vector<int>& sts, const vector<int>& fts, const Matrix<int>& resRem) const {
+	list<int> feasTimes;
+	int estj = computeLastPredFinishingTimeForPartial(fts, j);
+	int lstj = computeFirstSuccStartingTimeForPartial(sts, j);
+
+	for (int t = estj; t <= lstj; t++)
+		if (enoughCapacityForJobWithOvertime(j, t, resRem))
+			feasTimes.push_back(t);
+
+	return feasTimes;
+}
+
+int ProjectWithOvertime::latestPeriodWithMinimalCosts(int j, const list<int>& feasTimes, const vector<int>& sts, const Matrix<int>& resRem) const {
+	float minCosts = numeric_limits<float>::max();
+	int latestPeriod = 0;
+
+	for(int t : feasTimes) {
+		float extCosts = extensionCosts(resRem, j, t);
+		if(extCosts <= minCosts) {
+			minCosts = extCosts;
+			latestPeriod = t;
+		}
+	}
+
+	return latestPeriod;
+}
+
+void ProjectWithOvertime::unscheduleJob(int j, vector<int>& sts, vector<int>& fts, Matrix<int>& resRem) {
+	for (int t = sts[j] + 1; t <= fts[j]; t++)
+		for (int r = 0; r < numRes; r++) resRem(r, t) += demands(j, r);
+	sts[j] = fts[j] = UNSCHEDULED;
+}
+
+void ProjectWithOvertime::improvementStep(vector<int>& sts) {
+	vector<int> fts(sts.size());
+	for (int i = 0; i < sts.size(); i++) fts[i] = sts[i] + durations[i];
+
+	vector<int> jobs = jobsWithDescendingStartingTimes(sts);
+	Matrix<int> resRem = resRemForPartial(sts);
+
+	// from latest to earliest job
+	for(int j : jobs)
+	{
+		unscheduleJob(j, sts, fts, resRem);
+		// compute resource-feasible subset of time window
+		list<int> feasTimeWindow = feasibleTimeWindowForJobInCompleteSchedule(j, sts, fts, resRem);
+		// choose latest period from set with minimal overtime costs
+		int t = latestPeriodWithMinimalCosts(j, feasTimeWindow, sts, resRem);
+		scheduleJobAt(j, t, sts, fts, resRem);
+	}
+
+	// vgl. F&O
+}
+
 float ProjectWithOvertime::extensionCosts(const Matrix<int> &resRem, int j, int stj) const {
 	float costs = 0.0f;
     EACH_RES(ACTIVE_PERIODS(j, stj, costs += Utils::max(0, demands(j,r) - resRem(r,tau)) * kappa[r]))

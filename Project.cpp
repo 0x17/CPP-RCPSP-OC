@@ -159,6 +159,12 @@ int Project::computeFirstSuccStartingTime(const vector<int> &sts, int job) const
     return firstSuccStarted;
 }
 
+int Project::computeFirstSuccStartingTimeForPartial(const vector<int> &sts, int job) const {
+	int firstSuccStarted = T;
+	EACH_JOB(if (adjMx(job, j) && sts[j] != UNSCHEDULED && sts[j] < firstSuccStarted) firstSuccStarted = sts[j])
+	return firstSuccStarted;
+}
+
 bool Project::enoughCapacityForJob(int job, int t, Matrix<int> & resRem) const {
     ACTIVE_PERIODS(job, t, EACH_RES(if(demands(job,r) > resRem(r,tau)) return false))
     return true;

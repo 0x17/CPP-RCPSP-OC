@@ -46,6 +46,12 @@ public:
 
 	vector<int> decisionTimesForResDevProblem(const vector<int> &sts, const vector<int> &ests, const vector<int> &lfts, const Matrix<int> &resRem, int j) const;
 
+	static vector<int> jobsWithDescendingStartingTimes(const vector<int>& sts);
+	list<int> feasibleTimeWindowForJobInCompleteSchedule(int j, const vector<int>& sts, const vector<int>& fts, const Matrix<int>& resRem) const;
+	int latestPeriodWithMinimalCosts(int j, const list<int>& feasTimes, const vector<int>& sts, const Matrix<int>& resRem) const;
+	void unscheduleJob(int j, vector<int>& sts, vector<int>& fts, Matrix<int>& resRem);
+	void improvementStep(vector<int>& sts);
+
 private:
     void computeRevenueFunction();
     int computeTKappa() const;

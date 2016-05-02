@@ -127,6 +127,7 @@ protected:
     bool enoughCapacityForJob(int job, int t, Matrix<int> & resRem) const;
 
     int computeFirstSuccStartingTime(const vector<int> &sts, int job) const;
+	int computeFirstSuccStartingTimeForPartial(const vector<int> &fts, int job) const;
     int computeLastPredFinishingTimeForPartial(const vector<int> &fts, int job) const;
     void scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, Matrix<int> &resRem) const;
 	void scheduleJobAt(int job, int t, vector<int> &sts, Matrix<int> &resRem) const;

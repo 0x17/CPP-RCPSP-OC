@@ -56,3 +56,12 @@ TEST_F(ProjectWithOvertimeTest, testEnoughCapacityForJobWithBaseInterval) {
 
 	ASSERT_FALSE(p->enoughCapacityForJobWithBaseInterval(sts, cests, clfts, resRem, 1, 0));
 }
+
+TEST_F(ProjectWithOvertimeTest, testJobsWithDescendingStartingTimes)
+{
+	vector<int> sts =  { 0, 0, 3, 0, 5, 9, 3, 2, 1, 0 };
+	vector<int> actualJobLst = p->jobsWithDescendingStartingTimes(sts);
+	vector<int> desc = { 9, 5, 3, 3, 2, 1, 0, 0, 0, 0 };
+	for (int i = 0; i < sts.size(); i++)
+		ASSERT_EQ(sts[actualJobLst[i]], desc[i]);
+}
