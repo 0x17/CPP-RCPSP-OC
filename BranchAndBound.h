@@ -34,8 +34,8 @@ private:
     bool traceobj;
     Utils::Tracer *tr;
 	
-	bool isEligible(vector<int> &sts, int j);
-	pair<bool,bool> resourceFeasibilityCheck(vector<int> &sts, int j, int stj);
+	bool isEligible(vector<int> &sts, int j) const;
+	pair<bool,bool> resourceFeasibilityCheck(vector<int> &sts, int j, int stj) const;
 	void branch(vector<int> sts, int job, int stj);
     void foundLeaf(vector<int> &sts);
     

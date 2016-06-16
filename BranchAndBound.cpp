@@ -56,7 +56,7 @@ vector<int> BranchAndBound::solve(bool seedWithGA, bool traceobj) {
 	return candidate;
 }
 
-bool BranchAndBound::isEligible(vector<int>& sts, int j) {
+bool BranchAndBound::isEligible(vector<int>& sts, int j) const {
     if(sts[j] != Project::UNSCHEDULED)
         return false;
 
@@ -67,7 +67,7 @@ bool BranchAndBound::isEligible(vector<int>& sts, int j) {
 	return true;
 }
 
-pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j, int stj) {
+pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j, int stj) const {
 	bool feasWoutOC = true;
 	for(int r = 0; r < p.numRes; r++) {
 		for(int tau = stj + 1; tau <= stj + p.durations[j]; tau++) {
