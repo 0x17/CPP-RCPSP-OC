@@ -66,6 +66,27 @@ public:
 			c[i] = data[i*n + j];
 		return c;
     }
+
+	template<class Func>
+	void foreach(Func f) const {
+		for (int i = 0; i < m; i++)
+			for (int j = 0; j < n; j++)
+				f(i, j, data[i*n + j]);
+    }
+
+	template<class Func>
+	void foreach2(Func f) const {
+		for (int i = 0; i < m; i++)
+			for (int j = 0; j < n; j++)
+				f(i, j);
+	}
+
+	template<class Func>
+	void foreachAssign(Func f) {
+		for (int i = 0; i < m; i++)
+			for (int j = 0; j < n; j++)
+				data[i*n + j] = f(i, j);
+    }
 };
 
 

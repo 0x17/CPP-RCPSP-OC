@@ -100,6 +100,15 @@ namespace Utils {
 		return res;
 	}
 
+	template<class A, class Func>
+	vector<A> constructVector(int size, Func f) {
+		vector<A> v(size);
+		for(int i=0; i<size; i++) {
+			v[i] = f(i);
+		}
+		return v;
+    }
+
 	list<string> filenamesInDirWithExt(const string dir, const string ext);
 
     class Tracer {

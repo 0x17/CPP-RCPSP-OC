@@ -35,39 +35,32 @@ vector<int> ListFixedOvertimeModel::parseScheduleFromSolution(LSSolution& sol) {
 //==============================================================================================================
 
 int ListDynamicOvertimeModel::SerialSGSZrtDecoder::varCount() {
-	return p.numJobs + p.numRes * p.numPeriods;
+	return p.numJobs + p.numRes * p.heuristicMakespanUpperBound();
 }
 
 SGSResult ListDynamicOvertimeModel::SerialSGSZrtDecoder::decode(vector<int>& order, const LSNativeContext& context) {
-	Matrix<int> zrt(p.numRes, p.numPeriods);
-
-	for (int r = 0; r < p.numRes; r++)
-		for (int t = 0; t < p.numPeriods; t++)
-			zrt(r, t) = static_cast<int>(context.getIntValue(p.numJobs + r * p.numPeriods + t));
-
+	int nperiods = p.heuristicMakespanUpperBound();
+	Matrix<int> zrt(p.numRes, nperiods, [this, &context, nperiods](int r, int t) {
+		return static_cast<int>(context.getIntValue(p.numJobs + r * nperiods + t));
+	});
 	auto res = p.serialSGS(order, zrt, true);
 	return res;
 }
 
 void ListDynamicOvertimeModel::addAdditionalData(LSModel &model, LSExpression& obj) {
-	for (int r = 0; r < p.numRes; r++) {
-		for (int t = 0; t < p.numPeriods; t++) {
-			zrtVar(r, t) = model.intVar(0, p.zmax[r]);
-			obj.addOperand(zrtVar(r, t));
-		}
-	}
+	zrtVar.foreachAssign([this, &model, &obj](int r, int t) {
+		auto v = model.intVar(0, p.zmax[r]);
+		obj.addOperand(v);
+		return v;
+	});
 }
 
 vector<int> ListDynamicOvertimeModel::parseScheduleFromSolution(LSSolution& sol) {
-	vector<int> order(p.numJobs);
-	Matrix<int> zrt(p.numRes, p.numPeriods);
-
-	for (int i = 0; i<p.numJobs; i++)
-		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
-
-	for (int r = 0; r < p.numRes; r++)
-		for (int t = 0; t < p.numPeriods; t++)
-			zrt(r, t) = static_cast<int>(sol.getIntValue(zrtVar(r, t)));
-
+	vector<int> order = Utils::constructVector<int>(p.numJobs, [this, &sol](int i) {
+		return static_cast<int>(sol.getIntValue(listElems[i]));
+	});
+	Matrix<int> zrt(p.numRes, p.heuristicMakespanUpperBound(), [this, &sol](int r, int t) {
+		return static_cast<int>(sol.getIntValue(zrtVar(r, t)));
+	});
 	return p.serialSGS(order, zrt, true).sts;
 }

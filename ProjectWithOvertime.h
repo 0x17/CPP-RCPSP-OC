@@ -52,6 +52,8 @@ public:
 	void unscheduleJob(int j, vector<int>& sts, vector<int>& fts, Matrix<int>& resRem);
 	void improvementStep(vector<int>& sts);
 
+	int heuristicMakespanUpperBound() const;
+
 private:
     void computeRevenueFunction();
     int computeTKappa() const;

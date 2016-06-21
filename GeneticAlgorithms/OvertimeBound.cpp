@@ -10,15 +10,17 @@ TimeVaryingCapacityGA::TimeVaryingCapacityGA(ProjectWithOvertime &_p) : GeneticA
 }
 
 LambdaZrt TimeVaryingCapacityGA::init(int ix) {
-    LambdaZrt indiv(p.numJobs, p.numRes, p.numPeriods);
+    LambdaZrt indiv(p.numJobs, p.numRes, p.heuristicMakespanUpperBound());
 	indiv.order = ix == 0 ? p.topOrder : Sampling::sample(params.rbbrs, p);
-    p.eachResPeriod([&](int r, int t){ indiv.z(r,t) = ix == 0 ? 0 : Utils::randRangeIncl(0, p.zmax[r]); });
+	indiv.z.foreachAssign([this, ix](int r, int t) {
+		return ix == 0 ? 0 : Utils::randRangeIncl(0, p.zmax[r]);
+	});
     return indiv;
 }
 
 void TimeVaryingCapacityGA::crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter) {
     daughter.randomOnePointCrossover(mother, father);
-    p.eachResPeriod([&](int r, int t) { daughter.z(r,t) = Utils::randBool() ? mother.z(r,t) : father.z(r,t); });
+	daughter.z.foreachAssign([&](int r, int t) { return Utils::randBool() ? mother.z(r,t) : father.z(r,t); });
 }
 
 void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
@@ -36,7 +38,7 @@ vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
 }
 
 void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) {
-    p.eachResPeriod([&](int r, int t) {
+	z.foreach2([&](int r, int t) {
         withMutProb([&]{
             if (Utils::randBool()) z(r,t)++;
             else z(r,t)--;

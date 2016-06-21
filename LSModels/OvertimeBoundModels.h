@@ -34,6 +34,6 @@ class ListDynamicOvertimeModel : public ListModel {
 	Matrix<LSExpression> zrtVar;
 
 public:
-	ListDynamicOvertimeModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSZrtDecoder(_p)), zrtVar(p.numRes, p.numPeriods) {}
+	ListDynamicOvertimeModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSZrtDecoder(_p)), zrtVar(p.numRes, p.heuristicMakespanUpperBound()) {}
 	virtual ~ListDynamicOvertimeModel() {}
 };

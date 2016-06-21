@@ -191,6 +191,11 @@ void ProjectWithOvertime::improvementStep(vector<int>& sts) {
 	// vgl. F&O
 }
 
+int ProjectWithOvertime::heuristicMakespanUpperBound() const {
+	static int ms = makespan(serialSGS(topOrder));
+	return ms;
+}
+
 float ProjectWithOvertime::extensionCosts(const Matrix<int> &resRem, int j, int stj) const {
 	float costs = 0.0f;
     EACH_RES(ACTIVE_PERIODS(j, stj, costs += Utils::max(0, demands(j,r) - resRem(r,tau)) * kappa[r]))

@@ -79,7 +79,9 @@ SGSResult Project::serialSGS(const vector<int>& order, const vector<int>& z, boo
 }
 
 SGSResult Project::serialSGS(const vector<int>& order, const Matrix<int>& z, bool robust) const {
-    Matrix<int> resRem(numRes, numPeriods, [&](int r, int t) { return capacities[r] + z(r,t); });
+    Matrix<int> resRem(numRes, numPeriods, [&](int r, int t) {
+	    return capacities[r] + (t >= z.getN() ? 0 : z(r,t));
+    });
 	vector<int> sts = serialSGSCore(order, resRem, robust);
 	eachResPeriodConst([&](int r, int t) { resRem(r, t) -= z(r,t); });
 	return{ sts, resRem };
