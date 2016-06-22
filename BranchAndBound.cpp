@@ -9,8 +9,8 @@
 #include "ProjectWithOvertime.h"
 #include "GeneticAlgorithms/OvertimeBound.h"
 
-BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, double _timeLimit, bool _writeGraph)
-	: p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph), timeLimit(_timeLimit), traceobj(false), tr(nullptr) {}
+BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, double _timeLimit, int _iterLimit, bool _writeGraph)
+	: p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph), timeLimit(_timeLimit), iterLimit(_iterLimit), traceobj(false), tr(nullptr) {}
 
 BranchAndBound::~BranchAndBound() {
     if(tr != nullptr) delete tr;
@@ -188,7 +188,8 @@ void BranchAndBound::foundLeaf(vector<int> &sts) {
 }
 
 void BranchAndBound::branch(vector<int> sts, int job, int stj) {
-	if (sw.look() >= timeLimit * 1000.0)
+	if (timeLimit != -1.0 && sw.look() >= timeLimit * 1000.0
+		|| (iterLimit != -1 && nodeCtr >= iterLimit))
 		return;
 
 	if(chrono::duration<double, std::milli>(chrono::system_clock::now() - lupdate).count() > MSECS_BETWEEN_TRACES) {

@@ -67,7 +67,11 @@ void ListModel::buildModel() {
 
 void ListModel::applyParams(SolverParams &params) {
 	if (ls.getNbPhases() == 0) {
-		ls.createPhase().setTimeLimit(static_cast<int>(params.timeLimit));
+		auto phase = ls.createPhase();
+		if(params.iterLimit != -1)
+			phase.setIterationLimit(static_cast<long long>(params.iterLimit));
+		if(params.timeLimit != -1.0)
+			phase.setTimeLimit(static_cast<int>(params.timeLimit));
 		auto param = ls.getParam();
 		param.setNbThreads(params.threadCount);
 		param.setSeed(params.seed);

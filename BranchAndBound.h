@@ -15,7 +15,7 @@ class Stopwatch;
 
 class BranchAndBound {
 public:
-	explicit BranchAndBound(ProjectWithOvertime& _p, double _timeLimit = 60.0, bool _writeGraph = false);
+	explicit BranchAndBound(ProjectWithOvertime& _p, double _timeLimit = 60.0, int _iterLimit = -1, bool _writeGraph = false);
     ~BranchAndBound();
 	vector<int> solve(bool seedWithGA = false, bool traceobj = false);
 
@@ -31,6 +31,7 @@ private:
 	bool writeGraph;
     TimePoint lupdate;
 	double timeLimit;
+	int iterLimit;
     bool traceobj;
     Utils::Tracer *tr;
 	

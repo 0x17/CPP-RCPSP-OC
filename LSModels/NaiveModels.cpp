@@ -84,7 +84,7 @@ vector<int> parseSolution(ProjectWithOvertime &p, Matrix<LSExpression> &x, LSSol
 
 //======================================================================================================================
 
-vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, bool traceobj) {
+vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, int iterLimit, bool traceobj) {
 	LocalSolver ls;
 	Utils::Tracer tr("LocalSolverTrace");
 	tr.trace(0.0, 0.0f);
@@ -101,7 +101,12 @@ vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, bool trace
 	TraceCallback cback(tr);
 	ls.addCallback(CT_TimeTicked, &cback);
 
-	ls.createPhase().setTimeLimit(static_cast<int>(timeLimit));
+	auto phase = ls.createPhase();
+	if(timeLimit != -1.0)
+		phase.setTimeLimit(static_cast<int>(timeLimit));
+	if (iterLimit != -1)
+		phase.setIterationLimit(static_cast<long long>(iterLimit));
+
 	auto param = ls.getParam();
 	param.setNbThreads(1);
 	param.setVerbosity(2);

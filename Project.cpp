@@ -83,7 +83,7 @@ SGSResult Project::serialSGS(const vector<int>& order, const Matrix<int>& z, boo
 	    return capacities[r] + (t >= z.getN() ? 0 : z(r,t));
     });
 	vector<int> sts = serialSGSCore(order, resRem, robust);
-	eachResPeriodConst([&](int r, int t) { resRem(r, t) -= z(r,t); });
+	z.foreach([&](int r, int t, int zrt) { resRem(r, t) -= zrt; });
 	return{ sts, resRem };
 }
 
@@ -183,7 +183,7 @@ void Project::scheduleJobAt(int job, int t, vector<int>& sts, Matrix<int>& resRe
 	EACH_RES(ACTIVE_PERIODS(job, t, resRem(r, tau) -= demands(job, r)))
 }
 
-bool Project::jobBeforeInOrder(int job, int curIndex, const vector<int>& order) const {
+bool Project::jobBeforeInOrder(int job, int curIndex, const vector<int>& order) {
 	for(int k = 0; k < curIndex; k++)
 		if(order[k] == job)
 			return true;

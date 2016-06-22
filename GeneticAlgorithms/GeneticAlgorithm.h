@@ -28,6 +28,7 @@ struct GAParameters {
 		popSize = 100;
 		pmutate = 5;
 		timeLimit = -1.0;
+		iterLimit = -1;
 		fitnessBasedPairing = false;
 		traceobj = false;
 		selectionMethod = SelectionMethod::BEST;
@@ -36,6 +37,7 @@ struct GAParameters {
 
     int numGens, popSize, pmutate;
     double timeLimit;
+	int iterLimit;
     bool fitnessBasedPairing, traceobj;
 	SelectionMethod selectionMethod;
     bool rbbrs;
@@ -208,7 +210,9 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 
     float lastBestVal = numeric_limits<float>::max();
 
-    for(int i=0; (params.numGens == -1 || i<params.numGens) && (params.timeLimit == -1.0 || sw.look() < params.timeLimit * 1000.0); i++) {		
+    for(int i=0;   (params.iterLimit == -1 || i * params.popSize < params.iterLimit)
+				&& (params.numGens == -1 || i<params.numGens)
+				&& (params.timeLimit == -1.0 || sw.look() < params.timeLimit * 1000.0); i++) {
 		if (chrono::duration<double, std::milli>(chrono::system_clock::now() - lupdate).count() > MSECS_BETWEEN_TRACES) {
 			cout << "Generations = " << (i + 1) << ", Obj = " << -pop[0].second << ", Time = " << (boost::format("%.2f") % (sw.look() / 1000.0)) << endl;
 			lupdate = chrono::system_clock::now();

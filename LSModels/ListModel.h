@@ -32,9 +32,10 @@ struct SolverParams {
 	int verbosityLevel;
     bool trace;
     int solverIx;
+	int iterLimit;
 
-	SolverParams(double _tlimit)
-		: seed(0), timeLimit(_tlimit), threadCount(1), verbosityLevel(2), trace(false), solverIx(0)
+	SolverParams(double _tlimit = -1.0, int _ilimit = -1)
+		: seed(0), timeLimit(_tlimit), threadCount(1), verbosityLevel(2), trace(false), solverIx(0), iterLimit(_ilimit)
 	{}
 };
 

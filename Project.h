@@ -79,7 +79,7 @@ public:
 	SGSResult serialSGS(const vector<int>& order, const vector<int>& zr, bool robust = false) const;
 	SGSResult serialSGS(const vector<int>& order, const Matrix<int>& zrt, bool robust = false) const;
 
-	bool jobBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
+	static bool jobBeforeInOrder(int job, int curIndex, const vector<int>& order);
 	bool hasPredNotBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
 	bool hasSuccNotBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
 

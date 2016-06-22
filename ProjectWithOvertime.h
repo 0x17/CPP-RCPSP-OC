@@ -11,7 +11,7 @@
 //typedef pair<bool, SGSResult> SGSDeadlineResult;
 struct SGSDeadlineResult : SGSResult {
 	bool valid;
-	SGSDeadlineResult(bool _valid, vector<int> _sts, Matrix<int> _resRem) : SGSResult(_sts, _resRem), valid(_valid)  {}
+	SGSDeadlineResult(bool _valid, vector<int> _sts, Matrix<int> _resRem) : valid(_valid), SGSResult(_sts, _resRem) {}
 };
 
 class ProjectWithOvertime : public Project {
@@ -30,7 +30,28 @@ public:
     float totalCostsForPartial(const vector<int> &sts) const;
 
     SGSResult serialSGSWithOvertime(const vector<int> &order, bool robust = false) const;
-    SGSResult serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, bool robust = false) const;
+
+	// START (lambda|beta)
+	struct BorderSchedulingOptions {
+		bool robust, linked, upper;
+		BorderSchedulingOptions();
+		BorderSchedulingOptions(bool _robust, bool _linked, bool _upper);
+	};
+	struct PartialScheduleData {
+		Matrix<int> resRem;
+		vector<int> sts, fts;
+		PartialScheduleData(ProjectWithOvertime const* p);
+	};
+	struct ResidualData {
+		Matrix<int> normal, overtime;
+		ResidualData(ProjectWithOvertime const* p);
+	};
+	void scheduleJobSeparateResiduals(int job, int t, int bval, PartialScheduleData& data, ResidualData& residuals) const;
+	void scheduleJobBorderLower(int job, int lastPredFinished, int bval, PartialScheduleData& data) const;
+	void scheduleJobBorderUpper(int job, int lastPredFinished, int bval, PartialScheduleData& data, ResidualData& residuals) const;
+	SGSResult serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, BorderSchedulingOptions options) const;
+	// END (lambda|beta)
+
     SGSResult serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau, bool robust = false) const;
 	bool enoughCapacityForJobWithBaseInterval(const vector<int> & sts, const vector<int> & cests, const vector<int> & clfts, const Matrix<int> & resRem, int j, int stj) const;
 

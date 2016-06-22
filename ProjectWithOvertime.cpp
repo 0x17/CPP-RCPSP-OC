@@ -247,25 +247,71 @@ bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, const
     return true;
 }
 
-SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, bool robust) const {
-	Matrix<int> resRem = normalCapacityProfile();
+ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions()
+	: robust(false), linked(false), upper(false) {}
 
-    vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs);
-	
+ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions(bool _robust, bool _linked, bool _upper)
+	: robust(_robust), linked(_linked), upper(_upper) {}
+
+ProjectWithOvertime::PartialScheduleData::PartialScheduleData(ProjectWithOvertime const* p)
+	: resRem(p->normalCapacityProfile()), sts(p->numJobs, p->UNSCHEDULED), fts(p->numJobs, p->UNSCHEDULED) {}
+
+ProjectWithOvertime::ResidualData::ResidualData(ProjectWithOvertime const* p)
+	: normal(p->normalCapacityProfile()),
+	  overtime(p->numRes, p->numPeriods, [p](int r, int t) { return p->zmax[r]; })
+{}
+
+void ProjectWithOvertime::scheduleJobSeparateResiduals(int job, int t, int bval, PartialScheduleData& data, ResidualData& residuals) const {
+	data.sts[job] = t;
+	data.fts[job] = t + durations[job];
+
+	ACTIVE_PERIODS(job, t, EACH_RES(
+		int djr = demands(job, r);
+		data.resRem(r, tau) -= djr;
+		if(bval == 1) {
+			if(djr > residuals.overtime(r, tau)) {
+				residuals.normal(r, tau) -= (djr - residuals.overtime(r, tau));
+				residuals.overtime(r, tau) = 0;
+			} else residuals.overtime(r, tau) -= djr;
+		}
+		else residuals.normal(r, tau) -= djr;
+	))
+}
+
+void ProjectWithOvertime::scheduleJobBorderLower(int job, int lastPredFinished, int bval, PartialScheduleData &data) const {
+	int t;
+	if(bval == 1) for(t = lastPredFinished; !enoughCapacityForJobWithOvertime(job, t, data.resRem); t++);
+	else for(t = lastPredFinished; !enoughCapacityForJob(job, t, data.resRem); t++);
+	scheduleJobAt(job, t, data.sts, data.fts, data.resRem);
+}
+
+void ProjectWithOvertime::scheduleJobBorderUpper(int job, int lastPredFinished, int bval, PartialScheduleData& data, ResidualData& residuals) const {
+	int t;
+	if(bval == 1) for(t = lastPredFinished; !enoughCapacityForJobWithOvertime(job, t, data.resRem); t++);
+	else for(t = lastPredFinished; !enoughCapacityForJob(job, t, residuals.normal); t++);
+	scheduleJobSeparateResiduals(job, t, bval, data, residuals);
+}
+
+SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, BorderSchedulingOptions options) const {	
+	ResidualData *residuals = nullptr;
+	if(options.upper) {
+		residuals = new ResidualData(this);
+	}
+
+	PartialScheduleData data(this);
+
     for (int k=0; k<numJobs; k++) {
-        int job = robust ? chooseEligibleWithLowestIndex(sts, order) : order[k];
-        int lastPredFinished = computeLastPredFinishingTime(fts, job);
-        int t;
-        if(beta[k] == 1) {
-            for (t = lastPredFinished; !enoughCapacityForJobWithOvertime(job, t, resRem); t++);
-        } else {
-            for (t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++);
-        }
-
-        scheduleJobAt(job, t, sts, fts, resRem);
+        int job = options.robust ? chooseEligibleWithLowestIndex(data.sts, order) : order[k];
+        int lastPredFinished = computeLastPredFinishingTime(data.fts, job);
+		int bval = options.linked ? beta[k] : beta[job];
+		if (!options.upper) scheduleJobBorderLower(job, lastPredFinished, bval, data);
+		else scheduleJobBorderUpper(job, lastPredFinished, bval, data, *residuals);
     }
 
-	return{ sts, resRem };
+	if (residuals != nullptr)
+		delete residuals;
+
+	return{ data.sts, data.resRem };
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau, bool robust) const {
@@ -396,5 +442,3 @@ vector<int> ProjectWithOvertime::earliestStartingTimesForPartialRespectZmax(cons
 
     return ests;
 }
-
-

@@ -18,8 +18,8 @@ namespace Main {
 	void testLocalSolverNative(int seed);
 	void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit);
 	ListModel *genListModelWithIndex(ProjectWithOvertime &p, int index);
-	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, double timeLimit, bool traceobj);
-	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, int lsIndex, double timeLimit, bool traceobj);
+	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, double timeLimit, int iterLimit, bool traceobj);
+	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, int lsIndex, double timeLimit, int iterLimit, bool traceobj);
 }
 
 int main(int argc, char * argv[]) {
@@ -41,8 +41,8 @@ void Main::showUsage() {
 	list<string> solMethods = { "BranchAndBound", "LocalSolver" };
 	for (int i = 0; i < 6; i++) solMethods.push_back("GA" + to_string(i));
 	for (int i = 0; i < 9; i++) solMethods.push_back("LocalSolverNative" + to_string(i));
-	cout << "Number of arguments must be >= 3" << endl;
-	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ProjectFileSM [traceobj]" << endl;
+	cout << "Number of arguments must be >= 4" << endl;
+	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ScheduleLimit ProjectFileSM [traceobj]" << endl;
 	cout << "Solution methods: " << endl;
 	for (auto method : solMethods) cout << "\t" << method << endl;
 }
@@ -88,13 +88,14 @@ ListModel *Main::genListModelWithIndex(ProjectWithOvertime &p, int index) {
 	return lm;
 }
 
-vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, double timeLimit, bool traceobj) {
+vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, double timeLimit, int iterLimit, bool traceobj) {
 	GAParameters params;
 	params.fitnessBasedPairing = true;
 	params.numGens = -1;
 	params.popSize = 80;
 	params.pmutate = 5;
 	params.timeLimit = timeLimit;
+	params.iterLimit = iterLimit;
 	params.traceobj = traceobj;
 	params.selectionMethod = SelectionMethod::BEST;
 	params.rbbrs = true;
@@ -103,10 +104,10 @@ vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaInd
 	return res.sts;
 }
 
-vector<int> Main::runLocalSolverModelWithIndex(ProjectWithOvertime& p, int lsIndex, double timeLimit, bool traceobj) {
+vector<int> Main::runLocalSolverModelWithIndex(ProjectWithOvertime& p, int lsIndex, double timeLimit, int iterLimit, bool traceobj) {
 	vector<int> sts;
 	ListModel *lm = genListModelWithIndex(p, lsIndex);
-	SolverParams params(timeLimit);
+	SolverParams params(timeLimit, iterLimit);
 	params.trace = traceobj;
 	params.solverIx = lsIndex;
 	sts = lm->solve(params);
@@ -120,7 +121,8 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 
         string solMethod = argv[1];
         double timeLimit = atof(argv[2]);
-        ProjectWithOvertime p(argv[3]);
+		int iterLimit = atoi(argv[3]);
+        ProjectWithOvertime p(argv[4]);
         string outFn = "";
 
         if(computeMinMaxMakespanDifference(p) <= 0) {
@@ -128,23 +130,23 @@ void Main::commandLineRunner(int argc, char * argv[]) {
             return;
         }
 
-        bool traceobj = (argc == 5 && !string("traceobj").compare(argv[4]));
+        bool traceobj = (argc == 6 && !string("traceobj").compare(argv[5]));
 
         if(!solMethod.compare("BranchAndBound")) {
-            BranchAndBound b(p, timeLimit);
+            BranchAndBound b(p, timeLimit, iterLimit);
             sts = b.solve(false, traceobj);
             outFn = "BranchAndBoundResults.txt";
         } else if(boost::starts_with(solMethod, "GA")) {
 			int gaIndex = stoi(solMethod.substr(2, 1));
-			sts = runGeneticAlgorithmWithIndex(p, gaIndex, timeLimit, traceobj);
+			sts = runGeneticAlgorithmWithIndex(p, gaIndex, timeLimit, iterLimit, traceobj);
             outFn = "GA" + to_string(gaIndex) + "Results.txt";
 		}
 		else if (!solMethod.compare("LocalSolver")) {
-			sts = LSSolver::solve(p, timeLimit, traceobj);
+			sts = LSSolver::solve(p, timeLimit, iterLimit, traceobj);
 			outFn = "LocalSolverResults.txt";
 		} else if(boost::starts_with(solMethod, "LocalSolverNative")) {
 			int lsnIndex = stoi(solMethod.substr(17, 1));
-			sts = runLocalSolverModelWithIndex(p, lsnIndex, timeLimit, traceobj);
+			sts = runLocalSolverModelWithIndex(p, lsnIndex, timeLimit, iterLimit, traceobj);
 			outFn = "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");
