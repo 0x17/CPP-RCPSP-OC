@@ -65,3 +65,25 @@ TEST_F(ProjectWithOvertimeTest, testJobsWithDescendingStartingTimes)
 	for (int i = 0; i < sts.size(); i++)
 		ASSERT_EQ(sts[actualJobLst[i]], desc[i]);
 }
+
+TEST_F(ProjectWithOvertimeTest, testBorderSchedulingOptionsSetFromIndex) {
+	Matrix<int> expectedTable({
+		{ 0, 0, 0 },
+		{ 0, 0, 1 },
+		{ 0, 1, 0 },
+		{ 0, 1, 1 },
+		{ 1, 0, 0 },
+		{ 1, 0, 1 },
+		{ 1, 1, 0 },
+		{ 1, 1, 1 }
+	});
+
+	ProjectWithOvertime::BorderSchedulingOptions options;
+	
+	for(int i=0; i<pow(2, 3); i++) {
+		options.setFromIndex(i);
+		vector<bool> vals = { options.robust, options.linked, options.upper };
+		for(int j=0; j<3; j++)
+			ASSERT_TRUE(!expectedTable(i, j) || vals[j]);
+	}
+}

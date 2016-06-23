@@ -5,7 +5,6 @@
 #ifndef SSGS_UTILS_H
 #define SSGS_UTILS_H
 
-#include <string>
 #include <vector>
 #include <cstdlib>
 #include <list>
@@ -118,6 +117,10 @@ namespace Utils {
         ~Tracer();
         void trace(double slvtime, float bks_objval);
     };
+
+	inline bool int2bool(int i) {
+		return i != 0;
+	}
 }
 
 #endif //SSGS_UTILS_H

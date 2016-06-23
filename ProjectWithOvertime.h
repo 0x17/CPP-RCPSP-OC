@@ -34,8 +34,12 @@ public:
 	// START (lambda|beta)
 	struct BorderSchedulingOptions {
 		bool robust, linked, upper;
+
 		BorderSchedulingOptions();
 		BorderSchedulingOptions(bool _robust, bool _linked, bool _upper);
+		BorderSchedulingOptions(int ix);
+
+		void setFromIndex(int ix);
 	};
 	struct PartialScheduleData {
 		Matrix<int> resRem;

@@ -191,6 +191,16 @@ void ProjectWithOvertime::improvementStep(vector<int>& sts) {
 	// vgl. F&O
 }
 
+ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions(int ix) {
+	setFromIndex(ix);
+}
+
+void ProjectWithOvertime::BorderSchedulingOptions::setFromIndex(int ix) {
+	robust = Utils::int2bool((ix / 4) % 2);
+	linked = Utils::int2bool((ix / 2) % 2);
+	upper = Utils::int2bool(ix % 2);
+}
+
 int ProjectWithOvertime::heuristicMakespanUpperBound() const {
 	static int ms = makespan(serialSGS(topOrder));
 	return ms;

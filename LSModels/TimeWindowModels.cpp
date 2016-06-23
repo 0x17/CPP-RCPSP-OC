@@ -1,12 +1,17 @@
 
 #include "TimeWindowModels.h"
 
+ProjectWithOvertime::BorderSchedulingOptions ListBetaModel::options;
+
+void ListBetaModel::setVariant(int variant) {
+	options.setFromIndex(variant);
+}
+
 int ListBetaModel::SerialSGSBetaFunction::varCount() {
 	return 2 * p.numJobs;
 }
 
 SGSResult ListBetaModel::SerialSGSBetaFunction::decode(vector<int>& order, const LSNativeContext& context) {
-	static ProjectWithOvertime::BorderSchedulingOptions options = { true, false, false };
 	vector<int> beta(p.numJobs);
 	for (int i = 0; i<p.numJobs; i++) {
 		beta[i] = static_cast<int>(context.getIntValue(p.numJobs + i));
@@ -22,7 +27,6 @@ void ListBetaModel::addAdditionalData(LSModel &model, LSExpression& obj) {
 }
 
 vector<int> ListBetaModel::parseScheduleFromSolution(LSSolution& sol) {
-	static ProjectWithOvertime::BorderSchedulingOptions options = { true, false, false };
 	vector<int> order(p.numJobs), betaVarVals(p.numJobs);
 	for (int i = 0; i<p.numJobs; i++) {
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));

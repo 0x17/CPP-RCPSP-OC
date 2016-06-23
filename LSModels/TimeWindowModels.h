@@ -10,14 +10,17 @@ class ListBetaModel : public ListModel {
 		SGSResult decode(vector<int>& order, const LSNativeContext& context) override;
 	};
 
-	vector<LSExpression> betaVar;
-
 	void addAdditionalData(LSModel &model, LSExpression& obj) override;
 	vector<int> parseScheduleFromSolution(LSSolution& sol) override;
+
+	vector<LSExpression> betaVar;
+	static ProjectWithOvertime::BorderSchedulingOptions options;
 
 public:
 	ListBetaModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSBetaFunction(_p)), betaVar(p.numJobs) {}
 	virtual ~ListBetaModel() {}
+
+	static void setVariant(int variant);
 };
 
 //==============================================================================================================

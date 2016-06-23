@@ -8,18 +8,24 @@
 #include <boost/algorithm/string.hpp>
 #include <cmath>
 #include "LSModels/FixedDeadlineModels.h"
+#include "GeneticAlgorithms/TimeWindow.h"
 
 namespace Main {
-	void convertArgFileToLSP(int argc, const char * argv[]);
 	void showUsage();
-	int computeMinMaxMakespanDifference(ProjectWithOvertime &p);
 	void commandLineRunner(int argc, char * argv[]);
+
+	int computeMinMaxMakespanDifference(ProjectWithOvertime &p);
+
+	ListModel *genListModelWithIndex(ProjectWithOvertime &p, int index, int variant = -1);
+	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, int variant, double timeLimit, int iterLimit, bool traceobj);
+	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, int lsIndex, int variant, double timeLimit, int iterLimit, bool traceobj);
+
+	void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit);
+
 	void testFixedDeadlineHeuristic();
 	void testLocalSolverNative(int seed);
-	void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit);
-	ListModel *genListModelWithIndex(ProjectWithOvertime &p, int index);
-	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, double timeLimit, int iterLimit, bool traceobj);
-	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, int lsIndex, double timeLimit, int iterLimit, bool traceobj);
+
+	void convertArgFileToLSP(int argc, const char * argv[]);
 }
 
 int main(int argc, char * argv[]) {
@@ -53,11 +59,12 @@ int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
 	return maxMs - minMs;
 }
 
-ListModel *Main::genListModelWithIndex(ProjectWithOvertime &p, int index) {
+ListModel *Main::genListModelWithIndex(ProjectWithOvertime &p, int index, int variant) {
 	ListModel *lm = nullptr;
 	switch (index) {
 	default:
 	case 0:
+		ListBetaModel::setVariant(variant);
 		lm = new ListBetaModel(p);
 		break;
 	case 1:
@@ -88,7 +95,7 @@ ListModel *Main::genListModelWithIndex(ProjectWithOvertime &p, int index) {
 	return lm;
 }
 
-vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, double timeLimit, int iterLimit, bool traceobj) {
+vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, int variant, double timeLimit, int iterLimit, bool traceobj) {
 	GAParameters params;
 	params.fitnessBasedPairing = true;
 	params.numGens = -1;
@@ -99,14 +106,17 @@ vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaInd
 	params.traceobj = traceobj;
 	params.selectionMethod = SelectionMethod::BEST;
 	params.rbbrs = true;
-	
+
+	if(gaIndex == 0)
+		TimeWindowBordersGA::setVariant(variant == -1 ? 0 : variant);
+
 	auto res = GARunners::run(p, params, gaIndex);
 	return res.sts;
 }
 
-vector<int> Main::runLocalSolverModelWithIndex(ProjectWithOvertime& p, int lsIndex, double timeLimit, int iterLimit, bool traceobj) {
+vector<int> Main::runLocalSolverModelWithIndex(ProjectWithOvertime& p, int lsIndex, int variant, double timeLimit, int iterLimit, bool traceobj) {
 	vector<int> sts;
-	ListModel *lm = genListModelWithIndex(p, lsIndex);
+	ListModel *lm = genListModelWithIndex(p, lsIndex, variant);
 	SolverParams params(timeLimit, iterLimit);
 	params.trace = traceobj;
 	params.solverIx = lsIndex;
@@ -138,7 +148,8 @@ void Main::commandLineRunner(int argc, char * argv[]) {
             outFn = "BranchAndBoundResults.txt";
         } else if(boost::starts_with(solMethod, "GA")) {
 			int gaIndex = stoi(solMethod.substr(2, 1));
-			sts = runGeneticAlgorithmWithIndex(p, gaIndex, timeLimit, iterLimit, traceobj);
+			int variant = (gaIndex == 0 && solMethod.length() == 4) ? stoi(solMethod.substr(3, 1)) : -1;
+	        sts = runGeneticAlgorithmWithIndex(p, gaIndex, variant, timeLimit, iterLimit, traceobj);
             outFn = "GA" + to_string(gaIndex) + "Results.txt";
 		}
 		else if (!solMethod.compare("LocalSolver")) {
@@ -146,7 +157,8 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			outFn = "LocalSolverResults.txt";
 		} else if(boost::starts_with(solMethod, "LocalSolverNative")) {
 			int lsnIndex = stoi(solMethod.substr(17, 1));
-			sts = runLocalSolverModelWithIndex(p, lsnIndex, timeLimit, iterLimit, traceobj);
+			int variant = (lsnIndex == 0 && solMethod.length() == 19) ? stoi(solMethod.substr(18, 1)) : -1;
+			sts = runLocalSolverModelWithIndex(p, lsnIndex, variant, timeLimit, iterLimit, traceobj);
 			outFn = "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");
@@ -154,7 +166,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 
         if(!traceobj) {
             string resStr = (sts[0] == Project::UNSCHEDULED) ? "infes" : to_string(p.calcProfit(sts));
-            Utils::spitAppend(string(argv[3])+";"+resStr+"\n", outFn);
+            Utils::spitAppend(string(argv[4])+";"+resStr+"\n", outFn);
         }
 
 		Utils::serializeSchedule(sts, "myschedule.txt");

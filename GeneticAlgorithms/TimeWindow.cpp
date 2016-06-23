@@ -40,6 +40,12 @@ vector<int> TimeWindowArbitraryGA::decode(LambdaTau& i)  {
 
 //======================================================================================================================
 
+ProjectWithOvertime::BorderSchedulingOptions TimeWindowBordersGA::options;
+
+void TimeWindowBordersGA::setVariant(int variant) {
+	options.setFromIndex(variant);
+}
+
 TimeWindowBordersGA::TimeWindowBordersGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "TimeWindowBordersGA") {
     useThreads = false;
 }
@@ -65,13 +71,11 @@ void TimeWindowBordersGA::mutate(LambdaBeta &i) {
 }
 
 float TimeWindowBordersGA::fitness(LambdaBeta &i) {
-    static ProjectWithOvertime::BorderSchedulingOptions options = { false, false, false };
     auto pair = p.serialSGSTimeWindowBorders(i.order, i.beta, options);
 	return p.calcProfit(pair);
 }
 
 vector<int> TimeWindowBordersGA::decode(LambdaBeta& i) {
-    static ProjectWithOvertime::BorderSchedulingOptions options = { false, false, false };
 	return p.serialSGSTimeWindowBorders(i.order, i.beta, options).sts;
 }
 

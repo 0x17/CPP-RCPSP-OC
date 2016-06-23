@@ -9,9 +9,11 @@
 #include "Representations.h"
 
 class TimeWindowBordersGA : public GeneticAlgorithm<LambdaBeta> {
-protected:
+	static ProjectWithOvertime::BorderSchedulingOptions options;
 public:
-    TimeWindowBordersGA(ProjectWithOvertime &_p);
+	static void setVariant(int variant);
+
+	TimeWindowBordersGA(ProjectWithOvertime &_p);
 protected:
     virtual LambdaBeta init(int ix) override;
     virtual void crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) override;
