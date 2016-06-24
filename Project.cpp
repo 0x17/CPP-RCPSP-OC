@@ -8,8 +8,9 @@
 #include <algorithm>
 #include <string>
 #include "Project.h"
+#include <boost/filesystem.hpp>
 
-Project::Project(const string filename) : name(filename) {
+Project::Project(const string filename) : name(filename), instanceName(boost::filesystem::path(filename).stem().string()) {
     auto lines = Utils::readLines(filename);
 
     numJobs = Utils::extractIntFromStr(lines[5], "jobs \\(incl. supersource\\/sink \\):  (\\d+)");

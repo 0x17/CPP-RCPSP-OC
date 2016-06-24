@@ -86,8 +86,7 @@ vector<int> parseSolution(ProjectWithOvertime &p, Matrix<LSExpression> &x, LSSol
 
 vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, int iterLimit, bool traceobj) {
 	LocalSolver ls;
-	Utils::Tracer tr("LocalSolverTrace");
-	tr.trace(0.0, 0.0f);
+	Utils::Tracer tr("LocalSolverTrace_" + p.instanceName);
 
 	auto pair = buildModel(p, ls);
 	auto model = pair.first;

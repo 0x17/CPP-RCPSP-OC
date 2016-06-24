@@ -19,8 +19,7 @@ BranchAndBound::~BranchAndBound() {
 vector<int> BranchAndBound::solve(bool seedWithGA, bool traceobj) {
     this->traceobj = traceobj;
     if(traceobj && tr == nullptr) {
-        tr = new Utils::Tracer("BranchAndBoundTrace");
-		tr->trace(0.0, 0.0f);
+        tr = new Utils::Tracer("BranchAndBoundTrace_" + p.instanceName);
     }
 
     lupdate = chrono::system_clock::now();
@@ -184,6 +183,7 @@ void BranchAndBound::foundLeaf(vector<int> &sts) {
         candidate = sts;
         lb = profit;
         cout << "Updated lower bound = " << lb << endl;
+		if(tr != nullptr) tr->trace(sw.look(), lb);
     }
 }
 

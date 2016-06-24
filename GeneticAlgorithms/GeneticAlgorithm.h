@@ -100,7 +100,7 @@ template<class Individual>
 void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
     params = _params;
     if(params.traceobj && tr == nullptr) {
-        tr = new Utils::Tracer("GA"+name+"Trace");
+        tr = new Utils::Tracer("GA"+name+"Trace_" + p.instanceName);
     }
 }
 
@@ -206,7 +206,6 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
     }
 
 	TimePoint lupdate = chrono::system_clock::now();
-	if(params.traceobj) tr->trace(0.0, 0.0f);
 
     float lastBestVal = numeric_limits<float>::max();
 
@@ -257,8 +256,11 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
         if(pop[0].second < lastBestVal) {
             if(lastBestVal == numeric_limits<float>::max())
                 cout << "Initial improvement by " << to_string(-pop[0].second) << endl;
-            else
-                cout << "Improvement by " << to_string(lastBestVal - pop[0].second) << endl;
+			else
+	            cout << "Improvement by " << to_string(lastBestVal - pop[0].second) << endl;
+
+	        if(params.traceobj)
+				tr->trace(sw.look(), -pop[0].second);
         }
         lastBestVal = pop[0].second;
     }

@@ -1,14 +1,17 @@
+#include <cmath>
+#include <boost/algorithm/string.hpp>
+
 #include "ProjectWithOvertime.h"
+
 #include "LSModels/NaiveModels.h"
 #include "LSModels/OvertimeBoundModels.h"
 #include "LSModels/TimeWindowModels.h"
-#include "GeneticAlgorithms/OvertimeBound.h"
-#include "GeneticAlgorithms/Runners.h"
-#include "BranchAndBound.h"
-#include <boost/algorithm/string.hpp>
-#include <cmath>
 #include "LSModels/FixedDeadlineModels.h"
+
+#include "GeneticAlgorithms/Runners.h"
 #include "GeneticAlgorithms/TimeWindow.h"
+
+#include "BranchAndBound.h"
 
 namespace Main {
 	void showUsage();
@@ -163,11 +166,9 @@ void Main::commandLineRunner(int argc, char * argv[]) {
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");
         }
-
-        if(!traceobj) {
-            string resStr = (sts[0] == Project::UNSCHEDULED) ? "infes" : to_string(p.calcProfit(sts));
-            Utils::spitAppend(string(argv[4])+";"+resStr+"\n", outFn);
-        }
+        
+        string resStr = (sts[0] == Project::UNSCHEDULED) ? "infes" : to_string(p.calcProfit(sts));
+        Utils::spitAppend(string(argv[4])+";"+resStr+"\n", outFn);     
 
 		Utils::serializeSchedule(sts, "myschedule.txt");
 		Utils::serializeProfit(p.calcProfit(sts), "myprofit.txt");

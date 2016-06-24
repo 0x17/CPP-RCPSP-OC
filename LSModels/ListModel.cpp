@@ -28,7 +28,7 @@ vector<int> ListModel::solve(SolverParams params) {
 	buildModel();
 	applyParams(params);
     if(params.trace) {
-        tr = new Utils::Tracer("LocalSolverNative"+to_string(params.solverIx)+"Trace");
+        tr = new Utils::Tracer("LocalSolverNative"+to_string(params.solverIx)+"Trace_" + p.instanceName);
 		cback = new TraceCallback(*tr);
         ls.addCallback(CT_TimeTicked, cback);
     }

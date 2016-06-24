@@ -55,7 +55,7 @@ struct SGSResult {
 
 class Project {
 public:
-    const string name;
+	const string name, instanceName;
 
     int numJobs, numRes, numPeriods, T, lastJob;
     Matrix<char> adjMx;

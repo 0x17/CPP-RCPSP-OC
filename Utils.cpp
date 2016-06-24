@@ -112,6 +112,7 @@ namespace Utils {
         if(!f.is_open())
             throw runtime_error("Unable to create " + filePrefix + ".txt!");
         f << "slvtime,bks_objval\n";
+		trace(0.0, 0.0f);
     }
 
     Tracer::~Tracer() {
