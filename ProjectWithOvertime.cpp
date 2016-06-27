@@ -196,9 +196,9 @@ ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions(int ix) {
 }
 
 void ProjectWithOvertime::BorderSchedulingOptions::setFromIndex(int ix) {
+	separateCrossover = ix == -1 ? false : Utils::int2bool((ix / 4) % 2);
 	linked = ix == -1 ? false : Utils::int2bool((ix / 2) % 2);
 	upper = ix == -1 ? false : Utils::int2bool(ix % 2);
-	separateCrossover = ix == -1 ? false : Utils::int2bool((ix / 2) % 2);
 }
 
 int ProjectWithOvertime::heuristicMakespanUpperBound() const {
