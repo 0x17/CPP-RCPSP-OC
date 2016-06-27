@@ -16,7 +16,7 @@ SGSResult ListBetaModel::SerialSGSBetaFunction::decode(vector<int>& order, const
 	for (int i = 0; i<p.numJobs; i++) {
 		beta[i] = static_cast<int>(context.getIntValue(p.numJobs + i));
 	}
-	return p.serialSGSTimeWindowBorders(order, beta, options);
+	return p.serialSGSTimeWindowBorders(order, beta, options, true);
 }
 
 void ListBetaModel::addAdditionalData(LSModel &model, LSExpression& obj) {
@@ -32,7 +32,7 @@ vector<int> ListBetaModel::parseScheduleFromSolution(LSSolution& sol) {
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
 		betaVarVals[i] = static_cast<int>(sol.getIntValue(betaVar[i]));
 	}
-	return p.serialSGSTimeWindowBorders(order, betaVarVals, options).sts;
+	return p.serialSGSTimeWindowBorders(order, betaVarVals, options, true).sts;
 }
 
 //==============================================================================================================

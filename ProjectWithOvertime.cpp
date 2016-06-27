@@ -196,9 +196,9 @@ ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions(int ix) {
 }
 
 void ProjectWithOvertime::BorderSchedulingOptions::setFromIndex(int ix) {
-	robust = Utils::int2bool((ix / 4) % 2);
-	linked = Utils::int2bool((ix / 2) % 2);
-	upper = Utils::int2bool(ix % 2);
+	linked = ix == -1 ? false : Utils::int2bool((ix / 2) % 2);
+	upper = ix == -1 ? false : Utils::int2bool(ix % 2);
+	separateCrossover = ix == -1 ? false : Utils::int2bool((ix / 2) % 2);
 }
 
 int ProjectWithOvertime::heuristicMakespanUpperBound() const {
@@ -258,10 +258,10 @@ bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, const
 }
 
 ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions()
-	: robust(false), linked(false), upper(false) {}
+	: separateCrossover(false), linked(false), upper(false) {}
 
 ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions(bool _robust, bool _linked, bool _upper)
-	: robust(_robust), linked(_linked), upper(_upper) {}
+	: separateCrossover(_robust), linked(_linked), upper(_upper) {}
 
 ProjectWithOvertime::PartialScheduleData::PartialScheduleData(ProjectWithOvertime const* p)
 	: resRem(p->normalCapacityProfile()), sts(p->numJobs, p->UNSCHEDULED), fts(p->numJobs, p->UNSCHEDULED) {}
@@ -302,7 +302,7 @@ void ProjectWithOvertime::scheduleJobBorderUpper(int job, int lastPredFinished, 
 	scheduleJobSeparateResiduals(job, t, bval, data, residuals);
 }
 
-SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, BorderSchedulingOptions options) const {	
+SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, BorderSchedulingOptions options, bool robust) const {
 	ResidualData *residuals = nullptr;
 	if(options.upper) {
 		residuals = new ResidualData(this);
@@ -311,7 +311,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &ord
 	PartialScheduleData data(this);
 
     for (int k=0; k<numJobs; k++) {
-        int job = options.robust ? chooseEligibleWithLowestIndex(data.sts, order) : order[k];
+        int job = robust ? chooseEligibleWithLowestIndex(data.sts, order) : order[k];
         int lastPredFinished = computeLastPredFinishingTime(data.fts, job);
 		int bval = options.linked ? beta[k] : beta[job];
 		if (!options.upper) scheduleJobBorderLower(job, lastPredFinished, bval, data);

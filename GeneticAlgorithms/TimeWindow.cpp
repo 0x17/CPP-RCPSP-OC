@@ -58,6 +58,7 @@ LambdaBeta TimeWindowBordersGA::init(int ix) {
 }
 
 void TimeWindowBordersGA::crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) {
+    // implement options.separateCrossover!
     daughter.randomOnePointCrossover(mother, father);
 }
 

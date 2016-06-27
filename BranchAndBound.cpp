@@ -188,7 +188,7 @@ void BranchAndBound::foundLeaf(vector<int> &sts) {
 }
 
 void BranchAndBound::branch(vector<int> sts, int job, int stj) {
-	if (timeLimit != -1.0 && sw.look() >= timeLimit * 1000.0
+	if ((timeLimit != -1.0 && sw.look() >= timeLimit * 1000.0)
 		|| (iterLimit != -1 && nodeCtr >= iterLimit))
 		return;
 

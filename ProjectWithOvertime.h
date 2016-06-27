@@ -33,10 +33,10 @@ public:
 
 	// START (lambda|beta)
 	struct BorderSchedulingOptions {
-		bool robust, linked, upper;
+		bool separateCrossover, linked, upper;
 
 		BorderSchedulingOptions();
-		BorderSchedulingOptions(bool _robust, bool _linked, bool _upper);
+		BorderSchedulingOptions(bool _separateCrossover, bool _linked, bool _upper);
 		BorderSchedulingOptions(int ix);
 
 		void setFromIndex(int ix);
@@ -53,7 +53,7 @@ public:
 	void scheduleJobSeparateResiduals(int job, int t, int bval, PartialScheduleData& data, ResidualData& residuals) const;
 	void scheduleJobBorderLower(int job, int lastPredFinished, int bval, PartialScheduleData& data) const;
 	void scheduleJobBorderUpper(int job, int lastPredFinished, int bval, PartialScheduleData& data, ResidualData& residuals) const;
-	SGSResult serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, BorderSchedulingOptions options) const;
+	SGSResult serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, BorderSchedulingOptions options, bool robust = false) const;
 	// END (lambda|beta)
 
     SGSResult serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau, bool robust = false) const;
