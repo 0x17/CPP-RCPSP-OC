@@ -12,7 +12,7 @@ TimeWindowArbitraryDiscretizedGA::TimeWindowArbitraryDiscretizedGA(ProjectWithOv
 LambdaBeta TimeWindowArbitraryDiscretizedGA::init(int ix) {
 	LambdaBeta indiv(p.numJobs);
 	indiv.order = ix == 0 ? p.topOrder : Sampling::sample(params.rbbrs, p);
-	p.eachJob([&](int j) { indiv.beta[j] = ix == 0 ? 0 : Utils::randRangeIncl(0, ub); });
+	p.eachJob([&](int j) { indiv.beta[j] = ix == 0 ? 0 : Utils::randRangeIncl(0, ub-1); });
 	return indiv;
 }
 
@@ -24,22 +24,22 @@ void TimeWindowArbitraryDiscretizedGA::mutate(LambdaBeta &i) {
 	i.neighborhoodSwap(p.adjMx, params.pmutate);
 	p.eachJob([&](int j) {
 		withMutProb([&] {
-			i.beta[j] = Utils::randRangeIncl(0, ub);
+			i.beta[j] = Utils::randRangeIncl(0, ub-1);
 		});
 	});
 }
 
 float TimeWindowArbitraryDiscretizedGA::fitness(LambdaBeta &i) {
-	vector<float> tau = Utils::constructVector<float>(i.beta.size(), [&i, this](int ix) {
-		return static_cast<float>(static_cast<double>(i.beta[ix]) / static_cast<double>(ub - 1));
+	vector<float> tau = Utils::constructVector<float>(static_cast<int>(i.beta.size()), [&i, this](int ix) {
+		return static_cast<float>(static_cast<double>(i.beta[ix]) / static_cast<double>(ub-1));
 	});
 	auto pair = p.serialSGSTimeWindowArbitrary(i.order, tau);
 	return p.calcProfit(pair);
 }
 
 vector<int> TimeWindowArbitraryDiscretizedGA::decode(LambdaBeta& i) {
-	vector<float> tau = Utils::constructVector<float>(i.beta.size(), [&i, this](int ix) {
-		return static_cast<float>(static_cast<double>(i.beta[ix]) / static_cast<double>(ub - 1));
+	vector<float> tau = Utils::constructVector<float>(static_cast<int>(i.beta.size()), [&i, this](int ix) {
+		return static_cast<float>(static_cast<double>(i.beta[ix]) / static_cast<double>(ub-1));
 	});
 	return p.serialSGSTimeWindowArbitrary(i.order, tau).sts;
 }
