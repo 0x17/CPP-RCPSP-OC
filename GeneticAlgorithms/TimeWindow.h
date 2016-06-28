@@ -15,8 +15,8 @@ public:
 
 	TimeWindowBordersGA(ProjectWithOvertime &_p);
 protected:
-    virtual LambdaBeta init(int ix) override;
-    virtual void crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) override;
+    virtual LambdaBeta init(int ix) override;	
+	virtual void crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) override;
     virtual void mutate(LambdaBeta &i) override;
     virtual float fitness(LambdaBeta &i) override;
 	virtual vector<int> decode(LambdaBeta& i) override;
@@ -31,6 +31,19 @@ private:
     virtual void mutate(LambdaTau &i) override;
     virtual float fitness(LambdaTau &i) override;
 	virtual vector<int> decode(LambdaTau& i) override;
+};
+
+class TimeWindowArbitraryDiscretizedGA : public GeneticAlgorithm<LambdaBeta> {
+public:
+	TimeWindowArbitraryDiscretizedGA(ProjectWithOvertime &_p, int _ub = 4);
+private:
+	virtual LambdaBeta init(int ix) override;
+	virtual void crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) override;
+	virtual void mutate(LambdaBeta &i) override;
+	virtual float fitness(LambdaBeta &i) override;
+	virtual vector<int> decode(LambdaBeta& i) override;
+
+	int ub;
 };
 
 class CompareAlternativesGA : public GeneticAlgorithm<Lambda> {

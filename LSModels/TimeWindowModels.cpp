@@ -66,6 +66,8 @@ vector<int> ListTauModel::parseScheduleFromSolution(LSSolution& sol) {
 	return p.serialSGSTimeWindowArbitrary(order, tau, true).sts;
 }
 
+//==============================================================================================================
+
 int ListTauDiscreteModel::SerialSGSIntegerFunction::varCount() {
 	return 2 * p.numJobs;
 }
@@ -74,12 +76,11 @@ SGSResult ListTauDiscreteModel::SerialSGSIntegerFunction::decode(vector<int>& or
 	vector<float> tau(p.numJobs);
 	for (int i = 0; i<p.numJobs; i++) {
 		int beta = static_cast<int>(context.getIntValue(p.numJobs + i));
-		tau[i] = (float)(static_cast<double>(beta) / static_cast<double>(IV_COUNT - 1));
+		tau[i] = static_cast<float>(static_cast<double>(beta) / static_cast<double>(IV_COUNT - 1));
 	}
 	return p.serialSGSTimeWindowArbitrary(order, tau, true);			
 }
 
-//==============================================================================================================
 void ListTauDiscreteModel::addAdditionalData(LSModel &model, LSExpression& obj) {
 	for (int i = 0; i < p.numJobs; i++) {
 		tauVar[i] = model.intVar(0, IV_COUNT - 1);
@@ -92,7 +93,7 @@ vector<int> ListTauDiscreteModel::parseScheduleFromSolution(LSSolution& sol) {
 	vector<float> tau(p.numJobs);
 	for (int i = 0; i<p.numJobs; i++) {
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
-		tau[i] = (float)(static_cast<double>(sol.getIntValue(tauVar[i])) / static_cast<double>(IV_COUNT - 1));
+		tau[i] = static_cast<float>(static_cast<double>(sol.getIntValue(tauVar[i])) / static_cast<double>(IV_COUNT - 1));
 	}
 	return p.serialSGSTimeWindowArbitrary(order, tau, true).sts;
 }

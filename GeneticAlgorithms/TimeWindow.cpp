@@ -5,6 +5,47 @@
 #include "TimeWindow.h"
 #include "Sampling.h"
 
+TimeWindowArbitraryDiscretizedGA::TimeWindowArbitraryDiscretizedGA(ProjectWithOvertime &_p, int _ub) : GeneticAlgorithm(_p, "TimeWindowArbitraryGA"), ub(_ub) {
+	useThreads = false;
+}
+
+LambdaBeta TimeWindowArbitraryDiscretizedGA::init(int ix) {
+	LambdaBeta indiv(p.numJobs);
+	indiv.order = ix == 0 ? p.topOrder : Sampling::sample(params.rbbrs, p);
+	p.eachJob([&](int j) { indiv.beta[j] = ix == 0 ? 0 : Utils::randRangeIncl(0, ub); });
+	return indiv;
+}
+
+void TimeWindowArbitraryDiscretizedGA::crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) {
+	daughter.randomOnePointCrossover(mother, father);
+}
+
+void TimeWindowArbitraryDiscretizedGA::mutate(LambdaBeta &i) {
+	i.neighborhoodSwap(p.adjMx, params.pmutate);
+	p.eachJob([&](int j) {
+		withMutProb([&] {
+			i.beta[j] = Utils::randRangeIncl(0, ub);
+		});
+	});
+}
+
+float TimeWindowArbitraryDiscretizedGA::fitness(LambdaBeta &i) {
+	vector<float> tau = Utils::constructVector<float>(i.beta.size(), [&i, this](int ix) {
+		return static_cast<float>(static_cast<double>(i.beta[ix]) / static_cast<double>(ub - 1));
+	});
+	auto pair = p.serialSGSTimeWindowArbitrary(i.order, tau);
+	return p.calcProfit(pair);
+}
+
+vector<int> TimeWindowArbitraryDiscretizedGA::decode(LambdaBeta& i) {
+	vector<float> tau = Utils::constructVector<float>(i.beta.size(), [&i, this](int ix) {
+		return static_cast<float>(static_cast<double>(i.beta[ix]) / static_cast<double>(ub - 1));
+	});
+	return p.serialSGSTimeWindowArbitrary(i.order, tau).sts;
+}
+
+//======================================================================================================================
+
 TimeWindowArbitraryGA::TimeWindowArbitraryGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "TimeWindowArbitraryGA") {
     useThreads = false;
 }
@@ -24,7 +65,8 @@ void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
     i.neighborhoodSwap(p.adjMx, params.pmutate);
 	p.eachJob([&](int j) {
         withMutProb([&] {
-            i.tau[j] = 1.0f - i.tau[j];
+            //i.tau[j] = 1.0f - i.tau[j];
+			i.tau[j] = Utils::randUnitFloat();
         });
     });
 }
@@ -44,6 +86,7 @@ ProjectWithOvertime::BorderSchedulingOptions TimeWindowBordersGA::options;
 
 void TimeWindowBordersGA::setVariant(int variant) {
 	options.setFromIndex(variant);
+	LambdaBeta::setOptions(options);
 }
 
 TimeWindowBordersGA::TimeWindowBordersGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "TimeWindowBordersGA") {
@@ -58,8 +101,8 @@ LambdaBeta TimeWindowBordersGA::init(int ix) {
 }
 
 void TimeWindowBordersGA::crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) {
-    // implement options.separateCrossover!
-    daughter.randomOnePointCrossover(mother, father);
+	if (options.separateCrossover) daughter.separateOnePointCrossover(mother, father);
+	else daughter.randomOnePointCrossover(mother, father);
 }
 
 void TimeWindowBordersGA::mutate(LambdaBeta &i) {

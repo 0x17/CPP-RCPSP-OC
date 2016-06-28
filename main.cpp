@@ -48,7 +48,7 @@ void Main::convertArgFileToLSP(int argc, const char * argv[]) {
 
 void Main::showUsage() {
 	list<string> solMethods = { "BranchAndBound", "LocalSolver" };
-	for (int i = 0; i < 6; i++) solMethods.push_back("GA" + to_string(i));
+	for (int i = 0; i < 7; i++) solMethods.push_back("GA" + to_string(i));
 	for (int i = 0; i < 9; i++) solMethods.push_back("LocalSolverNative" + to_string(i));
 	cout << "Number of arguments must be >= 4" << endl;
 	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ScheduleLimit ProjectFileSM [traceobj]" << endl;

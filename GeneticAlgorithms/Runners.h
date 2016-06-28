@@ -36,8 +36,9 @@ namespace GARunners {
         return{ pair.first, pair.second, solvetime, ga.getName() };
     }
 
-    RUN_GA_FUNC_SIGN(runTwBorderGA, TimeWindowBordersGA)
-    RUN_GA_FUNC_SIGN(runTwArbitraryGA, TimeWindowArbitraryGA)
+	RUN_GA_FUNC_SIGN(runTwBorderGA, TimeWindowBordersGA)
+	RUN_GA_FUNC_SIGN(runTwArbitraryGA, TimeWindowArbitraryGA)
+	RUN_GA_FUNC_SIGN(runTwArbitraryDiscretizedGA, TimeWindowArbitraryDiscretizedGA)
     RUN_GA_FUNC_SIGN(runFixedCapaGA, FixedCapacityGA)
     RUN_GA_FUNC_SIGN(runTimeVaryCapaGA, TimeVaryingCapacityGA)
     RUN_GA_FUNC_SIGN(runCompAltsGA, CompareAlternativesGA)
