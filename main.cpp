@@ -1,5 +1,6 @@
 #include <cmath>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 
 #include "ProjectWithOvertime.h"
 
@@ -20,8 +21,8 @@ namespace Main {
 	int computeMinMaxMakespanDifference(ProjectWithOvertime &p);
 
 	ListModel *genListModelWithIndex(ProjectWithOvertime &p, int index, int variant = -1);
-	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, int variant, double timeLimit, int iterLimit, bool traceobj);
-	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, int lsIndex, int variant, double timeLimit, int iterLimit, bool traceobj);
+	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, int variant, double timeLimit, int iterLimit, bool traceobj, string outPath);
+	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, int lsIndex, int variant, double timeLimit, int iterLimit, bool traceobj, string outPath);
 
 	void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit);
 
@@ -98,7 +99,7 @@ ListModel *Main::genListModelWithIndex(ProjectWithOvertime &p, int index, int va
 	return lm;
 }
 
-vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, int variant, double timeLimit, int iterLimit, bool traceobj) {
+vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, int variant, double timeLimit, int iterLimit, bool traceobj, string outPath) {
 	GAParameters params;
 	params.fitnessBasedPairing = true;
 	params.numGens = -1;
@@ -109,6 +110,7 @@ vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaInd
 	params.traceobj = traceobj;
 	params.selectionMethod = SelectionMethod::BEST;
 	params.rbbrs = true;
+	params.outPath = outPath;
 
 	if(gaIndex == 0)
 		TimeWindowBordersGA::setVariant(variant == -1 ? 0 : variant);
@@ -117,15 +119,23 @@ vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaInd
 	return res.sts;
 }
 
-vector<int> Main::runLocalSolverModelWithIndex(ProjectWithOvertime& p, int lsIndex, int variant, double timeLimit, int iterLimit, bool traceobj) {
+vector<int> Main::runLocalSolverModelWithIndex(ProjectWithOvertime& p, int lsIndex, int variant, double timeLimit, int iterLimit, bool traceobj, string outPath) {
 	vector<int> sts;
 	ListModel *lm = genListModelWithIndex(p, lsIndex, variant);
 	SolverParams params(timeLimit, iterLimit);
 	params.trace = traceobj;
 	params.solverIx = lsIndex;
+	params.outPath = outPath;
 	sts = lm->solve(params);
 	delete lm;
 	return sts;
+}
+
+string coreInstanceName(const string & filename) {
+	string fn(filename);
+	boost::replace_first(fn, "j30/", "");
+	boost::replace_first(fn, ".sm", "");
+	return fn;
 }
 
 void Main::commandLineRunner(int argc, char * argv[]) {
@@ -136,8 +146,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
         double timeLimit = atof(argv[2]);
 		int iterLimit = atoi(argv[3]);
         ProjectWithOvertime p(argv[4]);
-        string outFn = "";
-
+        
         if(computeMinMaxMakespanDifference(p) <= 0) {
             cout << "maxMs - minMs <= 0... ---> skipping!" << endl;
             return;
@@ -145,33 +154,37 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 
         bool traceobj = (argc == 6 && !string("traceobj").compare(argv[5]));
 
-        if(!solMethod.compare("BranchAndBound")) {
+		string outPath = string(argv[4]).substr(0, 3) + "_" + to_string(int(round(timeLimit))) + "secs/";
+		string outFn = outPath;
+		boost::filesystem::create_directory(boost::filesystem::path(outPath));
+
+		if(!solMethod.compare("BranchAndBound")) {
             BranchAndBound b(p, timeLimit, iterLimit);
-            sts = b.solve(false, traceobj);
-            outFn = "BranchAndBoundResults.txt";
+            sts = b.solve(false, traceobj, outPath);
+            outFn += "BranchAndBoundResults.txt";
         } else if(boost::starts_with(solMethod, "GA")) {
 			int gaIndex = stoi(solMethod.substr(2, 1));
 			int variant = (gaIndex == 0 && solMethod.length() == 4) ? stoi(solMethod.substr(3, 1)) : -1;
-	        sts = runGeneticAlgorithmWithIndex(p, gaIndex, variant, timeLimit, iterLimit, traceobj);
-            outFn = "GA" + to_string(gaIndex) + "Results.txt";
+	        sts = runGeneticAlgorithmWithIndex(p, gaIndex, variant, timeLimit, iterLimit, traceobj, outPath);
+            outFn += "GA" + to_string(gaIndex) + "Results.txt";
 		}
 		else if (!solMethod.compare("LocalSolver")) {
-			sts = LSSolver::solve(p, timeLimit, iterLimit, traceobj);
-			outFn = "LocalSolverResults.txt";
+			sts = LSSolver::solve(p, timeLimit, iterLimit, traceobj, outPath);
+			outFn += "LocalSolverResults.txt";
 		} else if(boost::starts_with(solMethod, "LocalSolverNative")) {
 			int lsnIndex = stoi(solMethod.substr(17, 1));
 			int variant = (lsnIndex == 0 && solMethod.length() == 19) ? stoi(solMethod.substr(18, 1)) : -1;
-			sts = runLocalSolverModelWithIndex(p, lsnIndex, variant, timeLimit, iterLimit, traceobj);
-			outFn = "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
+			sts = runLocalSolverModelWithIndex(p, lsnIndex, variant, timeLimit, iterLimit, traceobj, outPath);
+			outFn += "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");
         }
         
         string resStr = (sts[0] == Project::UNSCHEDULED) ? "infes" : to_string(p.calcProfit(sts));
-        Utils::spitAppend(string(argv[4])+";"+resStr+"\n", outFn);     
+        Utils::spitAppend(coreInstanceName(string(argv[4]))+";"+resStr+"\n", outFn);
 
-		Utils::serializeSchedule(sts, "myschedule.txt");
-		Utils::serializeProfit(p.calcProfit(sts), "myprofit.txt");
+		Utils::serializeSchedule(sts, outPath + "myschedule.txt");
+		Utils::serializeProfit(p.calcProfit(sts), outPath + "myprofit.txt");
 	}
 	else showUsage();
 }
@@ -223,7 +236,7 @@ void Main::benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
     GAParameters params;
     params.popSize = 80;
     params.timeLimit = -1.0;
-    params.numGens = static_cast<int>(std::floor(static_cast<float>(iterLimit) / static_cast<float>(params.popSize)));
+    params.numGens = static_cast<int>(floor(static_cast<float>(iterLimit) / static_cast<float>(params.popSize)));
     params.fitnessBasedPairing = true;
     params.pmutate = 5;
     params.traceobj = false;

@@ -41,6 +41,7 @@ struct GAParameters {
     bool fitnessBasedPairing, traceobj;
 	SelectionMethod selectionMethod;
     bool rbbrs;
+	string outPath;
 };
 
 template<class Individual>
@@ -100,7 +101,7 @@ template<class Individual>
 void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
     params = _params;
     if(params.traceobj && tr == nullptr) {
-        tr = new Utils::Tracer("GA"+name+"Trace_" + p.instanceName);
+        tr = new Utils::Tracer(params.outPath + "GA"+name+"Trace_" + p.instanceName);
     }
 }
 
@@ -205,18 +206,24 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 		pop[i].second = i < params.popSize ? -fitness(pop[i].first) : 0.0f;
     }
 
-	TimePoint lupdate = chrono::system_clock::now();
+	//TimePoint lupdate = chrono::system_clock::now();
 
     float lastBestVal = numeric_limits<float>::max();
 
     for(int i=0;   (params.iterLimit == -1 || i * params.popSize < params.iterLimit)
 				&& (params.numGens == -1 || i<params.numGens)
 				&& (params.timeLimit == -1.0 || sw.look() < params.timeLimit * 1000.0); i++) {
-		if (chrono::duration<double, std::milli>(chrono::system_clock::now() - lupdate).count() > MSECS_BETWEEN_TRACES) {
-			cout << "Generations = " << (i + 1) << ", Obj = " << -pop[0].second << ", Time = " << (boost::format("%.2f") % (sw.look() / 1000.0)) << endl;
+
+		if (tr != nullptr) {
+			tr->intervalTrace(-pop[0].second);
+		}
+
+		/*double deltat = chrono::duration<double, milli>(chrono::system_clock::now() - lupdate).count();
+		if ((sw.look() <= 1000.0 && deltat >= MSECS_BETWEEN_TRACES_SHORT) || (sw.look() > 1000.0 && deltat >= MSECS_BETWEEN_TRACES_LONG)) {
+			//cout << "Generations = " << (i + 1) << ", Obj = " << -pop[0].second << ", Time = " << (boost::format("%.2f") % (sw.look() / 1000.0)) << endl;
 			lupdate = chrono::system_clock::now();
             if(params.traceobj) tr->trace(sw.look(), -pop[0].second);
-		}
+		}*/
 
 		// Pairing and crossover
         generateChildren(pop);
@@ -259,8 +266,8 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 			else
 	            cout << "Improvement by " << to_string(lastBestVal - pop[0].second) << endl;
 
-	        if(params.traceobj)
-				tr->trace(sw.look(), -pop[0].second);
+	        //if(params.traceobj)
+			//	tr->trace(sw.look(), -pop[0].second);
         }
         lastBestVal = pop[0].second;
     }

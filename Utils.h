@@ -10,6 +10,8 @@
 #include <list>
 #include <boost/format.hpp>
 #include <fstream>
+#include <chrono>
+#include "Stopwatch.h"
 
 using namespace std;
 
@@ -112,10 +114,14 @@ namespace Utils {
 
     class Tracer {
         ofstream f;
+		std::chrono::time_point<std::chrono::system_clock> lupdate;
+		double last_slvtime;
+		Stopwatch sw;
     public:
         Tracer(const string filePrefix = "SolverTrace");
         ~Tracer();
-        void trace(double slvtime, float bks_objval);
+        void trace(double slvtime, float bks_objval, bool trunc_secs = false);
+	    void intervalTrace(float bks_objval);
     };
 
 	inline bool int2bool(int i) {

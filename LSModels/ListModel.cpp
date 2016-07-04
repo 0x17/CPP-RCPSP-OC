@@ -11,7 +11,15 @@ lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 			return numeric_limits<double>::lowest();
 	}
 	SGSResult result = decode(order, context);
-	return static_cast<lsdouble>(p.calcProfit(result));
+	lsdouble profit = static_cast<lsdouble>(p.calcProfit(result));
+
+	if (tr != nullptr) {
+		if(profit > bks)
+			bks = profit;
+		tr->intervalTrace(bks);
+	}
+
+	return profit;
 }
 
 ListModel::ListModel(ProjectWithOvertime& _p, SchedulingNativeFunction *_decoder) : p(_p), decoder(_decoder), listElems(_p.numJobs) {
@@ -28,9 +36,10 @@ vector<int> ListModel::solve(SolverParams params) {
 	buildModel();
 	applyParams(params);
     if(params.trace) {
-        tr = new Utils::Tracer("LocalSolverNative"+to_string(params.solverIx)+"Trace_" + p.instanceName);
+        tr = new Utils::Tracer(params.outPath + "LocalSolverNative"+to_string(params.solverIx)+"Trace_" + p.instanceName);
 		cback = new TraceCallback(*tr);
-        ls.addCallback(CT_TimeTicked, cback);
+        //ls.addCallback(CT_TimeTicked, cback);
+		decoder->setTracer(tr);
     }
 	ls.solve();
 	auto sol = ls.getSolution();
@@ -77,7 +86,7 @@ void ListModel::applyParams(SolverParams &params) {
 		param.setSeed(params.seed);
 		param.setVerbosity(params.verbosityLevel);
 		if (params.trace) {
-			int timeBetweenDisplays = static_cast<int>(MSECS_BETWEEN_TRACES / 1000.0);
+			int timeBetweenDisplays = static_cast<int>(ceil(MSECS_BETWEEN_TRACES_LONG / 1000.0));
 			param.setTimeBetweenDisplays(timeBetweenDisplays);
 		}
 	}
@@ -87,7 +96,7 @@ TraceCallback::TraceCallback(Utils::Tracer &_tr) : tr(_tr), secCtr(0.0) {}
 
 void TraceCallback::callback(LocalSolver &solver, LSCallbackType type) {
     if (type == CT_TimeTicked) {
-        secCtr += MSECS_BETWEEN_TRACES;
+        secCtr += MSECS_BETWEEN_TRACES_LONG;
         lsdouble objval = solver.getModel().getObjective(0).getDoubleValue();
         tr.trace(secCtr, static_cast<float>(objval));
     }

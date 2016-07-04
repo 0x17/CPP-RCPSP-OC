@@ -10,19 +10,18 @@
 #include "GeneticAlgorithms/OvertimeBound.h"
 
 BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, double _timeLimit, int _iterLimit, bool _writeGraph)
-	: p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph), timeLimit(_timeLimit), iterLimit(_iterLimit), traceobj(false), tr(nullptr) {}
+	: p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph), timeLimit(_timeLimit), iterLimit(_iterLimit), tr(nullptr) {}
 
 BranchAndBound::~BranchAndBound() {
     if(tr != nullptr) delete tr;
 }
 
-vector<int> BranchAndBound::solve(bool seedWithGA, bool traceobj) {
-    this->traceobj = traceobj;
+vector<int> BranchAndBound::solve(bool seedWithGA, bool traceobj, string outPath) {
     if(traceobj && tr == nullptr) {
-        tr = new Utils::Tracer("BranchAndBoundTrace_" + p.instanceName);
+        tr = new Utils::Tracer(outPath + "BranchAndBoundTrace_" + p.instanceName);
     }
 
-    lupdate = chrono::system_clock::now();
+    //lupdate = chrono::system_clock::now();
     sw.start();
     
 	if (seedWithGA) {
@@ -183,7 +182,7 @@ void BranchAndBound::foundLeaf(vector<int> &sts) {
         candidate = sts;
         lb = profit;
         cout << "Updated lower bound = " << lb << endl;
-		if(tr != nullptr) tr->trace(sw.look(), lb);
+		//if(tr != nullptr) tr->trace(sw.look(), lb);
     }
 }
 
@@ -192,10 +191,8 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 		|| (iterLimit != -1 && nodeCtr >= iterLimit))
 		return;
 
-	if(chrono::duration<double, std::milli>(chrono::system_clock::now() - lupdate).count() > MSECS_BETWEEN_TRACES) {
-		cout << "Nodes visited = " << nodeCtr << ", Boundings = " << boundCtr << ", Opt = " << lb << ", Time = " << (boost::format("%.2f") % (sw.look() / 1000.0)) << endl;
-        lupdate = chrono::system_clock::now();
-        if(traceobj) tr->trace(sw.look(), lb);
+	if(tr != nullptr) {
+		tr->intervalTrace(lb);
 	}
 
 	sts[job] = stj;

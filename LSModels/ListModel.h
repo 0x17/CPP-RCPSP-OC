@@ -15,6 +15,8 @@ public:
 };
 
 class SchedulingNativeFunction : public BaseSchedulingNativeFunction {
+	Utils::Tracer *tr = nullptr;
+	lsdouble bks = 0.0;
 public:
 	explicit SchedulingNativeFunction(ProjectWithOvertime &_p) : BaseSchedulingNativeFunction(_p) {}
 	virtual ~SchedulingNativeFunction() {}
@@ -23,6 +25,8 @@ public:
 	virtual SGSResult decode(vector<int> &order, const LSNativeContext &context) = 0;
 
 	virtual lsdouble call(const LSNativeContext& context) override;
+
+	void setTracer(Utils::Tracer *tr) { this->tr = tr; }
 };
 
 struct SolverParams {
@@ -33,6 +37,7 @@ struct SolverParams {
     bool trace;
     int solverIx;
 	int iterLimit;
+	string outPath;
 
 	SolverParams(double _tlimit = -1.0, int _ilimit = -1)
 		: seed(0), timeLimit(_tlimit), threadCount(1), verbosityLevel(2), trace(false), solverIx(0), iterLimit(_ilimit)

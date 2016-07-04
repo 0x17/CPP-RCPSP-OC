@@ -9,6 +9,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 
 #include "Utils.h"
+#include "Stopwatch.h"
 
 namespace fs = boost::filesystem;
 namespace algo = boost::algorithm;
@@ -109,6 +110,9 @@ void Utils::spitAppend(const string s, const string filename) {
 
 namespace Utils {
     Tracer::Tracer(const string filePrefix) : f(filePrefix + ".txt") {
+		sw.start();
+		lupdate = chrono::system_clock::now();
+		last_slvtime = 0.0;
         if(!f.is_open())
             throw runtime_error("Unable to create " + filePrefix + ".txt!");
         f << "slvtime,bks_objval\n";
@@ -119,7 +123,26 @@ namespace Utils {
         f.close();
     }
 
-    void Tracer::trace(double slvtime, float bks_objval) {
-		f << (boost::format("%.2f") % (slvtime / 1000.0)) << "," << bks_objval << endl;
+    void Tracer::trace(double slvtime, float bks_objval, bool trunc_secs) {
+		double insecs = (slvtime / 1000.0);
+		if (trunc_secs) insecs = trunc(insecs);
+		f << (boost::format("%.2f") % insecs) << "," << bks_objval << endl;
     }
+
+	void Tracer::intervalTrace(float bks_objval) {
+		double slvtime = sw.look();
+		double deltat = chrono::duration<double, milli>(chrono::system_clock::now() - lupdate).count();
+		if(slvtime < 1000.0 && deltat >= MSECS_BETWEEN_TRACES_SHORT) {
+			lupdate = chrono::system_clock::now();
+			trace(slvtime, bks_objval);
+		} else if(slvtime >= 1000.0 && last_slvtime < 1000.0) {
+			lupdate = chrono::system_clock::now();
+			trace(slvtime, bks_objval, true);
+		} else if(slvtime >= 1000.0 && deltat >= MSECS_BETWEEN_TRACES_LONG) {
+			//cout << "Nodes visited = " << nodeCtr << ", Boundings = " << boundCtr << ", Opt = " << lb << ", Time = " << (boost::format("%.2f") % (sw.look() / 1000.0)) << endl;
+			lupdate = chrono::system_clock::now();
+			trace(slvtime, bks_objval, true);
+		}
+		last_slvtime = slvtime;
+	}
 }

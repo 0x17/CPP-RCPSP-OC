@@ -17,7 +17,7 @@ class BranchAndBound {
 public:
 	explicit BranchAndBound(ProjectWithOvertime& _p, double _timeLimit = 60.0, int _iterLimit = -1, bool _writeGraph = false);
     ~BranchAndBound();
-	vector<int> solve(bool seedWithGA = false, bool traceobj = false);
+	vector<int> solve(bool seedWithGA = false, bool traceobj = false, string outPath = "");
 
     static void solvePath(const string path);
 
@@ -29,10 +29,9 @@ private:
 	int nodeCtr, boundCtr;
 	string dotGraph, leafsStr;
 	bool writeGraph;
-    TimePoint lupdate;
+    //TimePoint lupdate;
 	double timeLimit;
 	int iterLimit;
-    bool traceobj;
     Utils::Tracer *tr;
 	
 	bool isEligible(vector<int> &sts, int j) const;
