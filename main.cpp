@@ -154,7 +154,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 
         bool traceobj = (argc == 6 && !string("traceobj").compare(argv[5]));
 
-		string outPath = string(argv[4]).substr(0, 3) + "_" + to_string(int(round(timeLimit))) + "secs/";
+		string outPath = boost::filesystem::path(string(argv[4])).parent_path().string() + "_" + to_string(int(round(timeLimit))) + "secs/";
 		string outFn = outPath;
 		boost::filesystem::create_directory(boost::filesystem::path(outPath));
 

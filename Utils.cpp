@@ -7,6 +7,7 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <cmath>
 
 #include "Utils.h"
 #include "Stopwatch.h"
