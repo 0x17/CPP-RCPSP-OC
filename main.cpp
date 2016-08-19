@@ -112,6 +112,8 @@ vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaInd
 	params.rbbrs = true;
 	params.outPath = outPath;
 
+	params.parseFromDisk();
+
 	if(gaIndex == 0)
 		TimeWindowBordersGA::setVariant(variant == -1 ? 0 : variant);
 

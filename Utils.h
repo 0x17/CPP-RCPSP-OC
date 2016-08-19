@@ -16,7 +16,8 @@
 using namespace std;
 
 namespace Utils {
-    vector<string> readLines(string filename);
+	string slurp(string filename);
+	vector<string> readLines(string filename);
     int extractIntFromStr(string s, string rx);
     vector<int> extractIntsFromLine(string line);
 

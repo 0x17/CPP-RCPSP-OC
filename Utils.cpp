@@ -15,6 +15,13 @@
 namespace fs = boost::filesystem;
 namespace algo = boost::algorithm;
 
+string Utils::slurp(string filename) {
+	ifstream fp(filename);
+	if(!fp) throw runtime_error("Unable to open file: " + filename);
+	string s((istreambuf_iterator<char>(fp)), istreambuf_iterator<char>());
+	return s;
+}
+
 vector<string> Utils::readLines(string filename) {
     vector<string> lines;
     string line;

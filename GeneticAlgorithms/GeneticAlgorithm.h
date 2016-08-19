@@ -10,8 +10,10 @@
 #include <iostream>
 #include <thread>
 #include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
 #include "../ProjectWithOvertime.h"
 #include "../Stopwatch.h"
+#include <boost/filesystem/operations.hpp>
 
 using namespace std;
 
@@ -23,19 +25,11 @@ enum class SelectionMethod {
 };
 
 struct GAParameters {
-	GAParameters() {
-		numGens = 200;
-		popSize = 100;
-		pmutate = 5;
-		timeLimit = -1.0;
-		iterLimit = -1;
-		fitnessBasedPairing = false;
-		traceobj = false;
-		selectionMethod = SelectionMethod::BEST;
-        rbbrs = false;
-	}
+	GAParameters();
+	void parseFromString(string s);
+	void parseFromDisk(string fn = "GAParameters.txt");
 
-    int numGens, popSize, pmutate;
+	int numGens, popSize, pmutate;
     double timeLimit;
 	int iterLimit;
     bool fitnessBasedPairing, traceobj;
@@ -43,6 +37,49 @@ struct GAParameters {
     bool rbbrs;
 	string outPath;
 };
+
+inline GAParameters::GAParameters() {
+	numGens = 200;
+	popSize = 100;
+	pmutate = 5;
+	timeLimit = -1.0;
+	iterLimit = -1;
+	fitnessBasedPairing = false;
+	traceobj = false;
+	selectionMethod = SelectionMethod::BEST;
+	rbbrs = false;
+}
+
+inline void GAParameters::parseFromString(string s) {
+	vector<string> lines, parts;
+	boost::split(lines, s, boost::is_any_of("\n"));
+	for(auto line : lines) {
+		if (!boost::contains(line, "=")) continue;
+
+		boost::split(parts, line, boost::is_any_of("="));		
+		if (boost::equals(parts[0], "numGens"))
+			numGens = stoi(parts[1]);
+		else if (boost::equals(parts[0], "popSize"))
+			popSize = stoi(parts[1]);
+		else if (boost::equals(parts[0], "pmutate"))
+			pmutate = stoi(parts[1]);
+		else if (boost::equals(parts[0], "timeLimit"))
+			timeLimit = stod(parts[1]);
+		else if (boost::equals(parts[0], "iterLimit"))
+			iterLimit = stoi(parts[1]);
+		else if (boost::equals(parts[0], "fitnessBasedPairing"))
+			fitnessBasedPairing = boost::equals(parts[1], "true");
+		else if (boost::equals(parts[0], "selectionMethod"))
+			selectionMethod = (boost::equals(parts[1], "best")) ? SelectionMethod::BEST : SelectionMethod::DUEL;
+		else if (boost::equals(parts[0], "rbbrs"))
+			rbbrs = boost::equals(parts[1], "true");
+	}
+}
+
+inline void GAParameters::parseFromDisk(string fn) {
+	if(boost::filesystem::exists(fn))
+		parseFromString(Utils::slurp(fn));
+}
 
 template<class Individual>
 class GeneticAlgorithm {
@@ -53,7 +90,7 @@ public:
 
     void setParameters(GAParameters _params);
 
-	string getName() const { return name; };
+	string getName() const { return name; }
 
 protected:
     GAParameters params;

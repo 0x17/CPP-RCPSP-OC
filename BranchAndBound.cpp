@@ -216,6 +216,7 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 			for(int t = p.computeLastPredFinishingTimeForSts(sts, j); true; t++) {
 				pair<bool, bool> feas = resourceFeasibilityCheck(sts, j, t);
 
+				// feasible with possibly maximum amount of overtime
 				if(feas.first) {
 					// fathom redundant schedules
 					/*if (t < maxSt) {
@@ -232,6 +233,7 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 					else boundCtr++;
 				}
 
+				// feasible without any overtime
 				if(feas.second) break;
 			}
 
