@@ -91,6 +91,7 @@ public:
 	EACH_FUNC(eachJobi, eachJobiConst, i, numJobs)
 	EACH_FUNC(eachRes, eachResConst, r, numRes)
 	EACH_FUNC(eachPeriod, eachPeriodConst, t, numPeriods)
+	EACH_FUNC(eachPeriodBounded, eachPeriodBoundedConst, t, heuristicMaxMs);
 
 	EACH_FUNC_PAIR(eachJobPair, eachJobPairConst, i, j, numJobs, numJobs)
 	EACH_FUNC_PAIR(eachResPeriod, eachResPeriodConst, r, t, numRes, numPeriods)

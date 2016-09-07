@@ -11,6 +11,10 @@ class ProjectWithOvertime;
 class GurobiSolver {
 public:
 	GurobiSolver(ProjectWithOvertime& _p);
+
+	void restrictJobToTimeWindow(int j, int eft, int lft);
+	void relaxJob(int j);
+
 	vector<int> solve();
 
 private:

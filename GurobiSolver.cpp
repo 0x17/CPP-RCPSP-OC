@@ -11,7 +11,8 @@ GurobiSolver::GurobiSolver(ProjectWithOvertime &_p) :
 	model(GRBModel(env)),
 	// x_{jt}, binary restriction
 	xjt(p.numJobs, p.getHeuristicMaxMakespan()+1, [&](int j, int t) {
-		return model.addVar(0.0, 1.0, 0.0, GRB_BINARY, "x" + to_string(j) + to_string(t));
+		double ub = (t >= p.efts[j] && t <= p.lfts[j]) ? 1.0 : 0.0;
+		return model.addVar(0.0, ub, 0.0, GRB_BINARY, "x" + to_string(j) + to_string(t));
 	}),
 	// z_{rt}, integer restriction, upper bound
 	zrt(p.numRes, p.getHeuristicMaxMakespan()+1, [&](int r, int t) {
@@ -21,6 +22,22 @@ GurobiSolver::GurobiSolver(ProjectWithOvertime &_p) :
 	model.update();
 	setupObjectiveFunction();
 	setupConstraints();
+}
+
+void GurobiSolver::restrictJobToTimeWindow(int j, int eft, int lft) {
+	p.eachPeriodBoundedConst([&](int t) {
+		if(t >= eft && t <= lft) {
+			xjt(j, t).set(GRB_DoubleAttr_LB, 0.0);
+			xjt(j, t).set(GRB_DoubleAttr_UB, 1.0);
+		} else {
+			xjt(j, t).set(GRB_DoubleAttr_LB, 0.0);
+			xjt(j, t).set(GRB_DoubleAttr_UB, 0.0);
+		}
+	});
+}
+
+void GurobiSolver::relaxJob(int j) {
+	restrictJobToTimeWindow(j, p.efts[j], p.lfts[j]);
 }
 
 void GurobiSolver::setupObjectiveFunction() {
