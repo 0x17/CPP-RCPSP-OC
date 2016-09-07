@@ -106,6 +106,9 @@ public:
 	template<class Func>
 	void eachJobTimeWindow(Func code) const;
 
+	template<class Func>
+	void eachJobTimeWindowBounded(Func code) const;
+
 	Matrix<int> resRemForPartial(const vector<int> &sts) const;
 
     int computeLastPredFinishingTime(const vector<int> &fts, int job) const;
@@ -176,6 +179,15 @@ template <class Func>
 inline void Project::eachJobTimeWindow(Func code) const {
 	eachJobConst([&](int j) {
 		for(int t = efts[j]; t <= lfts[j]; t++) {
+			code(j, t);
+		}
+	});
+}
+
+template <class Func>
+inline void Project::eachJobTimeWindowBounded(Func code) const {
+	eachJobConst([&](int j) {
+		for (int t = efts[j]; t <= min(lfts[j], heuristicMaxMs); t++) {
 			code(j, t);
 		}
 	});
