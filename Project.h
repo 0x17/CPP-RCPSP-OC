@@ -87,17 +87,22 @@ public:
 
     int makespan(const vector<int>& sts) const;
 
-    EACH_FUNC(eachJob, eachJobConst, j, numJobs)
-    EACH_FUNC(eachJobi, eachJobiConst, i, numJobs)
-    EACH_FUNC(eachRes, eachResConst, r, numRes)
-    EACH_FUNC(eachPeriod, eachPeriodConst, t, numPeriods)
+	EACH_FUNC(eachJob, eachJobConst, j, numJobs)
+	EACH_FUNC(eachJobi, eachJobiConst, i, numJobs)
+	EACH_FUNC(eachRes, eachResConst, r, numRes)
+	EACH_FUNC(eachPeriod, eachPeriodConst, t, numPeriods)
 
-    EACH_FUNC_PAIR(eachJobPair, eachJobPairConst, i, j, numJobs, numJobs)
-    EACH_FUNC_PAIR(eachResPeriod, eachResPeriodConst, r, t, numRes, numPeriods)
+	EACH_FUNC_PAIR(eachJobPair, eachJobPairConst, i, j, numJobs, numJobs)
+	EACH_FUNC_PAIR(eachResPeriod, eachResPeriodConst, r, t, numRes, numPeriods)
+	EACH_FUNC_PAIR(eachResPeriodBounded, eachResPeriodBoundedConst, r, t, numRes, heuristicMaxMs)
     EACH_FUNC_PAIR(eachJobRes, eachJobResConst, j, r, numJobs, numRes)
 
     template<class Func>
     void timeWindow(int j, Func code) const;
+
+	template<class Func>
+	void timeWindowBounded(int j, Func code) const;
+
 	template<class Func>
 	void eachJobTimeWindow(Func code) const;
 
@@ -118,6 +123,8 @@ public:
 	Matrix<int> normalCapacityProfile() const;
 
 	vector<int> emptySchedule() const;
+
+	int getHeuristicMaxMakespan() const;
 
 protected:
 	bool allPredsScheduled(int j, const vector<int> &sts) const;
@@ -151,11 +158,18 @@ private:
     void computeELSFTs();
 
     void computeNodeDepths(int root, int curDepth, vector<int> &nodeDepths);
+
+	int heuristicMaxMs;
 };
 
 template<class Func>
 inline void Project::timeWindow(int j, Func code) const {
     for(int t=efts[j]; t<=lfts[j]; t++) { code(t); }
+}
+
+template<class Func>
+inline void Project::timeWindowBounded(int j, Func code) const {
+	for (int t = efts[j]; t <= min(lfts[j], heuristicMaxMs); t++) { code(t); }
 }
 
 template <class Func>
@@ -169,6 +183,10 @@ inline void Project::eachJobTimeWindow(Func code) const {
 
 inline int Project::makespan(const vector<int>& sts) const {
     return sts[lastJob];
+}
+
+inline int Project::getHeuristicMaxMakespan() const {
+	return heuristicMaxMs;
 }
 
 #endif //SSGS_PROJECT_H

@@ -378,6 +378,25 @@ SGSDeadlineResult ProjectWithOvertime::serialSGSWithDeadlineTau(int deadline, co
 	return serialSGSWithDeadline(deadline, order, [&tau](int j, int count) { return static_cast<int>(round(static_cast<float>(count - 1) * (1.0f - tau[j]))); });
 }
 
+vector<int> ProjectWithOvertime::delaySchedule(const vector<int>& order, const vector<int>& sts, int deadline) {
+	vector<int> stsOut(sts.size());
+
+	assert(makespan(sts) <= deadline);
+
+	for(int k = static_cast<int>(order.size() - 1); k >= 0; k--) {
+		int j = order[k];
+
+		// shift j to the right
+		// compute min of sts of successors phi, set st to phi-dj
+
+
+		// wie erreichen, dass überstunden nicht gleich bleiben?
+
+	}
+
+	return stsOut;
+}
+
 int ProjectWithOvertime::nthDecisionTimeWithMinCosts(int nth, vector<int> &decisionTimes, vector<float> &assocExtCosts, float minCosts) {
 	int ctr = 0;
 	for (int i = 0; i < decisionTimes.size(); i++) {

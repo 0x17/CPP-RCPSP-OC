@@ -14,6 +14,8 @@
 
 #include "BranchAndBound.h"
 
+#include "GurobiSolver.h"
+
 namespace Main {
 	void showUsage();
 	void commandLineRunner(int argc, char * argv[]);
@@ -30,13 +32,16 @@ namespace Main {
 	void testLocalSolverNative(int seed);
 
 	void convertArgFileToLSP(int argc, const char * argv[]);
+
+	void testGurobi();
 }
 
 int main(int argc, char * argv[]) {
-	Main::commandLineRunner(argc, argv);
+	//Main::commandLineRunner(argc, argv);
 	//Main::testFixedDeadlineHeuristic();
 	//Main::testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
 	//Main::benchmarkGeneticAlgorithm(5, 256000);
+	Main::testGurobi();
 	return 0;
 }
 
@@ -45,6 +50,12 @@ void Main::convertArgFileToLSP(int argc, const char * argv[]) {
 		ProjectWithOvertime p(argv[1]);
 		LSSolver::writeLSPModelParamFile(p, string(argv[1])+".txt");
 	}
+}
+
+void Main::testGurobi() {
+	string projFilename = "QBWLBeispiel.DAT";
+	ProjectWithOvertime p(projFilename);
+	vector<int> sts = GurobiSolver::solve(p);
 }
 
 void Main::showUsage() {
@@ -247,5 +258,4 @@ void Main::benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
 
     auto res = GARunners::run(p, params, gaIndex);
 }
-
 

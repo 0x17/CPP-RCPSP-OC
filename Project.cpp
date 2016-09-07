@@ -32,6 +32,8 @@ Project::Project(const string filename) : name(filename), instanceName(boost::fi
 	revTopOrder = computeReverseTopOrder();
 
     computeELSFTs();
+
+	heuristicMaxMs = makespan(serialSGS(topOrder));
 }
 
 vector<int> Project::serialSGS(const vector<int>& order) const {

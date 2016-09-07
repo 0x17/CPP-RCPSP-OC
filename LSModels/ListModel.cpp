@@ -16,7 +16,7 @@ lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 	if (tr != nullptr) {
 		if(profit > bks)
 			bks = profit;
-		tr->intervalTrace(bks);
+		tr->intervalTrace(static_cast<float>(bks));
 	}
 
 	return profit;

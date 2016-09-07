@@ -67,6 +67,8 @@ public:
 	SGSDeadlineResult serialSGSWithDeadlineBeta(int deadline, const vector<int>& order, const vector<int>& beta) const;
 	SGSDeadlineResult serialSGSWithDeadlineTau(int deadline, const vector<int>& order, const vector<float>& tau) const;
 
+	static vector<int> delaySchedule(const vector<int>& order, const vector<int>& sts, int deadline);
+
 	vector<int> earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const;
 
 	vector<int> decisionTimesForResDevProblem(const vector<int> &sts, const vector<int> &ests, const vector<int> &lfts, const Matrix<int> &resRem, int j) const;
@@ -75,6 +77,7 @@ public:
 	list<int> feasibleTimeWindowForJobInCompleteSchedule(int j, const vector<int>& sts, const vector<int>& fts, const Matrix<int>& resRem) const;
 	int latestPeriodWithMinimalCosts(int j, const list<int>& feasTimes, const vector<int>& sts, const Matrix<int>& resRem) const;
 	void unscheduleJob(int j, vector<int>& sts, vector<int>& fts, Matrix<int>& resRem);
+
 	void improvementStep(vector<int>& sts);
 
 	int heuristicMakespanUpperBound() const;

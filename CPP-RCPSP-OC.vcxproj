@@ -26,6 +26,7 @@
     <ClCompile Include="GeneticAlgorithms\Runners.cpp" />
     <ClCompile Include="GeneticAlgorithms\Sampling.cpp" />
     <ClCompile Include="GeneticAlgorithms\TimeWindow.cpp" />
+    <ClCompile Include="GurobiSolver.cpp" />
     <ClCompile Include="LSModels\FixedDeadlineModels.cpp" />
     <ClCompile Include="LSModels\ListModel.cpp" />
     <ClCompile Include="LSModels\NaiveModels.cpp" />
@@ -47,6 +48,7 @@
     <ClInclude Include="GeneticAlgorithms\Runners.h" />
     <ClInclude Include="GeneticAlgorithms\Sampling.h" />
     <ClInclude Include="GeneticAlgorithms\TimeWindow.h" />
+    <ClInclude Include="GurobiSolver.h" />
     <ClInclude Include="LSModels\FixedDeadlineModels.h" />
     <ClInclude Include="LSModels\ListModel.h" />
     <ClInclude Include="LSModels\NaiveModels.h" />
@@ -118,8 +120,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Boost\include\boost-1_59;C:\localsolver_6_0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Boost\lib;C:\localsolver_6_0\bin;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Boost\include\boost-1_59;C:\localsolver_6_0\include;C:\gurobi652\win64\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Boost\lib;C:\localsolver_6_0\bin;C:\gurobi652\win64\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\Boost\include\boost-1_59;C:\localsolver_6_0\include;$(IncludePath)</IncludePath>
@@ -184,7 +186,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>localsolver.dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>localsolver.dll.lib;gurobi_c++md2015.lib;gurobi65.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
