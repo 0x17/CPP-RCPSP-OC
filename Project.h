@@ -110,6 +110,9 @@ public:
 	template<class Func>
 	void eachJobTimeWindowBounded(Func code) const;
 
+	template <class Func>
+	void demandInPeriodMIP(int j, int t, Func code) const;
+
 	Matrix<int> resRemForPartial(const vector<int> &sts) const;
 
     int computeLastPredFinishingTime(const vector<int> &fts, int job) const;
@@ -192,6 +195,13 @@ inline void Project::eachJobTimeWindowBounded(Func code) const {
 			code(j, t);
 		}
 	});
+}
+
+template <class Func>
+inline void Project::demandInPeriodMIP(int j, int t, Func code) const {
+	for(int tau = t; tau < min(t + durations[j], getHeuristicMaxMakespan() + 1); tau++) {
+		code(tau);
+	}
 }
 
 inline int Project::makespan(const vector<int>& sts) const {

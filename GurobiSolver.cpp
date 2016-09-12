@@ -5,6 +5,12 @@
 
 #include <gurobi_c++.h>
 
+GurobiSolver::CustomCallback::CustomCallback() : tr("GurobiAPI") {}
+
+void GurobiSolver::CustomCallback::callback() {
+	tr.trace(getDoubleInfo(GRB_CB_RUNTIME), static_cast<float>(getDoubleInfo(GRB_CB_MIP_OBJBST)));
+}
+
 GurobiSolver::GurobiSolver(ProjectWithOvertime &_p) :
 	p(_p),
 	env(GRBEnv()),
@@ -19,6 +25,8 @@ GurobiSolver::GurobiSolver(ProjectWithOvertime &_p) :
 		return model.addVar(0.0, static_cast<double>(p.zmax[r]), 0.0, GRB_INTEGER, "z" + to_string(r) + to_string(t));
 	})
 {
+	setupOptions();
+	model.setCallback(&cback);
 	model.update();
 	setupObjectiveFunction();
 	setupConstraints();
@@ -38,6 +46,11 @@ void GurobiSolver::restrictJobToTimeWindow(int j, int eft, int lft) {
 
 void GurobiSolver::relaxJob(int j) {
 	restrictJobToTimeWindow(j, p.efts[j], p.lfts[j]);
+}
+
+void GurobiSolver::setupOptions() {
+	env.set(GRB_DoubleParam_MIPGap, 0.0);
+	env.set(GRB_DoubleParam_TimeLimit, GRB_INFINITY);
 }
 
 void GurobiSolver::setupObjectiveFunction() {
@@ -81,9 +94,9 @@ void GurobiSolver::setupConstraints() {
 	p.eachResPeriodBoundedConst([&](int r, int t) {
 		GRBLinExpr cumDemands = 0;
 		p.eachJobConst([&](int j) {
-			for (int tau = t; tau<min(t + p.durations[j], p.getHeuristicMaxMakespan() + 1); tau++) {
+			p.demandInPeriodMIP(j, t, [&](int tau) {
 				cumDemands += p.demands(j, r) * xjt(j, tau);
-			}
+			});
 		});
 
 		model.addConstr(cumDemands <= p.capacities[r] + zrt(r, t), "res. restr. (r,t)=(" + to_string(r) + "," + to_string(t) + ")");

@@ -5,6 +5,7 @@
 #include <vector>
 #include <gurobi_c++.h>
 #include "Matrix.h"
+#include "Utils.h"
 
 class ProjectWithOvertime;
 
@@ -18,11 +19,21 @@ public:
 	vector<int> solve();
 
 private:
+	class CustomCallback : public GRBCallback {
+	public:
+		CustomCallback();
+	private:
+		void callback() override;
+		Utils::Tracer tr;
+	};
+
 	ProjectWithOvertime &p;
 	GRBEnv env;
 	GRBModel model;
 	Matrix<GRBVar> xjt, zrt;
-	
+	CustomCallback cback;
+
+	void setupOptions();
 	void setupObjectiveFunction();
 	void setupConstraints();
 
