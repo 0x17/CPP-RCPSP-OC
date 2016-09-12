@@ -378,7 +378,7 @@ SGSDeadlineResult ProjectWithOvertime::serialSGSWithDeadlineTau(int deadline, co
 	return serialSGSWithDeadline(deadline, order, [&tau](int j, int count) { return static_cast<int>(round(static_cast<float>(count - 1) * (1.0f - tau[j]))); });
 }
 
-vector<int> ProjectWithOvertime::delaySchedule(const vector<int>& order, const vector<int>& sts, int deadline) {
+vector<int> ProjectWithOvertime::delaySchedule(const vector<int>& order, const vector<int>& sts, int deadline) const {
 	vector<int> stsOut(sts.size());
 
 	assert(makespan(sts) <= deadline);

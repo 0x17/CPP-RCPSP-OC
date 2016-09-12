@@ -5,13 +5,16 @@
 
 #include <gurobi_c++.h>
 
-GurobiSolver::CustomCallback::CustomCallback() : tr("GurobiAPI") {}
-
-void GurobiSolver::CustomCallback::callback() {
-	tr.trace(getDoubleInfo(GRB_CB_RUNTIME), static_cast<float>(getDoubleInfo(GRB_CB_MIP_OBJBST)));
+GurobiSolver::CustomCallback::CustomCallback(string outPath, string instanceName) : tr(outPath + "GurobiTrace_" + instanceName) {
+	sw.start();
 }
 
-GurobiSolver::GurobiSolver(ProjectWithOvertime &_p) :
+void GurobiSolver::CustomCallback::callback() {
+	if(where == GRB_CB_MIPSOL)
+		tr.trace(/*getDoubleInfo(GRB_CB_RUNTIME)*/ sw.look(), static_cast<float>(getDoubleInfo(GRB_CB_MIPSOL_OBJBST)));
+}
+
+GurobiSolver::GurobiSolver(ProjectWithOvertime &_p, string outPath) :
 	p(_p),
 	env(GRBEnv()),
 	model(GRBModel(env)),
@@ -23,7 +26,8 @@ GurobiSolver::GurobiSolver(ProjectWithOvertime &_p) :
 	// z_{rt}, integer restriction, upper bound
 	zrt(p.numRes, p.getHeuristicMaxMakespan()+1, [&](int r, int t) {
 		return model.addVar(0.0, static_cast<double>(p.zmax[r]), 0.0, GRB_INTEGER, "z" + to_string(r) + to_string(t));
-	})
+	}),
+	cback(outPath, p.instanceName)
 {
 	setupOptions();
 	model.setCallback(&cback);
@@ -51,6 +55,7 @@ void GurobiSolver::relaxJob(int j) {
 void GurobiSolver::setupOptions() {
 	env.set(GRB_DoubleParam_MIPGap, 0.0);
 	env.set(GRB_DoubleParam_TimeLimit, GRB_INFINITY);
+	env.set(GRB_IntParam_DisplayInterval, 1);
 }
 
 void GurobiSolver::setupObjectiveFunction() {

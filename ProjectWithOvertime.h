@@ -67,7 +67,7 @@ public:
 	SGSDeadlineResult serialSGSWithDeadlineBeta(int deadline, const vector<int>& order, const vector<int>& beta) const;
 	SGSDeadlineResult serialSGSWithDeadlineTau(int deadline, const vector<int>& order, const vector<float>& tau) const;
 
-	static vector<int> delaySchedule(const vector<int>& order, const vector<int>& sts, int deadline);
+	vector<int> delaySchedule(const vector<int>& order, const vector<int>& sts, int deadline) const;
 
 	vector<int> earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const;
 

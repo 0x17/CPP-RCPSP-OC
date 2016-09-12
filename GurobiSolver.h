@@ -11,7 +11,7 @@ class ProjectWithOvertime;
 
 class GurobiSolver {
 public:
-	GurobiSolver(ProjectWithOvertime& _p);
+	GurobiSolver(ProjectWithOvertime& _p, string outPath);
 
 	void restrictJobToTimeWindow(int j, int eft, int lft);
 	void relaxJob(int j);
@@ -21,10 +21,11 @@ public:
 private:
 	class CustomCallback : public GRBCallback {
 	public:
-		CustomCallback();
+		CustomCallback(string outPath, string instanceName);
 	private:
 		void callback() override;
 		Utils::Tracer tr;
+		Stopwatch sw;
 	};
 
 	ProjectWithOvertime &p;
