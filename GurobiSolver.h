@@ -11,7 +11,15 @@ class ProjectWithOvertime;
 
 class GurobiSolver {
 public:	
-	GurobiSolver(ProjectWithOvertime& _p, string outPath);
+	struct Options {
+		string outPath;
+		bool useSeedSol;
+		double timeLimit, gap;
+		int displayInterval;
+		Options();
+	};
+
+	GurobiSolver(ProjectWithOvertime& _p, Options _opts);
 
 	void restrictJobToTimeWindow(int j, int eft, int lft);
 	void relaxJob(int j);
@@ -33,6 +41,7 @@ private:
 	GRBModel model;
 	Matrix<GRBVar> xjt, zrt;
 	CustomCallback cback;
+	Options opts;
 
 	void setupOptions();
 	void setupObjectiveFunction();

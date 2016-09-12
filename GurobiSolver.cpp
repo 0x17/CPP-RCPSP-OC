@@ -5,16 +5,21 @@
 
 #include <gurobi_c++.h>
 
+Utils::Logger logger("GurobiSolver", Utils::Logger::LogMode::VERBOSE);
+
+GurobiSolver::Options::Options() : outPath(""), useSeedSol(true), timeLimit(GRB_INFINITY), gap(0.0), displayInterval(1) {
+}
+
 GurobiSolver::CustomCallback::CustomCallback(string outPath, string instanceName) : tr(outPath + "GurobiTrace_" + instanceName) {
 	sw.start();
 }
 
 void GurobiSolver::CustomCallback::callback() {
-	if(where == GRB_CB_MIPSOL)
-		tr.trace(/*getDoubleInfo(GRB_CB_RUNTIME)*/ sw.look(), static_cast<float>(getDoubleInfo(GRB_CB_MIPSOL_OBJBST)));
+	if(where == GRB_CB_MIP)
+		tr.trace(/*getDoubleInfo(GRB_CB_RUNTIME)*/ sw.look(), static_cast<float>(getDoubleInfo(GRB_CB_MIP_OBJBST)));
 }
 
-GurobiSolver::GurobiSolver(ProjectWithOvertime &_p, string outPath) :
+GurobiSolver::GurobiSolver(ProjectWithOvertime &_p, Options _opts) :
 	p(_p),
 	env(GRBEnv()),
 	model(GRBModel(env)),
@@ -27,7 +32,8 @@ GurobiSolver::GurobiSolver(ProjectWithOvertime &_p, string outPath) :
 	zrt(p.numRes, p.getHeuristicMaxMakespan()+1, [&](int r, int t) {
 		return model.addVar(0.0, static_cast<double>(p.zmax[r]), 0.0, GRB_INTEGER, "z" + to_string(r) + to_string(t));
 	}),
-	cback(outPath, p.instanceName)
+	cback(_opts.outPath, p.instanceName),
+	opts(_opts)
 {
 	setupOptions();
 	model.setCallback(&cback);
@@ -54,13 +60,15 @@ void GurobiSolver::relaxJob(int j) {
 }
 
 void GurobiSolver::setupOptions() {
-	env.set(GRB_DoubleParam_MIPGap, 0.0);
-	env.set(GRB_DoubleParam_TimeLimit, GRB_INFINITY);
-	env.set(GRB_IntParam_DisplayInterval, 1);
+	env.set(GRB_DoubleParam_MIPGap, opts.gap);
+	env.set(GRB_DoubleParam_TimeLimit, opts.timeLimit);
+	env.set(GRB_IntParam_DisplayInterval, opts.displayInterval);
 	//env.set(GRB_DoubleParam_Heuristics, 1.0);
 }
 
 void GurobiSolver::setupObjectiveFunction() {
+	LOG_I("Setting up objective function");
+
 	GRBLinExpr revenueForMakespan = 0;
 	p.timeWindowBounded(p.numJobs - 1, [&](int t) {
 		revenueForMakespan += p.revenue[t] * xjt(p.numJobs - 1, t);
@@ -74,6 +82,8 @@ void GurobiSolver::setupObjectiveFunction() {
 }
 
 void GurobiSolver::setupConstraints() {
+	LOG_I("Setting up constraints");
+
 	// each activity once
 	p.eachJobConst([&](int j) {
 		GRBLinExpr s = 0;
@@ -111,6 +121,10 @@ void GurobiSolver::setupConstraints() {
 }
 
 void GurobiSolver::setupFeasibleMipStart() {
+	if (!opts.useSeedSol) return;
+
+	LOG_I("Seeding mip solver with feasible heuristic start solution (serial sgs schedule)");
+
 	auto sts = p.serialSGS(p.topOrder);
 
 	p.eachJobConst([&](int j) {
@@ -131,6 +145,8 @@ void GurobiSolver::setupFeasibleMipStart() {
 }
 
 vector<int> GurobiSolver::parseSchedule() const {
+	LOG_I("Parsing schedule from decision variable values");
+
 	vector<int> sts(p.numJobs);
 	p.eachJobTimeWindowBounded([&](int j, int t) {
 		if (xjt(j, t).get(GRB_DoubleAttr_X) == 1.0) {
@@ -141,6 +157,8 @@ vector<int> GurobiSolver::parseSchedule() const {
 }
 
 vector<int> GurobiSolver::solve() {
+	LOG_I("Optimizing model");
+
 	try {
 		model.optimize();
 		return parseSchedule();

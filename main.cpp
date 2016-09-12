@@ -54,8 +54,15 @@ void Main::convertArgFileToLSP(int argc, const char * argv[]) {
 
 void Main::testGurobi() {
 	string projFilename = "QBWLBeispiel.DAT";
+	//string projFilename = "j3025_4.sm";
 	ProjectWithOvertime p(projFilename);
-	GurobiSolver solver(p, "");
+	GurobiSolver::Options opts;
+	opts.useSeedSol = true;
+	opts.displayInterval = 1;
+	opts.gap = 0.0;
+	opts.outPath = "";
+	opts.timeLimit = GRB_INFINITY;
+	GurobiSolver solver(p, opts);
 	vector<int> sts = solver.solve();
 }
 

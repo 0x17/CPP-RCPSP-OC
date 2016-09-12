@@ -15,6 +15,10 @@
 
 using namespace std;
 
+#define LOG_I(msg) logger.log(Utils::Logger::LogLevel::INFO, msg)
+#define LOG_W(msg) logger.log(Utils::Logger::LogLevel::WARNING, msg)
+#define LOG_E(msg) logger.log(Utils::Logger::LogLevel::ERROR, msg)
+
 namespace Utils {
 	string slurp(string filename);
 	vector<string> readLines(string filename);
@@ -128,6 +132,32 @@ namespace Utils {
 	inline bool int2bool(int i) {
 		return i != 0;
 	}
+
+	string formattedNow();
+
+	class Logger {
+	public:
+		enum class LogLevel {
+			INFO = 0,
+			WARNING,
+			ERROR
+		};
+
+		enum class LogMode {
+			QUIET = 0,
+			MEDIUM,
+			VERBOSE
+		};
+
+	private:
+		string logName;
+		ofstream f;
+		LogMode mode;		
+
+	public:
+		Logger(const string& _logName, LogMode _mode);
+		void log(LogLevel level, const string& message);
+	};
 }
 
 #endif //SSGS_UTILS_H

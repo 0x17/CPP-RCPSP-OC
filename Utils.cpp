@@ -153,4 +153,26 @@ namespace Utils {
 		}
 		last_slvtime = slvtime;
 	}
+
+	string formattedNow() {
+		time_t rawtime;
+		struct tm* timeinfo;
+		char buffer[80];
+		time(&rawtime);
+		timeinfo = localtime(&rawtime);
+		strftime(buffer, 80, "%d-%m-%Y %I:%M:%S", timeinfo);
+		string str(buffer);
+		return str;
+	}
+
+	Logger::Logger(const string& _logName, LogMode _mode): logName(_logName), f(logName + "Log.txt"), mode(_mode) {
+	}
+
+	void Logger::log(LogLevel level, const string& message) {
+		if(mode == LogMode::QUIET || (level == LogLevel::INFO && mode == LogMode::MEDIUM)) return;
+		string timestr = formattedNow();
+		f << "[" << logName << ", " << timestr << "]: " << message << endl;
+		f.flush();
+		cout << "[" << logName << ", " << timestr << "]: " << message << endl;		
+	}
 }
