@@ -34,6 +34,7 @@ GurobiSolver::GurobiSolver(ProjectWithOvertime &_p, string outPath) :
 	model.update();
 	setupObjectiveFunction();
 	setupConstraints();
+	setupFeasibleMipStart();
 }
 
 void GurobiSolver::restrictJobToTimeWindow(int j, int eft, int lft) {
@@ -56,6 +57,7 @@ void GurobiSolver::setupOptions() {
 	env.set(GRB_DoubleParam_MIPGap, 0.0);
 	env.set(GRB_DoubleParam_TimeLimit, GRB_INFINITY);
 	env.set(GRB_IntParam_DisplayInterval, 1);
+	//env.set(GRB_DoubleParam_Heuristics, 1.0);
 }
 
 void GurobiSolver::setupObjectiveFunction() {
@@ -105,6 +107,26 @@ void GurobiSolver::setupConstraints() {
 		});
 
 		model.addConstr(cumDemands <= p.capacities[r] + zrt(r, t), "res. restr. (r,t)=(" + to_string(r) + "," + to_string(t) + ")");
+	});
+}
+
+void GurobiSolver::setupFeasibleMipStart() {
+	auto sts = p.serialSGS(p.topOrder);
+
+	p.eachJobConst([&](int j) {
+		int ft = sts[j] + p.durations[j];
+		p.eachPeriodBoundedConst([&](int t) {
+			double sval = (ft == t) ? 1.0 : 0.0;
+			xjt(j, t).set(GRB_DoubleAttr_Start, sval);
+		});
+	});
+
+	p.eachResPeriodBoundedConst([&](int r, int t) {
+		int z = 0;
+		p.eachJobConst([&](int j) {
+			z += sts[j] + 1 >= t && t <= sts[j] + p.durations[j] ? p.demands(j,r) : 0;
+		});
+		zrt(r, t).set(GRB_DoubleAttr_Start, z);
 	});
 }
 

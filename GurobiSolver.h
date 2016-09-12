@@ -10,7 +10,7 @@
 class ProjectWithOvertime;
 
 class GurobiSolver {
-public:
+public:	
 	GurobiSolver(ProjectWithOvertime& _p, string outPath);
 
 	void restrictJobToTimeWindow(int j, int eft, int lft);
@@ -37,6 +37,7 @@ private:
 	void setupOptions();
 	void setupObjectiveFunction();
 	void setupConstraints();
+	void setupFeasibleMipStart();
 
 	vector<int> parseSchedule() const;
 };
