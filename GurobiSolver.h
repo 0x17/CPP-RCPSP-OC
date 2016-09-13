@@ -23,6 +23,7 @@ public:
 
 	void restrictJobToTimeWindow(int j, int eft, int lft);
 	void relaxJob(int j);
+	void relaxAllJobs();
 
 	vector<int> solve();
 

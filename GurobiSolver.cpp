@@ -36,8 +36,8 @@ GurobiSolver::GurobiSolver(ProjectWithOvertime &_p, Options _opts) :
 	opts(_opts)
 {
 	setupOptions();
-	model.setCallback(&cback);
 	model.update();
+	model.setCallback(&cback);
 	setupObjectiveFunction();
 	setupConstraints();
 	setupFeasibleMipStart();
@@ -57,6 +57,10 @@ void GurobiSolver::restrictJobToTimeWindow(int j, int eft, int lft) {
 
 void GurobiSolver::relaxJob(int j) {
 	restrictJobToTimeWindow(j, p.efts[j], p.lfts[j]);
+}
+
+void GurobiSolver::relaxAllJobs() {
+	p.eachJobConst([&](int j) { relaxJob(j); });
 }
 
 void GurobiSolver::setupOptions() {
