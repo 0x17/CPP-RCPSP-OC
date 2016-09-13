@@ -10,9 +10,10 @@ int ListDeadlineModel::QuasistableSGSFunction::varCount() {
 
 SGSResult ListDeadlineModel::QuasistableSGSFunction::decode(vector<int>& order, const LSNativeContext& context) {
 	int deadline = static_cast<int>(context.getIntValue(p.numJobs));
-	auto res = p.serialSGSWithDeadlineEarly(deadline, order);
-	if (res.valid) return static_cast<SGSResult>(res);
-	return fallbackResult;
+	//auto res = p.serialSGSWithDeadlineEarly(deadline, order);
+	//if (res.valid) return static_cast<SGSResult>(res);
+	//return fallbackResult;
+	return p.earlyOvertimeDeadlineSGS(order, deadline, true);
 }
 
 SGSResult ListDeadlineModel::computeFallbackResult(Project& p) {

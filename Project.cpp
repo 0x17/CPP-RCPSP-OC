@@ -99,9 +99,26 @@ int Project::chooseEligibleWithLowestIndex(const vector<int>& sts, const vector<
 	throw runtime_error("No eligible job found!");
 }
 
+int Project::chooseEligibleWithHighestIndex(const vector<bool>& unscheduled, const vector<int>& order) const {
+	for(int i = numJobs - 1; i >= 0; i--) {
+		int j = order[i];
+		if(unscheduled[j] && allPredsScheduled(j, unscheduled))
+			return j;
+	}
+	throw runtime_error("No eligible job found!");
+}
+
 bool Project::allPredsScheduled(int j, const vector<int>& sts) const {
 	for (int i = 0; i < numJobs; i++) {
 		if (adjMx(i, j) && sts[i] == UNSCHEDULED)
+			return false;
+	}
+	return true;
+}
+
+bool Project::allPredsScheduled(int j, const vector<bool>& unscheduled) const {
+	for(int i = 0; i < numJobs; i++) {
+		if(adjMx(i, j) && unscheduled[i])
 			return false;
 	}
 	return true;

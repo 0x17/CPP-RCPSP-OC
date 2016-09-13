@@ -125,7 +125,10 @@ public:
 
 	int chooseEligibleWithLowestIndex(const vector<int> &sts, const vector<int> &order) const;
 
-    void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem, bool robust = false) const;
+	int chooseEligibleWithHighestIndex(const vector<bool>& unscheduled, const vector<int>& order) const;
+
+
+	void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem, bool robust = false) const;
 
 	Matrix<int> normalCapacityProfile() const;
 
@@ -135,6 +138,7 @@ public:
 
 protected:
 	bool allPredsScheduled(int j, const vector<int> &sts) const;
+	bool allPredsScheduled(int j, const vector<bool>& unscheduled) const;
 
 	vector<int> serialSGSCore(const vector<int>& order, Matrix<int> &resRem, bool robust = false) const;
 

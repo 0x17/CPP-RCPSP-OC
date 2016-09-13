@@ -67,8 +67,6 @@ public:
 	SGSDeadlineResult serialSGSWithDeadlineBeta(int deadline, const vector<int>& order, const vector<int>& beta) const;
 	SGSDeadlineResult serialSGSWithDeadlineTau(int deadline, const vector<int>& order, const vector<float>& tau) const;
 
-	vector<int> delaySchedule(const vector<int>& order, const vector<int>& sts, int deadline) const;
-
 	vector<int> earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const;
 
 	vector<int> decisionTimesForResDevProblem(const vector<int> &sts, const vector<int> &ests, const vector<int> &lfts, const Matrix<int> &resRem, int j) const;
@@ -76,11 +74,17 @@ public:
 	static vector<int> jobsWithDescendingStartingTimes(const vector<int>& sts);
 	list<int> feasibleTimeWindowForJobInCompleteSchedule(int j, const vector<int>& sts, const vector<int>& fts, const Matrix<int>& resRem) const;
 	int latestPeriodWithMinimalCosts(int j, const list<int>& feasTimes, const vector<int>& sts, const Matrix<int>& resRem) const;
-	void unscheduleJob(int j, vector<int>& sts, vector<int>& fts, Matrix<int>& resRem);
+	void unscheduleJob(int j, vector<int>& sts, vector<int>& fts, Matrix<int>& resRem) const;
+	void unscheduleJob(int j, int stj, Matrix<int>& resRem) const;
 
 	void improvementStep(vector<int>& sts);
 
 	int heuristicMakespanUpperBound() const;
+
+	SGSResult earlyOvertimeDeadlineSGS(const vector<int>& order, int deadline, bool robust = false) const;
+	SGSResult delayWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust = false) const;
+	int costsCausedByActivity(int j, int stj, const Matrix<int>& resRem) const;
+	int latestCheapestPeriod(int j, int baseStj, int lstj, const Matrix<int>& resRem) const;
 
 private:
     void computeRevenueFunction();
