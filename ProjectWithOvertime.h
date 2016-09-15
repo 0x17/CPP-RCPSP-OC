@@ -81,10 +81,12 @@ public:
 
 	int heuristicMakespanUpperBound() const;
 
-	SGSResult earlyOvertimeDeadlineSGS(const vector<int>& order, int deadline, bool robust = false) const;
+	SGSResult earlyOvertimeDeadlineOffsetSGS(const vector<int> &order, int deadlineOffset, bool robust = false) const;
 	SGSResult delayWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust = false) const;
-	int costsCausedByActivity(int j, int stj, const Matrix<int>& resRem) const;
+	float costsCausedByActivity(int j, int stj, const Matrix<int>& resRem) const;
 	int latestCheapestPeriod(int j, int baseStj, int lstj, const Matrix<int>& resRem) const;
+
+	SGSResult goldenSectionSearchBasedOptimization(const vector<int>& order, bool robust = false) const;
 
 private:
     void computeRevenueFunction();

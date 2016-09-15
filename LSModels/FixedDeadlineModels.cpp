@@ -13,7 +13,7 @@ SGSResult ListDeadlineModel::QuasistableSGSFunction::decode(vector<int>& order, 
 	//auto res = p.serialSGSWithDeadlineEarly(deadline, order);
 	//if (res.valid) return static_cast<SGSResult>(res);
 	//return fallbackResult;
-	return p.earlyOvertimeDeadlineSGS(order, deadline, true);
+	return p.earlyOvertimeDeadlineOffsetSGS(order, deadline, true);
 }
 
 SGSResult ListDeadlineModel::computeFallbackResult(Project& p) {

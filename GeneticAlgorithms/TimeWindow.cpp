@@ -125,30 +125,69 @@ vector<int> TimeWindowBordersGA::decode(LambdaBeta& i) {
 
 //======================================================================================================================
 
-CompareAlternativesGA::CompareAlternativesGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "CompareAlternativesGA") {
+ActivityListBasedGA::ActivityListBasedGA(ProjectWithOvertime &_p, string name, TDecoder _decoder) : GeneticAlgorithm(_p, name), decoder(_decoder) {
     useThreads = true;
 }
 
-Lambda CompareAlternativesGA::init(int ix) {
+ActivityListBasedGA::TDecoder ActivityListBasedGA::selectDecoder(DecoderType type) {
+	switch(type) {
+	case DecoderType::CompareAlternatives:
+		return [](const ProjectWithOvertime& p, const vector<int>& order) {
+			return p.serialSGSWithOvertime(order);
+		};
+	case DecoderType::GoldenCutSearch:
+	default:
+		return [](const ProjectWithOvertime& p, const vector<int>& order) {
+			return p.goldenSectionSearchBasedOptimization(order);
+		};
+	}
+}
+
+string ActivityListBasedGA::selectName(DecoderType type) {
+	switch(type) {
+	case DecoderType::CompareAlternatives:
+		return "CompareAlternativesGA";
+	default:
+	case DecoderType::GoldenCutSearch:
+		return "GoldenCutSearchGA";
+	}
+}
+
+ActivityListBasedGA::ActivityListBasedGA(ProjectWithOvertime& _p, DecoderType type): ActivityListBasedGA(p, selectName(type), selectDecoder(type)) {
+}
+
+Lambda ActivityListBasedGA::init(int ix) {
     Lambda l;
     l.order = ix == 0 ? p.topOrder : Sampling::sample(params.rbbrs, p);
     return l;
 }
 
-void CompareAlternativesGA::crossover(Lambda &mother, Lambda &father, Lambda &daughter) {
+void ActivityListBasedGA::crossover(Lambda &mother, Lambda &father, Lambda &daughter) {
     daughter.randomOnePointCrossover(mother, father);
 }
 
-void CompareAlternativesGA::mutate(Lambda &i) {
+void ActivityListBasedGA::mutate(Lambda &i) {
     i.neighborhoodSwap(p.adjMx, params.pmutate);
 }
 
-float CompareAlternativesGA::fitness(Lambda &i) {
-    auto pair = p.serialSGSWithOvertime(i.order);
-	return p.calcProfit(pair);
+float ActivityListBasedGA::fitness(Lambda &i) {
+    /*auto pair = p.serialSGSWithOvertime(i.order);
+	return p.calcProfit(pair);*/
+	auto res = p.goldenSectionSearchBasedOptimization(i.order);
+	return p.calcProfit(res);
 }
 
-vector<int> CompareAlternativesGA::decode(Lambda& i) {
-	return p.serialSGSWithOvertime(i.order).sts;
+vector<int> ActivityListBasedGA::decode(Lambda& i) {
+	//return p.serialSGSWithOvertime(i.order).sts;
+	return p.goldenSectionSearchBasedOptimization(i.order).sts;
 }
 
+//======================================================================================================================
+
+CompareAlternativesGA::CompareAlternativesGA(ProjectWithOvertime& _p): ActivityListBasedGA(_p, DecoderType::CompareAlternatives) {
+}
+
+//======================================================================================================================
+
+GoldenCutSearchGA::GoldenCutSearchGA(ProjectWithOvertime& _p): ActivityListBasedGA(p, DecoderType::GoldenCutSearch) {
+}

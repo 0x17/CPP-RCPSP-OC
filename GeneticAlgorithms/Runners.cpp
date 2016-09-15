@@ -20,12 +20,13 @@ namespace GARunners {
         return result;
     }
 
-    RUN_GA_FUNC_IMPL(runTwBorderGA, TimeWindowBordersGA)
-    RUN_GA_FUNC_IMPL(runTwArbitraryGA, TimeWindowArbitraryGA)
+	RUN_GA_FUNC_IMPL(runTwBorderGA, TimeWindowBordersGA)
+	RUN_GA_FUNC_IMPL(runTwArbitraryGA, TimeWindowArbitraryGA)
 	RUN_GA_FUNC_IMPL(runTwArbitraryDiscretizedGA, TimeWindowArbitraryDiscretizedGA)
-    RUN_GA_FUNC_IMPL(runFixedCapaGA, FixedCapacityGA)
-    RUN_GA_FUNC_IMPL(runTimeVaryCapaGA, TimeVaryingCapacityGA)
-    RUN_GA_FUNC_IMPL(runCompAltsGA, CompareAlternativesGA)
+	RUN_GA_FUNC_IMPL(runFixedCapaGA, FixedCapacityGA)
+	RUN_GA_FUNC_IMPL(runTimeVaryCapaGA, TimeVaryingCapacityGA)
+	RUN_GA_FUNC_IMPL(runCompAltsGA, CompareAlternativesGA)
+	RUN_GA_FUNC_IMPL(runGoldenCutSearchGA, GoldenCutSearchGA)
     RUN_GA_FUNC_IMPL(runFixedDeadlineGA, FixedDeadlineGA)
 
 }

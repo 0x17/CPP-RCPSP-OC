@@ -19,8 +19,7 @@ private:
     virtual float fitness(DeadlineLambda &i) override;
     virtual vector<int> decode(DeadlineLambda &i) override;
 
-    int deadlineLB, deadlineUB;
-	vector<int> fallbackSts;
+    int deadlineOffsetLB, deadlineOffsetUB;
 };
 
 

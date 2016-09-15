@@ -49,7 +49,7 @@ void Lambda::onePointCrossoverLists(int q, vector<T> &daughter, const vector<T> 
 
 class DeadlineLambda : public Lambda {
 public:
-    int deadline;
+    int deadlineOffset;
 
     DeadlineLambda(int numJobs);
     DeadlineLambda();

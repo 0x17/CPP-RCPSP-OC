@@ -5,6 +5,8 @@
 #ifndef CPP_RCPSP_OC_TIMEWINDOWGAS_H
 #define CPP_RCPSP_OC_TIMEWINDOWGAS_H
 
+#include <map>
+
 #include "GeneticAlgorithm.h"
 #include "Representations.h"
 
@@ -46,15 +48,39 @@ private:
 	int ub;
 };
 
-class CompareAlternativesGA : public GeneticAlgorithm<Lambda> {
-public:
-    CompareAlternativesGA(ProjectWithOvertime &_p);
+class ActivityListBasedGA : public GeneticAlgorithm<Lambda> {
+public:	
+	using TDecoder = function<SGSResult(const ProjectWithOvertime &p, const vector<int>&)>;
+
+	enum class DecoderType {
+		CompareAlternatives,
+		GoldenCutSearch
+	};
+
+	ActivityListBasedGA(ProjectWithOvertime &_p, string name, TDecoder _decoder);
+	ActivityListBasedGA(ProjectWithOvertime& _p, DecoderType type);
+	
+	static TDecoder selectDecoder(DecoderType type);
+	static string selectName(DecoderType type);
+
 private:
+	TDecoder decoder;
+
     virtual Lambda init(int ix) override;
     virtual void crossover(Lambda &mother, Lambda &father, Lambda &daughter) override;
     virtual void mutate(Lambda &i) override;
     virtual float fitness(Lambda &i) override;
 	virtual vector<int> decode(Lambda& i) override;
+};
+
+class CompareAlternativesGA : public ActivityListBasedGA {
+public:
+	CompareAlternativesGA(ProjectWithOvertime& _p);
+};
+
+class GoldenCutSearchGA : public ActivityListBasedGA {
+public:
+	GoldenCutSearchGA(ProjectWithOvertime& _p);
 };
 
 

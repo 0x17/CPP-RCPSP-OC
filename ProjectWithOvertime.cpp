@@ -175,6 +175,8 @@ void ProjectWithOvertime::unscheduleJob(int j, int stj, Matrix<int>& resRem) con
 		for (int r = 0; r < numRes; r++) resRem(r, t) += demands(j, r);
 }
 
+
+// FIXME: Finish this method
 void ProjectWithOvertime::improvementStep(vector<int>& sts) {
 	vector<int> fts(sts.size());
 	for (int i = 0; i < sts.size(); i++) fts[i] = sts[i] + durations[i];
@@ -211,9 +213,11 @@ int ProjectWithOvertime::heuristicMakespanUpperBound() const {
 	return ms;
 }
 
-SGSResult ProjectWithOvertime::earlyOvertimeDeadlineSGS(const vector<int>& order, int deadline, bool robust) const {
-	auto baseSchedule = serialSGSWithOvertime(order, robust);
-	return delayWithoutOvertimeIncrease(order, baseSchedule.sts, baseSchedule.resRem, deadline, robust);
+SGSResult ProjectWithOvertime::earlyOvertimeDeadlineOffsetSGS(const vector<int> &order, int deadlineOffset, bool robust) const {
+	auto baseSchedule = serialSGS(order, zmax, robust);
+	if(deadlineOffset <= 0) return baseSchedule;
+    int baseMakespan = makespan(baseSchedule.sts);
+	return delayWithoutOvertimeIncrease(order, baseSchedule.sts, baseSchedule.resRem, baseMakespan + deadlineOffset, robust);
 }
 
 SGSResult ProjectWithOvertime::delayWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust) const {
@@ -227,28 +231,73 @@ SGSResult ProjectWithOvertime::delayWithoutOvertimeIncrease(const vector<int>& o
 	for(int k = numJobs - 2; k >= 0; k--) {
 		int j = robust ? chooseEligibleWithHighestIndex(unscheduled, order) : order[k];
 		int baseStj = sts[j];
-		int lstj = computeFirstSuccStartingTime(sts, j);		
+		int lstj = computeFirstSuccStartingTime(sts, j) - durations[j];		
 		unscheduleJob(j, sts[j], resRem);
 		scheduleJobAt(j, latestCheapestPeriod(j, baseStj, lstj, resRem), sts, resRem);
+	}
+
+	if(sts[0] > 0) {
+		shiftScheduleLeftBy(sts[0], sts, resRem);
 	}
 
 	return { sts, resRem };
 }
 
-int ProjectWithOvertime::costsCausedByActivity(int j, int stj, const Matrix<int>& resRem) const {
-	int costs = 0;
+float ProjectWithOvertime::costsCausedByActivity(int j, int stj, const Matrix<int>& resRem) const {
+	float costs = 0;
 	ACTIVE_PERIODS(j, stj, EACH_RES(costs += max(demands(j, r) - resRem(r, tau), 0) * kappa[r]))
 	return costs;
 }
 
 int ProjectWithOvertime::latestCheapestPeriod(int j, int baseStj, int lstj, const Matrix<int>& resRem) const {
-	int baseOvertimeCosts = costsCausedByActivity(j, baseStj, resRem);
-	for(int tau = lstj; tau > baseStj; tau++) {
-		if(costsCausedByActivity(j, tau, resRem) < baseOvertimeCosts) {
+	float baseOvertimeCosts = costsCausedByActivity(j, baseStj, resRem);
+	for(int tau = lstj; tau > baseStj; tau--) {
+		if(costsCausedByActivity(j, tau, resRem) <= baseOvertimeCosts) {
 			return tau;
 		}
 	}
 	return baseStj;
+}
+
+SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector<int>& order, bool robust) const {
+	struct DeadlineProfitResultTriple {
+		int deadline;
+		float profit;
+		SGSResult result;
+	} lb, ub, a, b;
+
+	vector<int> zeroOc(numRes, 0);
+	auto tminRes = serialSGS(order, zmax, robust);
+	auto tmaxRes = serialSGS(order, zeroOc, robust);
+
+	lb.deadline = makespan(tminRes.sts);
+	lb.profit = calcProfit(tminRes);
+	lb.result = tminRes;
+
+	ub.deadline = makespan(tmaxRes.sts);
+	ub.profit = calcProfit(tmaxRes);
+	ub.result = tmaxRes;
+
+	while(lb.deadline < ub.deadline) {
+		a.deadline = lb.deadline + static_cast<int>(round((3.0 - sqrt(5)) / 2.0 * (ub.deadline - lb.deadline)));
+		b.deadline = lb.deadline + static_cast<int>(round((sqrt(5.0) - 1.0) / 2.0 * (ub.deadline - lb.deadline)));
+
+		if(a.deadline == b.deadline) {
+			lb = a;
+			break;
+		}
+
+		a.result = delayWithoutOvertimeIncrease(order, tminRes.sts, tminRes.resRem, a.deadline, robust);
+		b.result = delayWithoutOvertimeIncrease(order, tminRes.sts, tminRes.resRem, b.deadline, robust);
+
+		a.profit = calcProfit(a.result);
+		b.profit = calcProfit(b.result);
+
+		if(a.profit > b.profit) ub = b;
+		else lb = a;
+	}
+
+	return (lb.profit > ub.profit) ? lb.result : ub.result;
 }
 
 float ProjectWithOvertime::extensionCosts(const Matrix<int> &resRem, int j, int stj) const {

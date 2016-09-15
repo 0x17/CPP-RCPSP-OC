@@ -51,6 +51,7 @@ struct SGSResult {
 	Matrix<int> resRem;
 
 	SGSResult(vector<int> _sts, Matrix<int> _resRem) : sts(_sts), resRem(_resRem) {}
+	SGSResult() {}
 };
 
 class Project {
@@ -154,6 +155,8 @@ protected:
 
     void transferAlreadyScheduled(vector<int> &destSts, const vector<int> &partialSts) const;
 	void transferAlreadyScheduledToFts(vector<int> &destFts, const vector<int> &partialSts) const;
+
+	void shiftScheduleLeftBy(int offset, vector<int> &sts, Matrix<int> &resRem) const;
 
 private:
     void parsePrecedenceRelation(const vector<string> &lines);

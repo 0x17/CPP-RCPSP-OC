@@ -37,11 +37,11 @@ namespace Main {
 }
 
 int main(int argc, char * argv[]) {
-	//Main::commandLineRunner(argc, argv);
+	Main::commandLineRunner(argc, argv);
 	//Main::testFixedDeadlineHeuristic();
 	//Main::testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
 	//Main::benchmarkGeneticAlgorithm(5, 256000);
-	Main::testGurobi();
+	//Main::testGurobi();
 	return 0;
 }
 
@@ -216,15 +216,25 @@ void Main::testFixedDeadlineHeuristic() {
 	//string projFilename = "MiniBeispiel.DAT";	
 	ProjectWithOvertime p(projFilename);
 
-	BranchAndBound bb(p);
-	auto sts = bb.solve();
+	//BranchAndBound bb(p);
+	//auto sts = bb.solve();
 
-	//GAParameters params = { -1, 100, 5, 30, true, false };
-	//auto res = GARunners::run(p, params, 5);
-	//auto sts = res.sts;
+	GAParameters params;
+	params.popSize = 80;
+	params.timeLimit = -1.0;
+	params.numGens = 100;
+	params.fitnessBasedPairing = true;
+	params.pmutate = 5;
+	params.traceobj = false;
+	params.selectionMethod = SelectionMethod::BEST;
+	params.rbbrs = true;
+
+	auto res = GARunners::run(p, params, 6);
+	auto sts = res.sts;
+
 	Utils::serializeSchedule(sts, "myschedule.txt");
 	Utils::serializeProfit(p.calcProfit(sts), "myprofit.txt");
-	system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedule.txt");
+	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedule.txt");
 }
 
 void Main::testLocalSolverNative(int seed) {

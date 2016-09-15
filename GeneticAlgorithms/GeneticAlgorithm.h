@@ -120,7 +120,7 @@ protected:
 	void selectDuel(vector<pair<Individual, float>> &pop);
 
     template<class Func>
-    void withMutProb(Func code);
+    void withMutProb(Func code) const;
 };
 
 template<class Individual>
@@ -130,7 +130,7 @@ GeneticAlgorithm<Individual>::~GeneticAlgorithm() {
 
 template<class Individual>
 template<class Func>
-inline void GeneticAlgorithm<Individual>::withMutProb(Func code) {
+inline void GeneticAlgorithm<Individual>::withMutProb(Func code) const {
     if(Utils::randRangeIncl(1, 100) <= params.pmutate) { code(); }
 }
 

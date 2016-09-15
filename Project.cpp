@@ -387,3 +387,11 @@ void Project::transferAlreadyScheduled(vector<int> &destSts, const vector<int> &
 void Project::transferAlreadyScheduledToFts(vector<int> &destFts, const vector<int> &partialSts) const {
 	EACH_JOBi(if (partialSts[i] != UNSCHEDULED) destFts[i] = partialSts[i] + durations[i])
 }
+
+void Project::shiftScheduleLeftBy(int offset, vector<int> &sts, Matrix<int> &resRem) const {
+	EACH_JOB(sts[j] -= offset);
+	EACH_RES(
+	for(int t=0; t < numPeriods-1; t++) {
+		resRem(r,t) = resRem(r, t+1);
+	})
+}

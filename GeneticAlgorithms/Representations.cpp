@@ -73,15 +73,15 @@ void Lambda::swap(int i1, int i2) {
 
 //======================================================================================================================
 
-DeadlineLambda::DeadlineLambda(int numJobs) : Lambda(numJobs), deadline(0) {}
+DeadlineLambda::DeadlineLambda(int numJobs) : Lambda(numJobs), deadlineOffset(0) {}
 
-DeadlineLambda::DeadlineLambda(): deadline(0) {}
+DeadlineLambda::DeadlineLambda(): deadlineOffset(0) {}
 
 void DeadlineLambda::randomOnePointCrossover(Lambda &mother, Lambda &father) {
     Lambda::randomOnePointCrossover(mother, father);
     auto &m = static_cast<DeadlineLambda&>(mother);
     auto &f = static_cast<DeadlineLambda&>(father);
-    deadline = static_cast<int>(std::round(static_cast<float>(m.deadline - f.deadline) / 2.0f)) + f.deadline;
+    deadlineOffset = static_cast<int>(std::round(static_cast<float>(m.deadlineOffset - f.deadlineOffset) / 2.0f)) + f.deadlineOffset;
 }
 
 //======================================================================================================================
