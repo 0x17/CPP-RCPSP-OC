@@ -11,9 +11,21 @@
 
 namespace GARunners {
 
-    vector<GAResult(*)(ProjectWithOvertime &, GAParameters &)> funcs = { runTwBorderGA, runTwArbitraryGA, runTwArbitraryDiscretizedGA, runFixedCapaGA, runTimeVaryCapaGA, runCompAltsGA, runFixedDeadlineGA };
+    vector<GAResult(*)(ProjectWithOvertime &, GAParameters &)> funcs = {
+		runTwBorderGA,				// 0
+		runTwArbitraryGA,			// 1
+		runTwArbitraryDiscretizedGA,// 2
+		runFixedCapaGA,				// 3
+		runTimeVaryCapaGA,			// 4
+		runCompAltsGA,				// 5
+		runGoldenCutSearchGA,		// 6
+		runFixedDeadlineGA			// 7
+	};
 
 	GAResult run(ProjectWithOvertime &p, GAParameters &params, int index) {
+		if(index < 0 || index >= funcs.size()) {
+			throw new runtime_error("Genetic algorithm index " + to_string(index) + " is out of range!");
+		}
         auto gafunc = funcs[index];
         auto result = gafunc(p, params);
         cout << "Representation=" << result.name << " Profit=" << result.profit << " Solvetime=" << result.solvetime << endl;

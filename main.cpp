@@ -67,7 +67,7 @@ void Main::testGurobi() {
 }
 
 void Main::showUsage() {
-	list<string> solMethods = { "BranchAndBound", "LocalSolver" };
+	list<string> solMethods = { "BranchAndBound", "LocalSolver", "Gurobi" };
 	for (int i = 0; i < 7; i++) solMethods.push_back("GA" + to_string(i));
 	for (int i = 0; i < 9; i++) solMethods.push_back("LocalSolverNative" + to_string(i));
 	cout << "Number of arguments must be >= 4" << endl;
@@ -197,6 +197,14 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			int variant = (lsnIndex == 0 && solMethod.length() == 19) ? stoi(solMethod.substr(18, 1)) : -1;
 			sts = runLocalSolverModelWithIndex(p, lsnIndex, variant, timeLimit, iterLimit, traceobj, outPath);
 			outFn += "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
+        }  else if(!solMethod.compare("Gurobi")) {
+			GurobiSolver::Options opts;
+			opts.outPath = outPath;
+			opts.timeLimit = (timeLimit == -1.0) ? opts.timeLimit : timeLimit;
+			opts.iterLimit = (iterLimit == -1.0) ? opts.iterLimit : iterLimit;
+			GurobiSolver gsolver(p, opts);
+			sts = gsolver.solve();
+			outFn += "GurobiResults.txt";
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");
         }

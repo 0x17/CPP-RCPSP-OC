@@ -14,7 +14,7 @@ public:
 	struct Options {
 		string outPath;
 		bool useSeedSol;
-		double timeLimit, gap;
+		double timeLimit, gap, iterLimit;
 		int displayInterval;
 		Options();
 	};
@@ -38,13 +38,13 @@ private:
 	};
 
 	ProjectWithOvertime &p;
+	Options opts;
 	GRBEnv env;
 	GRBModel model;
 	Matrix<GRBVar> xjt, zrt;
 	CustomCallback cback;
-	Options opts;
 
-	void setupOptions();
+	static GRBEnv setupOptions(Options opts);
 	void setupObjectiveFunction();
 	void setupConstraints();
 	void setupFeasibleMipStart();

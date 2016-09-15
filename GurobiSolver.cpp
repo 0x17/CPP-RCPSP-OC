@@ -7,7 +7,7 @@
 
 Utils::Logger logger("GurobiSolver", Utils::Logger::LogMode::VERBOSE);
 
-GurobiSolver::Options::Options() : outPath(""), useSeedSol(true), timeLimit(GRB_INFINITY), gap(0.0), displayInterval(1) {
+GurobiSolver::Options::Options() : outPath(""), useSeedSol(true), timeLimit(GRB_INFINITY), gap(0.0), iterLimit(GRB_INFINITY), displayInterval(1) {
 }
 
 GurobiSolver::CustomCallback::CustomCallback(string outPath, string instanceName) : tr(outPath + "GurobiTrace_" + instanceName) {
@@ -21,7 +21,8 @@ void GurobiSolver::CustomCallback::callback() {
 
 GurobiSolver::GurobiSolver(ProjectWithOvertime &_p, Options _opts) :
 	p(_p),
-	env(GRBEnv()),
+	opts(_opts),
+	env(setupOptions(opts)),
 	model(GRBModel(env)),
 	// x_{jt}, binary restriction
 	xjt(p.numJobs, p.getHeuristicMaxMakespan()+1, [&](int j, int t) {
@@ -32,10 +33,8 @@ GurobiSolver::GurobiSolver(ProjectWithOvertime &_p, Options _opts) :
 	zrt(p.numRes, p.getHeuristicMaxMakespan()+1, [&](int r, int t) {
 		return model.addVar(0.0, static_cast<double>(p.zmax[r]), 0.0, GRB_INTEGER, "z" + to_string(r) + to_string(t));
 	}),
-	cback(_opts.outPath, p.instanceName),
-	opts(_opts)
+	cback(opts.outPath, p.instanceName)
 {
-	setupOptions();
 	model.update();
 	model.setCallback(&cback);
 	setupObjectiveFunction();
@@ -63,11 +62,14 @@ void GurobiSolver::relaxAllJobs() {
 	p.eachJobConst([&](int j) { relaxJob(j); });
 }
 
-void GurobiSolver::setupOptions() {
+GRBEnv GurobiSolver::setupOptions(Options opts) {
+	GRBEnv env;
 	env.set(GRB_DoubleParam_MIPGap, opts.gap);
 	env.set(GRB_DoubleParam_TimeLimit, opts.timeLimit);
 	env.set(GRB_IntParam_DisplayInterval, opts.displayInterval);
+	//env.set(GRB_DoubleParam_NodeLimit, opts.iterLimit);
 	//env.set(GRB_DoubleParam_Heuristics, 1.0);
+	return env;
 }
 
 void GurobiSolver::setupObjectiveFunction() {
