@@ -58,7 +58,7 @@ public:
 	};
 
 	ActivityListBasedGA(ProjectWithOvertime &_p, string name, TDecoder _decoder);
-	ActivityListBasedGA(ProjectWithOvertime& _p, DecoderType type);
+	ActivityListBasedGA(ProjectWithOvertime &_p, DecoderType type);
 	
 	static TDecoder selectDecoder(DecoderType type);
 	static string selectName(DecoderType type);

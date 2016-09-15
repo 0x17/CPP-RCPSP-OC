@@ -153,7 +153,7 @@ string ActivityListBasedGA::selectName(DecoderType type) {
 	}
 }
 
-ActivityListBasedGA::ActivityListBasedGA(ProjectWithOvertime& _p, DecoderType type): ActivityListBasedGA(p, selectName(type), selectDecoder(type)) {
+ActivityListBasedGA::ActivityListBasedGA(ProjectWithOvertime & _p, DecoderType type): ActivityListBasedGA(_p, selectName(type), selectDecoder(type)) {
 }
 
 Lambda ActivityListBasedGA::init(int ix) {
@@ -189,5 +189,5 @@ CompareAlternativesGA::CompareAlternativesGA(ProjectWithOvertime& _p): ActivityL
 
 //======================================================================================================================
 
-GoldenCutSearchGA::GoldenCutSearchGA(ProjectWithOvertime& _p): ActivityListBasedGA(p, DecoderType::GoldenCutSearch) {
+GoldenCutSearchGA::GoldenCutSearchGA(ProjectWithOvertime& _p): ActivityListBasedGA(_p, DecoderType::GoldenCutSearch) {
 }
