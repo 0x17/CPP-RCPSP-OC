@@ -37,8 +37,8 @@ namespace Main {
 }
 
 int main(int argc, char * argv[]) {
-	Main::commandLineRunner(argc, argv);
-	//Main::testFixedDeadlineHeuristic();
+	//Main::commandLineRunner(argc, argv);
+	Main::testFixedDeadlineHeuristic();
 	//Main::testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
 	//Main::benchmarkGeneticAlgorithm(6, 256000);
 	//Main::testGurobi();
@@ -219,8 +219,8 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 }
 
 void Main::testFixedDeadlineHeuristic() {
-	//string projFilename = "../../Projekte/j30/j301_1.sm";
-	string projFilename = "QBWLBeispiel.DAT";
+	string projFilename = "../../Projekte/j30/j3010_1.sm";
+	//string projFilename = "QBWLBeispiel.DAT";
 	//string projFilename = "MiniBeispiel.DAT";	
 	ProjectWithOvertime p(projFilename);
 
@@ -266,9 +266,9 @@ void Main::testLocalSolverNative(int seed) {
 void Main::benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
     //string projFilename = "../../Projekte/j60/j6014_7.sm";
 	//string projFilename = "../../Projekte/j30/j301_1.sm";
-    string projFilename = "QBWLBeispiel.DAT";
+    //string projFilename = "QBWLBeispiel.DAT";
 	//string projFilename = "MiniBeispiel.DAT";
-	//string projFilename = "../../Projekte/j30/j3010_1.sm";
+	string projFilename = "../../Projekte/j30/j3010_1.sm";
 	//string projFilename = "../../Projekte/j30/j301_1.sm";
     ProjectWithOvertime p(projFilename);
 

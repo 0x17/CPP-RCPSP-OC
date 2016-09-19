@@ -136,7 +136,6 @@ ActivityListBasedGA::TDecoder ActivityListBasedGA::selectDecoder(DecoderType typ
 			return p.serialSGSWithOvertime(order);
 		};
 	case DecoderType::GoldenCutSearch:
-	default:
 		return [](const ProjectWithOvertime& p, const vector<int>& order) {
 			return p.goldenSectionSearchBasedOptimization(order);
 		};
@@ -147,7 +146,6 @@ string ActivityListBasedGA::selectName(DecoderType type) {
 	switch(type) {
 	case DecoderType::CompareAlternatives:
 		return "CompareAlternativesGA";
-	default:
 	case DecoderType::GoldenCutSearch:
 		return "GoldenCutSearchGA";
 	}

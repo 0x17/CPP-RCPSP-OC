@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <string>
+#include <map>
 #include "ProjectWithOvertime.h"
 
 ProjectWithOvertime::ProjectWithOvertime(string filename) :
@@ -259,45 +260,69 @@ int ProjectWithOvertime::latestCheapestPeriod(int j, int baseStj, int lstj, cons
 	return baseStj;
 }
 
+// Allgemeine Utils::goldenSectionSearch methode
+// Typ-Parameter: x-werte (deadline), y-werte (gewinn), y=g(f(x)), zugehöriger Zwischenwert f(x)
+// f(x) => deadline zu plan
+// g(x) => plan zu gewinn
 SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector<int>& order, bool robust) const {
 	struct DeadlineProfitResultTriple {
 		int deadline;
 		float profit;
 		SGSResult result;
-	} lb, ub, a, b;
+
+		string toString() const {
+			return "deadline=" + to_string(deadline) + ", profit=" + to_string(profit);
+		}
+
+	} lb, ub, a, b;	
 
 	vector<int> zeroOc(numRes, 0);
 	auto tminRes = serialSGS(order, zmax, robust);
 	auto tmaxRes = serialSGS(order, zeroOc, robust);
 
-	lb.deadline = makespan(tminRes.sts);
-	lb.profit = calcProfit(tminRes);
-	lb.result = tminRes;
+	auto fillTripleFromSGSResult = [this](const SGSResult &res, DeadlineProfitResultTriple &t) {
+		t.deadline = makespan(res.sts);
+		t.profit = calcProfit(res);
+		t.result = res;
+	};
 
-	ub.deadline = makespan(tmaxRes.sts);
-	ub.profit = calcProfit(tmaxRes);
-	ub.result = tmaxRes;
+	fillTripleFromSGSResult(tminRes, lb);
+	fillTripleFromSGSResult(tmaxRes, ub);
 
-	while(lb.deadline < ub.deadline) {
-		a.deadline = lb.deadline + static_cast<int>(round((3.0 - sqrt(5)) / 2.0 * (ub.deadline - lb.deadline)));
-		b.deadline = lb.deadline + static_cast<int>(round((sqrt(5.0) - 1.0) / 2.0 * (ub.deadline - lb.deadline)));
+    double delta = (3.0 - sqrt(5.0)) / 2.0;
 
-		if(a.deadline == b.deadline) {
-			lb = a;
+	auto updateTriple = [&](DeadlineProfitResultTriple &t) {
+		auto baseResult = (t.deadline > a.deadline) ? a.result : lb.result;
+		t.result = delayWithoutOvertimeIncrease(order, baseResult.sts, baseResult.resRem, t.deadline, robust);
+		t.profit = calcProfit(t.result);
+	};
+
+	a.deadline = lb.deadline + static_cast<int>(round(delta * (ub.deadline - lb.deadline)));
+	b.deadline = lb.deadline + static_cast<int>(round((1.0 - delta) * (ub.deadline - lb.deadline)));
+	updateTriple(a);
+	updateTriple(b);
+	
+	while(true) {
+		if(abs(lb.deadline - ub.deadline) <= 1) {
+            if(ub.profit > lb.profit) lb = ub;
 			break;
 		}
 
-		a.result = delayWithoutOvertimeIncrease(order, tminRes.sts, tminRes.resRem, a.deadline, robust);
-		b.result = delayWithoutOvertimeIncrease(order, tminRes.sts, tminRes.resRem, b.deadline, robust);
-
-		a.profit = calcProfit(a.result);
-		b.profit = calcProfit(b.result);
-
-		if(a.profit > b.profit) ub = b;
-		else lb = a;
+		if (a.profit > b.profit) {
+			ub = b;
+			b = a;
+			a.deadline = lb.deadline + static_cast<int>(round(delta * (ub.deadline - lb.deadline)));
+			updateTriple(a);
+		}
+		else {
+			lb = a;
+			a = b;
+			b.deadline = lb.deadline + static_cast<int>(round((1.0 - delta) * (ub.deadline - lb.deadline)));
+			updateTriple(b);
+		}
 	}
 
-	return (lb.profit > ub.profit) ? lb.result : ub.result;
+	return lb.result;
 }
 
 float ProjectWithOvertime::extensionCosts(const Matrix<int> &resRem, int j, int stj) const {
