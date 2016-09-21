@@ -244,6 +244,32 @@ SGSResult ProjectWithOvertime::delayWithoutOvertimeIncrease(const vector<int>& o
 	return { sts, resRem };
 }
 
+SGSResult ProjectWithOvertime::earlierWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, bool robust) const {
+	vector<int> sts(baseSts);
+	Matrix<int> resRem(baseResRem);
+	vector<bool> unscheduled(numJobs, true);
+
+	sts[0] = 0;
+	unscheduled[0] = false;
+
+	for (int k = 1; k < numJobs; k++) {
+		int j = robust ? chooseEligibleWithLowestIndex(unscheduled, order) : order[k];
+		int baseStj = sts[j];
+		int estj = computeLastPredFinishingTime(sts, j) - durations[j];
+		unscheduleJob(j, sts[j], resRem);
+		scheduleJobAt(j, earliestCheapestPeriod(j, baseStj, estj, resRem), sts, resRem);
+	}
+
+	return{ sts, resRem };
+}
+
+SGSResult ProjectWithOvertime::forwardBackwardWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust) const {
+	auto result = delayWithoutOvertimeIncrease(order, baseSts, baseResRem, deadline, robust);
+	vector<int> sts = result.sts;
+	Matrix<int> resRem = result.resRem;
+	return earlierWithoutOvertimeIncrease(order, sts, resRem, robust);
+}
+
 float ProjectWithOvertime::costsCausedByActivity(int j, int stj, const Matrix<int>& resRem) const {
 	float costs = 0;
 	ACTIVE_PERIODS(j, stj, EACH_RES(costs += max(demands(j, r) - resRem(r, tau), 0) * kappa[r]))
@@ -254,6 +280,16 @@ int ProjectWithOvertime::latestCheapestPeriod(int j, int baseStj, int lstj, cons
 	float baseOvertimeCosts = costsCausedByActivity(j, baseStj, resRem);
 	for(int tau = lstj; tau > baseStj; tau--) {
 		if(costsCausedByActivity(j, tau, resRem) <= baseOvertimeCosts) {
+			return tau;
+		}
+	}
+	return baseStj;
+}
+
+int ProjectWithOvertime::earliestCheapestPeriod(int j, int baseStj, int estj, const Matrix<int>& resRem) const {
+	float baseOvertimeCosts = costsCausedByActivity(j, baseStj, resRem);
+	for (int tau = estj; tau < baseStj; tau++) {
+		if (costsCausedByActivity(j, tau, resRem) <= baseOvertimeCosts) {
 			return tau;
 		}
 	}

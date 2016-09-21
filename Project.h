@@ -125,7 +125,7 @@ public:
     vector<int> latestFinishingTimesForPartial(const vector<int> &sts, int deadline) const;
 
 	int chooseEligibleWithLowestIndex(const vector<int> &sts, const vector<int> &order) const;
-
+	int chooseEligibleWithLowestIndex(const vector<bool> &unscheduled, const vector<int> &order) const;
 	int chooseEligibleWithHighestIndex(const vector<bool>& unscheduled, const vector<int>& order) const;
 
 
@@ -140,6 +140,7 @@ public:
 protected:
 	bool allPredsScheduled(int j, const vector<int> &sts) const;
 	bool allPredsScheduled(int j, const vector<bool>& unscheduled) const;
+	bool allSuccsScheduled(int j, const vector<bool>& unscheduled) const;
 
 	vector<int> serialSGSCore(const vector<int>& order, Matrix<int> &resRem, bool robust = false) const;
 

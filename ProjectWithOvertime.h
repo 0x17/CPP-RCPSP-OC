@@ -83,11 +83,13 @@ public:
 
 	SGSResult earlyOvertimeDeadlineOffsetSGS(const vector<int> &order, int deadlineOffset, bool robust = false) const;
 	SGSResult delayWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust = false) const;
+	SGSResult earlierWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, bool robust = false) const;
 	float costsCausedByActivity(int j, int stj, const Matrix<int>& resRem) const;
 	int latestCheapestPeriod(int j, int baseStj, int lstj, const Matrix<int>& resRem) const;
-
+	int earliestCheapestPeriod(int j, int baseStj, int estj, const Matrix<int>& resRem) const;
+	SGSResult forwardBackwardWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust = false) const;
 	SGSResult goldenSectionSearchBasedOptimization(const vector<int>& order, bool robust = false) const;
-
+		
 private:
     void computeRevenueFunction();
     int computeTKappa() const;
