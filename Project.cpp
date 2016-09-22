@@ -129,7 +129,7 @@ bool Project::isSchedulePrecedenceFeasible(const vector<int>& sts) const {
 		}
 
 		for(int j = 0; j < numJobs; j++) {
-			if (adjMx(i, j) && sts[i] + durations[i] >= sts[j]) {
+			if (adjMx(i, j) && sts[i] + durations[i] > sts[j]) {
 				LOG_W("Order feasibility violated. st" + to_string(i) + "=" + to_string(sts[i]) + " > st" + to_string(j) + "=" + to_string(sts[j]));
 				return false;
 			}

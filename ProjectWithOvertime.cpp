@@ -339,6 +339,9 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 			printf("deadline = %d, actual makespan = %d, Profit = %.2f, costs = %.2f, next step type = %s\n", deadline, makespan(result), calcProfit(result), totalCosts(result), stepTypes[i % 2].c_str());
 			system("pause");
 			result = (i % 2 == 0) ? delayWithoutOvertimeIncrease(order, result.sts, result.resRem, deadline, robust) : earlierWithoutOvertimeIncrease(order, result.sts, result.resRem, robust);
+			if(!isScheduleFeasible(result.sts)) {
+				LOG_W("INFEASIBLE SCHEDULE!");				
+			}
 		}
 		return result;
 	};

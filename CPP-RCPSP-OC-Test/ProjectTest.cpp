@@ -103,3 +103,13 @@ TEST_F(ProjectTest, testLatestFinishingTimesForPartial) {
 	alfts = { 0, 2, 4, 6, 6 };
 	TestHelpers::arrayEquals(alfts, plfts);
 }
+
+TEST_F(ProjectTest, testIsSchedulePrecedenceFeasible) {
+	vector<int> sts = p->emptySchedule();
+	ASSERT_FALSE(p->isSchedulePrecedenceFeasible(sts));
+	ASSERT_TRUE(p->isSchedulePrecedenceFeasible(p->serialSGS(p->topOrder)));
+}
+
+TEST_F(ProjectTest, testIsScheduleResourceFeasible) {
+	ASSERT_TRUE(p->isScheduleResourceFeasible(p->serialSGS(p->topOrder)));
+}
