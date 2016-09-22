@@ -169,18 +169,6 @@ int ProjectWithOvertime::latestPeriodWithMinimalCosts(int j, const list<int>& fe
 	return latestPeriod;
 }
 
-void ProjectWithOvertime::unscheduleJob(int j, vector<int>& sts, vector<int>& fts, Matrix<int>& resRem) const {
-	unscheduleJob(j, sts[j], resRem);
-	sts[j] = fts[j] = UNSCHEDULED;
-}
-
-void ProjectWithOvertime::unscheduleJob(int j, int stj, Matrix<int>& resRem) const {
-	int ftj = stj + durations[j];
-	for (int t = stj + 1; t <= ftj; t++)
-		for (int r = 0; r < numRes; r++) resRem(r, t) += demands(j, r);
-}
-
-
 // FIXME: Finish this method
 void ProjectWithOvertime::improvementStep(vector<int>& sts) {
 	vector<int> fts(sts.size());
@@ -237,7 +225,7 @@ SGSResult ProjectWithOvertime::delayWithoutOvertimeIncrease(const vector<int>& o
 		int j = robust ? chooseEligibleWithHighestIndex(unscheduled, order) : order[k];
 		int baseStj = sts[j];
 		int lstj = computeFirstSuccStartingTime(sts, j) - durations[j];
-		unscheduleJob(j, sts[j], resRem);
+		unscheduleJob(j, sts, resRem);
 		scheduleJobAt(j, latestCheapestPeriod(j, baseStj, lstj, resRem), sts, resRem);
 		unscheduled[j] = false;
 	}
@@ -251,18 +239,19 @@ SGSResult ProjectWithOvertime::delayWithoutOvertimeIncrease(const vector<int>& o
 
 SGSResult ProjectWithOvertime::earlierWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, bool robust) const {
 	vector<int> sts(baseSts);
+	vector<int> fts = stsToFts(sts);
 	Matrix<int> resRem(baseResRem);
 	vector<bool> unscheduled(numJobs, true);
 
-	sts[0] = 0;
+	sts[0] = fts[0] = 0;
 	unscheduled[0] = false;
 
 	for (int k = 1; k < numJobs; k++) {
 		int j = robust ? chooseEligibleWithLowestIndex(unscheduled, order) : order[k];
 		int baseStj = sts[j];
-		int estj = computeLastPredFinishingTime(sts, j);
-		unscheduleJob(j, sts[j], resRem);
-		scheduleJobAt(j, earliestCheapestPeriod(j, baseStj, estj, resRem), sts, resRem);
+		int estj = computeLastPredFinishingTime(fts, j);
+		unscheduleJob(j, sts, fts, resRem);
+		scheduleJobAt(j, earliestCheapestPeriod(j, baseStj, estj, resRem), sts, fts, resRem);
 		unscheduled[j] = false;
 	}
 
@@ -277,8 +266,8 @@ SGSResult ProjectWithOvertime::forwardBackwardWithoutOvertimeIncrease(const vect
 }
 
 float ProjectWithOvertime::costsCausedByActivity(int j, int stj, const Matrix<int>& resRem) const {
-	float costs = 0;
-	ACTIVE_PERIODS(j, stj, EACH_RES(costs += max(demands(j, r) - resRem(r, tau), 0) * kappa[r]))
+	float costs = 0.0f;
+	ACTIVE_PERIODS(j, stj, EACH_RES(costs += min(demands(j,r), max(demands(j, r) - resRem(r, tau), 0)) * kappa[r]))
 	return costs;
 }
 
@@ -333,15 +322,28 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 
     double delta = (3.0 - sqrt(5.0)) / 2.0;
 
-	auto iterateFBPassAndOutput = [&](SGSResult result, int deadline) {
+	auto checkAndOutput = [&](const SGSResult &result, int deadline, int nextStepType)
+	{
 		const vector<string> stepTypes = { "delay", "earlier" };
-		for(int i=0; i<10; i++) {
-			printf("deadline = %d, actual makespan = %d, Profit = %.2f, costs = %.2f, next step type = %s\n", deadline, makespan(result), calcProfit(result), totalCosts(result), stepTypes[i % 2].c_str());
-			system("pause");
+		if (!isScheduleFeasible(result.sts)) {
+			LOG_W("INFEASIBLE SCHEDULE!");
+		}
+		printf("deadline = %d, actual makespan = %d, Profit = %.2f, costs = %.2f, next step type = %s\n", deadline, makespan(result), calcProfit(result), totalCosts(result), stepTypes[nextStepType % 2].c_str());
+		system("pause");
+	};
+
+	auto iterateFB = [&](SGSResult result, int deadline) {
+		const int DEADLINE_IMPROVEMENT_TOLERANCE = 0;
+		float lastCosts = totalCosts(result.resRem);
+		for(int i=0; true; i++) {
+			//checkAndOutput(result, deadline, i);
 			result = (i % 2 == 0) ? delayWithoutOvertimeIncrease(order, result.sts, result.resRem, deadline, robust) : earlierWithoutOvertimeIncrease(order, result.sts, result.resRem, robust);
-			if(!isScheduleFeasible(result.sts)) {
-				LOG_W("INFEASIBLE SCHEDULE!");				
+			float currentCosts = totalCosts(result.resRem);
+			if (abs(currentCosts - lastCosts) <= DEADLINE_IMPROVEMENT_TOLERANCE) {
+				//checkAndOutput(result, deadline, i);
+				break;
 			}
+			lastCosts = currentCosts;
 		}
 		return result;
 	};
@@ -349,7 +351,7 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 	auto updateTriple = [&](DeadlineProfitResultTriple &t) {
 		auto baseResult = (t.deadline > a.deadline) ? a.result : lb.result;
 		//t.result = delayWithoutOvertimeIncrease(order, baseResult.sts, baseResult.resRem, t.deadline, robust);
-		t.result = iterateFBPassAndOutput(baseResult, t.deadline);
+		t.result = iterateFB(baseResult, t.deadline);
 		t.profit = calcProfit(t.result);
 	};
 

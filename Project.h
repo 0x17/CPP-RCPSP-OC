@@ -128,8 +128,7 @@ public:
 	int chooseEligibleWithLowestIndex(const vector<int> &sts, const vector<int> &order) const;
 	int chooseEligibleWithLowestIndex(const vector<bool> &unscheduled, const vector<int> &order) const;
 	int chooseEligibleWithHighestIndex(const vector<bool>& unscheduled, const vector<int>& order) const;
-
-
+	
 	void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem, bool robust = false) const;
 
 	Matrix<int> normalCapacityProfile() const;
@@ -143,6 +142,8 @@ public:
 	virtual bool isScheduleResourceFeasible(const vector<int>& sts) const;
 	bool isScheduleResourceFeasible(const vector<int>& sts, const vector<int>& zr) const;
 
+	bool isResRemValid(const vector<int>& sts, const Matrix<int>& resRem) const;
+
 protected:
 	bool allPredsScheduled(int j, const vector<int> &sts) const;
 	bool allPredsScheduled(int j, const vector<bool>& unscheduled) const;
@@ -155,8 +156,12 @@ protected:
     int computeFirstSuccStartingTime(const vector<int> &sts, int job) const;
 	int computeFirstSuccStartingTimeForPartial(const vector<int> &fts, int job) const;
     int computeLastPredFinishingTimeForPartial(const vector<int> &fts, int job) const;
+
     void scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, Matrix<int> &resRem) const;
 	void scheduleJobAt(int job, int t, vector<int> &sts, Matrix<int> &resRem) const;
+
+	void unscheduleJob(int j, vector<int>& sts, vector<int>& fts, Matrix<int>& resRem) const;
+	void unscheduleJob(int j, vector<int>& sts, Matrix<int>& resRem) const;
 
 	vector<int> earliestStartSchedule(Matrix<int> & resRem) const;
 
@@ -164,6 +169,8 @@ protected:
 	void transferAlreadyScheduledToFts(vector<int> &destFts, const vector<int> &partialSts) const;
 
 	void shiftScheduleLeftBy(int offset, vector<int> &sts, Matrix<int> &resRem) const;
+
+	vector<int> stsToFts(const vector<int>& sts) const;
 
 private:
     void parsePrecedenceRelation(const vector<string> &lines);

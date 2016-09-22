@@ -130,7 +130,7 @@ bool Project::isSchedulePrecedenceFeasible(const vector<int>& sts) const {
 
 		for(int j = 0; j < numJobs; j++) {
 			if (adjMx(i, j) && sts[i] + durations[i] > sts[j]) {
-				LOG_W("Order feasibility violated. st" + to_string(i) + "=" + to_string(sts[i]) + " > st" + to_string(j) + "=" + to_string(sts[j]));
+				LOG_W("Order feasibility violated. ft" + to_string(i) + "=" + to_string(sts[i] + durations[i]) + " > st" + to_string(j) + "=" + to_string(sts[j]));
 				return false;
 			}
 		}
@@ -159,6 +159,27 @@ bool Project::isScheduleResourceFeasible(const vector<int>& sts, const vector<in
 				return false;
 			}
 		}
+	return true;
+}
+
+bool Project::isResRemValid(const vector<int>& sts, const Matrix<int>& resRem) const {
+	for(int t = 0; t < numPeriods; t++) {
+		for(int r = 0; r < numRes; r++) {
+			int cdem = 0;
+			for(int j = 0; j < numJobs; j++) {
+				if(sts[j] < t && t <= sts[j] + durations[j]) {
+					cdem += demands(j, r);
+				}
+			}
+			int rrem = capacities[r] - cdem;
+			if(resRem(r, t) != rrem) {
+				LOG_W("Res rem invalid for resource = " + to_string(r) + " and period = " + to_string(t));
+				LOG_W("Expected = " + to_string(rrem));
+				LOG_W("Actual = " + to_string(resRem(r,t)));
+				return false;
+			}
+		}
+	}
 	return true;
 }
 
@@ -256,14 +277,23 @@ bool Project::enoughCapacityForJob(int job, int t, Matrix<int> & resRem) const {
 }
 
 void Project::scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, Matrix<int> &resRem) const {
-	sts[job] = t;
+	scheduleJobAt(job, t, sts, resRem);
 	fts[job] = t + durations[job];
-    EACH_RES(ACTIVE_PERIODS(job, t, resRem(r,tau) -= demands(job,r)))
 }
 
-void Project::scheduleJobAt(int job, int t, vector<int>& sts, Matrix<int>& resRem) const {
-	sts[job] = t;
+void Project::scheduleJobAt(int job, int t, vector<int>& sts, Matrix<int>& resRem) const {	
 	EACH_RES(ACTIVE_PERIODS(job, t, resRem(r, tau) -= demands(job, r)))
+	sts[job] = t;
+}
+
+void Project::unscheduleJob(int j, vector<int>& sts, vector<int>& fts, Matrix<int>& resRem) const {
+	unscheduleJob(j, sts, resRem);
+	fts[j] = UNSCHEDULED;
+}
+
+void Project::unscheduleJob(int j, vector<int> &sts, Matrix<int>& resRem) const {
+	EACH_RES(ACTIVE_PERIODS(j, sts[j], resRem(r, tau) += demands(j, r)))
+	sts[j] = UNSCHEDULED;
 }
 
 bool Project::jobBeforeInOrder(int job, int curIndex, const vector<int>& order) {
@@ -458,7 +488,11 @@ void Project::transferAlreadyScheduledToFts(vector<int> &destFts, const vector<i
 void Project::shiftScheduleLeftBy(int offset, vector<int> &sts, Matrix<int> &resRem) const {
 	EACH_JOB(sts[j] -= offset);
 	EACH_RES(
-	for(int t=0; t < numPeriods-1; t++) {
-		resRem(r,t) = resRem(r, t+1);
-	})
+		for(int t=0; t < numPeriods-1; t++) {
+			resRem(r,t) = t + offset >= resRem.getN() ? capacities[r] : resRem(r, t+offset);
+		})
+}
+
+vector<int> Project::stsToFts(const vector<int>& sts) const {
+	return Utils::constructVector<int>(numJobs, [&](int j) { return sts[j] + durations[j]; });
 }

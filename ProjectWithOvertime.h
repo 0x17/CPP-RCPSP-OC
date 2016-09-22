@@ -76,8 +76,6 @@ public:
 	static vector<int> jobsWithDescendingStartingTimes(const vector<int>& sts);
 	list<int> feasibleTimeWindowForJobInCompleteSchedule(int j, const vector<int>& sts, const vector<int>& fts, const Matrix<int>& resRem) const;
 	int latestPeriodWithMinimalCosts(int j, const list<int>& feasTimes, const vector<int>& sts, const Matrix<int>& resRem) const;
-	void unscheduleJob(int j, vector<int>& sts, vector<int>& fts, Matrix<int>& resRem) const;
-	void unscheduleJob(int j, int stj, Matrix<int>& resRem) const;
 
 	void improvementStep(vector<int>& sts);
 
