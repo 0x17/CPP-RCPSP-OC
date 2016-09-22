@@ -165,6 +165,8 @@ namespace Utils {
 		return str;
 	}
 
+	Logger *Logger::instance = nullptr;
+
 	Logger::Logger(const string& _logName, LogMode _mode): logName(_logName), f(logName + "Log.txt"), mode(_mode) {
 	}
 
@@ -174,5 +176,11 @@ namespace Utils {
 		f << "[" << logName << ", " << timestr << "]: " << message << endl;
 		f.flush();
 		cout << "[" << logName << ", " << timestr << "]: " << message << endl;		
+	}
+
+	Logger* Logger::getInstance() {
+		if(!instance)
+			instance = new Logger("MainLogger", Utils::Logger::LogMode::VERBOSE);
+		return instance;
 	}
 }

@@ -15,9 +15,9 @@
 
 using namespace std;
 
-#define LOG_I(msg) logger.log(Utils::Logger::LogLevel::INFO, msg)
-#define LOG_W(msg) logger.log(Utils::Logger::LogLevel::WARNING, msg)
-#define LOG_E(msg) logger.log(Utils::Logger::LogLevel::ERROR, msg)
+#define LOG_I(msg) Utils::Logger::getInstance()->log(Utils::Logger::LogLevel::INFO, msg)
+#define LOG_W(msg) Utils::Logger::getInstance()->log(Utils::Logger::LogLevel::WARNING, msg)
+#define LOG_E(msg) Utils::Logger::getInstance()->log(Utils::Logger::LogLevel::ERROR, msg)
 
 namespace Utils {
 	string slurp(string filename);
@@ -152,11 +152,14 @@ namespace Utils {
 	private:
 		string logName;
 		ofstream f;
-		LogMode mode;		
+		LogMode mode;
+		static Logger *instance;
 
 	public:
 		Logger(const string& _logName, LogMode _mode);
 		void log(LogLevel level, const string& message);
+
+		static Logger* getInstance();
 	};
 }
 

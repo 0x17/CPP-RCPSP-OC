@@ -5,8 +5,6 @@
 
 #include <gurobi_c++.h>
 
-Utils::Logger logger("GurobiSolver", Utils::Logger::LogMode::VERBOSE);
-
 GurobiSolver::Options::Options() : outPath(""), useSeedSol(true), timeLimit(GRB_INFINITY), gap(0.0), iterLimit(GRB_INFINITY), displayInterval(1) {
 }
 

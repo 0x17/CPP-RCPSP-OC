@@ -37,6 +37,10 @@ float ProjectWithOvertime::totalCosts(const vector<int> &sts) const {
 	return costs;
 }
 
+float ProjectWithOvertime::totalCosts(const SGSResult& result) const {
+	return totalCosts(result.resRem);
+}
+
 float ProjectWithOvertime::totalCostsForPartial(const vector<int> &sts) const {
     float costs = 0.0f;
     int cdemand;
@@ -232,9 +236,10 @@ SGSResult ProjectWithOvertime::delayWithoutOvertimeIncrease(const vector<int>& o
 	for(int k = numJobs - 2; k >= 0; k--) {
 		int j = robust ? chooseEligibleWithHighestIndex(unscheduled, order) : order[k];
 		int baseStj = sts[j];
-		int lstj = computeFirstSuccStartingTime(sts, j) - durations[j];		
+		int lstj = computeFirstSuccStartingTime(sts, j) - durations[j];
 		unscheduleJob(j, sts[j], resRem);
 		scheduleJobAt(j, latestCheapestPeriod(j, baseStj, lstj, resRem), sts, resRem);
+		unscheduled[j] = false;
 	}
 
 	if(sts[0] > 0) {
@@ -255,9 +260,10 @@ SGSResult ProjectWithOvertime::earlierWithoutOvertimeIncrease(const vector<int>&
 	for (int k = 1; k < numJobs; k++) {
 		int j = robust ? chooseEligibleWithLowestIndex(unscheduled, order) : order[k];
 		int baseStj = sts[j];
-		int estj = computeLastPredFinishingTime(sts, j) - durations[j];
+		int estj = computeLastPredFinishingTime(sts, j);
 		unscheduleJob(j, sts[j], resRem);
 		scheduleJobAt(j, earliestCheapestPeriod(j, baseStj, estj, resRem), sts, resRem);
+		unscheduled[j] = false;
 	}
 
 	return{ sts, resRem };
@@ -327,9 +333,20 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 
     double delta = (3.0 - sqrt(5.0)) / 2.0;
 
+	auto iterateFBPassAndOutput = [&](SGSResult result, int deadline) {
+		const vector<string> stepTypes = { "delay", "earlier" };
+		for(int i=0; i<10; i++) {
+			printf("deadline = %d, actual makespan = %d, Profit = %.2f, costs = %.2f, next step type = %s\n", deadline, makespan(result), calcProfit(result), totalCosts(result), stepTypes[i % 2].c_str());
+			system("pause");
+			result = (i % 2 == 0) ? delayWithoutOvertimeIncrease(order, result.sts, result.resRem, deadline, robust) : earlierWithoutOvertimeIncrease(order, result.sts, result.resRem, robust);
+		}
+		return result;
+	};
+
 	auto updateTriple = [&](DeadlineProfitResultTriple &t) {
 		auto baseResult = (t.deadline > a.deadline) ? a.result : lb.result;
-		t.result = delayWithoutOvertimeIncrease(order, baseResult.sts, baseResult.resRem, t.deadline, robust);
+		//t.result = delayWithoutOvertimeIncrease(order, baseResult.sts, baseResult.resRem, t.deadline, robust);
+		t.result = iterateFBPassAndOutput(baseResult, t.deadline);
 		t.profit = calcProfit(t.result);
 	};
 
@@ -359,6 +376,10 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 	}
 
 	return lb.result;
+}
+
+bool ProjectWithOvertime::isScheduleResourceFeasible(const vector<int>& sts) const {
+	return Project::isScheduleResourceFeasible(sts, zmax);
 }
 
 float ProjectWithOvertime::extensionCosts(const Matrix<int> &resRem, int j, int stj) const {

@@ -87,6 +87,7 @@ public:
 	bool isOrderFeasible(const vector<int> &order) const;
 
     int makespan(const vector<int>& sts) const;
+	int makespan(const SGSResult& res) const;
 
 	EACH_FUNC(eachJob, eachJobConst, j, numJobs)
 	EACH_FUNC(eachJobi, eachJobiConst, i, numJobs)
@@ -136,6 +137,11 @@ public:
 	vector<int> emptySchedule() const;
 
 	int getHeuristicMaxMakespan() const;
+
+	bool isScheduleFeasible(const vector<int>& sts) const;
+	bool isSchedulePrecedenceFeasible(const vector<int>& sts) const;
+	virtual bool isScheduleResourceFeasible(const vector<int>& sts) const;
+	bool isScheduleResourceFeasible(const vector<int>& sts, const vector<int>& zr) const;
 
 protected:
 	bool allPredsScheduled(int j, const vector<int> &sts) const;

@@ -37,8 +37,8 @@ namespace Main {
 }
 
 int main(int argc, char * argv[]) {
-	Main::commandLineRunner(argc, argv);
-	//Main::testFixedDeadlineHeuristic();
+	//Main::commandLineRunner(argc, argv);
+	Main::testFixedDeadlineHeuristic();
 	//Main::testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
 	//Main::benchmarkGeneticAlgorithm(6, 256000);
 	//Main::testGurobi();

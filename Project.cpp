@@ -2,7 +2,6 @@
 // Created by André Schnabel on 23.10.15.
 //
 
-#include "ProjectWithOvertime.h"
 #include <numeric>
 #include <list>
 #include <algorithm>
@@ -116,6 +115,51 @@ int Project::chooseEligibleWithHighestIndex(const vector<bool>& unscheduled, con
 			return j;
 	}
 	throw runtime_error("No eligible job found!");
+}
+
+bool Project::isScheduleFeasible(const vector<int>& sts) const {
+	return isSchedulePrecedenceFeasible(sts) && isScheduleResourceFeasible(sts);
+}
+
+bool Project::isSchedulePrecedenceFeasible(const vector<int>& sts) const {
+	for(int i = 0; i < numJobs; i++) {
+		if (sts[i] < 0 || sts[i] + durations[i] > T) {
+			LOG_W("Starting time of activity " + to_string(i) + " out of time horizon. t = " + to_string(sts[i]));
+			return false;
+		}
+
+		for(int j = 0; j < numJobs; j++) {
+			if (adjMx(i, j) && sts[i] + durations[i] >= sts[j]) {
+				LOG_W("Order feasibility violated. st" + to_string(i) + "=" + to_string(sts[i]) + " > st" + to_string(j) + "=" + to_string(sts[j]));
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+bool Project::isScheduleResourceFeasible(const vector<int>& sts) const {
+	vector<int> noZr(numJobs, 0);
+	return isScheduleResourceFeasible(sts, noZr);
+}
+
+bool Project::isScheduleResourceFeasible(const vector<int>& sts, const vector<int> &zr) const {
+	for(int r = 0; r < numRes; r++)
+		for(int t = 0; t < numPeriods; t++) {
+			int cdem = 0;
+			for(int j = 0; j < numJobs; j++) {
+				if(sts[j] + 1 <= t && t <= sts[j] + durations[j])
+					cdem += demands(j, r);
+			}
+			if (cdem > capacities[r] + zr[r]) {
+				LOG_W("Not enough residual capacity of resource = " + to_string(r) + " in period = " + to_string(t));
+				LOG_W("Demand = " + to_string(cdem));
+				LOG_W("Availability = " + to_string(capacities[r] + zr[r]));
+				return false;
+			}
+		}
+	return true;
 }
 
 bool Project::allPredsScheduled(int j, const vector<int>& sts) const {
@@ -242,6 +286,10 @@ bool Project::hasSuccNotBeforeInOrder(int job, int curIndex, const vector<int>& 
 bool Project::isOrderFeasible(const vector<int>& order) const {
 	EACH_JOBi(if(hasPredNotBeforeInOrder(order[i], i, order)) return false)
 	return true;
+}
+
+int Project::makespan(const SGSResult& res) const {
+	return makespan(res.sts);
 }
 
 template <class Pred>

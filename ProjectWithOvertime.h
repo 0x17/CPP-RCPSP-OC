@@ -20,6 +20,7 @@ public:
 	vector<float> kappa, revenue;
 
 	explicit ProjectWithOvertime(string filename);
+	virtual ~ProjectWithOvertime() {}
 
 	float calcProfit(int makespan, const Matrix<int> &resRem) const;
 	float calcProfit(const SGSResult& result) const;
@@ -27,7 +28,8 @@ public:
 
 	float totalCosts(const Matrix<int> & resRem) const;
 	float totalCosts(const vector<int> &sts) const;
-    float totalCostsForPartial(const vector<int> &sts) const;
+	float totalCosts(const SGSResult& result) const;
+	float totalCostsForPartial(const vector<int> &sts) const;
 
     SGSResult serialSGSWithOvertime(const vector<int> &order, bool robust = false) const;
 
@@ -89,7 +91,9 @@ public:
 	int earliestCheapestPeriod(int j, int baseStj, int estj, const Matrix<int>& resRem) const;
 	SGSResult forwardBackwardWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust = false) const;
 	SGSResult goldenSectionSearchBasedOptimization(const vector<int>& order, bool robust = false) const;
-		
+
+	bool isScheduleResourceFeasible(const vector<int>& sts) const override;
+
 private:
     void computeRevenueFunction();
     int computeTKappa() const;
