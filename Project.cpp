@@ -149,7 +149,7 @@ bool Project::isScheduleResourceFeasible(const vector<int>& sts, const vector<in
 		for(int t = 0; t < numPeriods; t++) {
 			int cdem = 0;
 			for(int j = 0; j < numJobs; j++) {
-				if(sts[j] + 1 <= t && t <= sts[j] + durations[j])
+				if(sts[j] < t && t <= sts[j] + durations[j])
 					cdem += demands(j, r);
 			}
 			if (cdem > capacities[r] + zr[r]) {

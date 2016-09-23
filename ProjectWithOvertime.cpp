@@ -226,7 +226,7 @@ SGSResult ProjectWithOvertime::delayWithoutOvertimeIncrease(const vector<int>& o
 		int baseStj = sts[j];
 		int lstj = computeFirstSuccStartingTime(sts, j) - durations[j];
 		unscheduleJob(j, sts, resRem);
-		scheduleJobAt(j, latestCheapestPeriod(j, baseStj, lstj, resRem), sts, resRem);
+		scheduleJobAt(j, latestCheapestFeasiblePeriod(j, baseStj, lstj, resRem), sts, resRem);
 		unscheduled[j] = false;
 	}
 
@@ -251,7 +251,7 @@ SGSResult ProjectWithOvertime::earlierWithoutOvertimeIncrease(const vector<int>&
 		int baseStj = sts[j];
 		int estj = computeLastPredFinishingTime(fts, j);
 		unscheduleJob(j, sts, fts, resRem);
-		scheduleJobAt(j, earliestCheapestPeriod(j, baseStj, estj, resRem), sts, fts, resRem);
+		scheduleJobAt(j, earliestCheapestFeasiblePeriod(j, baseStj, estj, resRem), sts, fts, resRem);
 		unscheduled[j] = false;
 	}
 
@@ -265,26 +265,32 @@ SGSResult ProjectWithOvertime::forwardBackwardWithoutOvertimeIncrease(const vect
 	return earlierWithoutOvertimeIncrease(order, sts, resRem, robust);
 }
 
-float ProjectWithOvertime::costsCausedByActivity(int j, int stj, const Matrix<int>& resRem) const {
+boost::optional<float> ProjectWithOvertime::costsAndFeasibilityCausedByActivity(int j, int stj, const Matrix<int>& resRem) const {
 	float costs = 0.0f;
-	ACTIVE_PERIODS(j, stj, EACH_RES(costs += min(demands(j,r), max(demands(j, r) - resRem(r, tau), 0)) * kappa[r]))
-	return costs;
+	ACTIVE_PERIODS(j, stj,
+		EACH_RES(
+			if (demands(j, r) > resRem(r, tau) + zmax[r]) return boost::optional<float>();
+			costs += min(demands(j, r), max(demands(j, r) - resRem(r, tau), 0)) * kappa[r]
+	))
+	return boost::optional<float>(costs);
 }
 
-int ProjectWithOvertime::latestCheapestPeriod(int j, int baseStj, int lstj, const Matrix<int>& resRem) const {
-	float baseOvertimeCosts = costsCausedByActivity(j, baseStj, resRem);
+int ProjectWithOvertime::latestCheapestFeasiblePeriod(int j, int baseStj, int lstj, const Matrix<int>& resRem) const {
+	float baseOvertimeCosts = *costsAndFeasibilityCausedByActivity(j, baseStj, resRem);
 	for(int tau = lstj; tau > baseStj; tau--) {
-		if(costsCausedByActivity(j, tau, resRem) <= baseOvertimeCosts) {
+		auto optCosts = costsAndFeasibilityCausedByActivity(j, tau, resRem);
+		if(optCosts && *optCosts <= baseOvertimeCosts) {
 			return tau;
 		}
 	}
 	return baseStj;
 }
 
-int ProjectWithOvertime::earliestCheapestPeriod(int j, int baseStj, int estj, const Matrix<int>& resRem) const {
-	float baseOvertimeCosts = costsCausedByActivity(j, baseStj, resRem);
+int ProjectWithOvertime::earliestCheapestFeasiblePeriod(int j, int baseStj, int estj, const Matrix<int>& resRem) const {
+	float baseOvertimeCosts = *costsAndFeasibilityCausedByActivity(j, baseStj, resRem);
 	for (int tau = estj; tau < baseStj; tau++) {
-		if (costsCausedByActivity(j, tau, resRem) <= baseOvertimeCosts) {
+		auto optCosts = costsAndFeasibilityCausedByActivity(j, tau, resRem);
+		if (optCosts && *optCosts <= baseOvertimeCosts) {
 			return tau;
 		}
 	}
@@ -325,9 +331,15 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 	auto checkAndOutput = [&](const SGSResult &result, int deadline, int nextStepType)
 	{
 		const vector<string> stepTypes = { "delay", "earlier" };
-		if (!isScheduleFeasible(result.sts)) {
-			LOG_W("INFEASIBLE SCHEDULE!");
+
+		if(!isSchedulePrecedenceFeasible(result.sts)) {
+			LOG_W("Precedence infeasible!");
 		}
+
+		if(!isScheduleResourceFeasible(result.sts)) {
+			LOG_W("Resource infeasible!");
+		}
+
 		printf("deadline = %d, actual makespan = %d, Profit = %.2f, costs = %.2f, next step type = %s\n", deadline, makespan(result), calcProfit(result), totalCosts(result), stepTypes[nextStepType % 2].c_str());
 		system("pause");
 	};

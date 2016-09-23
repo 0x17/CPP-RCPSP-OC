@@ -219,9 +219,10 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 }
 
 void Main::testFixedDeadlineHeuristic() {
-	string projFilename = "../../Projekte/j30/j3010_1.sm";
+	//string projFilename = "../../Projekte/j30/j3010_1.sm";
 	//string projFilename = "QBWLBeispiel.DAT";
 	//string projFilename = "MiniBeispiel.DAT";	
+	string projFilename = "../../Projekte/j120/j12011_1.sm";
 	ProjectWithOvertime p(projFilename);
 
 	//BranchAndBound bb(p);
@@ -240,8 +241,8 @@ void Main::testFixedDeadlineHeuristic() {
 	auto res = GARunners::run(p, params, 6);
 	auto sts = res.sts;
 
-	Utils::serializeSchedule(sts, "myschedule.txt");
-	Utils::serializeProfit(p.calcProfit(sts), "myprofit.txt");
+	//Utils::serializeSchedule(sts, "myschedule.txt");
+	//Utils::serializeProfit(p.calcProfit(sts), "myprofit.txt");
 	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedule.txt");
 }
 
