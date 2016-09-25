@@ -169,28 +169,6 @@ int ProjectWithOvertime::latestPeriodWithMinimalCosts(int j, const list<int>& fe
 	return latestPeriod;
 }
 
-// FIXME: Finish this method
-void ProjectWithOvertime::improvementStep(vector<int>& sts) {
-	vector<int> fts(sts.size());
-	for (int i = 0; i < sts.size(); i++) fts[i] = sts[i] + durations[i];
-
-	vector<int> jobs = jobsWithDescendingStartingTimes(sts);
-	Matrix<int> resRem = resRemForPartial(sts);
-
-	// from latest to earliest job
-	for(int j : jobs)
-	{
-		unscheduleJob(j, sts, fts, resRem);
-		// compute resource-feasible subset of time window
-		list<int> feasTimeWindow = feasibleTimeWindowForJobInCompleteSchedule(j, sts, fts, resRem);
-		// choose latest period from set with minimal overtime costs
-		int t = latestPeriodWithMinimalCosts(j, feasTimeWindow, sts, resRem);
-		scheduleJobAt(j, t, sts, fts, resRem);
-	}
-
-	// vgl. F&O
-}
-
 ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions(int ix) {
 	setFromIndex(ix);
 }
@@ -553,79 +531,6 @@ bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(const vector<int>
 	}
 
 	return true;
-}
-
-SGSDeadlineResult ProjectWithOvertime::serialSGSWithDeadlineEarly(int deadline, const vector<int>& order) const {
-	return serialSGSWithDeadline(deadline, order, [](int j, int count) { return 0; });
-}
-
-SGSDeadlineResult ProjectWithOvertime::serialSGSWithDeadlineLate(int deadline, const vector<int>& order) const {
-	return serialSGSWithDeadline(deadline, order, [](int j, int count) { return count-1; });
-}
-
-SGSDeadlineResult ProjectWithOvertime::serialSGSWithDeadlineBeta(int deadline, const vector<int>& order, const vector<int>& beta) const {
-	return serialSGSWithDeadline(deadline, order, [&beta](int j, int count) { return beta[j] > 0 ? 0 : count - 1; });
-}
-
-SGSDeadlineResult ProjectWithOvertime::serialSGSWithDeadlineTau(int deadline, const vector<int>& order, const vector<float>& tau) const {
-	return serialSGSWithDeadline(deadline, order, [&tau](int j, int count) { return static_cast<int>(round(static_cast<float>(count - 1) * (1.0f - tau[j]))); });
-}
-
-int ProjectWithOvertime::nthDecisionTimeWithMinCosts(int nth, vector<int> &decisionTimes, vector<float> &assocExtCosts, float minCosts) {
-	int ctr = 0;
-	for (int i = 0; i < decisionTimes.size(); i++) {
-		if (assocExtCosts[i] == minCosts) {
-			if(ctr == nth)
-				return decisionTimes[i];
-
-			ctr++;
-		}
-	}
-	throw runtime_error("None has min costs!");
-}
-
-template<class Func>
-SGSDeadlineResult ProjectWithOvertime::serialSGSWithDeadline(int deadline, const vector<int> &order, Func chooseIndex) const {
-	Matrix<int> resRem = normalCapacityProfile();
-	vector<int> sts(numJobs, UNSCHEDULED);
-
-    for(int job : order) {
-		vector<int> cests = earliestStartingTimesForPartial(sts);
-		vector<int> clfts = latestFinishingTimesForPartial(sts, deadline);
-
-		if(cests[job] > clfts[job] - durations[job]) {
-			return{ false, sts, resRem }; //  make_pair(false, make_pair(sts, resRem));
-        }
-
-		// decision times for quasistable schedules
-		vector<int> decisionTimes = decisionTimesForResDevProblem(sts, cests, clfts, resRem, job);
-
-		int t = -1;
-
-		if (!decisionTimes.empty()) {
-			vector<float> assocExtCosts(decisionTimes.size());
-
-			int i = 0;
-			for (int dt : decisionTimes) {
-				assocExtCosts[i] = extensionCosts(resRem, job, dt);
-				i++;
-			}
-
-			float minCosts = *min(assocExtCosts.begin(), assocExtCosts.end());
-			int minCount = static_cast<int>(count_if(assocExtCosts.begin(), assocExtCosts.end(), [minCosts](float c) { return c == minCosts; }));
-
-			int nth = chooseIndex(job, minCount);
-			t = nthDecisionTimeWithMinCosts(nth, decisionTimes, assocExtCosts, minCosts);
-		}
-
-		if(t == -1) {
-			return{ false, sts, resRem };
-        }
-
-		scheduleJobAt(job, t, sts, resRem);
-    }
-
-	return{ true, sts, resRem };
 }
 
 vector<int> ProjectWithOvertime::earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const {

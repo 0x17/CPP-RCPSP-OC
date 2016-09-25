@@ -106,13 +106,10 @@ ListModel *Main::genListModelWithIndex(ProjectWithOvertime &p, int index, int va
 		lm = new ListDynamicOvertimeModel(p);
 		break;
 	case 6:
-		lm = new ListDeadlineModel(p);
+		lm = new GSListModel(p);
 		break;
 	case 7:
-		lm = new ListBetaDeadlineModel(p);
-		break;
-	case 8:
-		lm = new ListTauDeadlineModel(p);
+		lm = new ListDeadlineModel(p);
 		break;
 	}
 	return lm;
@@ -253,7 +250,7 @@ void Main::testLocalSolverNative(int seed) {
 	string projFilename = "MiniBeispiel.DAT";
 	ProjectWithOvertime p(projFilename);
 	//ListAlternativesModel lm(p);
-	ListBetaDeadlineModel lm(p);
+	ListDeadlineModel lm(p);
 	SolverParams params(5.0);
 	params.trace = true;
 	params.seed = seed;
