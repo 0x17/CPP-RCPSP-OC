@@ -59,18 +59,12 @@ public:
 	// END (lambda|beta)
 
     SGSResult serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau, bool robust = false) const;
-	bool enoughCapacityForJobWithBaseInterval(const vector<int> & sts, const vector<int> & cests, const vector<int> & clfts, const Matrix<int> & resRem, int j, int stj) const;
 
 	vector<int> earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const;
-
-	vector<int> decisionTimesForResDevProblem(const vector<int> &sts, const vector<int> &ests, const vector<int> &lfts, const Matrix<int> &resRem, int j) const;
-
-	static vector<int> jobsWithDescendingStartingTimes(const vector<int>& sts);
 
 	int heuristicMakespanUpperBound() const;
 
 	SGSResult forwardBackwardDeadlineOffsetSGS(const vector<int> &order, int deadlineOffset, bool robust = false) const;
-
 	SGSResult delayWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust = false) const;
 	SGSResult earlierWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, bool robust = false) const;
 	boost::optional<float> costsAndFeasibilityCausedByActivity(int j, int stj, const Matrix<int>& resRem) const;

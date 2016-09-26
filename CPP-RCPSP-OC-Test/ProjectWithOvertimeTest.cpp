@@ -16,51 +16,6 @@ TEST_F(ProjectWithOvertimeTest, testChooseEligibleWithLowestIndex) {
     ASSERT_EQ(2, p->chooseEligibleWithLowestIndex(sts, order));
 }
 
-TEST_F(ProjectWithOvertimeTest, testDecisionTimesForResDevProblem) {
-	vector<int> sts = p->emptySchedule();	
-	Matrix<int> resRem = p->normalCapacityProfile();
-
-	auto ests = p->earliestStartingTimesForPartial(sts);
-	auto lfts = p->latestFinishingTimesForPartial(sts, p->numPeriods);
-
-	auto dtimes = p->decisionTimesForResDevProblem(sts, ests, lfts, resRem, 0);
-	ASSERT_FALSE(dtimes.empty());
-	vector<int> expTimes = { 0, 3 };
-	TestHelpers::arrayEquals(expTimes, dtimes);
-}
-
-TEST_F(ProjectWithOvertimeTest, testEnoughCapacityForJobWithBaseInterval) {
-	auto sts = p->emptySchedule();
-	auto cests = p->earliestStartingTimesForPartial(sts);
-	auto clfts = p->latestFinishingTimesForPartial(sts, 4);
-	auto resRem = p->normalCapacityProfile();
-
-	ASSERT_TRUE(p->enoughCapacityForJobWithBaseInterval(sts, cests, clfts, resRem, 0, 0));
-
-	sts = { 0, Project::UNSCHEDULED, 2, Project::UNSCHEDULED, 4 };
-	cests = p->earliestStartingTimesForPartial(sts);
-	clfts = p->latestFinishingTimesForPartial(sts, 4);
-	resRem = p->resRemForPartial(sts);
-
-	ASSERT_TRUE(p->enoughCapacityForJobWithBaseInterval(sts, cests, clfts, resRem, 3, 0));
-
-	sts = { 0, Project::UNSCHEDULED, 2, 0, 4 };
-	cests = p->earliestStartingTimesForPartial(sts);
-	clfts = p->latestFinishingTimesForPartial(sts, 4);
-	resRem = p->resRemForPartial(sts);
-
-	ASSERT_FALSE(p->enoughCapacityForJobWithBaseInterval(sts, cests, clfts, resRem, 1, 0));
-}
-
-TEST_F(ProjectWithOvertimeTest, testJobsWithDescendingStartingTimes)
-{
-	vector<int> sts =  { 0, 0, 3, 0, 5, 9, 3, 2, 1, 0 };
-	vector<int> actualJobLst = p->jobsWithDescendingStartingTimes(sts);
-	vector<int> desc = { 9, 5, 3, 3, 2, 1, 0, 0, 0, 0 };
-	for (int i = 0; i < sts.size(); i++)
-		ASSERT_EQ(sts[actualJobLst[i]], desc[i]);
-}
-
 TEST_F(ProjectWithOvertimeTest, testBorderSchedulingOptionsSetFromIndex) {
 	Matrix<int> expectedTable({
 		{ 0, 0, 0 },

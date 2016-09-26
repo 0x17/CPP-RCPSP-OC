@@ -96,52 +96,6 @@ int ProjectWithOvertime::computeTKappa() const {
     return tkappa;
 }
 
-vector<int> ProjectWithOvertime::decisionTimesForResDevProblem(const vector<int>& sts, const vector<int>& ests, const vector<int>& lfts, const Matrix<int> &resRem, int j) const {
-	int lstj = lfts[j] - durations[j];
-    int estj = ests[j];
-
-	vector<int> decisionTimes;
-
-	while(true) {
-		if(estj > lstj) return decisionTimes;
-		if(enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, estj)) break;
-		estj++;
-	}
-
-	while(true) {
-		if(lstj < estj) return decisionTimes;
-		if(enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, lstj)) break;
-		lstj--;
-	}
-
-	decisionTimes.push_back(estj);
-
-	for(int tau = estj+1; tau <= lstj-1; tau++) {
-		EACH_JOBi(
-			if(i != j && sts[i] != UNSCHEDULED
-				&& (sts[i] + durations[i] == tau || tau + durations[j] == sts[i])
-				&& enoughCapacityForJobWithBaseInterval(sts, ests, lfts, resRem, j, tau)) {
-			decisionTimes.push_back(tau);
-		})
-	}
-
-	if(estj < lstj)
-		decisionTimes.push_back(lstj);
-
-	return decisionTimes;
-}
-
-vector<int> ProjectWithOvertime::jobsWithDescendingStartingTimes(const vector<int>& sts) {
-	vector<pair<int, int>> jobToSt(sts.size());
-	for (int i = 0; i < sts.size(); i++)
-		jobToSt[i] = make_pair(i, sts[i]);
-	sort(jobToSt.begin(), jobToSt.end(), [](pair<int, int> &fst, pair<int, int> &snd) { return snd.second < fst.second; });
-	vector<int> descSts(sts.size());
-	for (int i = 0; i < sts.size(); i++)
-		descSts[i] = jobToSt[i].first;
-	return descSts;
-}
-
 ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions(int ix) {
 	setFromIndex(ix);
 }
@@ -266,9 +220,14 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 		t.profit = calcProfit(res);
 		t.result = res;
 	};
-
+	
 	fillTripleFromSGSResult(tminRes, lb);
 	fillTripleFromSGSResult(tmaxRes, ub);
+
+	// schedule without overtime already shorter? (rare edge case)
+	if(ub.deadline < lb.deadline) {
+		return ub.result;
+	}
 
     double delta = (3.0 - sqrt(5.0)) / 2.0;
 
@@ -280,6 +239,7 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 
 	a.deadline = lb.deadline + static_cast<int>(round(delta * (ub.deadline - lb.deadline)));
 	b.deadline = lb.deadline + static_cast<int>(round((1.0 - delta) * (ub.deadline - lb.deadline)));
+
 	updateTriple(a);
 	updateTriple(b);
 	
@@ -290,13 +250,13 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 		}
 
 		if (a.profit > b.profit) {
-			ub = b;
+			ub = b;			
 			b = a;
 			a.deadline = lb.deadline + static_cast<int>(round(delta * (ub.deadline - lb.deadline)));
 			updateTriple(a);
 		}
 		else {
-			lb = a;
+			lb = a;			
 			a = b;
 			b.deadline = lb.deadline + static_cast<int>(round((1.0 - delta) * (ub.deadline - lb.deadline)));
 			updateTriple(b);
@@ -439,25 +399,6 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &o
     }
 
 	return{ sts, resRem };
-}
-
-bool ProjectWithOvertime::enoughCapacityForJobWithBaseInterval(const vector<int>& sts, const vector<int>& cests, const vector<int>& clfts, const Matrix<int> & resRem, int j, int stj) const {
-	if(stj + durations[j] >= numPeriods) return false;
-
-	for(int tau = stj + 1; tau <= stj + durations[j]; tau++) {
-		for (int r = 0; r < numRes; r++) {
-			int baseIntervalDemands = 0;
-
-			for (int i = 0; i < numJobs; i++)
-				if (sts[i] == UNSCHEDULED && tau >= clfts[i] - durations[i] + 1 && tau <= cests[i] + durations[i])
-					baseIntervalDemands += demands(i, r);
-
-			if (baseIntervalDemands + demands(j, r) > resRem(r, tau) + zmax[r])
-				return false;
-		}
-	}
-
-	return true;
 }
 
 vector<int> ProjectWithOvertime::earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const {

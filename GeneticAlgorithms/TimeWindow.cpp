@@ -136,6 +136,7 @@ ActivityListBasedGA::TDecoder ActivityListBasedGA::selectDecoder(DecoderType typ
 			return p.serialSGSWithOvertime(order);
 		};
 	case DecoderType::GoldenCutSearch:
+	default:
 		return [](const ProjectWithOvertime& p, const vector<int>& order) {
 			return p.goldenSectionSearchBasedOptimization(order);
 		};
@@ -147,6 +148,7 @@ string ActivityListBasedGA::selectName(DecoderType type) {
 	case DecoderType::CompareAlternatives:
 		return "CompareAlternativesGA";
 	case DecoderType::GoldenCutSearch:
+	default:
 		return "GoldenCutSearchGA";
 	}
 }
@@ -169,15 +171,12 @@ void ActivityListBasedGA::mutate(Lambda &i) {
 }
 
 float ActivityListBasedGA::fitness(Lambda &i) {
-    /*auto pair = p.serialSGSWithOvertime(i.order);
-	return p.calcProfit(pair);*/
-	auto res = p.goldenSectionSearchBasedOptimization(i.order);
+	auto res = decoder(p, i.order);
 	return p.calcProfit(res);
 }
 
 vector<int> ActivityListBasedGA::decode(Lambda& i) {
-	//return p.serialSGSWithOvertime(i.order).sts;
-	return p.goldenSectionSearchBasedOptimization(i.order).sts;
+	return decoder(p, i.order).sts;
 }
 
 //======================================================================================================================

@@ -231,7 +231,8 @@ void Main::testFixedDeadlineHeuristic() {
 	//string projFilename = "../../Projekte/j30/j3010_1.sm";
 	//string projFilename = "QBWLBeispiel.DAT";
 	//string projFilename = "MiniBeispiel.DAT";	
-	string projFilename = "../../Projekte/j120/j12011_1.sm";
+	//string projFilename = "../../Projekte/j120/j12011_1.sm";
+	string projFilename = "../../Projekte/j30/j301_3.sm";
 	ProjectWithOvertime p(projFilename);
 
 	//BranchAndBound bb(p);
@@ -247,8 +248,10 @@ void Main::testFixedDeadlineHeuristic() {
 	params.selectionMethod = SelectionMethod::BEST;
 	params.rbbrs = true;
 
-	auto res = GARunners::run(p, params, 7);
+	auto res = GARunners::run(p, params, 6);
 	auto sts = res.sts;
+
+	p.isScheduleFeasible(sts);
 
 	//Utils::serializeSchedule(sts, "myschedule.txt");
 	//Utils::serializeProfit(p.calcProfit(sts), "myprofit.txt");
