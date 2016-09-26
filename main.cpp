@@ -66,21 +66,16 @@ void Main::testGurobi() {
 	vector<int> sts = solver.solve();
 }
 
-void Main::showUsage() {
-	list<string> solMethods = { "BranchAndBound", "LocalSolver", "Gurobi" };
-	for (int i = 0; i < 7; i++) solMethods.push_back("GA" + to_string(i));
-	for (int i = 0; i < 9; i++) solMethods.push_back("LocalSolverNative" + to_string(i));
-	cout << "Number of arguments must be >= 4" << endl;
-	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ScheduleLimit ProjectFileSM [traceobj]" << endl;
-	cout << "Solution methods: " << endl;
-	for (auto method : solMethods) cout << "\t" << method << endl;
-}
-
-int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
-	int maxMs = p.makespan(p.serialSGS(p.topOrder));
-	int minMs = p.makespan(p.serialSGS(p.topOrder, p.zmax).sts);
-	return maxMs - minMs;
-}
+static vector<string> lsDescriptions = {
+	"(lambda|beta)",
+	"(lambda|tau)",
+	"(lambda|tau-discrete)",
+	"(lambda|zr)",
+	"(lambda|zrt)",
+	"(lambda) alts",
+	"(lambda) gs",
+	"(lambda|deadline-offset)"
+};
 
 ListModel *Main::genListModelWithIndex(ProjectWithOvertime &p, int index, int variant) {
 	ListModel *lm = nullptr;
@@ -97,13 +92,13 @@ ListModel *Main::genListModelWithIndex(ProjectWithOvertime &p, int index, int va
 		lm = new ListTauDiscreteModel(p);
 		break;
 	case 3:
-		lm = new ListAlternativesModel(p);
-		break;
-	case 4:
 		lm = new ListFixedOvertimeModel(p);
 		break;
-	case 5:
+	case 4:
 		lm = new ListDynamicOvertimeModel(p);
+		break;
+	case 5:
+		lm = new ListAlternativesModel(p);
 		break;
 	case 6:
 		lm = new GSListModel(p);
@@ -113,6 +108,22 @@ ListModel *Main::genListModelWithIndex(ProjectWithOvertime &p, int index, int va
 		break;
 	}
 	return lm;
+}
+
+void Main::showUsage() {
+	list<string> solMethods = { "BranchAndBound", "LocalSolver", "Gurobi" };
+	for (int i = 0; i < 8; i++) solMethods.push_back("GA" + to_string(i) + " // " + GARunners::getDescription(i));
+	for (int i = 0; i < 8; i++) solMethods.push_back("LocalSolverNative" + to_string(i) + " // " + lsDescriptions[i]);
+	cout << "Number of arguments must be >= 4" << endl;
+	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ScheduleLimit ProjectFileSM [traceobj]" << endl;
+	cout << "Solution methods: " << endl;
+	for (auto method : solMethods) cout << "\t" << method << endl;
+}
+
+int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
+	int maxMs = p.makespan(p.serialSGS(p.topOrder));
+	int minMs = p.makespan(p.serialSGS(p.topOrder, p.zmax).sts);
+	return maxMs - minMs;
 }
 
 vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, int variant, double timeLimit, int iterLimit, bool traceobj, string outPath) {

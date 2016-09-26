@@ -22,6 +22,10 @@ namespace GARunners {
 		runFixedDeadlineGA			// 7
 	};
 
+	vector<string> descriptions = { "(lambda|beta)", "(lambda|tau)", "(lambda|tau-discrete)", "(lambda|zr)", "(lambda|zrt)", "(lambda) alts", "(lambda) gs", "(lambda|deadline_offset)" };
+
+	string getDescription(int ix) { return descriptions[ix];  }
+
 	GAResult run(ProjectWithOvertime &p, GAParameters &params, int index) {
 		if(index < 0 || index >= funcs.size()) {
 			throw new runtime_error("Genetic algorithm index " + to_string(index) + " is out of range!");

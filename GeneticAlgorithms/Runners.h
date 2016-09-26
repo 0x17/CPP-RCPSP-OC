@@ -46,6 +46,8 @@ namespace GARunners {
     RUN_GA_FUNC_SIGN(runFixedDeadlineGA, FixedDeadlineGA)
 
     GAResult run(ProjectWithOvertime &p, GAParameters &params, int index);
+
+	string getDescription(int index);
 }
 
 
