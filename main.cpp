@@ -160,9 +160,9 @@ vector<int> Main::runLocalSolverModelWithIndex(ProjectWithOvertime& p, int lsInd
 	return sts;
 }
 
-string coreInstanceName(const string & filename) {
+string coreInstanceName(const string & parentPath, const string & filename) {
 	string fn(filename);
-	boost::replace_first(fn, "j30/", "");
+	boost::replace_first(fn, parentPath + "/", "");
 	boost::replace_first(fn, ".sm", "");
 	return fn;
 }
@@ -183,7 +183,8 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 
         bool traceobj = (argc == 6 && !string("traceobj").compare(argv[5]));
 
-		string outPath = boost::filesystem::path(string(argv[4])).parent_path().string() + "_" + to_string(int(round(timeLimit))) + "secs/";
+		string parentPath = boost::filesystem::path(string(argv[4])).parent_path().string();
+		string outPath = parentPath + "_" + to_string(int(round(timeLimit))) + "secs/";
 		string outFn = outPath;
 		boost::filesystem::create_directory(boost::filesystem::path(outPath));
 
@@ -218,7 +219,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
         }
         
         string resStr = (sts[0] == Project::UNSCHEDULED) ? "infes" : to_string(p.calcProfit(sts));
-        Utils::spitAppend(coreInstanceName(string(argv[4]))+";"+resStr+"\n", outFn);
+        Utils::spitAppend(coreInstanceName(parentPath, string(argv[4]))+";"+resStr+"\n", outFn);
 
 		Utils::serializeSchedule(sts, outPath + "myschedule.txt");
 		Utils::serializeProfit(p.calcProfit(sts), outPath + "myprofit.txt");
