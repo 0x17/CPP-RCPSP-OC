@@ -142,33 +142,6 @@ vector<int> ProjectWithOvertime::jobsWithDescendingStartingTimes(const vector<in
 	return descSts;
 }
 
-list<int> ProjectWithOvertime::feasibleTimeWindowForJobInCompleteSchedule(int j, const vector<int>& sts, const vector<int>& fts, const Matrix<int>& resRem) const {
-	list<int> feasTimes;
-	int estj = computeLastPredFinishingTimeForPartial(fts, j);
-	int lstj = computeFirstSuccStartingTimeForPartial(sts, j);
-
-	for (int t = estj; t <= lstj; t++)
-		if (enoughCapacityForJobWithOvertime(j, t, resRem))
-			feasTimes.push_back(t);
-
-	return feasTimes;
-}
-
-int ProjectWithOvertime::latestPeriodWithMinimalCosts(int j, const list<int>& feasTimes, const vector<int>& sts, const Matrix<int>& resRem) const {
-	float minCosts = numeric_limits<float>::max();
-	int latestPeriod = 0;
-
-	for(int t : feasTimes) {
-		float extCosts = extensionCosts(resRem, j, t);
-		if(extCosts <= minCosts) {
-			minCosts = extCosts;
-			latestPeriod = t;
-		}
-	}
-
-	return latestPeriod;
-}
-
 ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions(int ix) {
 	setFromIndex(ix);
 }
@@ -184,11 +157,11 @@ int ProjectWithOvertime::heuristicMakespanUpperBound() const {
 	return ms;
 }
 
-SGSResult ProjectWithOvertime::earlyOvertimeDeadlineOffsetSGS(const vector<int> &order, int deadlineOffset, bool robust) const {
+SGSResult ProjectWithOvertime::forwardBackwardDeadlineOffsetSGS(const vector<int> &order, int deadlineOffset, bool robust) const {
 	auto baseSchedule = serialSGS(order, zmax, robust);
 	if(deadlineOffset <= 0) return baseSchedule;
     int baseMakespan = makespan(baseSchedule.sts);
-	return delayWithoutOvertimeIncrease(order, baseSchedule.sts, baseSchedule.resRem, baseMakespan + deadlineOffset, robust);
+	return forwardBackwardIterations(order, baseSchedule, baseMakespan + deadlineOffset, robust);
 }
 
 SGSResult ProjectWithOvertime::delayWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust) const {
@@ -234,13 +207,6 @@ SGSResult ProjectWithOvertime::earlierWithoutOvertimeIncrease(const vector<int>&
 	}
 
 	return{ sts, resRem };
-}
-
-SGSResult ProjectWithOvertime::forwardBackwardWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust) const {
-	auto result = delayWithoutOvertimeIncrease(order, baseSts, baseResRem, deadline, robust);
-	vector<int> sts = result.sts;
-	Matrix<int> resRem = result.resRem;
-	return earlierWithoutOvertimeIncrease(order, sts, resRem, robust);
 }
 
 boost::optional<float> ProjectWithOvertime::costsAndFeasibilityCausedByActivity(int j, int stj, const Matrix<int>& resRem) const {
@@ -306,42 +272,9 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 
     double delta = (3.0 - sqrt(5.0)) / 2.0;
 
-	auto checkAndOutput = [&](const SGSResult &result, int deadline, int nextStepType)
-	{
-		const vector<string> stepTypes = { "delay", "earlier" };
-
-		if(!isSchedulePrecedenceFeasible(result.sts)) {
-			LOG_W("Precedence infeasible!");
-		}
-
-		if(!isScheduleResourceFeasible(result.sts)) {
-			LOG_W("Resource infeasible!");
-		}
-
-		printf("deadline = %d, actual makespan = %d, Profit = %.2f, costs = %.2f, next step type = %s\n", deadline, makespan(result), calcProfit(result), totalCosts(result), stepTypes[nextStepType % 2].c_str());
-		system("pause");
-	};
-
-	auto iterateFB = [&](SGSResult result, int deadline) {
-		const int DEADLINE_IMPROVEMENT_TOLERANCE = 0;
-		float lastCosts = totalCosts(result.resRem);
-		for(int i=0; true; i++) {
-			//checkAndOutput(result, deadline, i);
-			result = (i % 2 == 0) ? delayWithoutOvertimeIncrease(order, result.sts, result.resRem, deadline, robust) : earlierWithoutOvertimeIncrease(order, result.sts, result.resRem, robust);
-			float currentCosts = totalCosts(result.resRem);
-			if (abs(currentCosts - lastCosts) <= DEADLINE_IMPROVEMENT_TOLERANCE) {
-				//checkAndOutput(result, deadline, i);
-				break;
-			}
-			lastCosts = currentCosts;
-		}
-		return result;
-	};
-
 	auto updateTriple = [&](DeadlineProfitResultTriple &t) {
 		auto baseResult = (t.deadline > a.deadline) ? a.result : lb.result;
-		//t.result = delayWithoutOvertimeIncrease(order, baseResult.sts, baseResult.resRem, t.deadline, robust);
-		t.result = iterateFB(baseResult, t.deadline);
+		t.result = forwardBackwardIterations(order, baseResult, t.deadline, robust);
 		t.profit = calcProfit(t.result);
 	};
 
@@ -375,12 +308,6 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 
 bool ProjectWithOvertime::isScheduleResourceFeasible(const vector<int>& sts) const {
 	return Project::isScheduleResourceFeasible(sts, zmax);
-}
-
-float ProjectWithOvertime::extensionCosts(const Matrix<int> &resRem, int j, int stj) const {
-	float costs = 0.0f;
-    EACH_RES(ACTIVE_PERIODS(j, stj, costs += Utils::max(0, demands(j,r) - resRem(r,tau)) * kappa[r]))
-	return costs;
 }
 
 SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order, bool robust) const {
@@ -549,4 +476,36 @@ vector<int> ProjectWithOvertime::earliestStartingTimesForPartialRespectZmax(cons
     }
 
     return ests;
+}
+
+SGSResult ProjectWithOvertime::forwardBackwardIterations(const vector<int> &order, SGSResult result, int deadline, bool robust) const {
+	/*auto checkAndOutput = [&](const SGSResult &result, int deadline, int nextStepType)
+	{
+		const vector<string> stepTypes = { "delay", "earlier" };
+
+		if(!isSchedulePrecedenceFeasible(result.sts)) {
+			LOG_W("Precedence infeasible!");
+		}
+
+		if(!isScheduleResourceFeasible(result.sts)) {
+			LOG_W("Resource infeasible!");
+		}
+
+		printf("deadline = %d, actual makespan = %d, Profit = %.2f, costs = %.2f, next step type = %s\n", deadline, makespan(result), calcProfit(result), totalCosts(result), stepTypes[nextStepType % 2].c_str());
+		system("pause");
+	};*/
+
+	const int DEADLINE_IMPROVEMENT_TOLERANCE = 0;
+	float lastCosts = totalCosts(result.resRem);
+	for(int i=0; true; i++) {
+		//checkAndOutput(result, deadline, i);
+		result = (i % 2 == 0) ? delayWithoutOvertimeIncrease(order, result.sts, result.resRem, deadline, robust) : earlierWithoutOvertimeIncrease(order, result.sts, result.resRem, robust);
+		float currentCosts = totalCosts(result.resRem);
+		if (abs(currentCosts - lastCosts) <= DEADLINE_IMPROVEMENT_TOLERANCE) {
+			//checkAndOutput(result, deadline, i);
+			break;
+		}
+		lastCosts = currentCosts;
+	}
+	return result;
 }

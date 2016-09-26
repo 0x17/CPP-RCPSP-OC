@@ -16,11 +16,6 @@ TEST_F(ProjectWithOvertimeTest, testChooseEligibleWithLowestIndex) {
     ASSERT_EQ(2, p->chooseEligibleWithLowestIndex(sts, order));
 }
 
-TEST_F(ProjectWithOvertimeTest, testSerialSGSWithDeadline) {
-	auto res = p->serialSGSWithDeadlineEarly(p->numPeriods-1, p->topOrder);
-	ASSERT_TRUE(res.valid);
-}
-
 TEST_F(ProjectWithOvertimeTest, testDecisionTimesForResDevProblem) {
 	vector<int> sts = p->emptySchedule();	
 	Matrix<int> resRem = p->normalCapacityProfile();

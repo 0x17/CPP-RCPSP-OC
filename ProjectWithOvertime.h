@@ -66,27 +66,25 @@ public:
 	vector<int> decisionTimesForResDevProblem(const vector<int> &sts, const vector<int> &ests, const vector<int> &lfts, const Matrix<int> &resRem, int j) const;
 
 	static vector<int> jobsWithDescendingStartingTimes(const vector<int>& sts);
-	list<int> feasibleTimeWindowForJobInCompleteSchedule(int j, const vector<int>& sts, const vector<int>& fts, const Matrix<int>& resRem) const;
-	int latestPeriodWithMinimalCosts(int j, const list<int>& feasTimes, const vector<int>& sts, const Matrix<int>& resRem) const;
 
 	int heuristicMakespanUpperBound() const;
 
-	SGSResult earlyOvertimeDeadlineOffsetSGS(const vector<int> &order, int deadlineOffset, bool robust = false) const;
+	SGSResult forwardBackwardDeadlineOffsetSGS(const vector<int> &order, int deadlineOffset, bool robust = false) const;
+
 	SGSResult delayWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust = false) const;
 	SGSResult earlierWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, bool robust = false) const;
 	boost::optional<float> costsAndFeasibilityCausedByActivity(int j, int stj, const Matrix<int>& resRem) const;
 	int latestCheapestFeasiblePeriod(int j, int baseStj, int lstj, const Matrix<int>& resRem) const;
 	int earliestCheapestFeasiblePeriod(int j, int baseStj, int estj, const Matrix<int>& resRem) const;
-	SGSResult forwardBackwardWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust = false) const;
 	SGSResult goldenSectionSearchBasedOptimization(const vector<int>& order, bool robust = false) const;
+	SGSResult forwardBackwardIterations(const vector<int> &order, SGSResult result, int deadline, bool robust = false) const;
 
 	bool isScheduleResourceFeasible(const vector<int>& sts) const override;
 
 private:
     void computeRevenueFunction();
     int computeTKappa() const;
-	bool enoughCapacityForJobWithOvertime(int job, int t, const Matrix<int> & resRem) const;	
-	float extensionCosts(const Matrix<int> &resRem, int j, int stj) const;
+	bool enoughCapacityForJobWithOvertime(int job, int t, const Matrix<int> & resRem) const;
 };
 
 

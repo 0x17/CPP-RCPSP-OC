@@ -29,10 +29,10 @@ void FixedDeadlineGA::mutate(DeadlineLambda &i) {
 }
 
 float FixedDeadlineGA::fitness(DeadlineLambda &i) {
-    auto res = p.earlyOvertimeDeadlineOffsetSGS(i.order, i.deadlineOffset);
+    auto res = p.forwardBackwardDeadlineOffsetSGS(i.order, i.deadlineOffset);
     return p.calcProfit(res);
 }
 
 vector<int> FixedDeadlineGA::decode(DeadlineLambda &i) {
-    return p.earlyOvertimeDeadlineOffsetSGS(i.order, i.deadlineOffset).sts;
+    return p.forwardBackwardDeadlineOffsetSGS(i.order, i.deadlineOffset).sts;
 }

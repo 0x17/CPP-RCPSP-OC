@@ -235,7 +235,7 @@ void Main::testFixedDeadlineHeuristic() {
 	params.selectionMethod = SelectionMethod::BEST;
 	params.rbbrs = true;
 
-	auto res = GARunners::run(p, params, 6);
+	auto res = GARunners::run(p, params, 7);
 	auto sts = res.sts;
 
 	//Utils::serializeSchedule(sts, "myschedule.txt");

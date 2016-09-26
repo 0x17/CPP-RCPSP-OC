@@ -33,7 +33,7 @@ int ListDeadlineModel::QuasistableSGSFunction::varCount() {
 
 SGSResult ListDeadlineModel::QuasistableSGSFunction::decode(vector<int>& order, const LSNativeContext& context) {
 	int deadlineOffset = static_cast<int>(context.getIntValue(p.numJobs));
-	return p.earlyOvertimeDeadlineOffsetSGS(order, deadlineOffset, true);
+	return p.forwardBackwardDeadlineOffsetSGS(order, deadlineOffset, true);
 }
 
 void ListDeadlineModel::addAdditionalData(LSModel &model, LSExpression& obj) {
@@ -52,5 +52,5 @@ vector<int> ListDeadlineModel::parseScheduleFromSolution(LSSolution& sol) {
 
 	deadlineOffset = static_cast<int>(sol.getIntValue(deadlineOffsetVar));
 
-	return p.earlyOvertimeDeadlineOffsetSGS(order, deadlineOffset, true).sts;
+	return p.forwardBackwardDeadlineOffsetSGS(order, deadlineOffset, true).sts;
 }
