@@ -54,14 +54,16 @@ void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) const {
 	p.eachResConst([&](int r) {
 		int zOffset = Utils::randBool() ? 1 : -1;
 		p.eachPeriodBoundedConst([&](int t) {
-			z(r, t) = max(0, min(p.zmax[r], z(r,t)+zOffset));
-		});
+			withMutProb([&] {
+				z(r, t) = max(0, min(p.zmax[r], z(r, t) + zOffset));
+			});
+		});		
 	});
 }
 
 void TimeVaryingCapacityGA::crossoverOvertime(Matrix<int>& daughterZ, const Matrix<int>& motherZ, const Matrix<int>& fatherZ) const {
 	if(Utils::randBool()) {
-		int qt = Utils::randRangeIncl(0, p.numPeriods-1);
+		int qt = Utils::randRangeIncl(0, p.getHeuristicMaxMakespan()-1);
 		daughterZ.foreachAssign([&](int r, int t) {
 			return t <= qt ? motherZ(r, t) : fatherZ(r, t);
 		});

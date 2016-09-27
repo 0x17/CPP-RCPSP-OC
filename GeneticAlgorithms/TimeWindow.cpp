@@ -65,7 +65,6 @@ void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
     i.neighborhoodSwap(p.adjMx, params.pmutate);
 	p.eachJob([&](int j) {
         withMutProb([&] {
-            //i.tau[j] = 1.0f - i.tau[j];
 			i.tau[j] = Utils::randUnitFloat();
         });
     });
