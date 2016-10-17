@@ -79,6 +79,7 @@ private:
     void computeRevenueFunction();
     int computeTKappa() const;
 	bool enoughCapacityForJobWithOvertime(int job, int t, const Matrix<int> & resRem) const;
+	float costsOfEarliestStartSchedule();
 };
 
 
