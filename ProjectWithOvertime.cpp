@@ -65,13 +65,13 @@ float ProjectWithOvertime::calcProfit(const SGSResult& result) const {
 }
 
 void ProjectWithOvertime::computeRevenueFunction() {
-	auto minMsResult = serialSGS(topOrder, zmax);
+	auto ess = earliestStartSchedule();
 
 	// minMs previously defined as: Utils::max(makespan(ess), computeTKappa());
-	int minMs = makespan(minMsResult);
+	int minMs = makespan(ess);
     int maxMs = makespan(serialSGS(topOrder));
 
-	float maxCosts = totalCosts(minMsResult);
+	float maxCosts = totalCosts(ess);
 
     EACH_PERIOD(revenue[t] = static_cast<float>(
 		(minMs >= maxMs || t < minMs) ? maxCosts :
@@ -308,13 +308,6 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order, b
 bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, const Matrix<int> & resRem) const {
     ACTIVE_PERIODS(job, t, EACH_RES(if(demands(job,r) > resRem(r,tau) + zmax[r]) return false))
     return true;
-}
-
-float ProjectWithOvertime::costsOfEarliestStartSchedule() {
-	Matrix<int> resRem(numRes, numPeriods);
-	EACH_RES_PERIOD(resRem(r, t) = capacities[r])
-	vector<int> ess = earliestStartSchedule(resRem);
-	return totalCosts(resRem);
 }
 
 ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions()

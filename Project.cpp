@@ -427,14 +427,17 @@ void Project::reorderDispositionMethod() {
     demands = newDemands;
 }
 
-vector<int> Project::earliestStartSchedule(Matrix<int>& resRem) const {
+SGSResult Project::earliestStartSchedule() const {
+	Matrix<int> resRem(numRes, numPeriods, [this](int r, int t) { return capacities[r]; });
 	vector<int> ess(numJobs);
+
 	for(int j : topOrder) {
 		ess[j] = 0;
         EACH_JOBi(if(adjMx(i, j)) ess[j] = Utils::max(ess[j], ess[i] + durations[i]))
 		EACH_RES(ACTIVE_PERIODS(j, ess[j], resRem(r, tau) -= demands(j, r)))
 	}
-	return ess;
+
+	return { ess, resRem };
 }
 
 int Project::latestStartingTimeInPartial(const vector<int>& sts) const {

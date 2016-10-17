@@ -163,7 +163,7 @@ protected:
 	void unscheduleJob(int j, vector<int>& sts, vector<int>& fts, Matrix<int>& resRem) const;
 	void unscheduleJob(int j, vector<int>& sts, Matrix<int>& resRem) const;
 
-	vector<int> earliestStartSchedule(Matrix<int> & resRem) const;
+	SGSResult earliestStartSchedule() const;
 
     void transferAlreadyScheduled(vector<int> &destSts, const vector<int> &partialSts) const;
 	void transferAlreadyScheduledToFts(vector<int> &destFts, const vector<int> &partialSts) const;
