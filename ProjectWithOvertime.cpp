@@ -74,7 +74,7 @@ void ProjectWithOvertime::computeRevenueFunction() {
 	float maxCosts = totalCosts(minMsResult);
 
     EACH_PERIOD(revenue[t] = static_cast<float>(
-		(minMs == maxMs || t < minMs) ? maxCosts :
+		(minMs >= maxMs || t < minMs) ? maxCosts :
 		(t > maxMs) ? 0.0f :
 		maxCosts - maxCosts / pow(maxMs-minMs, 2) * pow(t-minMs, 2)))
 }
