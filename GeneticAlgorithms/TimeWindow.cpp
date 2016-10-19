@@ -106,11 +106,12 @@ void TimeWindowBordersGA::crossover(LambdaBeta &mother, LambdaBeta &father, Lamb
 
 void TimeWindowBordersGA::mutate(LambdaBeta &i) {
     i.neighborhoodSwap(p.adjMx, params.pmutate);
-	p.eachJob([&](int j) {
-        withMutProb([&] {
-            i.beta[j] = 1-i.beta[j];
-        });
-    });
+	p.eachJobConst([&](int j) {
+		withMutProb([&] {
+			i.beta[j] = 1 - i.beta[j];
+		});
+	});
+	
 }
 
 float TimeWindowBordersGA::fitness(LambdaBeta &i) {

@@ -22,7 +22,7 @@ namespace Main {
 
 	int computeMinMaxMakespanDifference(ProjectWithOvertime &p);
 
-	ListModel *genListModelWithIndex(ProjectWithOvertime &p, int index, int variant = -1);
+	ListModel *genListModelWithIndex(ProjectWithOvertime &p, int index, int variant = 0);
 	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, int variant, double timeLimit, int iterLimit, bool traceobj, string outPath);
 	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, int lsIndex, int variant, double timeLimit, int iterLimit, bool traceobj, string outPath);
 
@@ -128,7 +128,7 @@ int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
 
 vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, int variant, double timeLimit, int iterLimit, bool traceobj, string outPath) {
 	GAParameters params;
-	params.fitnessBasedPairing = true;
+	params.fitnessBasedPairing = false;
 	params.numGens = -1;
 	params.popSize = 80;
 	params.pmutate = 5;
@@ -142,7 +142,7 @@ vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaInd
 	params.parseFromDisk();
 
 	if(gaIndex == 0)
-		TimeWindowBordersGA::setVariant(variant == -1 ? 0 : variant);
+		TimeWindowBordersGA::setVariant(variant);
 
 	auto res = GARunners::run(p, params, gaIndex);
 	return res.sts;
@@ -194,7 +194,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
             outFn += "BranchAndBoundResults.txt";
         } else if(boost::starts_with(solMethod, "GA")) {
 			int gaIndex = stoi(solMethod.substr(2, 1));
-			int variant = (gaIndex == 0 && solMethod.length() == 4) ? stoi(solMethod.substr(3, 1)) : -1;
+			int variant = (gaIndex == 0 && solMethod.length() == 4) ? stoi(solMethod.substr(3, 1)) : 0;
 	        sts = runGeneticAlgorithmWithIndex(p, gaIndex, variant, timeLimit, iterLimit, traceobj, outPath);
             outFn += "GA" + to_string(gaIndex) + "Results.txt";
 		}
@@ -203,7 +203,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			outFn += "LocalSolverResults.txt";
 		} else if(boost::starts_with(solMethod, "LocalSolverNative")) {
 			int lsnIndex = stoi(solMethod.substr(17, 1));
-			int variant = (lsnIndex == 0 && solMethod.length() == 19) ? stoi(solMethod.substr(18, 1)) : -1;
+			int variant = (lsnIndex == 0 && solMethod.length() == 19) ? stoi(solMethod.substr(18, 1)) : 0;
 			sts = runLocalSolverModelWithIndex(p, lsnIndex, variant, timeLimit, iterLimit, traceobj, outPath);
 			outFn += "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
         }  else if(!solMethod.compare("Gurobi")) {

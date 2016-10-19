@@ -96,9 +96,9 @@ ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions(int ix) {
 }
 
 void ProjectWithOvertime::BorderSchedulingOptions::setFromIndex(int ix) {
-	separateCrossover = ix == -1 ? false : Utils::int2bool((ix / 4) % 2);
-	linked = ix == -1 ? false : Utils::int2bool((ix / 2) % 2);
-	upper = ix == -1 ? false : Utils::int2bool(ix % 2);
+	separateCrossover = Utils::int2bool((ix / 4) % 2);
+	assocIndex = Utils::int2bool((ix / 2) % 2);
+	upper = Utils::int2bool(ix % 2);
 }
 
 int ProjectWithOvertime::heuristicMakespanUpperBound() const {
@@ -311,10 +311,10 @@ bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, const
 }
 
 ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions()
-	: separateCrossover(false), linked(false), upper(false) {}
+	: separateCrossover(false), assocIndex(false), upper(false) {}
 
-ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions(bool _robust, bool _linked, bool _upper)
-	: separateCrossover(_robust), linked(_linked), upper(_upper) {}
+ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions(bool _robust, bool _assocIndex, bool _upper)
+	: separateCrossover(_robust), assocIndex(_assocIndex), upper(_upper) {}
 
 ProjectWithOvertime::PartialScheduleData::PartialScheduleData(ProjectWithOvertime const* p)
 	: resRem(p->normalCapacityProfile()), sts(p->numJobs, p->UNSCHEDULED), fts(p->numJobs, p->UNSCHEDULED) {}
@@ -366,7 +366,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &ord
     for (int k=0; k<numJobs; k++) {
         int job = robust ? chooseEligibleWithLowestIndex(data.sts, order) : order[k];
         int lastPredFinished = computeLastPredFinishingTime(data.fts, job);
-		int bval = options.linked ? beta[k] : beta[job];
+		int bval = options.assocIndex ? beta[k] : beta[job];
 		if (!options.upper) scheduleJobBorderLower(job, lastPredFinished, bval, data);
 		else scheduleJobBorderUpper(job, lastPredFinished, bval, data, *residuals);
     }

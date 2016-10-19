@@ -4,6 +4,7 @@
 
 #include "OvertimeBound.h"
 #include "Sampling.h"
+#include <boost/algorithm/clamp.hpp>
 
 TimeVaryingCapacityGA::TimeVaryingCapacityGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "TimeVaryingCapacityGA") {
     useThreads = false;
@@ -43,19 +44,11 @@ vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
 }
 
 void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) const {
-	/*z.foreach2([&](int r, int t) {
-        withMutProb([&]{
-            if (Utils::randBool()) z(r,t)++;
-            else z(r,t)--;
-            z(r,t) = z(r,t) < 0 ? 0 : (z(r,t) > p.zmax[r] ? p.zmax[r] : z(r,t));
-        });
-    });*/
-
 	p.eachResConst([&](int r) {
 		int zOffset = Utils::randBool() ? 1 : -1;
 		p.eachPeriodBoundedConst([&](int t) {
 			withMutProb([&] {
-				z(r, t) = max(0, min(p.zmax[r], z(r, t) + zOffset));
+				z(r, t) = boost::algorithm::clamp(z(r, t) + zOffset, 0, p.zmax[r]);
 			});
 		});		
 	});
@@ -111,9 +104,7 @@ vector<int> FixedCapacityGA::decode(LambdaZr& i) {
 void FixedCapacityGA::mutateOvertime(vector<int> &z) {
     p.eachRes([&](int r) {
         withMutProb([&]{
-            if (Utils::randBool()) z[r]++;
-            else z[r]--;
-            z[r] = z[r] < 0 ? 0 : (z[r] > p.zmax[r] ? p.zmax[r] : z[r]);
+			z[r] = boost::algorithm::clamp(z[r] + (Utils::randBool() ? 1 : -1), 0, p.zmax[r]);
         });
     });
 }

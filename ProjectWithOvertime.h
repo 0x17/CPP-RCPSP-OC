@@ -35,10 +35,10 @@ public:
 
 	// START (lambda|beta)
 	struct BorderSchedulingOptions {
-		bool separateCrossover, linked, upper;
+		bool separateCrossover, assocIndex, upper;
 
 		BorderSchedulingOptions();
-		BorderSchedulingOptions(bool _separateCrossover, bool _linked, bool _upper);
+		BorderSchedulingOptions(bool _separateCrossover, bool _assocIndex, bool _upper);
 		BorderSchedulingOptions(int ix);
 
 		void setFromIndex(int ix);

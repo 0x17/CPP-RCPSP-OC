@@ -107,7 +107,7 @@ void LambdaBeta::inherit(Lambda &parent, int destIx, int srcIx) {
 
 void LambdaBeta::swap(int i1, int i2) {
     Lambda::swap(i1, i2);
-	if(options.linked)
+	if(!options.assocIndex)
 		Utils::swap(beta, i1, i2);
 }
 

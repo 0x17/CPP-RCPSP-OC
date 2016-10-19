@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by André Schnabel on 02.02.16.
 //
 
@@ -32,7 +32,7 @@ TEST_F(ProjectWithOvertimeTest, testBorderSchedulingOptionsSetFromIndex) {
 	
 	for(int i=0; i<pow(2, 3); i++) {
 		options.setFromIndex(i);
-		vector<bool> vals = { options.separateCrossover, options.linked, options.upper };
+		vector<bool> vals = { options.separateCrossover, options.assocIndex, options.upper };
 		for(int j=0; j<3; j++)
 			ASSERT_TRUE(!expectedTable(i, j) || vals[j]);
 	}
