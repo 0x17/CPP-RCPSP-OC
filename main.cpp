@@ -17,14 +17,31 @@
 #include "GurobiSolver.h"
 
 namespace Main {
+
+	struct RunnerParams {
+		int methodIndex, variant;
+		double timeLimit;
+		int iterLimit;
+		bool traceobj;
+		string outPath;
+
+		RunnerParams(int _methodIndex, int _variant, double _timeLimit, int _iterLimit, bool _traceobj, const string& _outPath)
+			: methodIndex(_methodIndex),
+			  variant(_variant),
+			  iterLimit(_iterLimit),
+			  timeLimit(_timeLimit),
+			  traceobj(_traceobj),
+			  outPath(_outPath) {}
+	};
+
 	void showUsage();
 	void commandLineRunner(int argc, char * argv[]);
 
 	int computeMinMaxMakespanDifference(ProjectWithOvertime &p);
 
 	ListModel *genListModelWithIndex(ProjectWithOvertime &p, int index, int variant = 0);
-	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, int variant, double timeLimit, int iterLimit, bool traceobj, string outPath);
-	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, int lsIndex, int variant, double timeLimit, int iterLimit, bool traceobj, string outPath);
+	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, RunnerParams rparams);
+	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, RunnerParams rparams);
 
 	void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit);
 
@@ -126,35 +143,35 @@ int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
 	return maxMs - minMs;
 }
 
-vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, int gaIndex, int variant, double timeLimit, int iterLimit, bool traceobj, string outPath) {
+vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, RunnerParams rparams) {
 	GAParameters params;
 	params.fitnessBasedPairing = false;
 	params.numGens = -1;
 	params.popSize = 80;
 	params.pmutate = 5;
-	params.timeLimit = timeLimit;
-	params.iterLimit = iterLimit;
-	params.traceobj = traceobj;
+	params.timeLimit = rparams.timeLimit;
+	params.iterLimit = rparams.iterLimit;
+	params.traceobj = rparams.traceobj;
 	params.selectionMethod = SelectionMethod::BEST;
 	params.rbbrs = true;
-	params.outPath = outPath;
+	params.outPath = rparams.outPath;
 
 	params.parseFromDisk();
 
-	if(gaIndex == 0)
-		TimeWindowBordersGA::setVariant(variant);
+	if(rparams.methodIndex == 0)
+		TimeWindowBordersGA::setVariant(rparams.variant);
 
-	auto res = GARunners::run(p, params, gaIndex);
+	auto res = GARunners::run(p, params, rparams.methodIndex);
 	return res.sts;
 }
 
-vector<int> Main::runLocalSolverModelWithIndex(ProjectWithOvertime& p, int lsIndex, int variant, double timeLimit, int iterLimit, bool traceobj, string outPath) {
+vector<int> Main::runLocalSolverModelWithIndex(ProjectWithOvertime& p, RunnerParams rparams) {
 	vector<int> sts;
-	ListModel *lm = genListModelWithIndex(p, lsIndex, variant);
-	SolverParams params(timeLimit, iterLimit);
-	params.trace = traceobj;
-	params.solverIx = lsIndex;
-	params.outPath = outPath;
+	ListModel *lm = genListModelWithIndex(p, rparams.methodIndex, rparams.variant);
+	SolverParams params(rparams.timeLimit, rparams.iterLimit);
+	params.trace = rparams.traceobj;
+	params.solverIx = rparams.methodIndex;
+	params.outPath = rparams.outPath;
 	sts = lm->solve(params);
 	delete lm;
 	return sts;
@@ -195,7 +212,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
         } else if(boost::starts_with(solMethod, "GA")) {
 			int gaIndex = stoi(solMethod.substr(2, 1));
 			int variant = (gaIndex == 0 && solMethod.length() == 4) ? stoi(solMethod.substr(3, 1)) : 0;
-	        sts = runGeneticAlgorithmWithIndex(p, gaIndex, variant, timeLimit, iterLimit, traceobj, outPath);
+			sts = runGeneticAlgorithmWithIndex(p, { gaIndex, variant, timeLimit, iterLimit, traceobj, outPath });
             outFn += "GA" + to_string(gaIndex) + "Results.txt";
 		}
 		else if (!solMethod.compare("LocalSolver")) {
@@ -204,7 +221,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 		} else if(boost::starts_with(solMethod, "LocalSolverNative")) {
 			int lsnIndex = stoi(solMethod.substr(17, 1));
 			int variant = (lsnIndex == 0 && solMethod.length() == 19) ? stoi(solMethod.substr(18, 1)) : 0;
-			sts = runLocalSolverModelWithIndex(p, lsnIndex, variant, timeLimit, iterLimit, traceobj, outPath);
+			sts = runLocalSolverModelWithIndex(p, { lsnIndex, variant, timeLimit, iterLimit, traceobj, outPath });
 			outFn += "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
         }  else if(!solMethod.compare("Gurobi")) {
 			GurobiSolver::Options opts;

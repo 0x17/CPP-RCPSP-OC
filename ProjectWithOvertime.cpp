@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include "ProjectWithOvertime.h"
+#include <boost/algorithm/clamp.hpp>
 
 ProjectWithOvertime::ProjectWithOvertime(string filename) :
         Project(filename),
@@ -163,7 +164,7 @@ boost::optional<float> ProjectWithOvertime::costsAndFeasibilityCausedByActivity(
 	ACTIVE_PERIODS(j, stj,
 		EACH_RES(
 			if (demands(j, r) > resRem(r, tau) + zmax[r]) return boost::optional<float>();
-			costs += min(demands(j, r), max(demands(j, r) - resRem(r, tau), 0)) * kappa[r]
+			costs += boost::algorithm::clamp(demands(j, r) - resRem(r, tau), 0, demands(j, r));
 	))
 	return boost::optional<float>(costs);
 }
@@ -415,18 +416,13 @@ vector<int> ProjectWithOvertime::earliestStartingTimesForPartialRespectZmax(cons
 }
 
 SGSResult ProjectWithOvertime::forwardBackwardIterations(const vector<int> &order, SGSResult result, int deadline, bool robust) const {
-	/*auto checkAndOutput = [&](const SGSResult &result, int deadline, int nextStepType)
-	{
+	/*auto checkAndOutput = [&](const SGSResult &result, int deadline, int nextStepType) {
 		const vector<string> stepTypes = { "delay", "earlier" };
-
-		if(!isSchedulePrecedenceFeasible(result.sts)) {
+		if(!isSchedulePrecedenceFeasible(result.sts))
 			LOG_W("Precedence infeasible!");
-		}
 
-		if(!isScheduleResourceFeasible(result.sts)) {
+		if(!isScheduleResourceFeasible(result.sts))
 			LOG_W("Resource infeasible!");
-		}
-
 		printf("deadline = %d, actual makespan = %d, Profit = %.2f, costs = %.2f, next step type = %s\n", deadline, makespan(result), calcProfit(result), totalCosts(result), stepTypes[nextStepType % 2].c_str());
 		system("pause");
 	};*/

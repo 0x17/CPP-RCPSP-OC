@@ -5,6 +5,7 @@
 #include <cmath>
 #include "FixedDeadline.h"
 #include "Sampling.h"
+#include <boost/algorithm/clamp.hpp>
 
 FixedDeadlineGA::FixedDeadlineGA(ProjectWithOvertime &_p): GeneticAlgorithm(_p, "FixedDeadlineGA") {
     useThreads = true;
@@ -25,7 +26,9 @@ void FixedDeadlineGA::crossover(DeadlineLambda &mother, DeadlineLambda &father, 
 
 void FixedDeadlineGA::mutate(DeadlineLambda &i) {
     i.neighborhoodSwap(p.adjMx, params.pmutate);
-    withMutProb([&] { i.deadlineOffset = Utils::randBool() ? max(deadlineOffsetLB, i.deadlineOffset-1) : min(deadlineOffsetUB, i.deadlineOffset+1); });
+    withMutProb([&] {
+		i.deadlineOffset = boost::algorithm::clamp(i.deadlineOffset + Utils::randBool() ? -1 : 1, deadlineOffsetLB, deadlineOffsetUB);
+	});
 }
 
 float FixedDeadlineGA::fitness(DeadlineLambda &i) {
