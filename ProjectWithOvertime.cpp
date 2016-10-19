@@ -306,6 +306,11 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order, b
 	return {sts, resRem};
 }
 
+SGSResult ProjectWithOvertime::serialSGSWithOvertimeWithForwardBackwardImprovement(const vector<int>& order, bool robust) const {
+	SGSResult res = serialSGSWithOvertime(order, robust);
+	return forwardBackwardIterations(order, res, makespan(res), robust);
+}
+
 bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, const Matrix<int> & resRem) const {
     ACTIVE_PERIODS(job, t, EACH_RES(if(demands(job,r) > resRem(r,tau) + zmax[r]) return false))
     return true;
@@ -376,6 +381,21 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &ord
 		delete residuals;
 
 	return{ data.sts, data.resRem };
+}
+
+SGSResult ProjectWithOvertime::serialSGSTimeWindowBordersWithForwardBackwardImprovement(const vector<int>& order, const vector<int>& beta, BorderSchedulingOptions options, bool robust) const {
+	SGSResult res = serialSGSTimeWindowBorders(order, beta, options, robust);
+	return forwardBackwardIterations(order, res, makespan(res), robust);
+}
+
+SGSResult ProjectWithOvertime::serialSGSWithForwardBackwardImprovement(const vector<int>& order, const vector<int>& z, bool robust) const {
+	SGSResult res = serialSGS(order, z, robust);
+	return forwardBackwardIterations(order, res, makespan(res), robust);
+}
+
+SGSResult ProjectWithOvertime::serialSGSWithForwardBackwardImprovement(const vector<int>& order, const Matrix<int>& z, bool robust) const {
+	SGSResult res = serialSGS(order, z, robust);
+	return forwardBackwardIterations(order, res, makespan(res), robust);
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau, bool robust) const {

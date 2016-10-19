@@ -115,12 +115,12 @@ void TimeWindowBordersGA::mutate(LambdaBeta &i) {
 }
 
 float TimeWindowBordersGA::fitness(LambdaBeta &i) {
-    auto pair = p.serialSGSTimeWindowBorders(i.order, i.beta, options);
+    auto pair = p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(i.order, i.beta, options);
 	return p.calcProfit(pair);
 }
 
 vector<int> TimeWindowBordersGA::decode(LambdaBeta& i) {
-	return p.serialSGSTimeWindowBorders(i.order, i.beta, options).sts;
+	return p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(i.order, i.beta, options).sts;
 }
 
 //======================================================================================================================

@@ -32,6 +32,7 @@ public:
 	float totalCostsForPartial(const vector<int> &sts) const;
 
     SGSResult serialSGSWithOvertime(const vector<int> &order, bool robust = false) const;
+	SGSResult serialSGSWithOvertimeWithForwardBackwardImprovement(const vector<int>& order, bool robust = false) const;
 
 	// START (lambda|beta)
 	struct BorderSchedulingOptions {
@@ -56,7 +57,12 @@ public:
 	void scheduleJobBorderLower(int job, int lastPredFinished, int bval, PartialScheduleData& data) const;
 	void scheduleJobBorderUpper(int job, int lastPredFinished, int bval, PartialScheduleData& data, ResidualData& residuals) const;
 	SGSResult serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, BorderSchedulingOptions options, bool robust = false) const;
+
+	SGSResult serialSGSTimeWindowBordersWithForwardBackwardImprovement(const vector<int>& order, const vector<int>& beta, BorderSchedulingOptions options, bool robust = false) const;
 	// END (lambda|beta)
+
+	SGSResult serialSGSWithForwardBackwardImprovement(const vector<int>& order, const vector<int>& z, bool robust = false) const;
+	SGSResult serialSGSWithForwardBackwardImprovement(const vector<int>& order, const Matrix<int>& z, bool robust = false) const;
 
     SGSResult serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau, bool robust = false) const;
 

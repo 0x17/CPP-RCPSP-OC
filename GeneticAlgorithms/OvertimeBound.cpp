@@ -35,12 +35,12 @@ void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
 }
 
 float TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
-	auto pair = p.serialSGS(i.order, i.z);
+	auto pair = p.serialSGSWithForwardBackwardImprovement(i.order, i.z);
 	return p.calcProfit(pair);
 }
 
 vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
-	return p.serialSGS(i.order, i.z).sts;
+	return p.serialSGSWithForwardBackwardImprovement(i.order, i.z).sts;
 }
 
 void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) const {
@@ -93,12 +93,12 @@ void FixedCapacityGA::mutate(LambdaZr &i) {
 }
 
 float FixedCapacityGA::fitness(LambdaZr &i) {
-	auto pair = p.serialSGS(i.order, i.z);
+	auto pair = p.serialSGSWithForwardBackwardImprovement(i.order, i.z);
 	return p.calcProfit(pair);
 }
 
 vector<int> FixedCapacityGA::decode(LambdaZr& i) {
-	return p.serialSGS(i.order, i.z).sts;
+	return p.serialSGSWithForwardBackwardImprovement(i.order, i.z).sts;
 }
 
 void FixedCapacityGA::mutateOvertime(vector<int> &z) {
