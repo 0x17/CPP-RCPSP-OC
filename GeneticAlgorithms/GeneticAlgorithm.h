@@ -237,7 +237,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
     thread *threads[NUM_THREADS];
     int numPerThread = params.popSize / NUM_THREADS;
 
-	// Compute initial population
+	LOG_I("Computing initial population");
     for(int i=0; i<params.popSize*2; i++) {
         pop[i].first = init(i);
 		pop[i].second = i < params.popSize ? -fitness(pop[i].first) : 0.0f;
@@ -247,6 +247,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 
     float lastBestVal = numeric_limits<float>::max();
 
+	LOG_I("Computing with abort criterias: iterLimit=" + to_string(params.iterLimit) + ", numGens=" + to_string(params.numGens) + ", timeLimit=" + to_string(params.timeLimit));
     for(int i=0;   (params.iterLimit == -1 || i * params.popSize < params.iterLimit)
 				&& (params.numGens == -1 || i<params.numGens)
 				&& (params.timeLimit == -1.0 || sw.look() < params.timeLimit * 1000.0); i++) {
@@ -298,10 +299,10 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 
 		// Show improvements
         if(pop[0].second < lastBestVal) {
-            if(lastBestVal == numeric_limits<float>::max())
-                cout << "Initial improvement by " << to_string(-pop[0].second) << endl;
+			if (lastBestVal == numeric_limits<float>::max())
+				LOG_I("Initial improvement by " + to_string(-pop[0].second));
 			else
-	            cout << "Improvement by " << to_string(lastBestVal - pop[0].second) << endl;
+				LOG_I("Improvement by " + to_string(lastBestVal - pop[0].second));
 
 	        //if(params.traceobj)
 			//	tr->trace(sw.look(), -pop[0].second);

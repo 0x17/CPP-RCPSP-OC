@@ -77,7 +77,7 @@ public:
 	int latestCheapestFeasiblePeriod(int j, int baseStj, int lstj, const Matrix<int>& resRem) const;
 	int earliestCheapestFeasiblePeriod(int j, int baseStj, int estj, const Matrix<int>& resRem) const;
 	SGSResult goldenSectionSearchBasedOptimization(const vector<int>& order, bool robust = false) const;
-	SGSResult forwardBackwardIterations(const vector<int> &order, SGSResult result, int deadline, bool robust = false) const;
+	SGSResult forwardBackwardIterations(const vector<int> &order, SGSResult result, int deadline, boost::optional<int> numIterations = boost::optional<int>(), bool robust = false) const;
 
 	bool isScheduleResourceFeasible(const vector<int>& sts) const override;
 

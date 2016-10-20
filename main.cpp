@@ -28,8 +28,8 @@ namespace Main {
 		RunnerParams(int _methodIndex, int _variant, double _timeLimit, int _iterLimit, bool _traceobj, const string& _outPath)
 			: methodIndex(_methodIndex),
 			  variant(_variant),
-			  iterLimit(_iterLimit),
 			  timeLimit(_timeLimit),
+			  iterLimit(_iterLimit),			  
 			  traceobj(_traceobj),
 			  outPath(_outPath) {}
 	};
@@ -57,7 +57,7 @@ int main(int argc, char * argv[]) {
 	Main::commandLineRunner(argc, argv);
 	//Main::testFixedDeadlineHeuristic();
 	//Main::testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
-	//Main::benchmarkGeneticAlgorithm(6, 256000);
+	//Main::benchmarkGeneticAlgorithm(0, 3200);
 	//Main::testGurobi();
 	return 0;
 }
@@ -80,7 +80,7 @@ void Main::testGurobi() {
 	opts.outPath = "";
 	opts.timeLimit = GRB_INFINITY;
 	GurobiSolver solver(p, opts);
-	vector<int> sts = solver.solve();
+	auto res = solver.solve();
 }
 
 static vector<string> lsDescriptions = {
@@ -204,6 +204,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 		string outPath = parentPath + "_" + to_string(int(round(timeLimit))) + "secs/";
 		string outFn = outPath;
 		boost::filesystem::create_directory(boost::filesystem::path(outPath));
+		string coreName = coreInstanceName(parentPath, string(argv[4]));
 
 		if(!solMethod.compare("BranchAndBound")) {
             BranchAndBound b(p, timeLimit, iterLimit);
@@ -229,14 +230,18 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			opts.timeLimit = (timeLimit == -1.0) ? opts.timeLimit : timeLimit;
 			opts.iterLimit = (iterLimit == -1.0) ? opts.iterLimit : iterLimit;
 			GurobiSolver gsolver(p, opts);
-			sts = gsolver.solve();
+			auto res = gsolver.solve();
+			if(res.optimal) {
+				Utils::spitAppend(coreName, "GurobiOptimals.txt");
+			}
+			sts = res.sts;
 			outFn += "GurobiResults.txt";
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");
         }
         
         string resStr = (sts[0] == Project::UNSCHEDULED) ? "infes" : to_string(p.calcProfit(sts));
-        Utils::spitAppend(coreInstanceName(parentPath, string(argv[4]))+";"+resStr+"\n", outFn);
+        Utils::spitAppend(coreName+";"+resStr+"\n", outFn);
 
 		Utils::serializeSchedule(sts, outPath + "myschedule.txt");
 		Utils::serializeProfit(p.calcProfit(sts), outPath + "myprofit.txt");
@@ -298,20 +303,27 @@ void Main::benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
 	//string projFilename = "../../Projekte/j30/j301_1.sm";
     //string projFilename = "QBWLBeispiel.DAT";
 	//string projFilename = "MiniBeispiel.DAT";
-	string projFilename = "../../Projekte/j30/j3010_1.sm";
+	//string projFilename = "../../Projekte/j30/j3010_1.sm";
 	//string projFilename = "../../Projekte/j30/j301_1.sm";
+	string projFilename = "../../Projekte/j30/j3013_8.sm";
     ProjectWithOvertime p(projFilename);
 
     GAParameters params;
     params.popSize = 80;
-    params.timeLimit = -1.0;
-    params.numGens = static_cast<int>(floor(static_cast<float>(iterLimit) / static_cast<float>(params.popSize)));
-    params.fitnessBasedPairing = true;
+    params.timeLimit = 5;
+    params.numGens = -1; //static_cast<int>(floor(static_cast<float>(iterLimit) / static_cast<float>(params.popSize)));
+    params.fitnessBasedPairing = false;
     params.pmutate = 5;
     params.traceobj = false;
 	params.selectionMethod = SelectionMethod::BEST;
 	params.rbbrs = true;
 
     auto res = GARunners::run(p, params, gaIndex);
+	bool feas = p.isScheduleFeasible(res.sts);
+	cout << feas << endl;
+
+	Utils::serializeSchedule(res.sts, "myschedule.txt");
+	Utils::serializeProfit(p.calcProfit(res.sts), "myprofit.txt");
+	cout << (p.calcProfit(res.sts) == res.profit) << endl;
 }
 

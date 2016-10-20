@@ -17,6 +17,8 @@ void GurobiSolver::CustomCallback::callback() {
 		tr.trace(/*getDoubleInfo(GRB_CB_RUNTIME)*/ sw.look(), static_cast<float>(getDoubleInfo(GRB_CB_MIP_OBJBST)));
 }
 
+GurobiSolver::Result::Result(vector<int> sts, bool optimal): sts(sts), optimal(optimal) {}
+
 GurobiSolver::GurobiSolver(ProjectWithOvertime &_p, Options _opts) :
 	p(_p),
 	opts(_opts),
@@ -160,23 +162,22 @@ vector<int> GurobiSolver::parseSchedule() const {
 	return sts;
 }
 
-vector<int> GurobiSolver::solve() {
+GurobiSolver::Result GurobiSolver::solve() {
 	LOG_I("Optimizing model");
 
 	try {
 		model.optimize();
-		return parseSchedule();
+		return { parseSchedule(), model.get(GRB_IntAttr_Status) == GRB_OPTIMAL };
 	}
 	catch (GRBException e) {
-		cout << "Error code = " << e.getErrorCode() << endl;
-		cout << e.getMessage() << endl;
+		LOG_I("Error code = " + to_string(e.getErrorCode()));
+		LOG_I(e.getMessage());
 	}
 	catch (...) {
-		cout << "Exception during optimization" << endl;
+		LOG_I("Exception during optimization");
 	}
-
 	vector<int> sts(p.numJobs);
-	return sts;
+	return {sts, false};
 }
 #else
 vector<int> GurobiSolver::solve(ProjectWithOvertime& p) {

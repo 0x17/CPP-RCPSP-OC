@@ -49,6 +49,7 @@ vector<int> ListModel::solve(SolverParams params) {
 }
 
 void ListModel::buildModel() {	
+	LOG_I("Building local solver list variable model");
 	LSModel model = ls.getModel();
 	if (model.getNbObjectives() == 0) {
 		auto nfunc = model.createNativeFunction(decoder);
@@ -75,6 +76,7 @@ void ListModel::buildModel() {
 }
 
 void ListModel::applyParams(SolverParams &params) {
+	LOG_I("Applying custom parameters");
 	if (ls.getNbPhases() == 0) {
 		auto phase = ls.createPhase();
 		if(params.iterLimit != -1)

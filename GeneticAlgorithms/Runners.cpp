@@ -32,7 +32,7 @@ namespace GARunners {
 		}
         auto gafunc = funcs[index];
         auto result = gafunc(p, params);
-        cout << "Representation=" << result.name << " Profit=" << result.profit << " Solvetime=" << result.solvetime << endl;
+		LOG_I("Representation=" + result.name + " Profit=" + to_string(result.profit) + " Solvetime=" + to_string(result.solvetime));
         return result;
     }
 

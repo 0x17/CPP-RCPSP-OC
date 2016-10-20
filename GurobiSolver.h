@@ -19,13 +19,19 @@ public:
 		Options();
 	};
 
+	struct Result {
+		vector<int> sts;
+		bool optimal;
+		Result(vector<int> sts, bool optimal);
+	};
+
 	GurobiSolver(ProjectWithOvertime& _p, Options _opts);
 
 	void restrictJobToTimeWindow(int j, int eft, int lft);
 	void relaxJob(int j);
 	void relaxAllJobs();
 
-	vector<int> solve();
+	Result solve();
 
 private:
 	class CustomCallback : public GRBCallback {
