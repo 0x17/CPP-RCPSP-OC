@@ -23,15 +23,16 @@
     <ClCompile Include="..\GeneticAlgorithms\FixedDeadline.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\OvertimeBound.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\Representations.cpp" />
-    <ClCompile Include="..\GeneticAlgorithms\Runners.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\Sampling.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\TimeWindow.cpp" />
+    <ClCompile Include="..\LSModels\FixedDeadlineModels.cpp" />
     <ClCompile Include="..\LSModels\ListModel.cpp" />
     <ClCompile Include="..\LSModels\NaiveModels.cpp" />
     <ClCompile Include="..\LSModels\OvertimeBoundModels.cpp" />
     <ClCompile Include="..\LSModels\TimeWindowModels.cpp" />
     <ClCompile Include="..\Project.cpp" />
     <ClCompile Include="..\ProjectWithOvertime.cpp" />
+    <ClCompile Include="..\Runners.cpp" />
     <ClCompile Include="..\Stopwatch.cpp" />
     <ClCompile Include="..\Utils.cpp" />
     <ClCompile Include="..\Visualization.cpp" />
@@ -49,9 +50,9 @@
     <ClInclude Include="..\GeneticAlgorithms\GeneticAlgorithm.h" />
     <ClInclude Include="..\GeneticAlgorithms\OvertimeBound.h" />
     <ClInclude Include="..\GeneticAlgorithms\Representations.h" />
-    <ClInclude Include="..\GeneticAlgorithms\Runners.h" />
     <ClInclude Include="..\GeneticAlgorithms\Sampling.h" />
     <ClInclude Include="..\GeneticAlgorithms\TimeWindow.h" />
+    <ClInclude Include="..\LSModels\FixedDeadlineModels.h" />
     <ClInclude Include="..\LSModels\ListModel.h" />
     <ClInclude Include="..\LSModels\NaiveModels.h" />
     <ClInclude Include="..\LSModels\OvertimeBoundModels.h" />
@@ -59,6 +60,7 @@
     <ClInclude Include="..\matrix.h" />
     <ClInclude Include="..\Project.h" />
     <ClInclude Include="..\ProjectWithOvertime.h" />
+    <ClInclude Include="..\Runners.h" />
     <ClInclude Include="..\Stopwatch.h" />
     <ClInclude Include="..\Utils.h" />
     <ClInclude Include="..\Visualization.h" />

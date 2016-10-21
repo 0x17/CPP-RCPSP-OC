@@ -3,54 +3,25 @@
 #include <boost/filesystem.hpp>
 
 #include "ProjectWithOvertime.h"
-
 #include "LSModels/NaiveModels.h"
-#include "LSModels/OvertimeBoundModels.h"
-#include "LSModels/TimeWindowModels.h"
 #include "LSModels/FixedDeadlineModels.h"
-
-#include "GeneticAlgorithms/Runners.h"
-#include "GeneticAlgorithms/TimeWindow.h"
-
+#include "Runners.h"
 #include "BranchAndBound.h"
-
 #include "GurobiSolver.h"
 
 namespace Main {
-
-	struct RunnerParams {
-		int methodIndex, variant;
-		double timeLimit;
-		int iterLimit;
-		bool traceobj;
-		string outPath;
-
-		RunnerParams(int _methodIndex, int _variant, double _timeLimit, int _iterLimit, bool _traceobj, const string& _outPath)
-			: methodIndex(_methodIndex),
-			  variant(_variant),
-			  timeLimit(_timeLimit),
-			  iterLimit(_iterLimit),			  
-			  traceobj(_traceobj),
-			  outPath(_outPath) {}
-	};
-
 	void showUsage();
 	void commandLineRunner(int argc, char * argv[]);
 
 	int computeMinMaxMakespanDifference(ProjectWithOvertime &p);
 
-	ListModel *genListModelWithIndex(ProjectWithOvertime &p, int index, int variant = 0);
-	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, RunnerParams rparams);
-	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, RunnerParams rparams);
-
 	void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit);
 
 	void testFixedDeadlineHeuristic();
 	void testLocalSolverNative(int seed);
+	void testGurobi();
 
 	void convertArgFileToLSP(int argc, const char * argv[]);
-
-	void testGurobi();
 }
 
 int main(int argc, char * argv[]) {
@@ -71,7 +42,6 @@ void Main::convertArgFileToLSP(int argc, const char * argv[]) {
 
 void Main::testGurobi() {
 	string projFilename = "QBWLBeispiel.DAT";
-	//string projFilename = "j3025_4.sm";
 	ProjectWithOvertime p(projFilename);
 	GurobiSolver::Options opts;
 	opts.useSeedSol = true;
@@ -83,54 +53,10 @@ void Main::testGurobi() {
 	auto res = solver.solve();
 }
 
-static vector<string> lsDescriptions = {
-	"(lambda|beta)",
-	"(lambda|tau)",
-	"(lambda|tau-discrete)",
-	"(lambda|zr)",
-	"(lambda|zrt)",
-	"(lambda) alts",
-	"(lambda) gs",
-	"(lambda|deadline-offset)"
-};
-
-ListModel *Main::genListModelWithIndex(ProjectWithOvertime &p, int index, int variant) {
-	ListModel *lm = nullptr;
-	switch (index) {
-	default:
-	case 0:
-		ListBetaModel::setVariant(variant);
-		lm = new ListBetaModel(p);
-		break;
-	case 1:
-		lm = new ListTauModel(p);
-		break;
-	case 2:
-		lm = new ListTauDiscreteModel(p);
-		break;
-	case 3:
-		lm = new ListFixedOvertimeModel(p);
-		break;
-	case 4:
-		lm = new ListDynamicOvertimeModel(p);
-		break;
-	case 5:
-		lm = new ListAlternativesModel(p);
-		break;
-	case 6:
-		lm = new GSListModel(p);
-		break;
-	case 7:
-		lm = new ListDeadlineModel(p);
-		break;
-	}
-	return lm;
-}
-
 void Main::showUsage() {
 	list<string> solMethods = { "BranchAndBound", "LocalSolver", "Gurobi" };
-	for (int i = 0; i < 8; i++) solMethods.push_back("GA" + to_string(i) + " // " + GARunners::getDescription(i));
-	for (int i = 0; i < 8; i++) solMethods.push_back("LocalSolverNative" + to_string(i) + " // " + lsDescriptions[i]);
+	for (int i = 0; i < 8; i++) solMethods.push_back("GA" + to_string(i) + " // " + Runners::getGADescription(i));
+	for (int i = 0; i < 8; i++) solMethods.push_back("LocalSolverNative" + to_string(i) + " // " + Runners::getLSDescription(i));
 	cout << "Number of arguments must be >= 4" << endl;
 	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ScheduleLimit ProjectFileSM [traceobj]" << endl;
 	cout << "Solution methods: " << endl;
@@ -141,40 +67,6 @@ int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
 	int maxMs = p.makespan(p.serialSGS(p.topOrder));
 	int minMs = p.makespan(p.serialSGS(p.topOrder, p.zmax).sts);
 	return maxMs - minMs;
-}
-
-vector<int> Main::runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, RunnerParams rparams) {
-	GAParameters params;
-	params.fitnessBasedPairing = false;
-	params.numGens = -1;
-	params.popSize = 80;
-	params.pmutate = 5;
-	params.timeLimit = rparams.timeLimit;
-	params.iterLimit = rparams.iterLimit;
-	params.traceobj = rparams.traceobj;
-	params.selectionMethod = SelectionMethod::BEST;
-	params.rbbrs = true;
-	params.outPath = rparams.outPath;
-
-	params.parseFromDisk();
-
-	if(rparams.methodIndex == 0)
-		TimeWindowBordersGA::setVariant(rparams.variant);
-
-	auto res = GARunners::run(p, params, rparams.methodIndex);
-	return res.sts;
-}
-
-vector<int> Main::runLocalSolverModelWithIndex(ProjectWithOvertime& p, RunnerParams rparams) {
-	vector<int> sts;
-	ListModel *lm = genListModelWithIndex(p, rparams.methodIndex, rparams.variant);
-	SolverParams params(rparams.timeLimit, rparams.iterLimit);
-	params.trace = rparams.traceobj;
-	params.solverIx = rparams.methodIndex;
-	params.outPath = rparams.outPath;
-	sts = lm->solve(params);
-	delete lm;
-	return sts;
 }
 
 string coreInstanceName(const string & parentPath, const string & filename) {
@@ -213,7 +105,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
         } else if(boost::starts_with(solMethod, "GA")) {
 			int gaIndex = stoi(solMethod.substr(2, 1));
 			int variant = (gaIndex == 0 && solMethod.length() == 4) ? stoi(solMethod.substr(3, 1)) : 0;
-			sts = runGeneticAlgorithmWithIndex(p, { gaIndex, variant, timeLimit, iterLimit, traceobj, outPath });
+			sts = Runners::runGeneticAlgorithmWithIndex(p, { gaIndex, variant, timeLimit, iterLimit, traceobj, outPath });
             outFn += "GA" + to_string(gaIndex) + "Results.txt";
 		}
 		else if (!solMethod.compare("LocalSolver")) {
@@ -222,7 +114,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 		} else if(boost::starts_with(solMethod, "LocalSolverNative")) {
 			int lsnIndex = stoi(solMethod.substr(17, 1));
 			int variant = (lsnIndex == 0 && solMethod.length() == 19) ? stoi(solMethod.substr(18, 1)) : 0;
-			sts = runLocalSolverModelWithIndex(p, { lsnIndex, variant, timeLimit, iterLimit, traceobj, outPath });
+			sts = Runners::runLocalSolverModelWithIndex(p, { lsnIndex, variant, timeLimit, iterLimit, traceobj, outPath });
 			outFn += "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
         }  else if(!solMethod.compare("Gurobi")) {
 			GurobiSolver::Options opts;
@@ -232,7 +124,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			GurobiSolver gsolver(p, opts);
 			auto res = gsolver.solve();
 			if(res.optimal) {
-				Utils::spitAppend(coreName, "GurobiOptimals.txt");
+				Utils::spitAppend(coreName + "\n", "GurobiOptimals.txt");
 			}
 			sts = res.sts;
 			outFn += "GurobiResults.txt";
@@ -250,15 +142,8 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 }
 
 void Main::testFixedDeadlineHeuristic() {
-	//string projFilename = "../../Projekte/j30/j3010_1.sm";
-	//string projFilename = "QBWLBeispiel.DAT";
-	//string projFilename = "MiniBeispiel.DAT";	
-	//string projFilename = "../../Projekte/j120/j12011_1.sm";
 	string projFilename = "../../Projekte/j30/j301_3.sm";
 	ProjectWithOvertime p(projFilename);
-
-	//BranchAndBound bb(p);
-	//auto sts = bb.solve();
 
 	GAParameters params;
 	params.popSize = 80;
@@ -270,7 +155,7 @@ void Main::testFixedDeadlineHeuristic() {
 	params.selectionMethod = SelectionMethod::BEST;
 	params.rbbrs = true;
 
-	auto res = GARunners::run(p, params, 6);
+	auto res = Runners::run(p, params, 6);
 	auto sts = res.sts;
 
 	p.isScheduleFeasible(sts);
@@ -281,9 +166,6 @@ void Main::testFixedDeadlineHeuristic() {
 }
 
 void Main::testLocalSolverNative(int seed) {
-	//string projFilename = "../../Projekte/j30/j3010_1.sm";
-	//string projFilename = "../../Projekte/j30/j301_1.sm";
-	//string projFilename = "QBWLBeispiel.DAT";
 	string projFilename = "MiniBeispiel.DAT";
 	ProjectWithOvertime p(projFilename);
 	//ListAlternativesModel lm(p);
@@ -299,12 +181,6 @@ void Main::testLocalSolverNative(int seed) {
 }
 
 void Main::benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
-    //string projFilename = "../../Projekte/j60/j6014_7.sm";
-	//string projFilename = "../../Projekte/j30/j301_1.sm";
-    //string projFilename = "QBWLBeispiel.DAT";
-	//string projFilename = "MiniBeispiel.DAT";
-	//string projFilename = "../../Projekte/j30/j3010_1.sm";
-	//string projFilename = "../../Projekte/j30/j301_1.sm";
 	string projFilename = "../../Projekte/j30/j3013_8.sm";
     ProjectWithOvertime p(projFilename);
 
@@ -318,7 +194,7 @@ void Main::benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
 	params.selectionMethod = SelectionMethod::BEST;
 	params.rbbrs = true;
 
-    auto res = GARunners::run(p, params, gaIndex);
+    auto res = Runners::run(p, params, gaIndex);
 	bool feas = p.isScheduleFeasible(res.sts);
 	cout << feas << endl;
 
