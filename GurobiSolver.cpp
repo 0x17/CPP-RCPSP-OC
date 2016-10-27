@@ -1,11 +1,11 @@
 #include "GurobiSolver.h"
 #include "ProjectWithOvertime.h"
 
-#ifdef USE_GUROBI
-
-#include <gurobi_c++.h>
-
-GurobiSolver::Options::Options() : outPath(""), useSeedSol(true), timeLimit(GRB_INFINITY), gap(0.0), iterLimit(GRB_INFINITY), displayInterval(1) {
+GurobiSolver::Options::Options() :
+	BasicSolverParameters(GRB_INFINITY, -1, false, "GurobiTrace_", 0),
+	useSeedSol(true),
+	gap(0.0),
+	displayInterval(1) {
 }
 
 GurobiSolver::CustomCallback::CustomCallback(string outPath, string instanceName) : tr(outPath + "GurobiTrace_" + instanceName) {
@@ -67,6 +67,7 @@ GRBEnv GurobiSolver::setupOptions(Options opts) {
 	env.set(GRB_DoubleParam_MIPGap, opts.gap);
 	env.set(GRB_DoubleParam_TimeLimit, opts.timeLimit);
 	env.set(GRB_IntParam_DisplayInterval, opts.displayInterval);
+	env.set(GRB_IntParam_Threads, opts.threadCount);
 	//env.set(GRB_DoubleParam_NodeLimit, opts.iterLimit);
 	//env.set(GRB_DoubleParam_Heuristics, 1.0);
 	return env;
@@ -179,9 +180,3 @@ GurobiSolver::Result GurobiSolver::solve() {
 	vector<int> sts(p.numJobs);
 	return {sts, false};
 }
-#else
-vector<int> GurobiSolver::solve(ProjectWithOvertime& p) {
-	vector<int> sts(p.numJobs);
-	return sts;
-}
-#endif

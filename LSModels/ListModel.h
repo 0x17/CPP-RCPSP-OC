@@ -29,19 +29,9 @@ public:
 	void setTracer(Utils::Tracer *tr) { this->tr = tr; }
 };
 
-struct SolverParams {
-	int seed;
-	double timeLimit;
-	int threadCount;
-	int verbosityLevel;
-    bool trace;
-    int solverIx;
-	int iterLimit;
-	string outPath;
-
-	SolverParams(double _tlimit = -1.0, int _ilimit = -1)
-		: seed(0), timeLimit(_tlimit), threadCount(1), verbosityLevel(2), trace(false), solverIx(0), iterLimit(_ilimit)
-	{}
+struct SolverParams : Utils::BasicSolverParameters {
+	int seed, verbosityLevel, solverIx;
+	explicit SolverParams(double _tlimit = -1.0, int _ilimit = -1);
 };
 
 class ListModel {

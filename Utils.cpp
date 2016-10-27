@@ -183,4 +183,11 @@ namespace Utils {
 			instance = new Logger("MainLogger", Utils::Logger::LogMode::VERBOSE);
 		return instance;
 	}
+
+	BasicSolverParameters::BasicSolverParameters(double time_limit, int iter_limit, bool traceobj, const string& out_path, int thread_count): timeLimit(time_limit),
+	                                                                                                                        iterLimit(iter_limit),
+	                                                                                                                        traceobj(traceobj),
+	                                                                                                                        outPath(out_path),
+																															threadCount(thread_count) {
+	}
 }

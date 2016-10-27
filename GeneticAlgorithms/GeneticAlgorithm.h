@@ -24,28 +24,22 @@ enum class SelectionMethod {
 	DUEL
 };
 
-struct GAParameters {
+struct GAParameters : Utils::BasicSolverParameters {
 	GAParameters();
 	void parseFromString(string s);
 	void parseFromDisk(string fn = "GAParameters.txt");
 
 	int numGens, popSize, pmutate;
-    double timeLimit;
-	int iterLimit;
-    bool fitnessBasedPairing, traceobj;
+    bool fitnessBasedPairing;
 	SelectionMethod selectionMethod;
     bool rbbrs;
-	string outPath;
 };
 
-inline GAParameters::GAParameters() {
+inline GAParameters::GAParameters() : BasicSolverParameters(-1.0, -1, false, "GATrace_", 1) {
 	numGens = 200;
 	popSize = 100;
 	pmutate = 5;
-	timeLimit = -1.0;
-	iterLimit = -1;
 	fitnessBasedPairing = false;
-	traceobj = false;
 	selectionMethod = SelectionMethod::BEST;
 	rbbrs = false;
 }

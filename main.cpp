@@ -26,10 +26,6 @@ namespace Main {
 
 int main(int argc, char * argv[]) {
 	Main::commandLineRunner(argc, argv);
-	//Main::testFixedDeadlineHeuristic();
-	//Main::testLocalSolverNative(argc == 2 ? atoi(argv[1]) : 0);
-	//Main::benchmarkGeneticAlgorithm(0, 3200);
-	//Main::testGurobi();
 	return 0;
 }
 
@@ -49,6 +45,7 @@ void Main::testGurobi() {
 	opts.gap = 0.0;
 	opts.outPath = "";
 	opts.timeLimit = GRB_INFINITY;
+	opts.threadCount = 0;
 	GurobiSolver solver(p, opts);
 	auto res = solver.solve();
 }
@@ -121,6 +118,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			opts.outPath = outPath;
 			opts.timeLimit = (timeLimit == -1.0) ? opts.timeLimit : timeLimit;
 			opts.iterLimit = (iterLimit == -1.0) ? opts.iterLimit : iterLimit;
+			opts.threadCount = 4;
 			GurobiSolver gsolver(p, opts);
 			auto res = gsolver.solve();
 			if(res.optimal) {
@@ -171,7 +169,7 @@ void Main::testLocalSolverNative(int seed) {
 	//ListAlternativesModel lm(p);
 	ListDeadlineModel lm(p);
 	SolverParams params(5.0);
-	params.trace = true;
+	params.traceobj = true;
 	params.seed = seed;
 	//params.solverIx = 8;
 	auto sts = lm.solve(params);

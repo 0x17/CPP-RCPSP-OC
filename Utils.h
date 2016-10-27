@@ -161,6 +161,16 @@ namespace Utils {
 
 		static Logger* getInstance();
 	};
+
+	struct BasicSolverParameters {
+		double timeLimit;
+		int iterLimit;
+		bool traceobj;
+		string outPath;
+		int threadCount;
+
+		BasicSolverParameters(double time_limit, int iter_limit, bool traceobj, const string& out_path, int thread_count);
+	};
 }
 
 #endif //SSGS_UTILS_H

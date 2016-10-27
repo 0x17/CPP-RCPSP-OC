@@ -18,12 +18,8 @@ class ListModel;
 	}
 
 namespace Runners {
-	struct RunnerParams {
+	struct RunnerParams : Utils::BasicSolverParameters {
 		int methodIndex, variant;
-		double timeLimit;
-		int iterLimit;
-		bool traceobj;
-		string outPath;
 		RunnerParams(int _methodIndex, int _variant, double _timeLimit, int _iterLimit, bool _traceobj, const string& _outPath);
 	};
 

@@ -22,6 +22,9 @@ lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 	return profit;
 }
 
+SolverParams::SolverParams(double _tlimit, int _ilimit): BasicSolverParameters(_tlimit, _ilimit, false, "LocalSolverNative_", 1), seed(0), verbosityLevel(2), solverIx(0) {
+}
+
 ListModel::ListModel(ProjectWithOvertime& _p, SchedulingNativeFunction *_decoder) : p(_p), decoder(_decoder), listElems(_p.numJobs) {
 }
 
@@ -35,7 +38,7 @@ vector<int> ListModel::solve(SolverParams params) {
 	TraceCallback *cback = nullptr;
 	buildModel();
 	applyParams(params);
-    if(params.trace) {
+    if(params.traceobj) {
         tr = new Utils::Tracer(params.outPath + "LocalSolverNative"+to_string(params.solverIx)+"Trace_" + p.instanceName);
 		cback = new TraceCallback(*tr);
         //ls.addCallback(CT_TimeTicked, cback);
@@ -87,7 +90,7 @@ void ListModel::applyParams(SolverParams &params) {
 		param.setNbThreads(params.threadCount);
 		param.setSeed(params.seed);
 		param.setVerbosity(params.verbosityLevel);
-		if (params.trace) {
+		if (params.traceobj) {
 			int timeBetweenDisplays = static_cast<int>(ceil(MSECS_BETWEEN_TRACES_LONG / 1000.0));
 			param.setTimeBetweenDisplays(timeBetweenDisplays);
 		}

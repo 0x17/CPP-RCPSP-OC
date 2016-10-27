@@ -1,20 +1,17 @@
 #pragma once
 
-#define USE_GUROBI 1
-
 #include <vector>
-#include <gurobi_c++.h>
 #include "Matrix.h"
 #include "Utils.h"
+#include <gurobi_c++.h>
 
 class ProjectWithOvertime;
 
 class GurobiSolver {
 public:	
-	struct Options {
-		string outPath;
+	struct Options : Utils::BasicSolverParameters {
 		bool useSeedSol;
-		double timeLimit, gap, iterLimit;
+		double gap;
 		int displayInterval;
 		Options();
 	};

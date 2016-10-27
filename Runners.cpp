@@ -12,12 +12,9 @@
 
 namespace Runners {
 	RunnerParams::RunnerParams(int _methodIndex, int _variant, double _timeLimit, int _iterLimit, bool _traceobj, const string& _outPath)
-		: methodIndex(_methodIndex),
-		variant(_variant),
-		timeLimit(_timeLimit),
-		iterLimit(_iterLimit),
-		traceobj(_traceobj),
-		outPath(_outPath) {}
+		: BasicSolverParameters(_timeLimit, _iterLimit, _traceobj, outPath, 1),
+		methodIndex(_methodIndex),
+		variant(_variant) {}
 
 	ListModel *genListModelWithIndex(ProjectWithOvertime &p, int index, int variant) {
 		ListModel *lm = nullptr;
@@ -135,7 +132,7 @@ namespace Runners {
 		vector<int> sts;
 		ListModel *lm = genListModelWithIndex(p, rparams.methodIndex, rparams.variant);
 		SolverParams params(rparams.timeLimit, rparams.iterLimit);
-		params.trace = rparams.traceobj;
+		params.traceobj = rparams.traceobj;
 		params.solverIx = rparams.methodIndex;
 		params.outPath = rparams.outPath;
 		sts = lm->solve(params);
