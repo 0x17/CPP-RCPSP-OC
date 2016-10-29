@@ -12,16 +12,15 @@
 namespace Main {
 	void showUsage();
 	void commandLineRunner(int argc, char * argv[]);
-
 	int computeMinMaxMakespanDifference(ProjectWithOvertime &p);
-
-	void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit);
-
-	void testFixedDeadlineHeuristic();
-	void testLocalSolverNative(int seed);
-	void testGurobi();
-
 	void convertArgFileToLSP(int argc, const char * argv[]);
+
+	namespace Testing {
+		void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit);
+		void testFixedDeadlineHeuristic();
+		void testLocalSolverNative(int seed);
+		void testGurobi();
+	};
 }
 
 int main(int argc, char * argv[]) {
@@ -36,24 +35,10 @@ void Main::convertArgFileToLSP(int argc, const char * argv[]) {
 	}
 }
 
-void Main::testGurobi() {
-	string projFilename = "QBWLBeispiel.DAT";
-	ProjectWithOvertime p(projFilename);
-	GurobiSolver::Options opts;
-	opts.useSeedSol = true;
-	opts.displayInterval = 1;
-	opts.gap = 0.0;
-	opts.outPath = "";
-	opts.timeLimit = GRB_INFINITY;
-	opts.threadCount = 0;
-	GurobiSolver solver(p, opts);
-	auto res = solver.solve();
-}
-
 void Main::showUsage() {
 	list<string> solMethods = { "BranchAndBound", "LocalSolver", "Gurobi" };
-	for (int i = 0; i < 8; i++) solMethods.push_back("GA" + to_string(i) + " // " + Runners::getGADescription(i));
-	for (int i = 0; i < 8; i++) solMethods.push_back("LocalSolverNative" + to_string(i) + " // " + Runners::getLSDescription(i));
+	for (int i = 0; i < 8; i++) solMethods.push_back("GA" + to_string(i) + " // " + Runners::getDescription(i));
+	for (int i = 0; i < 8; i++) solMethods.push_back("LocalSolverNative" + to_string(i) + " // " + Runners::getDescription(i));
 	cout << "Number of arguments must be >= 4" << endl;
 	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ScheduleLimit ProjectFileSM [traceobj]" << endl;
 	cout << "Solution methods: " << endl;
@@ -64,13 +49,6 @@ int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
 	int maxMs = p.makespan(p.serialSGS(p.topOrder));
 	int minMs = p.makespan(p.serialSGS(p.topOrder, p.zmax).sts);
 	return maxMs - minMs;
-}
-
-string coreInstanceName(const string & parentPath, const string & filename) {
-	string fn(filename);
-	boost::replace_first(fn, parentPath + "/", "");
-	boost::replace_first(fn, ".sm", "");
-	return fn;
 }
 
 void Main::commandLineRunner(int argc, char * argv[]) {
@@ -93,7 +71,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 		string outPath = parentPath + "_" + to_string(int(round(timeLimit))) + "secs/";
 		string outFn = outPath;
 		boost::filesystem::create_directory(boost::filesystem::path(outPath));
-		string coreName = coreInstanceName(parentPath, string(argv[4]));
+		string coreName = Project::coreInstanceName(parentPath, string(argv[4]));
 
 		if(!solMethod.compare("BranchAndBound")) {
             BranchAndBound b(p, timeLimit, iterLimit);
@@ -114,6 +92,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			sts = Runners::runLocalSolverModelWithIndex(p, { lsnIndex, variant, timeLimit, iterLimit, traceobj, outPath });
 			outFn += "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
         }  else if(!solMethod.compare("Gurobi")) {
+#ifndef DISABLE_GUROBI
 			GurobiSolver::Options opts;
 			opts.outPath = outPath;
 			opts.timeLimit = (timeLimit == -1.0) ? opts.timeLimit : timeLimit;
@@ -126,6 +105,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			}
 			sts = res.sts;
 			outFn += "GurobiResults.txt";
+#endif
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");
         }
@@ -139,7 +119,23 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 	else showUsage();
 }
 
-void Main::testFixedDeadlineHeuristic() {
+#ifndef DISABLE_GUROBI
+void Main::Testing::testGurobi() {
+	string projFilename = "QBWLBeispiel.DAT";
+	ProjectWithOvertime p(projFilename);
+	GurobiSolver::Options opts;
+	opts.useSeedSol = true;
+	opts.displayInterval = 1;
+	opts.gap = 0.0;
+	opts.outPath = "";
+	opts.timeLimit = GRB_INFINITY;
+	opts.threadCount = 0;
+	GurobiSolver solver(p, opts);
+	auto res = solver.solve();
+}
+#endif
+
+void Main::Testing::testFixedDeadlineHeuristic() {
 	string projFilename = "../../Projekte/j30/j301_3.sm";
 	ProjectWithOvertime p(projFilename);
 
@@ -163,7 +159,7 @@ void Main::testFixedDeadlineHeuristic() {
 	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedule.txt");
 }
 
-void Main::testLocalSolverNative(int seed) {
+void Main::Testing::testLocalSolverNative(int seed) {
 	string projFilename = "MiniBeispiel.DAT";
 	ProjectWithOvertime p(projFilename);
 	//ListAlternativesModel lm(p);
@@ -178,7 +174,7 @@ void Main::testLocalSolverNative(int seed) {
 	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe ../../Projekte/j30/j301_1.sm myschedule.txt");
 }
 
-void Main::benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
+void Main::Testing::benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
 	string projFilename = "../../Projekte/j30/j3013_8.sm";
     ProjectWithOvertime p(projFilename);
 

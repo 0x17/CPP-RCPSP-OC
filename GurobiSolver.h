@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef DISABLE_GUROBI
+
 #include <vector>
 #include "Matrix.h"
 #include "Utils.h"
@@ -54,3 +56,5 @@ private:
 
 	vector<int> parseSchedule() const;
 };
+
+#endif

@@ -144,6 +144,8 @@ public:
 
 	bool isResRemValid(const vector<int>& sts, const Matrix<int>& resRem) const;
 
+	static string coreInstanceName(const string & parentPath, const string & filename);
+
 protected:
 	bool allPredsScheduled(int j, const vector<int> &sts) const;
 	bool allPredsScheduled(int j, const vector<bool>& unscheduled) const;

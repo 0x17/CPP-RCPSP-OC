@@ -35,13 +35,14 @@ struct GAParameters : Utils::BasicSolverParameters {
     bool rbbrs;
 };
 
-inline GAParameters::GAParameters() : BasicSolverParameters(-1.0, -1, false, "GATrace_", 1) {
-	numGens = 200;
-	popSize = 100;
-	pmutate = 5;
-	fitnessBasedPairing = false;
-	selectionMethod = SelectionMethod::BEST;
-	rbbrs = false;
+inline GAParameters::GAParameters() :
+	BasicSolverParameters(-1.0, -1, false, "GATrace_", 1),
+	numGens(200),
+	popSize(100),
+	pmutate(5),
+	fitnessBasedPairing(false),
+	selectionMethod(SelectionMethod::BEST),
+	rbbrs(false) {
 }
 
 inline void GAParameters::parseFromString(string s) {
@@ -235,11 +236,19 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
     for(int i=0; i<params.popSize*2; i++) {
         pop[i].first = init(i);
 		pop[i].second = i < params.popSize ? -fitness(pop[i].first) : 0.0f;
-    }
-
-	//TimePoint lupdate = chrono::system_clock::now();
+    }	
 
     float lastBestVal = numeric_limits<float>::max();
+
+	/*auto iterationLogger = [&](int i) {
+		static TimePoint lupdate = chrono::system_clock::now();		
+		double deltat = chrono::duration<double, milli>(chrono::system_clock::now() - lupdate).count();
+		if ((sw.look() <= 1000.0 && deltat >= MSECS_BETWEEN_TRACES_SHORT) || (sw.look() > 1000.0 && deltat >= MSECS_BETWEEN_TRACES_LONG)) {
+			cout << "Generations = " << (i + 1) << ", Obj = " << -pop[0].second << ", Time = " << (boost::format("%.2f") % (sw.look() / 1000.0)) << endl;
+			lupdate = chrono::system_clock::now();
+			if(params.traceobj) tr->trace(sw.look(), -pop[0].second);
+		}
+	};*/
 
 	LOG_I("Computing with abort criterias: iterLimit=" + to_string(params.iterLimit) + ", numGens=" + to_string(params.numGens) + ", timeLimit=" + to_string(params.timeLimit));
     for(int i=0;   (params.iterLimit == -1 || i * params.popSize < params.iterLimit)
@@ -250,12 +259,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 			tr->intervalTrace(-pop[0].second);
 		}
 
-		/*double deltat = chrono::duration<double, milli>(chrono::system_clock::now() - lupdate).count();
-		if ((sw.look() <= 1000.0 && deltat >= MSECS_BETWEEN_TRACES_SHORT) || (sw.look() > 1000.0 && deltat >= MSECS_BETWEEN_TRACES_LONG)) {
-			//cout << "Generations = " << (i + 1) << ", Obj = " << -pop[0].second << ", Time = " << (boost::format("%.2f") % (sw.look() / 1000.0)) << endl;
-			lupdate = chrono::system_clock::now();
-            if(params.traceobj) tr->trace(sw.look(), -pop[0].second);
-		}*/
+		//iterationLogger(i);
 
 		// Pairing and crossover
         generateChildren(pop);

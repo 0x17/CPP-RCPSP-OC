@@ -1,3 +1,5 @@
+#ifndef DISABLE_GUROBI
+
 #include "GurobiSolver.h"
 #include "ProjectWithOvertime.h"
 
@@ -180,3 +182,5 @@ GurobiSolver::Result GurobiSolver::solve() {
 	vector<int> sts(p.numJobs);
 	return {sts, false};
 }
+
+#endif

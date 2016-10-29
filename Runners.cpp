@@ -12,7 +12,7 @@
 
 namespace Runners {
 	RunnerParams::RunnerParams(int _methodIndex, int _variant, double _timeLimit, int _iterLimit, bool _traceobj, const string& _outPath)
-		: BasicSolverParameters(_timeLimit, _iterLimit, _traceobj, outPath, 1),
+		: BasicSolverParameters(_timeLimit, _iterLimit, _traceobj, _outPath, 1),
 		methodIndex(_methodIndex),
 		variant(_variant) {}
 
@@ -61,7 +61,7 @@ namespace Runners {
 		runFixedDeadlineGA			// 7
 	};
 
-	static vector<string> lsDescriptions = {
+	static vector<string> representationDescriptions = {
 		"(lambda|beta)",
 		"(lambda|tau)",
 		"(lambda|tau-discrete)",
@@ -72,19 +72,7 @@ namespace Runners {
 		"(lambda|deadline-offset)"
 	};
 
-	static vector<string> gaDescriptions = {
-		"(lambda|beta)",
-		"(lambda|tau)",
-		"(lambda|tau-discrete)",
-		"(lambda|zr)",
-		"(lambda|zrt)",
-		"(lambda) alts",
-		"(lambda) gs",
-		"(lambda|deadline_offset)"
-	};
-
-	string getGADescription(int ix) { return gaDescriptions[ix]; }
-	string getLSDescription(int ix) { return lsDescriptions[ix]; }
+	string getDescription(int ix) { return representationDescriptions[ix]; }
 
 	GAResult run(ProjectWithOvertime &p, GAParameters &params, int index) {
 		if (index < 0 || index >= funcs.size()) {

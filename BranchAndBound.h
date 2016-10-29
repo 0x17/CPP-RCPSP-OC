@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-#include "matrix.h"
+#include "Matrix.h"
 #include "Stopwatch.h"
 #include "Utils.h"
 

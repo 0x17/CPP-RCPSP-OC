@@ -52,8 +52,7 @@ namespace Runners {
 
 	GAResult run(ProjectWithOvertime &p, GAParameters &params, int index);
 
-	std::string getGADescription(int index);
-	std::string getLSDescription(int index);
+	std::string getDescription(int index);
 
 	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, RunnerParams rparams);
 	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, RunnerParams rparams);

@@ -8,6 +8,7 @@
 #include <string>
 #include "Project.h"
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 
 Project::Project(const string filename) : name(filename), instanceName(boost::filesystem::path(filename).stem().string()) {
     auto lines = Utils::readLines(filename);
@@ -498,4 +499,11 @@ void Project::shiftScheduleLeftBy(int offset, vector<int> &sts, Matrix<int> &res
 
 vector<int> Project::stsToFts(const vector<int>& sts) const {
 	return Utils::constructVector<int>(numJobs, [&](int j) { return sts[j] + durations[j]; });
+}
+
+string Project::coreInstanceName(const string &parentPath, const string &filename) {
+    string fn(filename);
+    boost::replace_first(fn, parentPath + "/", "");
+    boost::replace_first(fn, ".sm", "");
+    return fn;
 }
