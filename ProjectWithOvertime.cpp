@@ -473,6 +473,6 @@ SGSResult ProjectWithOvertime::forwardBackwardIterations(const vector<int> &orde
 		}
 		lastCosts = currentCosts;
 	}
-	result.numSchedulesGenerated = i;
+	result.numSchedulesGenerated = i+1;
 	return result;
 }

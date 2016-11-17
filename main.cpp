@@ -9,6 +9,8 @@
 #include "BranchAndBound.h"
 #include "GurobiSolver.h"
 
+void fixedScheduleLimitSolveTimeForProjects();
+
 namespace Main {
 	void showUsage();
 	void commandLineRunner(int argc, char * argv[]);
@@ -16,7 +18,9 @@ namespace Main {
 	void convertArgFileToLSP(int argc, const char * argv[]);
 
 	namespace Testing {
-		void benchmarkGeneticAlgorithm(int gaIndex, int iterLimit);
+        void fixedScheduleLimitSolveTimesForProjects();
+		boost::optional<Runners::GAResult> benchmarkGeneticAlgorithm(int gaIndex, int iterLimit, const string &projFilename = "../../Projekte/j30/j3013_8.sm");
+        double averageSolvetime(int gaIndex, int scheduleLimit, const string& path);
 		void testFixedDeadlineHeuristic();
 		void testLocalSolverNative(int seed);
 		void testGurobi();
@@ -25,11 +29,40 @@ namespace Main {
 
 int main(int argc, char * argv[]) {
 	//Main::commandLineRunner(argc, argv);
-	Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_BETA, 100000);
-	Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_ZR, 100000);
-    Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_ZRT, 100000);
-	Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_GS, 100000);
-	return 0;
+
+    //string projFilename = "../../Projekte/j30/j3013_8.sm";
+    //Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_BETA, 100000);
+	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_ZR, 100000);
+    //Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_ZRT, 100000);
+	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_GS, 100000);
+    Main::Testing::fixedScheduleLimitSolveTimesForProjects();
+    return 0;
+}
+
+void Main::Testing::fixedScheduleLimitSolveTimesForProjects() {
+    string j30path = "/Users/andreschnabel/Dropbox/Arbeit/Scheduling/Projekte/j30/";
+    vector<int> relevantGaIndices = {Runners::RE_LAMBDA_BETA, Runners::RE_LAMBDA_ZR, /*Runners::RE_LAMBDA_ZRT,*/ Runners::RE_LAMBDA_GS };
+    vector<double> avgSolvetimes(relevantGaIndices.size());
+    int ctr =0;
+    for(int ix : relevantGaIndices) {
+        avgSolvetimes[ctr++] = Main::Testing::averageSolvetime(ix, 1000, j30path);
+    }
+    for(int i=0; i<avgSolvetimes.size(); i++)
+        cout << "Method " << Runners::getDescription(relevantGaIndices[i]) << " average solvetime = " << avgSolvetimes[i] << endl;
+}
+
+double Main::Testing::averageSolvetime(int gaIndex, int scheduleLimit, const string &path) {
+    double result = 0.0;
+    int ctr = 0;
+    auto filenames = Utils::filenamesInDirWithExt(path, ".sm");
+    for(auto fn : filenames) {
+        auto res = Main::Testing::benchmarkGeneticAlgorithm(gaIndex, scheduleLimit, fn);
+        if(res) {
+            result += res.get().solvetime;
+            ctr++;
+        }
+    }
+    return result / static_cast<double>(ctr);
 }
 
 void Main::convertArgFileToLSP(int argc, const char * argv[]) {
@@ -178,9 +211,13 @@ void Main::Testing::testLocalSolverNative(int seed) {
 	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe ../../Projekte/j30/j301_1.sm myschedule.txt");
 }
 
-void Main::Testing::benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
-	string projFilename = "../../Projekte/j30/j3013_8.sm";
+boost::optional<Runners::GAResult> Main::Testing::benchmarkGeneticAlgorithm(int gaIndex, int iterLimit, const string &projFilename) {
     ProjectWithOvertime p(projFilename);
+
+    if(computeMinMaxMakespanDifference(p) <= 0) {
+        cout << "maxMs - minMs <= 0... ---> skipping!" << endl;
+        return boost::optional<Runners::GAResult>();
+    }
 
     GAParameters params;
     params.popSize = 80;
@@ -202,5 +239,7 @@ void Main::Testing::benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
 	//cout << (p.calcProfit(res.sts) == res.profit) << endl;
 
 	cout << "Solvetime = " << res.solvetime << endl;
+
+    return res;
 }
 

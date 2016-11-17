@@ -274,7 +274,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 	};*/
 
 	LOG_I("Computing with abort criterias: iterLimit=" + to_string(params.iterLimit) + ", numGens=" + to_string(params.numGens) + ", timeLimit=" + to_string(params.timeLimit));
-    for(int i=0;   (params.iterLimit == -1 || scheduleCount < params.iterLimit)
+    for(int i=0;   (params.iterLimit == -1 || scheduleCount <= params.iterLimit)
 				&& (params.numGens == -1 || i<params.numGens)
 				&& (params.timeLimit == -1.0 || sw.look() < params.timeLimit * 1000.0); i++) {
 
