@@ -56,4 +56,15 @@ namespace Runners {
 
 	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, RunnerParams rparams);
 	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, RunnerParams rparams);
+
+	enum RepresentationEnum {
+		RE_LAMBDA_BETA,
+		RE_LAMBDA_TAU,
+		RE_LAMBDA_TAU_DISCRETE,
+		RE_LAMBDA_ZR,
+		RE_LAMBDA_ZRT,
+		RE_LAMBDA_ALTS,
+		RE_LAMBDA_GS,
+		RE_LAMBDA_DEADLINE_OFFSET
+	};
 }

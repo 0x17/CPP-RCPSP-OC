@@ -25,7 +25,10 @@ namespace Main {
 
 int main(int argc, char * argv[]) {
 	//Main::commandLineRunner(argc, argv);
-    Main::Testing::benchmarkGeneticAlgorithm(6, 100);
+	Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_BETA, 100000);
+	Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_ZR, 100000);
+    Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_ZRT, 100000);
+	Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_GS, 100000);
 	return 0;
 }
 
