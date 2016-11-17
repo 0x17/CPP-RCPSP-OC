@@ -49,8 +49,9 @@
 struct SGSResult {
 	vector<int> sts;
 	Matrix<int> resRem;
+	int numSchedulesGenerated = 1;
 
-	SGSResult(vector<int> _sts, Matrix<int> _resRem) : sts(_sts), resRem(_resRem) {}
+	SGSResult(vector<int> _sts, Matrix<int> _resRem, int _numSchedulesGenerated = 1) : sts(_sts), resRem(_resRem), numSchedulesGenerated(_numSchedulesGenerated) {}
 	SGSResult() {}
 };
 

@@ -16,7 +16,7 @@ private:
     virtual DeadlineLambda init(int ix) override;
     virtual void crossover(DeadlineLambda &mother, DeadlineLambda &father, DeadlineLambda &daughter) override;
     virtual void mutate(DeadlineLambda &i) override;
-    virtual float fitness(DeadlineLambda &i) override;
+    virtual FitnessResult fitness(DeadlineLambda &i) override;
     virtual vector<int> decode(DeadlineLambda &i) override;
 
     int deadlineOffsetLB, deadlineOffsetUB;

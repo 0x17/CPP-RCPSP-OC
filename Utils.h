@@ -115,6 +115,15 @@ namespace Utils {
 		return v;
     }
 
+	template<class A, class Func>
+	list<A> constructList(int size, Func f) {
+		list<A> l;
+		for(int i=0; i<size; i++) {
+			l.push_back(f(i));
+		}
+		return l;
+    }
+
 	list<string> filenamesInDirWithExt(const string dir, const string ext);
 
     class Tracer {

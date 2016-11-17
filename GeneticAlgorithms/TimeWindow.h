@@ -20,7 +20,7 @@ protected:
     virtual LambdaBeta init(int ix) override;	
 	virtual void crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) override;
     virtual void mutate(LambdaBeta &i) override;
-    virtual float fitness(LambdaBeta &i) override;
+    virtual FitnessResult fitness(LambdaBeta &i) override;
 	virtual vector<int> decode(LambdaBeta& i) override;
 };
 
@@ -31,7 +31,7 @@ private:
     virtual LambdaTau init(int ix) override;
     virtual void crossover(LambdaTau &mother, LambdaTau &father, LambdaTau &daughter) override;
     virtual void mutate(LambdaTau &i) override;
-    virtual float fitness(LambdaTau &i) override;
+    virtual FitnessResult fitness(LambdaTau &i) override;
 	virtual vector<int> decode(LambdaTau& i) override;
 };
 
@@ -42,7 +42,7 @@ private:
 	virtual LambdaBeta init(int ix) override;
 	virtual void crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) override;
 	virtual void mutate(LambdaBeta &i) override;
-	virtual float fitness(LambdaBeta &i) override;
+	virtual FitnessResult fitness(LambdaBeta &i) override;
 	virtual vector<int> decode(LambdaBeta& i) override;
 
 	int ub;
@@ -69,7 +69,7 @@ private:
     virtual Lambda init(int ix) override;
     virtual void crossover(Lambda &mother, Lambda &father, Lambda &daughter) override;
     virtual void mutate(Lambda &i) override;
-    virtual float fitness(Lambda &i) override;
+    virtual FitnessResult fitness(Lambda &i) override;
 	virtual vector<int> decode(Lambda& i) override;
 };
 

@@ -19,6 +19,8 @@ lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 		tr->intervalTrace(static_cast<float>(bks));
 	}
 
+	// TODO: result.numSchedulesGenerated
+
 	return profit;
 }
 

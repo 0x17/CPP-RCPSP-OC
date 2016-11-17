@@ -29,12 +29,12 @@ void TimeWindowArbitraryDiscretizedGA::mutate(LambdaBeta &i) {
 	});
 }
 
-float TimeWindowArbitraryDiscretizedGA::fitness(LambdaBeta &i) {
+FitnessResult TimeWindowArbitraryDiscretizedGA::fitness(LambdaBeta &i) {
 	vector<float> tau = Utils::constructVector<float>(static_cast<int>(i.beta.size()), [&i, this](int ix) {
 		return static_cast<float>(static_cast<double>(i.beta[ix]) / static_cast<double>(ub-1));
 	});
-	auto pair = p.serialSGSTimeWindowArbitrary(i.order, tau);
-	return p.calcProfit(pair);
+	auto res = p.serialSGSTimeWindowArbitrary(i.order, tau);
+	return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
 vector<int> TimeWindowArbitraryDiscretizedGA::decode(LambdaBeta& i) {
@@ -70,9 +70,9 @@ void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
     });
 }
 
-float TimeWindowArbitraryGA::fitness(LambdaTau &i) {
+FitnessResult TimeWindowArbitraryGA::fitness(LambdaTau &i) {
     auto pair = p.serialSGSTimeWindowArbitrary(i.order, i.tau);
-	return p.calcProfit(pair);
+	return { p.calcProfit(pair), pair.numSchedulesGenerated };
 }
 
 vector<int> TimeWindowArbitraryGA::decode(LambdaTau& i)  {
@@ -114,9 +114,9 @@ void TimeWindowBordersGA::mutate(LambdaBeta &i) {
 	
 }
 
-float TimeWindowBordersGA::fitness(LambdaBeta &i) {
-    auto pair = p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(i.order, i.beta, options);
-	return p.calcProfit(pair);
+FitnessResult TimeWindowBordersGA::fitness(LambdaBeta &i) {
+    auto res = p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(i.order, i.beta, options);
+	return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
 vector<int> TimeWindowBordersGA::decode(LambdaBeta& i) {
@@ -170,9 +170,9 @@ void ActivityListBasedGA::mutate(Lambda &i) {
     i.neighborhoodSwap(p.adjMx, params.pmutate);
 }
 
-float ActivityListBasedGA::fitness(Lambda &i) {
+FitnessResult ActivityListBasedGA::fitness(Lambda &i) {
 	auto res = decoder(p, i.order);
-	return p.calcProfit(res);
+	return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
 vector<int> ActivityListBasedGA::decode(Lambda& i) {

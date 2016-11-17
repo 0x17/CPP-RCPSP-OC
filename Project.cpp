@@ -78,7 +78,7 @@ SGSResult Project::serialSGS(const vector<int>& order, const vector<int>& z, boo
     Matrix<int> resRem(numRes, numPeriods, [&](int r, int t) { return capacities[r] + z[r]; });
 	vector<int> sts = serialSGSCore(order, resRem, robust);
 	eachResPeriodConst([&](int r, int t) { resRem(r, t) -= z[r]; });
-	return{ sts, resRem };
+	return{ sts, resRem, 1 };
 }
 
 SGSResult Project::serialSGS(const vector<int>& order, const Matrix<int>& z, bool robust) const {
@@ -87,7 +87,7 @@ SGSResult Project::serialSGS(const vector<int>& order, const Matrix<int>& z, boo
     });
 	vector<int> sts = serialSGSCore(order, resRem, robust);
 	z.foreach([&](int r, int t, int zrt) { resRem(r, t) -= zrt; });
-	return{ sts, resRem };
+	return{ sts, resRem, 1 };
 }
 
 int Project::chooseEligibleWithLowestIndex(const vector<int>& sts, const vector<int>& order) const {

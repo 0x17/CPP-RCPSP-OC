@@ -76,6 +76,17 @@ inline void GAParameters::parseFromDisk(string fn) {
 		parseFromString(Utils::slurp(fn));
 }
 
+struct FitnessResult {
+	float value;
+	int numSchedulesGenerated;
+
+	FitnessResult(float value, int numSchedulesGenerated)
+			: value(value),
+			  numSchedulesGenerated(numSchedulesGenerated) {}
+
+	FitnessResult() {}
+};
+
 template<class Individual>
 class GeneticAlgorithm {
 public:
@@ -104,12 +115,14 @@ protected:
     virtual Individual init(int ix) = 0;
     virtual void crossover(Individual &mother, Individual &father, Individual &daughter) = 0;
     virtual void mutate(Individual &i) = 0;
-    virtual float fitness(Individual &i) = 0;
+
+    virtual FitnessResult fitness(Individual &i) = 0;
+
 	virtual vector<int> decode(Individual &i) = 0;	
 
     pair<int, int> computePair(vector<pair<Individual, float>> &pop, vector<bool> &alreadySelected);
 
-    void mutateAndFitnessRange(vector<pair<Individual, float>> *pop, int startIx, int endIx);
+    int mutateAndFitnessRange(vector<pair<Individual, float>> *pop, int startIx, int endIx);
 
 	void selectBest(vector<pair<Individual, float>> &pop);
 	void selectDuel(vector<pair<Individual, float>> &pop);
@@ -165,11 +178,16 @@ void GeneticAlgorithm<Individual>::generateChildren(vector<pair<Individual, floa
 }
 
 template<class Individual>
-void GeneticAlgorithm<Individual>::mutateAndFitnessRange(vector<pair<Individual, float>> *pop, int startIx, int endIx) {
+int GeneticAlgorithm<Individual>::mutateAndFitnessRange(vector<pair<Individual, float>> *pop, int startIx, int endIx) {
+	static FitnessResult fres;
+	int scheduleCount = 0;
     for(int i=startIx; i<=endIx; i++) {
         mutate((*pop)[i].first);
-        (*pop)[i].second = -fitness((*pop)[i].first);
+		fres = fitness((*pop)[i].first);
+        (*pop)[i].second = -fres.value;
+		scheduleCount += fres.numSchedulesGenerated;
     }
+	return scheduleCount;
 }
 
 template<class Individual>
@@ -232,10 +250,15 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
     thread *threads[NUM_THREADS];
     int numPerThread = params.popSize / NUM_THREADS;
 
+	int scheduleCount = 0;
+
 	LOG_I("Computing initial population");
+	FitnessResult fres;
     for(int i=0; i<params.popSize*2; i++) {
         pop[i].first = init(i);
-		pop[i].second = i < params.popSize ? -fitness(pop[i].first) : 0.0f;
+		fres = fitness(pop[i].first);
+		pop[i].second = i < params.popSize ? -fres.value : 0.0f;
+		scheduleCount += fres.numSchedulesGenerated;
     }	
 
     float lastBestVal = numeric_limits<float>::max();
@@ -251,7 +274,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 	};*/
 
 	LOG_I("Computing with abort criterias: iterLimit=" + to_string(params.iterLimit) + ", numGens=" + to_string(params.numGens) + ", timeLimit=" + to_string(params.timeLimit));
-    for(int i=0;   (params.iterLimit == -1 || i * params.popSize < params.iterLimit)
+    for(int i=0;   (params.iterLimit == -1 || scheduleCount < params.iterLimit)
 				&& (params.numGens == -1 || i<params.numGens)
 				&& (params.timeLimit == -1.0 || sw.look() < params.timeLimit * 1000.0); i++) {
 
@@ -279,7 +302,9 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
         } else {
             for(int j=params.popSize; j<params.popSize*2; j++) {
                 mutate(pop[j].first);
-                pop[j].second = -fitness(pop[j].first);
+				fres = fitness(pop[j].first);
+                pop[j].second = -fres.value;
+				scheduleCount += fres.numSchedulesGenerated;
             }
         }
 

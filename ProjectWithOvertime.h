@@ -16,7 +16,7 @@ struct SGSDeadlineResult : SGSResult {
 
 class ProjectWithOvertime : public Project {
 public:
-    vector<int> zmax;
+    vector<int> zmax, zzero;
 	vector<float> kappa, revenue;
 
 	explicit ProjectWithOvertime(string filename);

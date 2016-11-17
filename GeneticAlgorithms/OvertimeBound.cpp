@@ -34,9 +34,9 @@ void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
 	mutateOvertime(i.z);
 }
 
-float TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
+FitnessResult TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
 	auto pair = p.serialSGSWithForwardBackwardImprovement(i.order, i.z);
-	return p.calcProfit(pair);
+	return { p.calcProfit(pair), pair.numSchedulesGenerated };
 }
 
 vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
@@ -92,9 +92,9 @@ void FixedCapacityGA::mutate(LambdaZr &i) {
 	mutateOvertime(i.z);
 }
 
-float FixedCapacityGA::fitness(LambdaZr &i) {
-	auto pair = p.serialSGSWithForwardBackwardImprovement(i.order, i.z);
-	return p.calcProfit(pair);
+FitnessResult FixedCapacityGA::fitness(LambdaZr &i) {
+	auto res = p.serialSGSWithForwardBackwardImprovement(i.order, i.z);
+	return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
 vector<int> FixedCapacityGA::decode(LambdaZr& i) {

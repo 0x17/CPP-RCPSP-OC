@@ -133,8 +133,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Boost\include\boost-1_59;C:\localsolver_6_0\include;C:\Users\a.schnabel\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\googletest\include;C:\Users\Andre\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\googletest\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Boost\lib;C:\localsolver_6_0\bin;C:\Users\a.schnabel\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\lib;C:\Users\Andre\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Boost\include\boost-1_59;C:\localsolver_6_5\include;C:\Users\a.schnabel\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\googletest\include;C:\Users\Andre\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\googletest\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Boost\lib;C:\localsolver_6_5\bin;C:\Users\a.schnabel\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\lib;C:\Users\Andre\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

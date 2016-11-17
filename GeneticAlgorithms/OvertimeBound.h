@@ -15,7 +15,7 @@ private:
     virtual LambdaZrt init(int ix) override;
     virtual void crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter) override;
 	virtual void mutate(LambdaZrt &i) override;
-    virtual float fitness(LambdaZrt &i) override;
+    virtual FitnessResult fitness(LambdaZrt &i) override;
 	virtual vector<int> decode(LambdaZrt& i) override;
 
 	void mutateOvertime(Matrix<int> &z) const;
@@ -29,7 +29,7 @@ private:
     virtual LambdaZr init(int ix) override;
 	virtual void crossover(LambdaZr &mother, LambdaZr &father, LambdaZr &daughter) override;	
 	virtual void mutate(LambdaZr &i) override;
-    virtual float fitness(LambdaZr &i) override;
+    virtual FitnessResult fitness(LambdaZr &i) override;
 	virtual vector<int> decode(LambdaZr& i) override;
 
 	void mutateOvertime(vector<int> &z);

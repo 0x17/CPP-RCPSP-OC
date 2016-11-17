@@ -11,6 +11,7 @@
 ProjectWithOvertime::ProjectWithOvertime(string filename) :
         Project(filename),
         zmax(numRes),
+		zzero(numRes, 0),
         kappa(numRes),
         revenue(numPeriods) {
     eachRes([&](int r) {
@@ -111,7 +112,9 @@ SGSResult ProjectWithOvertime::forwardBackwardDeadlineOffsetSGS(const vector<int
 	auto baseSchedule = serialSGS(order, zmax, robust);
 	if(deadlineOffset <= 0) return baseSchedule;
     int baseMakespan = makespan(baseSchedule.sts);
-	return forwardBackwardIterations(order, baseSchedule, baseMakespan + deadlineOffset, boost::optional<int>(), robust);
+	auto res = forwardBackwardIterations(order, baseSchedule, baseMakespan + deadlineOffset, boost::optional<int>(), robust);
+	res.numSchedulesGenerated++;
+	return res;
 }
 
 SGSResult ProjectWithOvertime::delayWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust) const {
@@ -196,6 +199,8 @@ int ProjectWithOvertime::earliestCheapestFeasiblePeriod(int j, int baseStj, int 
 // f(x) => deadline zu plan
 // g(x) => plan zu gewinn
 SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector<int>& order, bool robust) const {
+	int scheduleCount = 0;
+
 	struct DeadlineProfitResultTriple {
 		int deadline;
 		float profit;
@@ -207,9 +212,9 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 
 	} lb, ub, a, b;	
 
-	vector<int> zeroOc(numRes, 0);
 	auto tminRes = serialSGS(order, zmax, robust);
-	auto tmaxRes = serialSGS(order, zeroOc, robust);
+	auto tmaxRes = serialSGS(order, zzero, robust);
+	scheduleCount += 2;
 
 	auto fillTripleFromSGSResult = [this](const SGSResult &res, DeadlineProfitResultTriple &t) {
 		t.deadline = makespan(res.sts);
@@ -231,6 +236,7 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 		auto baseResult = (t.deadline > a.deadline) ? a.result : lb.result;
 		t.result = forwardBackwardIterations(order, baseResult, t.deadline, boost::optional<int>(), robust);
 		t.profit = calcProfit(t.result);
+		scheduleCount += t.result.numSchedulesGenerated;
 	};
 
 	a.deadline = lb.deadline + static_cast<int>(round(delta * (ub.deadline - lb.deadline)));
@@ -259,6 +265,7 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 		}
 	}
 
+	lb.result.numSchedulesGenerated = scheduleCount;
 	return lb.result;
 }
 
@@ -385,17 +392,23 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &ord
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowBordersWithForwardBackwardImprovement(const vector<int>& order, const vector<int>& beta, BorderSchedulingOptions options, bool robust) const {
 	SGSResult res = serialSGSTimeWindowBorders(order, beta, options, robust);
-	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
+	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
+	fbres.numSchedulesGenerated += res.numSchedulesGenerated;
+	return fbres;
 }
 
 SGSResult ProjectWithOvertime::serialSGSWithForwardBackwardImprovement(const vector<int>& order, const vector<int>& z, bool robust) const {
 	SGSResult res = serialSGS(order, z, robust);
-	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
+	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
+	fbres.numSchedulesGenerated += res.numSchedulesGenerated;
+	return fbres;
 }
 
 SGSResult ProjectWithOvertime::serialSGSWithForwardBackwardImprovement(const vector<int>& order, const Matrix<int>& z, bool robust) const {
 	SGSResult res = serialSGS(order, z, robust);
-	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
+	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
+	fbres.numSchedulesGenerated += res.numSchedulesGenerated;
+	return fbres;
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau, bool robust) const {
@@ -449,7 +462,8 @@ SGSResult ProjectWithOvertime::forwardBackwardIterations(const vector<int> &orde
 
 	const int DEADLINE_IMPROVEMENT_TOLERANCE = 0;
 	float lastCosts = totalCosts(result.resRem);
-	for(int i=0; numIterations ? i < *numIterations : true; i++) {
+	int i;
+	for(i=0; numIterations ? i < *numIterations : true; i++) {
 		//checkAndOutput(result, deadline, i);
 		result = (i % 2 == 0) ? delayWithoutOvertimeIncrease(order, result.sts, result.resRem, deadline, robust) : earlierWithoutOvertimeIncrease(order, result.sts, result.resRem, robust);
 		float currentCosts = totalCosts(result.resRem);
@@ -459,5 +473,6 @@ SGSResult ProjectWithOvertime::forwardBackwardIterations(const vector<int> &orde
 		}
 		lastCosts = currentCosts;
 	}
+	result.numSchedulesGenerated = i;
 	return result;
 }

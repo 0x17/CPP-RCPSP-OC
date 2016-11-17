@@ -24,7 +24,8 @@ namespace Main {
 }
 
 int main(int argc, char * argv[]) {
-	Main::commandLineRunner(argc, argv);
+	//Main::commandLineRunner(argc, argv);
+    Main::Testing::benchmarkGeneticAlgorithm(6, 100);
 	return 0;
 }
 
@@ -180,20 +181,23 @@ void Main::Testing::benchmarkGeneticAlgorithm(int gaIndex, int iterLimit) {
 
     GAParameters params;
     params.popSize = 80;
-    params.timeLimit = 5;
+    params.timeLimit = -1;
     params.numGens = -1; //static_cast<int>(floor(static_cast<float>(iterLimit) / static_cast<float>(params.popSize)));
     params.fitnessBasedPairing = false;
     params.pmutate = 5;
     params.traceobj = false;
 	params.selectionMethod = SelectionMethod::BEST;
 	params.rbbrs = true;
+    params.iterLimit = iterLimit;
 
     auto res = Runners::run(p, params, gaIndex);
-	bool feas = p.isScheduleFeasible(res.sts);
-	cout << feas << endl;
+	//bool feas = p.isScheduleFeasible(res.sts);
+	//cout << feas << endl;
 
 	Utils::serializeSchedule(res.sts, "myschedule.txt");
 	Utils::serializeProfit(p.calcProfit(res.sts), "myprofit.txt");
-	cout << (p.calcProfit(res.sts) == res.profit) << endl;
+	//cout << (p.calcProfit(res.sts) == res.profit) << endl;
+
+	cout << "Solvetime = " << res.solvetime << endl;
 }
 

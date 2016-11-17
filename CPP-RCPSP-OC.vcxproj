@@ -32,6 +32,7 @@
     <ClCompile Include="LSModels\OvertimeBoundModels.cpp" />
     <ClCompile Include="LSModels\TimeWindowModels.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ParticleSwarm.cpp" />
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="ProjectWithOvertime.cpp" />
     <ClCompile Include="Runners.cpp" />
@@ -54,6 +55,7 @@
     <ClInclude Include="LSModels\OvertimeBoundModels.h" />
     <ClInclude Include="LSModels\TimeWindowModels.h" />
     <ClInclude Include="Matrix.h" />
+    <ClInclude Include="ParticleSwarm.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="ProjectWithOvertime.h" />
     <ClInclude Include="Runners.h" />
