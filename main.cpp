@@ -9,8 +9,6 @@
 #include "BranchAndBound.h"
 #include "GurobiSolver.h"
 
-void fixedScheduleLimitSolveTimeForProjects();
-
 namespace Main {
 	void showUsage();
 	void commandLineRunner(int argc, char * argv[]);
@@ -28,14 +26,14 @@ namespace Main {
 }
 
 int main(int argc, char * argv[]) {
-	//Main::commandLineRunner(argc, argv);
+	Main::commandLineRunner(argc, argv);
 
     //string projFilename = "../../Projekte/j30/j3013_8.sm";
     //Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_BETA, 100000);
 	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_ZR, 100000);
     //Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_ZRT, 100000);
 	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_GS, 100000);
-    Main::Testing::fixedScheduleLimitSolveTimesForProjects();
+    //Main::Testing::fixedScheduleLimitSolveTimesForProjects();
     return 0;
 }
 
