@@ -7,8 +7,38 @@
 #include <gtest/gtest.h>
 #include <cstdio>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 
 using namespace boost::algorithm;
+
+const string
+		testString = "These are some\nLines in a\nTextfile.",
+		testFilename = "tmpfile";
+
+void createAndWriteTestfile() {
+	ofstream of(testFilename);
+	of << testString;
+	of.close();
+}
+
+TEST(UtilsTest, testSlurp) {
+	createAndWriteTestfile();
+
+	string contents = Utils::slurp(testFilename);
+	ASSERT_EQ(testString, contents);
+
+	boost::filesystem::remove(testFilename);
+}
+
+TEST(UtilsTest, testReadLinesSynthetic) {
+	createAndWriteTestfile();
+	vector<string> lines = Utils::readLines(testFilename);
+	ASSERT_EQ(3, lines.size());
+	ASSERT_EQ("These are some", lines[0]);
+	ASSERT_EQ("Lines in a", lines[1]);
+	ASSERT_EQ("Textfile.", lines[2]);
+	boost::filesystem::remove(testFilename);
+}
 
 TEST(UtilsTest, testReadLines) {
     auto actLines = Utils::readLines("MiniBeispiel.DAT");
