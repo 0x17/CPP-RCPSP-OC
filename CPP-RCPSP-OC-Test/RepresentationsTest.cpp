@@ -12,3 +12,15 @@ TEST_F(LambdaTest, testOnePointCrossover) {
     Lambda expDaughter({ 0, 1, 2, 3, 4 });
     TestHelpers::arrayEquals(expDaughter.order, l->order);
 }
+
+TEST_F(LambdaTest, testNeighborhoodSwap) {
+    vector<int> orderBefore = l->order;
+    l->neighborhoodSwap(p->adjMx, 1);
+    for(int i=0; i<orderBefore.size(); i++) {
+        if(l->order[i] != orderBefore[i]) {
+            ASSERT_TRUE(i+1 < orderBefore.size());
+            ASSERT_TRUE(l->order[i] == orderBefore[i+1]);
+            ASSERT_TRUE(l->order[i+1] == orderBefore[i]);
+        }
+    }
+}
