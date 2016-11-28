@@ -25,4 +25,7 @@ SGSResult ParticleSwarm::solve() {
 		vector<int> al;
 		return al;
 	});
+
+	SGSResult res;
+	return res;
 }
