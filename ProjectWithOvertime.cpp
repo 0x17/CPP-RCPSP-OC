@@ -476,3 +476,10 @@ SGSResult ProjectWithOvertime::forwardBackwardIterations(const vector<int> &orde
 	result.numSchedulesGenerated = i+1;
 	return result;
 }
+
+SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(const vector<int> &order, const vector<float> &tau, bool robust) const {
+	SGSResult res = serialSGSTimeWindowArbitrary(order, tau, robust);
+	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
+	fbres.numSchedulesGenerated += res.numSchedulesGenerated;
+	return fbres;
+}

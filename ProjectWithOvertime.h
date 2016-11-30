@@ -65,6 +65,7 @@ public:
 	SGSResult serialSGSWithForwardBackwardImprovement(const vector<int>& order, const Matrix<int>& z, bool robust = false) const;
 
     SGSResult serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau, bool robust = false) const;
+	SGSResult serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(const vector<int> &order, const vector<float> &tau, bool robust = false) const;
 
 	vector<int> earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const;
 
