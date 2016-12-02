@@ -95,13 +95,26 @@ void Utils::spit(const string s, const string filename) {
     }
 }
 
-list<string> Utils::filenamesInDirWithExt(const string dir, const string ext) {
+list<string> Utils::filenamesInDir(const string& dir) {
 	list<string> fnames;
 	fs::path p(dir);
-	for(auto it = fs::directory_iterator(p); it != fs::directory_iterator(); ++it) {
-        auto entry = *it;
-        string filename = entry.path().string();
-        if(fs::is_regular_file(entry) && algo::ends_with(filename, ext))
+	for (auto it = fs::directory_iterator(p); it != fs::directory_iterator(); ++it) {
+		auto entry = *it;
+		string filename = entry.path().string();
+		if (fs::is_regular_file(entry))
+			fnames.push_back(filename);
+
+	}
+	return fnames;
+}
+
+list<string> Utils::filenamesInDirWithExt(const string& dir, const string& ext) {
+	list<string> fnames;
+	fs::path p(dir);
+	for (auto it = fs::directory_iterator(p); it != fs::directory_iterator(); ++it) {
+		auto entry = *it;
+		string filename = entry.path().string();
+		if (fs::is_regular_file(entry) && algo::ends_with(filename, ext))
 			fnames.push_back(filename);
 
 	}
@@ -189,5 +202,41 @@ namespace Utils {
 	                                                                                                                        traceobj(traceobj),
 	                                                                                                                        outPath(out_path),
 																															threadCount(thread_count) {
+	}
+
+	void partitionDirectory(const string& dirPath, int numPartitions, const string& infix) {
+		if(!boost::filesystem::exists(dirPath)) {
+			LOG_W("Unable to partition directory " + dirPath + ", it does not exist!");
+		}
+
+		char sep = boost::filesystem::path::preferred_separator;
+		list<string> filenames = filenamesInDir(dirPath);
+
+		boost::filesystem::path dirPrefix = boost::filesystem::path(dirPath).remove_trailing_separator();
+
+		auto directoryNameForIx = [&dirPrefix, &infix](int index) {
+			return dirPrefix.string() + infix + to_string(index);
+		};
+
+		auto creatDirForIx = [&directoryNameForIx](int index) {
+			boost::filesystem::create_directory(directoryNameForIx(index));
+		};
+
+		int fileCount = static_cast<int>(filenames.size());
+		int partitionSize = static_cast<int>(ceil(static_cast<double>(fileCount) / static_cast<double>(numPartitions)));
+
+		int ctr = 0, partitionIx = 1;	
+
+		creatDirForIx(partitionIx);		
+
+		for(string filename : filenames) {
+			if(ctr >= partitionSize) {
+				partitionIx++;
+				ctr = 0;
+				creatDirForIx(partitionIx);
+			}
+			boost::filesystem::copy(filename, directoryNameForIx(partitionIx) + sep + boost::filesystem::path(filename).stem().string());
+			ctr++;
+		}
 	}
 }

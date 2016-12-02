@@ -124,7 +124,8 @@ namespace Utils {
 		return l;
     }
 
-	list<string> filenamesInDirWithExt(const string dir, const string ext);
+	list<string> filenamesInDir(const string &dir);
+	list<string> filenamesInDirWithExt(const string& dir, const string& ext);
 
     class Tracer {
         ofstream f;
@@ -180,6 +181,8 @@ namespace Utils {
 
 		BasicSolverParameters(double time_limit, int iter_limit, bool traceobj, const string& out_path, int thread_count);
 	};
+
+	void partitionDirectory(const string& dirPath, int numPartitions, const string& infix = "_");
 }
 
 #endif //SSGS_UTILS_H

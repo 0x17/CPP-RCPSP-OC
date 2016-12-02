@@ -18,7 +18,7 @@ BranchAndBound::~BranchAndBound() {
 
 vector<int> BranchAndBound::solve(bool seedWithGA, bool traceobj, string outPath) {
     if(traceobj && tr == nullptr) {
-        tr = new Utils::Tracer(outPath + "BranchAndBoundTrace_" + p.instanceName);
+        tr = new Utils::Tracer(getTraceFilename(outPath, p.instanceName));
     }
 
     //lupdate = chrono::system_clock::now();
@@ -296,3 +296,6 @@ void BranchAndBound::solvePath(const string path) {
     outFile.close();
 }
 
+string BranchAndBound::getTraceFilename(const string& outPath, const string& instanceName) {
+	return outPath + "BranchAndBoundTrace_" + instanceName;
+}

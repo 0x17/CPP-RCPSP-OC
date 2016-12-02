@@ -50,6 +50,8 @@ public:
 
 	vector<int> solve(SolverParams params);
 
+	static string traceFilenameForListModel(const string& outPath, int lsIndex, const string& instanceName);
+
 private:
 	void buildModel();
 	void applyParams(SolverParams &params);

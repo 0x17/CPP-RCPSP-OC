@@ -125,8 +125,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Boost\include\boost-1_59;C:\localsolver_6_0\include;C:\Users\a.schnabel\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\googletest\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Users\Andre\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\googletest\include</IncludePath>
-    <LibraryPath>C:\Boost\lib;C:\localsolver_6_0\bin;C:\Users\a.schnabel\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;C:\Users\Andre\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\lib</LibraryPath>
+    <IncludePath>C:\Boost\include\boost-1_59;C:\localsolver_6_5\include;C:\Users\a.schnabel\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\googletest\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Users\Andre\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\googletest\include</IncludePath>
+    <LibraryPath>C:\Boost\lib;C:\localsolver_6_5\bin;C:\Users\a.schnabel\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;C:\Users\Andre\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>

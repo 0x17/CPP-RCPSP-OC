@@ -27,6 +27,10 @@ lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 SolverParams::SolverParams(double _tlimit, int _ilimit): BasicSolverParameters(_tlimit, _ilimit, false, "LocalSolverNative_", 1), seed(0), verbosityLevel(2), solverIx(0) {
 }
 
+string ListModel::traceFilenameForListModel(const string& outPath, int lsIndex, const string& instanceName) {
+	return outPath + "LocalSolverNative" + to_string(lsIndex) + "Trace_" + instanceName;
+}
+
 ListModel::ListModel(ProjectWithOvertime& _p, SchedulingNativeFunction *_decoder) : p(_p), decoder(_decoder), listElems(_p.numJobs) {
 }
 
@@ -41,7 +45,7 @@ vector<int> ListModel::solve(SolverParams params) {
 	buildModel();
 	applyParams(params);
     if(params.traceobj) {
-        tr = new Utils::Tracer(params.outPath + "LocalSolverNative"+to_string(params.solverIx)+"Trace_" + p.instanceName);
+        tr = new Utils::Tracer(traceFilenameForListModel(params.outPath, params.solverIx, p.instanceName));
 		cback = new TraceCallback(*tr);
         //ls.addCallback(CT_TimeTicked, cback);
 		decoder->setTracer(tr);

@@ -14,6 +14,8 @@ namespace Main {
 	void commandLineRunner(int argc, char * argv[]);
 	int computeMinMaxMakespanDifference(ProjectWithOvertime &p);
 	void convertArgFileToLSP(int argc, const char * argv[]);
+	bool instanceAlreadySolvedInResultFile(const string& coreName, const string& resultFilename);
+	void purgeOldTraceFile(const string &traceFilename);
 
 	namespace Testing {
         void fixedScheduleLimitSolveTimesForProjects();
@@ -86,6 +88,23 @@ int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
 	return maxMs - minMs;
 }
 
+bool Main::instanceAlreadySolvedInResultFile(const string& coreName, const string& resultFilename) {
+	for(string line : Utils::readLines(resultFilename)) {
+		if (boost::starts_with(line, coreName)) {
+			LOG_W("Instance " + coreName + " is already solved in result file " + resultFilename + ", skipping result recomputation!");
+			return true;
+		}
+	}
+	return false;
+}
+
+void Main::purgeOldTraceFile(const string &traceFilename) {
+	if (boost::filesystem::exists(traceFilename)) {
+		LOG_W("Found old trace file " + traceFilename + ", deleting it!");
+		boost::filesystem::remove(traceFilename);
+	}
+}
+
 void Main::commandLineRunner(int argc, char * argv[]) {
     if(argc >= 4) {
 		vector<int> sts;
@@ -110,22 +129,28 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 
 		if(!solMethod.compare("BranchAndBound")) {
             BranchAndBound b(p, timeLimit, iterLimit);
-            sts = b.solve(false, traceobj, outPath);
-            outFn += "BranchAndBoundResults.txt";
+			outFn += "BranchAndBoundResults.txt";
+			if(instanceAlreadySolvedInResultFile(coreName, outFn)) return;
+			purgeOldTraceFile(BranchAndBound::getTraceFilename(outPath, p.instanceName));
+            sts = b.solve(false, traceobj, outPath);			
         } else if(boost::starts_with(solMethod, "GA")) {
 			int gaIndex = stoi(solMethod.substr(2, 1));
 			int variant = (gaIndex == 0 && solMethod.length() == 4) ? stoi(solMethod.substr(3, 1)) : 0;
-			sts = Runners::runGeneticAlgorithmWithIndex(p, { gaIndex, variant, timeLimit, iterLimit, traceobj, outPath });
-            outFn += "GA" + to_string(gaIndex) + "Results.txt";
+			outFn += "GA" + to_string(gaIndex) + "Results.txt";
+			if (instanceAlreadySolvedInResultFile(coreName, outFn)) return;
+			//purgeOldTraceFile(traceFilenameForGeneticAlgorithm(outPath, ))
+			sts = Runners::runGeneticAlgorithmWithIndex(p, { gaIndex, variant, timeLimit, iterLimit, traceobj, outPath });            
 		}
 		else if (!solMethod.compare("LocalSolver")) {
-			sts = LSSolver::solve(p, timeLimit, iterLimit, traceobj, outPath);
 			outFn += "LocalSolverResults.txt";
+			sts = LSSolver::solve(p, timeLimit, iterLimit, traceobj, outPath);			
 		} else if(boost::starts_with(solMethod, "LocalSolverNative")) {
 			int lsnIndex = stoi(solMethod.substr(17, 1));
 			int variant = (lsnIndex == 0 && solMethod.length() == 19) ? stoi(solMethod.substr(18, 1)) : 0;
-			sts = Runners::runLocalSolverModelWithIndex(p, { lsnIndex, variant, timeLimit, iterLimit, traceobj, outPath });
 			outFn += "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
+			if (instanceAlreadySolvedInResultFile(coreName, outFn)) return;
+			purgeOldTraceFile(ListModel::traceFilenameForListModel(outPath, lsnIndex, p.instanceName));
+			sts = Runners::runLocalSolverModelWithIndex(p, { lsnIndex, variant, timeLimit, iterLimit, traceobj, outPath });			
         }  else if(!solMethod.compare("Gurobi")) {
 #ifndef DISABLE_GUROBI
 			GurobiSolver::Options opts;
@@ -134,12 +159,14 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			opts.iterLimit = (iterLimit == -1.0) ? opts.iterLimit : iterLimit;
 			opts.threadCount = 4;
 			GurobiSolver gsolver(p, opts);
+			outFn += "GurobiResults.txt";
+			if (instanceAlreadySolvedInResultFile(coreName, outFn)) return;
+			purgeOldTraceFile(GurobiSolver::traceFilenameForInstance(outPath, p.instanceName));
 			auto res = gsolver.solve();
 			if(res.optimal) {
 				Utils::spitAppend(coreName + "\n", "GurobiOptimals.txt");
 			}
-			sts = res.sts;
-			outFn += "GurobiResults.txt";
+			sts = res.sts;			
 #endif
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");

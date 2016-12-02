@@ -21,6 +21,8 @@ public:
 
     static void solvePath(const string path);
 
+	static string getTraceFilename(const string& outPath, const string& instanceName);
+
 private:
 	Stopwatch sw;
 	ProjectWithOvertime &p;

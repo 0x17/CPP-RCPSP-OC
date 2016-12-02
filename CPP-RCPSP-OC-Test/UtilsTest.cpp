@@ -218,6 +218,31 @@ TEST(UtilsTest, testFilenamesInDirWithExt) {
     list<string> expFnames = { "MiniBeispiel.DAT", "QBWLBeispiel.DAT" };
 	auto expFnamesRplced = Utils::mapLst<string(string), string, string>(removeWhitespace, expFnames);
     TestHelpers::listEquals(expFnamesRplced, fnames);
+
+	list<string> expFnamesCores = {
+		"FixedDeadlineModels", "ListModel", "NaiveModels", "OvertimeBoundModels", "TimeWindowModels"
+	};
+	const string dirName = "LSModels";
+	fnames = Utils::filenamesInDirWithExt(dirName, ".cpp");	
+	ASSERT_EQ(5, fnames.size());
+	for(string fname : fnames) {
+		ASSERT_TRUE(boost::ends_with(fname, ".cpp"));
+	}
+
+}
+
+TEST(UtilsTest, testFilenamesInDir) {
+	string dirName = "LSModels";
+	char sep = boost::filesystem::path::preferred_separator;
+	auto fnames = Utils::filenamesInDir(dirName);
+	ASSERT_EQ(10, fnames.size());
+	list<string> expFnamesCores = {
+		"FixedDeadlineModels", "ListModel", "NaiveModels", "OvertimeBoundModels", "TimeWindowModels"
+	};
+	for(string expCore : expFnamesCores) {
+		ASSERT_TRUE(std::find(fnames.begin(), fnames.end(), dirName + sep + expCore + ".cpp") != fnames.end());
+		ASSERT_TRUE(std::find(fnames.begin(), fnames.end(), dirName + sep + expCore + ".h") != fnames.end());
+	}
 }
 
 TEST(UtilsTest, testMapVec) {
@@ -234,4 +259,38 @@ TEST(UtilsTest, testMapLst) {
 	auto actualApplied = Utils::mapLst<int(int), int, int>([](int x) { return x * 2; }, nums);
 	TestHelpers::listEquals(doubled, actualApplied);
 	ASSERT_EQ(1, nums.front());
+}
+
+TEST(UtilsTest, testPartitionDirectory) {
+	char sep = boost::filesystem::path::preferred_separator;
+	string tmpDir = "TMP_DIR";
+
+	boost::filesystem::create_directory(tmpDir);
+	for(int ix=0; ix<40; ix++)
+		Utils::spit("...", tmpDir + sep + "file"+to_string(ix+1)+".txt");
+
+	Utils::partitionDirectory(tmpDir, 4, "_");
+
+	vector<string> expDirectories = {
+		"TMP_DIR_1",
+		"TMP_DIR_2",
+		"TMP_DIR_3",
+		"TMP_DIR_4"
+	};
+
+	for(int i=0; i<4; i++) {
+		/*for(int j=0; j<10; j++) {
+			ASSERT_TRUE(boost::filesystem::exists(expDirectories[i] + sep + "file" + to_string(j+1) + ".txt"));
+		}*/
+		ASSERT_EQ(10, Utils::filenamesInDir(expDirectories[i]).size());
+	}
+
+	for (string expDir : expDirectories) {
+		ASSERT_TRUE(boost::filesystem::exists(expDir));
+	}
+
+	boost::filesystem::remove_all(tmpDir);
+	for(string expDir : expDirectories) {
+		boost::filesystem::remove_all(expDir);
+	}
 }

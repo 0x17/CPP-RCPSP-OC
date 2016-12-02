@@ -24,6 +24,10 @@ enum class SelectionMethod {
 	DUEL
 };
 
+inline string traceFilenameForGeneticAlgorithm(const string &outPath, const string &gaName, const string &instanceName) {
+	return outPath + "GA" + gaName + "Trace_" + instanceName;
+}
+
 struct GAParameters : Utils::BasicSolverParameters {
 	GAParameters();
 	void parseFromString(string s);
@@ -84,7 +88,7 @@ struct FitnessResult {
 			: value(value),
 			  numSchedulesGenerated(numSchedulesGenerated) {}
 
-	FitnessResult() {}
+	FitnessResult() : value(0.0f), numSchedulesGenerated(0) {}
 };
 
 template<class Individual>
@@ -146,7 +150,7 @@ template<class Individual>
 void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
     params = _params;
     if(params.traceobj && tr == nullptr) {
-        tr = new Utils::Tracer(params.outPath + "GA"+name+"Trace_" + p.instanceName);
+        tr = new Utils::Tracer(traceFilenameForGeneticAlgorithm(params.outPath, name, p.instanceName));
     }
 }
 

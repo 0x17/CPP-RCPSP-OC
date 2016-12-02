@@ -10,7 +10,7 @@ GurobiSolver::Options::Options() :
 	displayInterval(1) {
 }
 
-GurobiSolver::CustomCallback::CustomCallback(string outPath, string instanceName) : tr(outPath + "GurobiTrace_" + instanceName) {
+GurobiSolver::CustomCallback::CustomCallback(string outPath, string instanceName) : tr(traceFilenameForInstance(outPath, instanceName)) {
 	sw.start();
 }
 
@@ -183,4 +183,7 @@ GurobiSolver::Result GurobiSolver::solve() {
 	return {sts, false};
 }
 
+string GurobiSolver::traceFilenameForInstance(const string& outPath, const string& instanceName) {
+	return outPath + "GurobiTrace_" + instanceName;
+}
 #endif

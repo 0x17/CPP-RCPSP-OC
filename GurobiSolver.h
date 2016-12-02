@@ -32,6 +32,8 @@ public:
 
 	Result solve();
 
+	static string traceFilenameForInstance(const string& outPath, const string& instanceName);
+
 private:
 	class CustomCallback : public GRBCallback {
 	public:
