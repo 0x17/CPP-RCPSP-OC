@@ -29,6 +29,7 @@ namespace Main {
 
 int main(int argc, char * argv[]) {
 	Main::commandLineRunner(argc, argv);
+	//Utils::partitionDirectory("j120", 60);
 
     //string projFilename = "../../Projekte/j30/j3013_8.sm";
     //Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_BETA, 100000);
@@ -89,6 +90,8 @@ int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
 }
 
 bool Main::instanceAlreadySolvedInResultFile(const string& coreName, const string& resultFilename) {
+	if (!boost::filesystem::exists(resultFilename)) return false;
+
 	for(string line : Utils::readLines(resultFilename)) {
 		if (boost::starts_with(line, coreName)) {
 			LOG_W("Instance " + coreName + " is already solved in result file " + resultFilename + ", skipping result recomputation!");
@@ -126,6 +129,8 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 		string outFn = outPath;
 		boost::filesystem::create_directory(boost::filesystem::path(outPath));
 		string coreName = Project::coreInstanceName(parentPath, string(argv[4]));
+
+		srand(23);
 
 		if(!solMethod.compare("BranchAndBound")) {
             BranchAndBound b(p, timeLimit, iterLimit);

@@ -207,6 +207,7 @@ namespace Utils {
 	void partitionDirectory(const string& dirPath, int numPartitions, const string& infix) {
 		if(!boost::filesystem::exists(dirPath)) {
 			LOG_W("Unable to partition directory " + dirPath + ", it does not exist!");
+			return;
 		}
 
 		char sep = boost::filesystem::path::preferred_separator;
@@ -235,7 +236,7 @@ namespace Utils {
 				ctr = 0;
 				creatDirForIx(partitionIx);
 			}
-			boost::filesystem::copy(filename, directoryNameForIx(partitionIx) + sep + boost::filesystem::path(filename).stem().string());
+			boost::filesystem::copy(filename, directoryNameForIx(partitionIx) + sep + boost::filesystem::path(filename).filename().string());
 			ctr++;
 		}
 	}
