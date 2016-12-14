@@ -240,4 +240,16 @@ namespace Utils {
 			ctr++;
 		}
 	}
+
+	vector<int> deserializeSchedule(int njobs, const string &filename) {
+		vector<int> sts(njobs);
+		auto lines = Utils::readLines(filename);
+		for(auto line : lines) {
+			if(!boost::contains(line, "->")) continue;
+			int j, stj;
+			std::sscanf(line.c_str(), "%d->%d", &j, &stj);
+			sts[j-1] = stj;
+		}
+		return sts;
+	}
 }

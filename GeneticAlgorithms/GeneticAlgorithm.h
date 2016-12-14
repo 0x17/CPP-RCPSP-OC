@@ -258,11 +258,21 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 
 	LOG_I("Computing initial population");
 	FitnessResult fres;
+	pair<Individual, float> tmpIndiv;
     for(int i=0; i<params.popSize*2; i++) {
         pop[i].first = init(i);
 		fres = fitness(pop[i].first);
 		pop[i].second = i < params.popSize ? -fres.value : 0.0f;
 		scheduleCount += fres.numSchedulesGenerated;
+
+		if(pop[i].second < pop[0].second) {
+			tmpIndiv = pop[0];
+			pop[0] = pop[i];
+			pop[i] = tmpIndiv;
+			if(tr != nullptr) {
+				tr->intervalTrace(-pop[0].second);
+			}
+		}
     }	
 
     float lastBestVal = numeric_limits<float>::max();

@@ -11,6 +11,8 @@
 #include <boost/format.hpp>
 #include <fstream>
 #include <chrono>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include "Stopwatch.h"
 
 using namespace std;
@@ -183,6 +185,8 @@ namespace Utils {
 	};
 
 	void partitionDirectory(const string& dirPath, int numPartitions, const string& infix = "_");
+
+	vector<int> deserializeSchedule(int njobs, const string &filename);
 }
 
 #endif //SSGS_UTILS_H

@@ -26,6 +26,7 @@
     <ClCompile Include="GeneticAlgorithms\Sampling.cpp" />
     <ClCompile Include="GeneticAlgorithms\TimeWindow.cpp" />
     <ClCompile Include="GurobiSolver.cpp" />
+    <ClCompile Include="Libraries\json11.cpp" />
     <ClCompile Include="LSModels\FixedDeadlineModels.cpp" />
     <ClCompile Include="LSModels\ListModel.cpp" />
     <ClCompile Include="LSModels\NaiveModels.cpp" />
@@ -36,6 +37,7 @@
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="ProjectWithOvertime.cpp" />
     <ClCompile Include="Runners.cpp" />
+    <ClCompile Include="Serialization.cpp" />
     <ClCompile Include="Stopwatch.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Visualization.cpp" />
@@ -49,6 +51,7 @@
     <ClInclude Include="GeneticAlgorithms\Sampling.h" />
     <ClInclude Include="GeneticAlgorithms\TimeWindow.h" />
     <ClInclude Include="GurobiSolver.h" />
+    <ClInclude Include="Libraries\json11.hpp" />
     <ClInclude Include="LSModels\FixedDeadlineModels.h" />
     <ClInclude Include="LSModels\ListModel.h" />
     <ClInclude Include="LSModels\NaiveModels.h" />
@@ -59,6 +62,7 @@
     <ClInclude Include="Project.h" />
     <ClInclude Include="ProjectWithOvertime.h" />
     <ClInclude Include="Runners.h" />
+    <ClInclude Include="Serialization.h" />
     <ClInclude Include="Stopwatch.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Visualization.h" />

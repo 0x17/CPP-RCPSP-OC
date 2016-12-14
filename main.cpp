@@ -27,8 +27,20 @@ namespace Main {
 	};
 }
 
+void computeScheduleAttributes(string smfilename) {
+	vector<string> resfiles = {"result_sts_0.txt", "result_sts_1.txt", "result_sts_2.txt", "result_sts_oc.txt"};
+	ProjectWithOvertime p(smfilename);
+	for(auto resfile : resfiles) {
+		vector<int> sts = Utils::deserializeSchedule(p.numJobs, resfile);
+		cout << resfile << " profit=" << p.calcProfit(sts) << ", makespan=" << p.makespan(sts) << endl;
+	}
+}
+
 int main(int argc, char * argv[]) {
+	//computeScheduleAttributes("PaperBeispiel.sm");
+
 	Main::commandLineRunner(argc, argv);
+
 	//Utils::partitionDirectory("j120", 60);
 
     //string projFilename = "../../Projekte/j30/j3013_8.sm";
