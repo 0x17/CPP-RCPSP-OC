@@ -40,6 +40,7 @@ int main(int argc, char * argv[]) {
 	//computeScheduleAttributes("PaperBeispiel.sm");
 
 	Main::commandLineRunner(argc, argv);
+	//Main::Testing::testGurobi();
 
 	//Utils::partitionDirectory("j120", 60);
 
@@ -174,7 +175,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			opts.outPath = outPath;
 			opts.timeLimit = (timeLimit == -1.0) ? opts.timeLimit : timeLimit;
 			opts.iterLimit = (iterLimit == -1.0) ? opts.iterLimit : iterLimit;
-			opts.threadCount = 4;
+			opts.threadCount = 1;
 			GurobiSolver gsolver(p, opts);
 			outFn += "GurobiResults.txt";
 			if (instanceAlreadySolvedInResultFile(coreName, outFn)) return;
@@ -200,15 +201,16 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 
 #ifndef DISABLE_GUROBI
 void Main::Testing::testGurobi() {
-	string projFilename = "QBWLBeispiel.DAT";
+	string projFilename = "../../Projekte/j30/j3027_4.sm";
 	ProjectWithOvertime p(projFilename);
 	GurobiSolver::Options opts;
+	opts.traceobj = true;
 	opts.useSeedSol = true;
 	opts.displayInterval = 1;
 	opts.gap = 0.0;
-	opts.outPath = "";
-	opts.timeLimit = GRB_INFINITY;
-	opts.threadCount = 0;
+	opts.outPath = "THISISNOTFORREAL";
+	opts.timeLimit = 60; //GRB_INFINITY;
+	opts.threadCount = 1;
 	GurobiSolver solver(p, opts);
 	auto res = solver.solve();
 }

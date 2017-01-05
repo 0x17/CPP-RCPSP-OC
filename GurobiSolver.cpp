@@ -15,8 +15,9 @@ GurobiSolver::CustomCallback::CustomCallback(string outPath, string instanceName
 }
 
 void GurobiSolver::CustomCallback::callback() {
-	if(where == GRB_CB_MIP)
+	if (where == GRB_CB_MIP) {
 		tr.trace(/*getDoubleInfo(GRB_CB_RUNTIME)*/ sw.look(), static_cast<float>(getDoubleInfo(GRB_CB_MIP_OBJBST)));
+	}
 }
 
 GurobiSolver::Result::Result(vector<int> sts, bool optimal): sts(sts), optimal(optimal) {}
@@ -145,11 +146,11 @@ void GurobiSolver::setupFeasibleMipStart() {
 	});
 
 	p.eachResPeriodBoundedConst([&](int r, int t) {
-		int z = 0;
+		int cumDemand = 0;
 		p.eachJobConst([&](int j) {
-			z += sts[j] + 1 >= t && t <= sts[j] + p.durations[j] ? p.demands(j,r) : 0;
+			cumDemand += sts[j] + 1 < t && t <= sts[j] + p.durations[j] ? p.demands(j,r) : 0;
 		});
-		zrt(r, t).set(GRB_DoubleAttr_Start, z);
+		zrt(r, t).set(GRB_DoubleAttr_Start, max(0, cumDemand-p.capacities[r]));
 	});
 }
 
