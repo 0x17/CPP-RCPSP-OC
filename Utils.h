@@ -187,6 +187,17 @@ namespace Utils {
 	void partitionDirectory(const string& dirPath, int numPartitions, const string& infix = "_");
 
 	vector<int> deserializeSchedule(int njobs, const string &filename);
+
+	vector<string> splitLines(const string& s);
+
+	template<class T, class Pred>
+	int indexOf(vector<T> elems, Pred p) {
+		for(int i=0; i<elems.size(); i++) {
+			if (p(elems[i]))
+				return i;
+		}
+		return -1;
+	}
 }
 
 #endif //SSGS_UTILS_H

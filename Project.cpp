@@ -10,28 +10,33 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 
-Project::Project(const string filename) : name(filename), instanceName(boost::filesystem::path(filename).stem().string()) {
-    auto lines = Utils::readLines(filename);
+Project::Project(const string &filename) : Project(boost::filesystem::path(filename).stem().string(), Utils::readLines(filename)) {}
 
-    numJobs = Utils::extractIntFromStr(lines[5], "jobs \\(incl. supersource\\/sink \\):  (\\d+)");
+Project::Project(const string& projectName, const string& s) : Project(projectName, Utils::splitLines(s)) {}
+
+Project::Project(const string& projectName, const vector<string>& lines) : name(projectName), instanceName(projectName) {
+	numJobs = Utils::extractIntFromStr(lines[5], "jobs \\(incl. supersource\\/sink \\):  (\\d+)");
 	lastJob = numJobs - 1;
-    numRes = Utils::extractIntFromStr(lines[8], "  - renewable                 :  (\\d+)   R");
+	numRes = Utils::extractIntFromStr(lines[8], "  - renewable                 :  (\\d+)   R");
 
-    parsePrecedenceRelation(lines);
-    parseDurationsAndDemands(lines);
+	parsePrecedenceRelation(lines);
+	parseDurationsAndDemands(lines);
 
-    if(USE_DISPOSITION_METHOD)
-        reorderDispositionMethod();
+	if(USE_DISPOSITION_METHOD)
+		reorderDispositionMethod();
 
 	T = accumulate(durations.begin(), durations.end(), 0);
-    numPeriods = T+1;
+	numPeriods = T + 1;
 
-    capacities = Utils::extractIntsFromLine(lines[18+numJobs*2+4+3]);
+	{
+		int capacitiesOffset = Utils::indexOf(lines, [](string line) { return boost::starts_with(line, "RESOURCEAVAILABILITIES"); }) + 2;
+		capacities = Utils::extractIntsFromLine(lines[capacitiesOffset]);
+	}
 
 	topOrder = computeTopOrder();
 	revTopOrder = computeReverseTopOrder();
 
-    computeELSFTs();
+	computeELSFTs();
 
 	heuristicMaxMs = makespan(serialSGS(topOrder));
 }
@@ -222,9 +227,10 @@ vector<int> Project::serialSGSCore(const vector<int>& order, Matrix<int>& resRem
 }
 
 void Project::parsePrecedenceRelation(const vector<string> &lines) {
+	int precOffset = Utils::indexOf(lines, [](string line) { return boost::starts_with(line, "PRECEDENCE RELATIONS"); }) + 2;
     adjMx.resize(numJobs, numJobs);
     EACH_JOB(
-        auto nums = Utils::extractIntsFromLine(lines[18+j]);
+        auto nums = Utils::extractIntsFromLine(lines[precOffset+j]);
         for(int i=3; i<nums.size(); i++)
             adjMx(j,nums[i]-1) = true;
     )
@@ -233,8 +239,9 @@ void Project::parsePrecedenceRelation(const vector<string> &lines) {
 void Project::parseDurationsAndDemands(const vector<string> &lines) {
     durations.resize(numJobs);
     demands.resize(numJobs, numRes);
+	int offsetOfReqDur = Utils::indexOf(lines, [](string line) { return boost::starts_with(line, "REQUESTS/DURATIONS:"); }) + 3;
     EACH_JOB(
-        auto nums = Utils::extractIntsFromLine(lines[18+numJobs+4+ j]);
+        auto nums = Utils::extractIntsFromLine(lines[offsetOfReqDur+j]);
         durations[j] = nums[2];
         EACH_RES(demands(j,r) = nums[3+r])
     )

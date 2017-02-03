@@ -29,8 +29,7 @@ TEST_F(ProjectTest, testConstructor) {
 
     ASSERT_EQ(1, p->capacities.size());
     ASSERT_EQ(2, p->capacities[0]);
-
-    ASSERT_EQ(p->T, 6);
+    ASSERT_EQ(6, p->T);
 }
 
 TEST_F(ProjectTest, testSerialSGS) {

@@ -28,6 +28,18 @@ public:
                 data[i*n+j] = rows[i][j];
     }
 
+	enum class Mode {
+	    COLUMN_VECTOR,
+		ROW_VECTOR
+    };
+
+	Matrix(Mode m, const std::vector<T> &vec)
+		: Matrix(
+			m == Mode::COLUMN_VECTOR ? static_cast<int>(vec.size()) : 1,
+			m == Mode::COLUMN_VECTOR ? 1 : static_cast<int>(vec.size()),
+			[&](int i, int j) { return vec[m == Mode::COLUMN_VECTOR ? i : j]; }) {
+    }
+
     Matrix() : m(0), n(0) {}
 
     Matrix(int _m, int _n) : m(_m), n(_n), data(_m*_n) {}

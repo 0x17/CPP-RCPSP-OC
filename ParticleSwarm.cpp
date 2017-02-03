@@ -1,3 +1,5 @@
+// TODO: Implement full method! Follow original paper of pseudo PSO!
+
 #include "ParticleSwarm.h"
 #include "GeneticAlgorithms/Sampling.h"
 #include "ProjectWithOvertime.h"

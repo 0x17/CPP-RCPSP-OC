@@ -7,6 +7,7 @@
 
 #include "Utils.h"
 #include "Matrix.h"
+#include <boost/filesystem/path.hpp>
 
 #define EACH_COMMON(ix, ubExcl, code) \
     for(int ix=0; ix<ubExcl; ix++) {\
@@ -57,7 +58,7 @@ struct SGSResult {
 
 class Project {
 public:
-	const string name, instanceName;
+	string name, instanceName;
 
     int numJobs, numRes, numPeriods, T, lastJob;
     Matrix<char> adjMx;
@@ -72,8 +73,9 @@ public:
 
 	enum { UNSCHEDULED = -1 };
 
-	explicit Project(const string filename);
-    virtual ~Project() {}
+	explicit Project(const string &filename);
+	Project(const string& projectName, const string& s);
+	virtual ~Project() {}
 
 	vector<int> serialSGS(const vector<int>& order) const;
 	pair<vector<int>, Matrix<int>> serialSGSForPartial(const vector<int> &sts, const vector<int> &order, Matrix<int> &resRem) const;
@@ -174,6 +176,8 @@ protected:
 	void shiftScheduleLeftBy(int offset, vector<int> &sts, Matrix<int> &resRem) const;
 
 	vector<int> stsToFts(const vector<int>& sts) const;
+
+	Project(const string &projectName, const vector<string>& lines);
 
 private:
     void parsePrecedenceRelation(const vector<string> &lines);

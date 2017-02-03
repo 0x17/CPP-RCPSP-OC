@@ -252,4 +252,10 @@ namespace Utils {
 		}
 		return sts;
 	}
+
+	vector<string> splitLines(const string& s) {
+		vector<string> lines;
+		split(lines, s, boost::is_any_of("\n"));
+		return lines;
+	}
 }

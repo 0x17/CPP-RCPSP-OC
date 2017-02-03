@@ -8,18 +8,23 @@
 #include "ProjectWithOvertime.h"
 #include <boost/algorithm/clamp.hpp>
 
-ProjectWithOvertime::ProjectWithOvertime(string filename) :
-        Project(filename),
-        zmax(numRes),
-		zzero(numRes, 0),
-        kappa(numRes),
-        revenue(numPeriods) {
-    eachRes([&](int r) {
-		zmax[r] = capacities[r] / 2;
-        kappa[r] = 0.5f;
-    });
+ProjectWithOvertime::ProjectWithOvertime(const string &filename) :
+	ProjectWithOvertime(boost::filesystem::path(filename).stem().string(), Utils::readLines(filename)) {}
 
-    computeRevenueFunction();
+ProjectWithOvertime::ProjectWithOvertime(const string& projectName, const string& s) :
+	ProjectWithOvertime(projectName, Utils::splitLines(s)) {}
+
+ProjectWithOvertime::ProjectWithOvertime(const string& projectName, const vector<string>& lines) :
+	Project(projectName, lines),
+	zmax(numRes),
+	zzero(numRes, 0),
+	kappa(numRes),
+	revenue(numPeriods) {
+	eachRes([&](int r) {
+		zmax[r] = capacities[r] / 2;
+		kappa[r] = 0.5f;
+	});
+	computeRevenueFunction();
 }
 
 inline float ProjectWithOvertime::totalCosts(const Matrix<int> & resRem) const {

@@ -32,9 +32,9 @@ public:
     static void matrixEquals(Matrix<T> &expected, Matrix<T> &actual) {
         ASSERT_EQ(expected.getM(), actual.getM());
         ASSERT_EQ(expected.getN(), actual.getN());
-        for(int i=0; i<actual.getM(); i++)
-            for(int j=0; j<actual.getN(); j++)
-                ASSERT_EQ(expected(i, j), actual(i, j));
+		for (int i = 0; i < actual.getM(); i++)
+			for (int j = 0; j < actual.getN(); j++)
+				ASSERT_EQ(expected(i, j), actual(i, j)) << "i=" << i << ",j=" << j << std::endl;
     }
 };
 

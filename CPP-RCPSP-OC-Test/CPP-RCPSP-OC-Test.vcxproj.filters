@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Ressourcendateien">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="GeneticAlgorithms">
+      <UniqueIdentifier>{2a36b0c3-2577-41fd-bfd2-cd81abef2062}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LSModels">
+      <UniqueIdentifier>{18c70d1e-5e9e-426b-846f-788d1b081e8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{752c0294-0ac7-4a47-b57d-83419e788ac3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Visualization.cpp" />
+    <ClCompile Include="..\BranchAndBound.cpp" />
+    <ClCompile Include="..\Project.cpp" />
+    <ClCompile Include="..\ProjectWithOvertime.cpp" />
+    <ClCompile Include="..\Stopwatch.cpp" />
+    <ClCompile Include="..\Utils.cpp" />
+    <ClCompile Include="..\GeneticAlgorithms\FixedDeadline.cpp">
+      <Filter>GeneticAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GeneticAlgorithms\OvertimeBound.cpp">
+      <Filter>GeneticAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GeneticAlgorithms\Sampling.cpp">
+      <Filter>GeneticAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GeneticAlgorithms\TimeWindow.cpp">
+      <Filter>GeneticAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="testmain.cpp" />
+    <ClCompile Include="ProjectTest.cpp" />
+    <ClCompile Include="TestHelpers.cpp" />
+    <ClCompile Include="UtilsTest.cpp" />
+    <ClCompile Include="ProjectWithOvertimeTest.cpp" />
+    <ClCompile Include="SamplingTest.cpp" />
+    <ClCompile Include="..\GeneticAlgorithms\Representations.cpp">
+      <Filter>GeneticAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="RepresentationsTest.cpp" />
+    <ClCompile Include="..\LSModels\ListModel.cpp">
+      <Filter>LSModels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LSModels\NaiveModels.cpp">
+      <Filter>LSModels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LSModels\OvertimeBoundModels.cpp">
+      <Filter>LSModels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LSModels\TimeWindowModels.cpp">
+      <Filter>LSModels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LSModels\FixedDeadlineModels.cpp">
+      <Filter>LSModels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Runners.cpp" />
+    <ClCompile Include="..\Libraries\json11.cpp">
+      <Filter>Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Serialization.cpp" />
+    <ClCompile Include="PaperConsistencyTest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Visualization.h" />
+    <ClInclude Include="..\BranchAndBound.h" />
+    <ClInclude Include="..\matrix.h" />
+    <ClInclude Include="..\Project.h" />
+    <ClInclude Include="..\ProjectWithOvertime.h" />
+    <ClInclude Include="..\Stopwatch.h" />
+    <ClInclude Include="..\Utils.h" />
+    <ClInclude Include="..\GeneticAlgorithms\FixedDeadline.h">
+      <Filter>GeneticAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GeneticAlgorithms\GeneticAlgorithm.h">
+      <Filter>GeneticAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GeneticAlgorithms\OvertimeBound.h">
+      <Filter>GeneticAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GeneticAlgorithms\Sampling.h">
+      <Filter>GeneticAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GeneticAlgorithms\TimeWindow.h">
+      <Filter>GeneticAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectTest.h" />
+    <ClInclude Include="TestHelpers.h" />
+    <ClInclude Include="ProjectWithOvertimeTest.h" />
+    <ClInclude Include="..\GeneticAlgorithms\Representations.h">
+      <Filter>GeneticAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="RepresentationsTest.h" />
+    <ClInclude Include="..\LSModels\ListModel.h">
+      <Filter>LSModels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LSModels\NaiveModels.h">
+      <Filter>LSModels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LSModels\OvertimeBoundModels.h">
+      <Filter>LSModels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LSModels\TimeWindowModels.h">
+      <Filter>LSModels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LSModels\FixedDeadlineModels.h">
+      <Filter>LSModels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Runners.h" />
+    <ClInclude Include="..\Libraries\json11.hpp">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Serialization.h" />
+    <ClInclude Include="PaperConsistencyTest.h" />
+  </ItemGroup>
+</Project>

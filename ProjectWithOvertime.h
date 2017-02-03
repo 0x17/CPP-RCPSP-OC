@@ -19,7 +19,10 @@ public:
     vector<int> zmax, zzero;
 	vector<float> kappa, revenue;
 
-	explicit ProjectWithOvertime(string filename);
+	explicit ProjectWithOvertime(const string &filename);
+	ProjectWithOvertime(const string& projectName, const string& s);
+	ProjectWithOvertime(const string& projectName, const vector<string> &lines);
+
 	virtual ~ProjectWithOvertime() {}
 
 	float calcProfit(int makespan, const Matrix<int> &resRem) const;

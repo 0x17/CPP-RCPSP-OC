@@ -10,14 +10,13 @@
 
 class ProjectWithOvertimeTest : public testing::Test {
 protected:
-    ProjectWithOvertime *p = nullptr;
+	unique_ptr<ProjectWithOvertime> p;
 
     void SetUp() override {
-        p = new ProjectWithOvertime("MiniBeispiel.DAT");
+		p = make_unique<ProjectWithOvertime>("MiniBeispiel.DAT");
     }
 
     void TearDown() override {
-		if(p != nullptr) delete p;
     }
 
 };
