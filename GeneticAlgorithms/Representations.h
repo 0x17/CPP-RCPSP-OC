@@ -14,7 +14,7 @@ public:
     vector<int> order;
 
     Lambda(int numJobs);
-    Lambda(vector<int> _order);
+    Lambda(const vector<int> &_order);
     Lambda();
     virtual ~Lambda() {}
 
@@ -81,6 +81,7 @@ public:
 
     LambdaBeta(int numJobs);
     LambdaBeta() {}
+	LambdaBeta(const vector<int> &_order, const vector<int> &_beta) : Lambda(_order), beta(_beta) {}
     virtual ~LambdaBeta() {}
 
     virtual void inherit(Lambda &parent, int destIx, int srcIx) override;

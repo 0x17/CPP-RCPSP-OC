@@ -57,7 +57,7 @@ namespace Runners {
 		runFixedCapaGA,				// 3
 		runTimeVaryCapaGA,			// 4
 		runCompAltsGA,				// 5
-		runGoldenCutSearchGA,		// 6
+		runGoldenSectionSearchGA,	// 6
 		runFixedDeadlineGA			// 7
 	};
 
@@ -90,7 +90,7 @@ namespace Runners {
 	RUN_GA_FUNC_IMPL(runFixedCapaGA, FixedCapacityGA)
 	RUN_GA_FUNC_IMPL(runTimeVaryCapaGA, TimeVaryingCapacityGA)
 	RUN_GA_FUNC_IMPL(runCompAltsGA, CompareAlternativesGA)
-	RUN_GA_FUNC_IMPL(runGoldenCutSearchGA, GoldenCutSearchGA)
+	RUN_GA_FUNC_IMPL(runGoldenSectionSearchGA, GoldenSectionSearchGA)
 	RUN_GA_FUNC_IMPL(runFixedDeadlineGA, FixedDeadlineGA)
 
 

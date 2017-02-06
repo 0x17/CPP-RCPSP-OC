@@ -1,5 +1,6 @@
 #include "PaperConsistencyTest.h"
 #include "TestHelpers.h"
+#include "../GeneticAlgorithms/TimeWindow.h"
 
 const static string EXAMPLE_STR =
 		"************************************************************************\n"
@@ -117,12 +118,43 @@ TEST_F(PaperConsistencyTest, testRevenuesOfCustomers) {
 	ASSERT_EQ(15.0f, p->revenue[9]);
 }
 
-TEST_F(PaperConsistencyTest, testExampleScheduleFeasibility) {
-	vector<int> scheduleFigure1 = { 0, 0, 3, 3, 5, 5, 8, 10 };
-	vector<int> scheduleFigure2 = { 0, 0, 0, 3, 3, 5, 6, 8 };
-	vector<int> scheduleFigure3 = { 0, 0, 2, 3, 4, 5, 7, 9 };
+static vector<int> scheduleFigure1 = { 0, 0, 3, 3, 5, 5, 8, 10 };
+static vector<int> scheduleFigure2 = { 0, 0, 0, 3, 3, 5, 6, 8 };
+static vector<int> scheduleFigure3 = { 0, 0, 2, 3, 4, 5, 7, 9 };
 
+TEST_F(PaperConsistencyTest, testExampleScheduleFeasibility) {
 	ASSERT_TRUE(p->isScheduleFeasible(scheduleFigure1));
 	ASSERT_TRUE(p->isScheduleFeasible(scheduleFigure2));
 	ASSERT_TRUE(p->isScheduleFeasible(scheduleFigure3));
+}
+
+TEST_F(PaperConsistencyTest, testExampleScheduleCosts) {
+	ASSERT_EQ(0, p->totalCosts(scheduleFigure1));
+	ASSERT_EQ(20, p->totalCosts(scheduleFigure2));
+	ASSERT_EQ(10, p->totalCosts(scheduleFigure3));
+}
+
+TEST_F(PaperConsistencyTest, testLambdaCrossovers) {
+	Lambda mother({1,2,3,4,5,6});
+	Lambda father({1,3,5,2,4,6});
+	Lambda expDaughter({1,2,3,5,4,6});
+	Lambda daughter(6);
+	daughter.onePointCrossover(mother, father, 2);
+	ASSERT_EQ(expDaughter.order, daughter.order);
+}
+
+TEST_F(PaperConsistencyTest, testLambdaBetaCrossover) {
+	LambdaBeta mother({1,2,3,4,5,6}, {1,1,0,0,0,0});
+	LambdaBeta father({1,3,5,2,4,6}, {1,0,1,0,1,0});
+	LambdaBeta expDaughter({1,2,3,5,4,6},{1,1,0,1,1,0});
+	LambdaBeta daughter(6);
+	daughter.onePointCrossover(mother, father, 2);
+	ASSERT_EQ(expDaughter.order, daughter.order);
+	ASSERT_EQ(expDaughter.beta, daughter.beta);
+}
+
+TEST_F(PaperConsistencyTest, testLambdaZrCrossover) {
+}
+
+TEST_F(PaperConsistencyTest, testLambdaZrtCrossover) {
 }

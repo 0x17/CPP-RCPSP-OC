@@ -7,7 +7,7 @@
 
 Lambda::Lambda(int numJobs) : order(numJobs) {}
 
-Lambda::Lambda(vector<int> _order) : order(_order) {}
+Lambda::Lambda(const vector<int> &_order) : order(_order) {}
 
 Lambda::Lambda() {}
 

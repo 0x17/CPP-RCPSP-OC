@@ -54,7 +54,7 @@ public:
 
 	enum class DecoderType {
 		CompareAlternatives,
-		GoldenCutSearch
+		GoldenSectionSearch
 	};
 
 	ActivityListBasedGA(ProjectWithOvertime &_p, string name, TDecoder _decoder);
@@ -78,9 +78,9 @@ public:
 	CompareAlternativesGA(ProjectWithOvertime& _p);
 };
 
-class GoldenCutSearchGA : public ActivityListBasedGA {
+class GoldenSectionSearchGA : public ActivityListBasedGA {
 public:
-	GoldenCutSearchGA(ProjectWithOvertime& _p);
+	GoldenSectionSearchGA(ProjectWithOvertime& _p);
 };
 
 
