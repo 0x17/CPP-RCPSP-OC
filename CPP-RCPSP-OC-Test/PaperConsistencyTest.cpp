@@ -138,7 +138,7 @@ TEST_F(PaperConsistencyTest, testLambdaCrossovers) {
 	Lambda mother({1,2,3,4,5,6});
 	Lambda father({1,3,5,2,4,6});
 	Lambda expDaughter({1,2,3,5,4,6});
-	Lambda daughter(6);
+	Lambda daughter(p->numJobs);
 	daughter.onePointCrossover(mother, father, 2);
 	ASSERT_EQ(expDaughter.order, daughter.order);
 }
@@ -147,14 +147,27 @@ TEST_F(PaperConsistencyTest, testLambdaBetaCrossover) {
 	LambdaBeta mother({1,2,3,4,5,6}, {1,1,0,0,0,0});
 	LambdaBeta father({1,3,5,2,4,6}, {1,0,1,0,1,0});
 	LambdaBeta expDaughter({1,2,3,5,4,6},{1,1,0,1,1,0});
-	LambdaBeta daughter(6);
+	LambdaBeta daughter(p->numJobs);
 	daughter.onePointCrossover(mother, father, 2);
 	ASSERT_EQ(expDaughter.order, daughter.order);
 	ASSERT_EQ(expDaughter.beta, daughter.beta);
 }
 
 TEST_F(PaperConsistencyTest, testLambdaZrCrossover) {
+	LambdaZr mother({1,2,3,4,5,6}, {0});
+	LambdaZr father({1,3,5,2,4,6}, {1});
+	LambdaZr expDaughter({1,2,3,5,4,6}, {0});
+	LambdaZr daughter(p->numJobs, p->numRes);
+	daughter.independentOnePointCrossovers(mother, father, 2, 0);
 }
 
 TEST_F(PaperConsistencyTest, testLambdaZrtCrossover) {
+}
+
+TEST_F(PaperConsistencyTest, testDelayWithoutOvertimeIncrease) {
+	vector<int> scheduleFigure7 = { 0, 0, 0, 3, 2, 5, 6, 8 };
+	auto baseResRem = p->resRemForPartial(scheduleFigure7);
+	auto delayedResult = p->delayWithoutOvertimeIncrease({0,1,3,2,5,4,6,7}, scheduleFigure7, baseResRem, 9);
+	vector<int> scheduleFigure8 = { 0, 0, 2, 4, 4, 6, 7, 9 };
+	ASSERT_EQ(scheduleFigure8, delayedResult.sts);
 }

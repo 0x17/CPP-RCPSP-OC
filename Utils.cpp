@@ -147,6 +147,7 @@ namespace Utils {
     void Tracer::trace(double slvtime, float bks_objval, bool trunc_secs) {
 		double insecs = (slvtime / 1000.0);
 		if (trunc_secs) insecs = trunc(insecs);
+		// FIXME: Specify number of decimal places!
 		f << (boost::format("%.2f") % insecs) << "," << bks_objval << endl;
     }
 

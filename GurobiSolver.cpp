@@ -20,6 +20,10 @@ void GurobiSolver::CustomCallback::callback() {
 	}
 }
 
+void GurobiSolver::CustomCallback::manualCallback(float bks) {
+	tr.trace(sw.look(), bks);
+}
+
 GurobiSolver::Result::Result(vector<int> sts, bool optimal): sts(sts), optimal(optimal) {}
 
 GurobiSolver::GurobiSolver(ProjectWithOvertime &_p, Options _opts) :
@@ -171,7 +175,9 @@ GurobiSolver::Result GurobiSolver::solve() {
 
 	try {
 		model.optimize();
-		return { parseSchedule(), model.get(GRB_IntAttr_Status) == GRB_OPTIMAL };
+		auto sts = parseSchedule();
+		cback.manualCallback(p.calcProfit(sts));
+		return { sts, model.get(GRB_IntAttr_Status) == GRB_OPTIMAL };
 	}
 	catch (GRBException e) {
 		LOG_I("Error code = " + to_string(e.getErrorCode()));

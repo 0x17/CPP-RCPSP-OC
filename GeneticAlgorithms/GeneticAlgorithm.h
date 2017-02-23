@@ -124,7 +124,7 @@ protected:
 
 	virtual vector<int> decode(Individual &i) = 0;	
 
-    pair<int, int> computePair(vector<pair<Individual, float>> &pop, vector<bool> &alreadySelected);
+    pair<int, int> computePair(const vector<bool> &alreadySelected);
 
     int mutateAndFitnessRange(vector<pair<Individual, float>> *pop, int startIx, int endIx);
 
@@ -155,7 +155,7 @@ void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
 }
 
 template<class Individual>
-pair<int, int> GeneticAlgorithm<Individual>::computePair(vector<pair<Individual, float>> &pop, vector<bool> &alreadySelected) {
+pair<int, int> GeneticAlgorithm<Individual>::computePair(const vector<bool> &alreadySelected) {
     pair<int, int> p;
 
     do {
@@ -173,7 +173,7 @@ void GeneticAlgorithm<Individual>::generateChildren(vector<pair<Individual, floa
     vector<bool> alreadySelected(params.popSize, false);
 
     for(int childIx=params.popSize; childIx<params.popSize*2; childIx +=2) {
-        pair<int, int> parentIndices = computePair(pop, alreadySelected);
+        pair<int, int> parentIndices = computePair(alreadySelected);
         alreadySelected[parentIndices.first] = true;
         alreadySelected[parentIndices.second] = true;
         crossover(pop[parentIndices.first].first, pop[parentIndices.second].first, pop[childIx].first);
@@ -346,6 +346,10 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
         }
         lastBestVal = pop[0].second;
     }
+
+	if (tr != nullptr) {
+		tr->intervalTrace(-pop[0].second);
+	}
 
     auto best = pop[0];
 	return make_pair(decode(best.first), -best.second);

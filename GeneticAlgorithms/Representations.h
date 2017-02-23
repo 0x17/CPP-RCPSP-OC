@@ -18,18 +18,18 @@ public:
     Lambda();
     virtual ~Lambda() {}
 
-    virtual void neighborhoodSwap(Matrix<char> &adjMx, int pmutate);
+    virtual void neighborhoodSwap(const Matrix<char> &adjMx, int pmutate);
 
-    virtual void randomOnePointCrossover(Lambda &mother, Lambda& father);
-    virtual void onePointCrossover(Lambda &mother, Lambda& father, int q);
+    virtual void randomOnePointCrossover(const Lambda &mother, const Lambda& father);
+    virtual void onePointCrossover(const Lambda &mother, const Lambda& father, int q);
 
 	template<class T>
 	static void onePointCrossoverLists(int q, vector<T> &daughter, const vector<T> &mother, const vector<T> &father);
 
-	virtual void randomTwoPointCrossover(Lambda &mother, Lambda &father);
-    virtual void twoPointCrossover(Lambda &mother, Lambda &father, int q1, int q2);
+	virtual void randomTwoPointCrossover(const Lambda &mother, const Lambda &father);
+    virtual void twoPointCrossover(const Lambda &mother, const Lambda &father, int q1, int q2);
 
-    virtual void inherit(Lambda &parent, int destIx, int srcIx);
+    virtual void inherit(const Lambda &parent, int destIx, int srcIx);
     virtual void swap(int i1, int i2);
 };
 
@@ -55,7 +55,7 @@ public:
     DeadlineLambda();
     virtual ~DeadlineLambda() {}
 
-    virtual void randomOnePointCrossover(Lambda &mother, Lambda &father) override;
+    virtual void randomOnePointCrossover(const Lambda &mother, const Lambda &father) override;
 };
 
 class LambdaZr : public Lambda {
@@ -64,15 +64,31 @@ public:
 
     LambdaZr(int numJobs, int numRes);
     LambdaZr();
+	LambdaZr(const vector<int> &_order, const vector<int> &_z) : Lambda(_order), z(_z) {}
     virtual ~LambdaZr() {}
+
+	void randomIndependentOnePointCrossovers(const LambdaZr& mother, const LambdaZr& father);
+	void independentOnePointCrossovers(const LambdaZr& mother, const LambdaZr& father, int qj, int qr);
 };
+
 class LambdaZrt : public Lambda  {
 public:
     Matrix<int> z;
 
     LambdaZrt(int numJobs, int numRes, int numPeriods);
     LambdaZrt();
+	LambdaZrt(const vector<int> &_order, const Matrix<int> &_z) {}
     virtual ~LambdaZrt() {}
+
+	enum class CrossoverPartitionType {
+		RESOURCE_WISE,
+		PERIOD_WISE
+	};
+
+	void randomIndependentOnePointCrossovers(const LambdaZrt& mother, const LambdaZrt& father, int heuristicMaxMakespan);
+	void independentOnePointCrossovers(const LambdaZrt& mother, const LambdaZrt& father, int qj, int q2, CrossoverPartitionType ctype);
+
+	void independentMutations(const Matrix<char>& adjMx, const vector<int> &zmax, int pmutate);
 };
 
 class LambdaBeta : public Lambda {
@@ -84,7 +100,7 @@ public:
 	LambdaBeta(const vector<int> &_order, const vector<int> &_beta) : Lambda(_order), beta(_beta) {}
     virtual ~LambdaBeta() {}
 
-    virtual void inherit(Lambda &parent, int destIx, int srcIx) override;
+    virtual void inherit(const Lambda &parent, int destIx, int srcIx) override;
     virtual void swap(int i1, int i2) override;
 
 	void separateOnePointCrossover(const LambdaBeta& mother, const LambdaBeta& father);
@@ -101,7 +117,7 @@ public:
     LambdaTau();
     virtual ~LambdaTau() {}
 
-    virtual void inherit(Lambda &parent, int destIx, int srcIx) override;
+    virtual void inherit(const Lambda &parent, int destIx, int srcIx) override;
     virtual void swap(int i1, int i2) override;
 };
 

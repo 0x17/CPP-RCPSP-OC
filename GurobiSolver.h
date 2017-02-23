@@ -38,6 +38,8 @@ private:
 	class CustomCallback : public GRBCallback {
 	public:
 		CustomCallback(string outPath, string instanceName);
+		void manualCallback(float bks);
+
 	private:
 		void callback() override;
 		Utils::Tracer tr;

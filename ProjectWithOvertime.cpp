@@ -172,7 +172,7 @@ boost::optional<float> ProjectWithOvertime::costsAndFeasibilityCausedByActivity(
 	ACTIVE_PERIODS(j, stj,
 		EACH_RES(
 			if (demands(j, r) > resRem(r, tau) + zmax[r]) return boost::optional<float>();
-			costs += boost::algorithm::clamp(demands(j, r) - resRem(r, tau), 0, demands(j, r));
+			costs += boost::algorithm::clamp(demands(j, r) - resRem(r, tau), 0, demands(j, r)) * kappa[r];
 	))
 	return boost::optional<float>(costs);
 }
@@ -215,10 +215,16 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 			return "deadline=" + to_string(deadline) + ", profit=" + to_string(profit);
 		}
 
-	} lb, ub, a, b;	
+	} lb, ub, a, b;
 
-	auto tminRes = serialSGS(order, zmax, robust);
-	auto tmaxRes = serialSGS(order, zzero, robust);
+
+
+	auto tminResBase = serialSGS(order, zmax, robust);
+	auto tmaxResBase = serialSGS(order, zzero, robust);
+
+	auto tminRes = forwardBackwardIterations(order, tminResBase, makespan(tminResBase));
+	auto tmaxRes = forwardBackwardIterations(order, tmaxResBase, makespan(tmaxResBase));
+
 	scheduleCount += 2;
 
 	auto fillTripleFromSGSResult = [this](const SGSResult &res, DeadlineProfitResultTriple &t) {
@@ -272,6 +278,21 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 
 	lb.result.numSchedulesGenerated = scheduleCount;
 	return lb.result;
+}
+
+map<int, pair<int, float>> ProjectWithOvertime::heuristicProfitsAndActualMakespanForRelevantDeadlines(const vector<int> &order) const {
+	auto tminRes = serialSGS(order, zmax);
+	auto tmaxRes = serialSGS(order, zzero);
+	int lb = makespan(tminRes.sts);
+	int ub = makespan(tmaxRes.sts);
+	map<int, pair<int, float>> profitForMakespan;
+	for(int t=lb; t <= ub; t++) {
+		auto result = forwardBackwardIterations(order, tminRes, t);
+		int actualMakespan = makespan(result);
+		float delayedProfit = calcProfit(result);
+		profitForMakespan[t] = make_pair(actualMakespan, delayedProfit);
+	}
+	return profitForMakespan;
 }
 
 bool ProjectWithOvertime::isScheduleResourceFeasible(const vector<int>& sts) const {

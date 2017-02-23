@@ -8,6 +8,7 @@
 #include "Runners.h"
 #include "BranchAndBound.h"
 #include "GurobiSolver.h"
+#include "Utils.h"
 
 namespace Main {
 	void showUsage();
@@ -16,6 +17,7 @@ namespace Main {
 	void convertArgFileToLSP(int argc, const char * argv[]);
 	bool instanceAlreadySolvedInResultFile(const string& coreName, const string& resultFilename);
 	void purgeOldTraceFile(const string &traceFilename);
+	void plotHeuristicProfits();
 
 	namespace Testing {
         void fixedScheduleLimitSolveTimesForProjects();
@@ -25,6 +27,35 @@ namespace Main {
 		void testLocalSolverNative(int seed);
 		void testGurobi();
 	};
+
+
+}
+
+void Main::plotHeuristicProfits() {
+	boost::filesystem::path path("../../Projekte/j30/");
+
+	int maxDiff = numeric_limits<int>::lowest();
+	string maxDiffInstance = "";
+
+	for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(path), {})) {
+		ProjectWithOvertime p(entry.path().string());
+		int lb = p.makespan(p.serialSGS(p.topOrder, p.zmax));
+		int ub = p.makespan(p.serialSGS(p.topOrder, p.zzero));
+		int diff = ub - lb;
+		if(diff > maxDiff) {
+			maxDiff = diff;
+			maxDiffInstance = entry.path().string();
+		}
+	}
+
+	ProjectWithOvertime p(maxDiffInstance);
+	auto profitAndActualMakespanForDeadline = p.heuristicProfitsAndActualMakespanForRelevantDeadlines(p.topOrder);
+	Utils::spit("deadline;actualMakespan;profit\n", "heurprofits.txt");
+	for(auto pair : profitAndActualMakespanForDeadline) {
+		Utils::spitAppend(to_string(pair.first) + ";" + to_string(pair.second.first) + ";" + to_string(pair.second.second) + "\n", "heurprofits.txt");
+	}
+	/*auto gsresult = p.goldenSectionSearchBasedOptimization(p.topOrder);
+	cout << p.calcProfit(gsresult) << endl;*/
 }
 
 void computeScheduleAttributes(string smfilename) {
@@ -39,7 +70,9 @@ void computeScheduleAttributes(string smfilename) {
 int main(int argc, char * argv[]) {
 	//computeScheduleAttributes("PaperBeispiel.sm");
 
-	Main::commandLineRunner(argc, argv);
+	//Main::commandLineRunner(argc, argv);
+	Main::plotHeuristicProfits();
+
 	//Main::Testing::testGurobi();
 
 	//Utils::partitionDirectory("j120", 60);
@@ -190,6 +223,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			throw runtime_error("Unknown method: " + solMethod + "!");
         }
         
+		// FIXME: specify number of decimal places!
         string resStr = (sts[0] == Project::UNSCHEDULED) ? "infes" : to_string(p.calcProfit(sts));
         Utils::spitAppend(coreName+";"+resStr+"\n", outFn);
 

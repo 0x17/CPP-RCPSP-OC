@@ -25,13 +25,13 @@ LambdaZrt TimeVaryingCapacityGA::init(int ix) {
 }
 
 void TimeVaryingCapacityGA::crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter) {
-    daughter.randomOnePointCrossover(mother, father);
-	crossoverOvertime(daughter.z, mother.z, father.z);
+	daughter.randomIndependentOnePointCrossovers(mother, father, p.getHeuristicMaxMakespan());
 }
 
 void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
-    i.neighborhoodSwap(p.adjMx, params.pmutate);
-	mutateOvertime(i.z);
+    //i.neighborhoodSwap(p.adjMx, params.pmutate);
+	//mutateOvertime(i.z);
+	i.independentMutations(p.adjMx, p.zmax, params.pmutate);
 }
 
 FitnessResult TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
@@ -54,20 +54,6 @@ void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) const {
 	});
 }
 
-void TimeVaryingCapacityGA::crossoverOvertime(Matrix<int>& daughterZ, const Matrix<int>& motherZ, const Matrix<int>& fatherZ) const {
-	if(Utils::randBool()) {
-		int qt = Utils::randRangeIncl(0, p.getHeuristicMaxMakespan()-1);
-		daughterZ.foreachAssign([&](int r, int t) {
-			return t <= qt ? motherZ(r, t) : fatherZ(r, t);
-		});
-	} else {
-		int qr = Utils::randRangeIncl(0, p.numRes-1);
-		daughterZ.foreachAssign([&](int r, int t) {
-			return r <= qr ? motherZ(r, t) : fatherZ(r, t);
-		});		
-	}
-}
-
 //===========================================================================================================
 
 FixedCapacityGA::FixedCapacityGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "FixedCapacityGA") {
@@ -82,9 +68,7 @@ LambdaZr FixedCapacityGA::init(int ix) {
 }
 
 void FixedCapacityGA::crossover(LambdaZr &mother, LambdaZr &father, LambdaZr &daughter) {
-    daughter.randomOnePointCrossover(mother, father);
-	int qr = Utils::randRangeIncl(0, p.numRes - 1);
-	p.eachRes([&](int r){ daughter.z[r] = r <= qr ? mother.z[r] : father.z[r]; });
+	daughter.randomIndependentOnePointCrossovers(mother, father);
 }
 
 void FixedCapacityGA::mutate(LambdaZr &i) {

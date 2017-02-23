@@ -19,7 +19,6 @@ private:
 	virtual vector<int> decode(LambdaZrt& i) override;
 
 	void mutateOvertime(Matrix<int> &z) const;
-	void crossoverOvertime(Matrix<int>& daughterZ, const Matrix<int>& motherZ, const Matrix<int>& fatherZ) const;
 };
 
 class FixedCapacityGA : public GeneticAlgorithm<LambdaZr> {

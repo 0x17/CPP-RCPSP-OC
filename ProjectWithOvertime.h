@@ -6,6 +6,7 @@
 #define SSGS_PROJECTWITHOVERTIME_H
 
 #include <list>
+#include <map>
 #include "Project.h"
 
 //typedef pair<bool, SGSResult> SGSDeadlineResult;
@@ -84,6 +85,8 @@ public:
 	SGSResult forwardBackwardIterations(const vector<int> &order, SGSResult result, int deadline, boost::optional<int> numIterations = boost::optional<int>(), bool robust = false) const;
 
 	bool isScheduleResourceFeasible(const vector<int>& sts) const override;
+
+	map<int, pair<int, float>> heuristicProfitsAndActualMakespanForRelevantDeadlines(const vector<int> &order) const;
 
 private:
     void computeRevenueFunction();
