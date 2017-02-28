@@ -395,9 +395,9 @@ void ProjectWithOvertime::scheduleJobBorderUpper(int job, int lastPredFinished, 
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, BorderSchedulingOptions options, bool robust) const {
-	ResidualData *residuals = nullptr;
+	unique_ptr<ResidualData> residuals = nullptr;
 	if(options.upper) {
-		residuals = new ResidualData(this);
+		residuals = make_unique<ResidualData>(this);
 	}
 
 	PartialScheduleData data(this);
@@ -409,9 +409,6 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &ord
 		if (!options.upper) scheduleJobBorderLower(job, lastPredFinished, bval, data);
 		else scheduleJobBorderUpper(job, lastPredFinished, bval, data, *residuals);
     }
-
-	if (residuals != nullptr)
-		delete residuals;
 
 	return{ data.sts, data.resRem };
 }

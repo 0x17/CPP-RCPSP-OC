@@ -13,12 +13,11 @@ BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, double _timeLimit, int _
 	: p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph), timeLimit(_timeLimit), iterLimit(_iterLimit), tr(nullptr) {}
 
 BranchAndBound::~BranchAndBound() {
-    if(tr != nullptr) delete tr;
 }
 
 vector<int> BranchAndBound::solve(bool seedWithGA, bool traceobj, string outPath) {
     if(traceobj && tr == nullptr) {
-        tr = new Utils::Tracer(getTraceFilename(outPath, p.instanceName));
+        tr = make_unique<Utils::Tracer>(getTraceFilename(outPath, p.instanceName));
     }
 
     //lupdate = chrono::system_clock::now();

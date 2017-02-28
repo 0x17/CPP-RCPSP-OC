@@ -135,18 +135,18 @@ TEST_F(PaperConsistencyTest, testExampleScheduleCosts) {
 }
 
 TEST_F(PaperConsistencyTest, testLambdaCrossovers) {
-	Lambda mother({1,2,3,4,5,6});
-	Lambda father({1,3,5,2,4,6});
-	Lambda expDaughter({1,2,3,5,4,6});
+	Lambda mother({0,1,2,3,4,5,6,7});
+	Lambda father({0,1,3,5,2,4,6,7});
+	Lambda expDaughter({0,1,2,3,5,4,6,7});
 	Lambda daughter(p->numJobs);
 	daughter.onePointCrossover(mother, father, 2);
 	ASSERT_EQ(expDaughter.order, daughter.order);
 }
 
 TEST_F(PaperConsistencyTest, testLambdaBetaCrossover) {
-	LambdaBeta mother({1,2,3,4,5,6}, {1,1,0,0,0,0});
-	LambdaBeta father({1,3,5,2,4,6}, {1,0,1,0,1,0});
-	LambdaBeta expDaughter({1,2,3,5,4,6},{1,1,0,1,1,0});
+	LambdaBeta mother({0,1,2,3,4,5,6,7}, {0,1,1,0,0,0,0,0});
+	LambdaBeta father({0,1,3,5,2,4,6,7}, {0,1,0,1,0,1,0,0});
+	LambdaBeta expDaughter({0,1,2,3,5,4,6,7},{0,1,1,0,1,1,0,0});
 	LambdaBeta daughter(p->numJobs);
 	daughter.onePointCrossover(mother, father, 2);
 	ASSERT_EQ(expDaughter.order, daughter.order);
@@ -154,14 +154,22 @@ TEST_F(PaperConsistencyTest, testLambdaBetaCrossover) {
 }
 
 TEST_F(PaperConsistencyTest, testLambdaZrCrossover) {
-	LambdaZr mother({1,2,3,4,5,6}, {0});
-	LambdaZr father({1,3,5,2,4,6}, {1});
-	LambdaZr expDaughter({1,2,3,5,4,6}, {0});
+	LambdaZr mother({0,1,2,3,4,5,6,7}, {0});
+	LambdaZr father({0,1,3,5,2,4,6,7}, {1});
+	LambdaZr expDaughter({0,1,2,3,5,4,6,7}, {0});
 	LambdaZr daughter(p->numJobs, p->numRes);
 	daughter.independentOnePointCrossovers(mother, father, 2, 0);
 }
 
 TEST_F(PaperConsistencyTest, testLambdaZrtCrossover) {
+	LambdaZrt mother({ 0,1,2,3,4,5,6,7 }, Matrix<int>({{3,3,3,3,3,3}, {1,1,4,4,4,4}}));
+	LambdaZrt father({ 0,1,3,5,2,4,6,7 }, Matrix<int>({ { 2,2,2,2,6,6 },{ 0,0,1,1,1,1 } }));
+	LambdaZrt expDaughter({ 0,1,2,3,5,4,6,7 }, Matrix<int>({ {3, 3, 3, 3, 6, 6 }, { 1, 1, 4, 4, 1, 1 } }));
+	LambdaZrt daughter(p->numJobs, 2, 6);
+	daughter.independentOnePointCrossovers(mother, father, 2, 3, LambdaZrt::CrossoverPartitionType::PERIOD_WISE);
+	cout << daughter.z.toString() << endl;
+	TestHelpers::arrayEquals(expDaughter.order, daughter.order);
+	TestHelpers::matrixEquals(expDaughter.z, daughter.z);
 }
 
 TEST_F(PaperConsistencyTest, testDelayWithoutOvertimeIncrease) {

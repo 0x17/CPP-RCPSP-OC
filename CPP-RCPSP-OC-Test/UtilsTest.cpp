@@ -145,7 +145,8 @@ TEST(UtilsTest, testRangeContains) {
 
 TEST(UtilsTest, testIndexOfNthEqualTo) {
     vector<int> nums = { 5, 2, 4, 15, 9, 15, 3, 3, 3 };
-    ASSERT_EQ(3, Utils::indexOfNthEqualTo(0, 15, nums));
+    ASSERT_EQ(3, Utils::indexOfFirstEqualTo(15, nums));
+	ASSERT_EQ(3, Utils::indexOfNthEqualTo(0, 15, nums));
     ASSERT_EQ(5, Utils::indexOfNthEqualTo(1, 15, nums));
     ASSERT_EQ(0, Utils::indexOfNthEqualTo(0, 5, nums));
     ASSERT_EQ(6, Utils::indexOfNthEqualTo(0, 3, nums));

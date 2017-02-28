@@ -16,34 +16,34 @@ namespace Runners {
 		methodIndex(_methodIndex),
 		variant(_variant) {}
 
-	ListModel *genListModelWithIndex(ProjectWithOvertime &p, int index, int variant) {
-		ListModel *lm = nullptr;
+	unique_ptr<ListModel> genListModelWithIndex(ProjectWithOvertime &p, int index, int variant) {
+		unique_ptr<ListModel> lm = nullptr;
 		switch (index) {
 		default:
 		case 0:
 			ListBetaModel::setVariant(variant);
-			lm = new ListBetaModel(p);
+			lm = make_unique<ListBetaModel>(p);
 			break;
 		case 1:
-			lm = new ListTauModel(p);
+			lm = make_unique<ListTauModel>(p);
 			break;
 		case 2:
-			lm = new ListTauDiscreteModel(p);
+			lm = make_unique<ListTauDiscreteModel>(p);
 			break;
 		case 3:
-			lm = new ListFixedOvertimeModel(p);
+			lm = make_unique<ListFixedOvertimeModel>(p);
 			break;
 		case 4:
-			lm = new ListDynamicOvertimeModel(p);
+			lm = make_unique<ListDynamicOvertimeModel>(p);
 			break;
 		case 5:
-			lm = new ListAlternativesModel(p);
+			lm = make_unique<ListAlternativesModel>(p);
 			break;
 		case 6:
-			lm = new GSListModel(p);
+			lm = make_unique<GSListModel>(p);
 			break;
 		case 7:
-			lm = new ListDeadlineModel(p);
+			lm = make_unique<ListDeadlineModel>(p);
 			break;
 		}
 		return lm;
@@ -118,13 +118,12 @@ namespace Runners {
 
 	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime& p, RunnerParams rparams) {
 		vector<int> sts;
-		ListModel *lm = genListModelWithIndex(p, rparams.methodIndex, rparams.variant);
+		unique_ptr<ListModel> lm = genListModelWithIndex(p, rparams.methodIndex, rparams.variant);
 		SolverParams params(rparams.timeLimit, rparams.iterLimit);
 		params.traceobj = rparams.traceobj;
 		params.solverIx = rparams.methodIndex;
 		params.outPath = rparams.outPath;
 		sts = lm->solve(params);
-		delete lm;
 		return sts;
 	}
 

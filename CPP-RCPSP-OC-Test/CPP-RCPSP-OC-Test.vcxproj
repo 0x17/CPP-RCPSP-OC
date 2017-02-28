@@ -31,6 +31,7 @@
     <ClCompile Include="..\LSModels\NaiveModels.cpp" />
     <ClCompile Include="..\LSModels\OvertimeBoundModels.cpp" />
     <ClCompile Include="..\LSModels\TimeWindowModels.cpp" />
+    <ClCompile Include="..\ParticleSwarm.cpp" />
     <ClCompile Include="..\Project.cpp" />
     <ClCompile Include="..\ProjectWithOvertime.cpp" />
     <ClCompile Include="..\Runners.cpp" />
@@ -38,7 +39,9 @@
     <ClCompile Include="..\Stopwatch.cpp" />
     <ClCompile Include="..\Utils.cpp" />
     <ClCompile Include="..\Visualization.cpp" />
+    <ClCompile Include="MatrixTest.cpp" />
     <ClCompile Include="PaperConsistencyTest.cpp" />
+    <ClCompile Include="ParticleSwarmTest.cpp" />
     <ClCompile Include="ProjectTest.cpp" />
     <ClCompile Include="ProjectWithOvertimeTest.cpp" />
     <ClCompile Include="RepresentationsTest.cpp" />
@@ -62,6 +65,7 @@
     <ClInclude Include="..\LSModels\OvertimeBoundModels.h" />
     <ClInclude Include="..\LSModels\TimeWindowModels.h" />
     <ClInclude Include="..\matrix.h" />
+    <ClInclude Include="..\ParticleSwarm.h" />
     <ClInclude Include="..\Project.h" />
     <ClInclude Include="..\ProjectWithOvertime.h" />
     <ClInclude Include="..\Runners.h" />
@@ -69,6 +73,7 @@
     <ClInclude Include="..\Stopwatch.h" />
     <ClInclude Include="..\Utils.h" />
     <ClInclude Include="..\Visualization.h" />
+    <ClInclude Include="MatrixTest.h" />
     <ClInclude Include="PaperConsistencyTest.h" />
     <ClInclude Include="ProjectTest.h" />
     <ClInclude Include="ProjectWithOvertimeTest.h" />

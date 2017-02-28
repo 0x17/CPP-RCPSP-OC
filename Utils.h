@@ -62,7 +62,7 @@ namespace Utils {
     }
 
 	template<class T>
-	int indexOfNthEqualTo(int nth, T val, vector<T> & coll) {
+	int indexOfNthEqualTo(int nth, T val, const vector<T> & coll) {
 		int xth = 0;
 		for (int k = 0; k < coll.size(); k++)
 			if (coll[k] == val) {
@@ -71,6 +71,11 @@ namespace Utils {
 			}
 		throw runtime_error("No nth found!");
 	}
+
+	template<class T>
+	int indexOfFirstEqualTo(T val, const vector<T> & coll) {
+		return indexOfNthEqualTo(0, val, coll);
+    }
 
     void spit(const string s, const string filename);
     void spitAppend(const string s, const string filename);

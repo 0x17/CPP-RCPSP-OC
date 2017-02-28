@@ -40,20 +40,18 @@ ListModel::~ListModel() {
 }
 
 vector<int> ListModel::solve(SolverParams params) {
-    Utils::Tracer *tr = nullptr;
-	TraceCallback *cback = nullptr;
+    unique_ptr<Utils::Tracer> tr = nullptr;
+	unique_ptr<TraceCallback> cback = nullptr;
 	buildModel();
 	applyParams(params);
     if(params.traceobj) {
-        tr = new Utils::Tracer(traceFilenameForListModel(params.outPath, params.solverIx, p.instanceName));
-		cback = new TraceCallback(*tr);
+        tr = make_unique<Utils::Tracer>(traceFilenameForListModel(params.outPath, params.solverIx, p.instanceName));
+		cback = make_unique<TraceCallback>(*tr);
         //ls.addCallback(CT_TimeTicked, cback);
-		decoder->setTracer(tr);
+		decoder->setTracer(tr.get());
     }
 	ls.solve();
 	auto sol = ls.getSolution();
-	if(cback != nullptr) delete cback;
-    if(tr != nullptr) delete tr;
 	return parseScheduleFromSolution(sol);
 }
 

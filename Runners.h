@@ -23,7 +23,7 @@ namespace Runners {
 		RunnerParams(int _methodIndex, int _variant, double _timeLimit, int _iterLimit, bool _traceobj, const string& _outPath);
 	};
 
-	ListModel *genListModelWithIndex(ProjectWithOvertime &p, int index, int variant = 0);
+	unique_ptr<ListModel> genListModelWithIndex(ProjectWithOvertime &p, int index, int variant = 0);
 
 	struct GAResult {
 		std::vector<int> sts;

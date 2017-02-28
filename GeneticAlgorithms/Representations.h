@@ -77,7 +77,7 @@ public:
 
     LambdaZrt(int numJobs, int numRes, int numPeriods);
     LambdaZrt();
-	LambdaZrt(const vector<int> &_order, const Matrix<int> &_z) {}
+	LambdaZrt(const vector<int> &_order, const Matrix<int> &_z) : Lambda(_order), z(_z) {}
     virtual ~LambdaZrt() {}
 
 	enum class CrossoverPartitionType {

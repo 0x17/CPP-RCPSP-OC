@@ -106,7 +106,7 @@ protected:
     GAParameters params;
 	ProjectWithOvertime &p;
 
-    Utils::Tracer *tr;   
+    std::unique_ptr<Utils::Tracer> tr = nullptr;   
 
 	// also consider FORCE_SINGLE_THREAD!
     bool useThreads = false;
@@ -137,7 +137,6 @@ protected:
 
 template<class Individual>
 GeneticAlgorithm<Individual>::~GeneticAlgorithm() {
-    if(tr != nullptr) delete tr;
 }
 
 template<class Individual>
@@ -150,7 +149,7 @@ template<class Individual>
 void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
     params = _params;
     if(params.traceobj && tr == nullptr) {
-        tr = new Utils::Tracer(traceFilenameForGeneticAlgorithm(params.outPath, name, p.instanceName));
+        tr = make_unique<Utils::Tracer>(traceFilenameForGeneticAlgorithm(params.outPath, name, p.instanceName));
     }
 }
 

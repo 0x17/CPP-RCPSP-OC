@@ -34,7 +34,7 @@ private:
     //TimePoint lupdate;
 	double timeLimit;
 	int iterLimit;
-    Utils::Tracer *tr;
+    unique_ptr<Utils::Tracer> tr;
 	
 	bool isEligible(vector<int> &sts, int j) const;
 	pair<bool,bool> resourceFeasibilityCheck(vector<int> &sts, int j, int stj) const;

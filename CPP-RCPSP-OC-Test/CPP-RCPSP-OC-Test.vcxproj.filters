@@ -65,6 +65,9 @@
     </ClCompile>
     <ClCompile Include="..\Serialization.cpp" />
     <ClCompile Include="PaperConsistencyTest.cpp" />
+    <ClCompile Include="ParticleSwarmTest.cpp" />
+    <ClCompile Include="..\ParticleSwarm.cpp" />
+    <ClCompile Include="MatrixTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Visualization.h" />
@@ -117,5 +120,7 @@
     </ClInclude>
     <ClInclude Include="..\Serialization.h" />
     <ClInclude Include="PaperConsistencyTest.h" />
+    <ClInclude Include="..\ParticleSwarm.h" />
+    <ClInclude Include="MatrixTest.h" />
   </ItemGroup>
 </Project>

@@ -13,18 +13,16 @@
 
 class LambdaTest : public testing::Test {
 protected:
-    Lambda *l;
-    ProjectWithOvertime *p;
+    unique_ptr<Lambda> l;
+    unique_ptr<ProjectWithOvertime> p;
 
     void SetUp() override {
-        p = new ProjectWithOvertime("MiniBeispiel.DAT");
-        l = new Lambda(p->numJobs);
+        p = make_unique<ProjectWithOvertime>("MiniBeispiel.DAT");
+        l = make_unique<Lambda>(p->numJobs);
         l->order = p->topOrder;
     }
 
     void TearDown() override {
-        delete l;
-        delete p;
     }
 };
 

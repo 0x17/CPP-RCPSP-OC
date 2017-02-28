@@ -10,14 +10,13 @@
 
 class ProjectTest : public testing::Test {
 protected:
-    Project *p = nullptr;
+    std::unique_ptr<Project> p;
 
 	void SetUp() override {
-        p = new Project("MiniBeispiel.DAT");
+        p = make_unique<Project>("MiniBeispiel.DAT");
     }
 
 	void TearDown() override {
-		if(p != nullptr) delete p;
     }
 
 };

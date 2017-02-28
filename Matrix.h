@@ -6,6 +6,7 @@
 #define CPP_RCPSP_OC_MATRIX_H
 
 #include <vector>
+#include <sstream>
 
 template<class T>
 class Matrix {
@@ -51,6 +52,8 @@ public:
 
     inline T operator()(int i, int j) const { return data[i*n+j]; }
     inline T &operator()(int i, int j) { return data[i*n+j]; }
+
+	T at(int i, int j) const { return data[i*n + j]; }
 
     Matrix &operator=(const Matrix &mx) {
 		data = mx.data;
@@ -99,6 +102,20 @@ public:
 			for (int j = 0; j < n; j++)
 				data[i*n + j] = f(i, j);
     }
+
+	std::string toString() const {
+		std::stringstream out;
+		out << "Matrix(m=" << m << ",n=" << n << "," << std::endl << "{";
+		for (int i = 0; i < m; i++) {
+			out << "{";
+			for (int j = 0; j < n; j++) {
+				out << at(i, j) << (j + 1 == n ? "" : ",");
+			}
+			out << "}" << (i + 1 == m ? "" : ",") << std::endl;
+		}
+		out << "}" << std::endl;
+		return out.str();
+	}
 };
 
 
