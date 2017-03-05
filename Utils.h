@@ -150,6 +150,10 @@ namespace Utils {
 		return i != 0;
 	}
 
+	inline int bool2int(bool b) {
+		return b ? 1 : 0;
+	}
+
 	string formattedNow();
 
 	class Logger {

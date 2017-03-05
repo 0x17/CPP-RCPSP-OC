@@ -3,6 +3,7 @@
 #include "ParticleSwarm.h"
 #include "GeneticAlgorithms/Sampling.h"
 #include "ProjectWithOvertime.h"
+#include <cmath>
 
 ParticleSwarm::ParticleSwarm(ProjectWithOvertime& _p) : p(_p) {
 }
@@ -35,12 +36,12 @@ SGSResult ParticleSwarm::solve() {
 
 		while (popWithFitness.size() < npop) {
 
-			for (int i = 0; i < floor(c1 * nsw); i++) {
+			for (int i = 0; i < std::floor(c1 * nsw); i++) {
 				//pathRelinking(popWithFitness[i], gbest);
 			}
 
 			if (iter > 1) {
-				for (int i = 0; i < floor(c2 * nsw); i++) {
+				for (int i = 0; i < std::floor(c2 * nsw); i++) {
 					//pathRelinking(popWithFitness[i], pbest[i]);
 				}
 			}

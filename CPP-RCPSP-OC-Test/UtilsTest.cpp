@@ -119,6 +119,15 @@ TEST(UtilsTest, testSerializeProfit) {
 
 }
 
+TEST(UtilsTest, testRandBool) {
+	int sum = 0;
+	for(int i=0; i<100; i++) {
+		sum += Utils::bool2int(Utils::randBool());
+	}
+	ASSERT_TRUE(sum <= 60);
+	ASSERT_TRUE(sum >= 40);
+}
+
 TEST(UtilsTest, testRandomRangeIncl) {
     ASSERT_EQ(0, Utils::randRangeIncl(0, 0));
     ASSERT_EQ(1, Utils::randRangeIncl(1, 1));
@@ -134,7 +143,7 @@ TEST(UtilsTest, testRandUnitFloat) {
     ASSERT_TRUE(q >= 0.0f && q <= 1.0f);
 }
 
-TEST(UtilsTest, testRangeContains) {
+TEST(UtilsTest, testRangeInclContains) {
     vector<int> nums = { 1, 4, 2, 8, 12, 16 };
     ASSERT_TRUE(Utils::rangeInclContains(nums, 0, 0, 1));
     ASSERT_FALSE(Utils::rangeInclContains(nums, 0, 0, 4));
@@ -145,13 +154,17 @@ TEST(UtilsTest, testRangeContains) {
 
 TEST(UtilsTest, testIndexOfNthEqualTo) {
     vector<int> nums = { 5, 2, 4, 15, 9, 15, 3, 3, 3 };
-    ASSERT_EQ(3, Utils::indexOfFirstEqualTo(15, nums));
 	ASSERT_EQ(3, Utils::indexOfNthEqualTo(0, 15, nums));
     ASSERT_EQ(5, Utils::indexOfNthEqualTo(1, 15, nums));
     ASSERT_EQ(0, Utils::indexOfNthEqualTo(0, 5, nums));
     ASSERT_EQ(6, Utils::indexOfNthEqualTo(0, 3, nums));
     ASSERT_EQ(7, Utils::indexOfNthEqualTo(1, 3, nums));
     ASSERT_EQ(8, Utils::indexOfNthEqualTo(2, 3, nums));
+}
+
+TEST(UtilsTest, testIndexOfFirstEqualTo) {
+	vector<int> nums = { 5, 2, 4, 15, 9, 15, 3, 3, 3 };
+	ASSERT_EQ(3, Utils::indexOfFirstEqualTo(15, nums));
 }
 
 TEST(UtilsTest, testPickWithDistribution) {
@@ -202,6 +215,13 @@ TEST(UtilsTest, testSpitAppend) {
     ASSERT_EQ("How about now?", lines[1]);
     ASSERT_EQ("Well how about now?", lines[2]);
     remove(tmpFile.c_str());
+}
+
+TEST(UtilsTest, testSwap) {
+	vector<int> nums = { 1, 2, 3, 4 };
+	Utils::swap(nums, 1, 2);
+	vector<int> expNums = { 1, 3, 2, 4 };
+	TestHelpers::arrayEquals(expNums, nums);
 }
 
 TEST(UtilsTest, testMaxInRangeIncl) {
@@ -262,6 +282,18 @@ TEST(UtilsTest, testMapLst) {
 	ASSERT_EQ(1, nums.front());
 }
 
+TEST(UtilsTest, testConstructVector) {
+	auto v = Utils::constructVector<int>(5, [](int i) { return i+1; });
+	vector<int> ev = {1,2,3,4,5};
+	ASSERT_EQ(ev, v);
+}
+
+TEST(UtilsTest, testConstructList) {
+	auto l = Utils::constructList<int>(5, [](int i) { return i+1; });
+	list<int> el = {1,2,3,4,5};
+	ASSERT_EQ(el, l);
+}
+
 TEST(UtilsTest, testPartitionDirectory) {
 	char sep = boost::filesystem::path::preferred_separator;
 	string tmpDir = "TMP_DIR";
@@ -294,4 +326,25 @@ TEST(UtilsTest, testPartitionDirectory) {
 	for(string expDir : expDirectories) {
 		boost::filesystem::remove_all(expDir);
 	}
+}
+
+TEST(UtilsTest, testDeserializeSchedule) {
+	const string SCHEDULE_FN = "schedule.txt";
+	Utils::spit("1->0\n2->0\n3->2\n4->5\n5->10\n6->10\n", SCHEDULE_FN);
+	vector<int> sts = Utils::deserializeSchedule(6, SCHEDULE_FN);
+	vector<int> expSts = { 0, 0, 2, 5, 10, 10 };
+	TestHelpers::arrayEquals(expSts, sts);
+	boost::filesystem::remove(SCHEDULE_FN);
+}
+
+TEST(UtilsTest, testSplitLines) {
+	const string LINES = "First line\nSecond line\nThird line";
+	vector<string> parts = Utils::splitLines(LINES);
+	vector<string> expParts = { "First line", "Second line", "Third line" };
+	TestHelpers::arrayEquals(expParts, parts);
+}
+
+TEST(UtilsTest, testIndexOf) {
+	vector<int> nums = { 1, 3, 8, 10, 9, 5, 4 };
+	ASSERT_EQ(3, Utils::indexOf(nums, [](int i) { return i % 10 == 0;  }));
 }
