@@ -45,6 +45,8 @@ public:
 
     Matrix(int _m, int _n) : m(_m), n(_n), data(_m*_n) {}
 
+	Matrix(int _m, int _n, int value) : Matrix(_m, _n, [value](int i, int j) { return value; }) {}
+
     ~Matrix() {}
 
     int getM() const { return m; }
