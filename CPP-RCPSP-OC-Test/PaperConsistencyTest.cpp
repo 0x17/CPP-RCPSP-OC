@@ -1,8 +1,8 @@
 #include "PaperConsistencyTest.h"
 #include "TestHelpers.h"
-#include "../GeneticAlgorithms/TimeWindow.h"
+#include "../GeneticAlgorithms/Representations.h"
 
-const static string EXAMPLE_STR =
+const static string EXAMPLE_PROJECT_STR =
 		"************************************************************************\n"
 		"file with basedata            : ..\\EXAMPLE\\EXPL.BAS\n"
 		"initial value random generator: 12164\n"
@@ -28,6 +28,7 @@ const static string EXAMPLE_STR =
 		"   5        1          1           7\n"
 		"   6        1          1           7\n"
 		"   7        1          1           8\n"
+		"   8        1          0			\n"
 		"************************************************************************\n"
 		"REQUESTS/DURATIONS:\n"
 		"jobnr. mode duration  R 1\n"
@@ -46,8 +47,45 @@ const static string EXAMPLE_STR =
 		"    4\n"
 		"************************************************************************\n";
 
+const static string MINI_PROJECT_STR =
+		"************************************************************************\n"
+		"file with basedata            : ..\\EXAMPLE\\EXPL.BAS\n"
+		"initial value random generator: 12164\n"
+		"************************************************************************\n"
+		"projects                      :  1\n"
+		"jobs (incl. supersource/sink ):  4\n"
+		"horizon                       :  4\n"
+		"RESOURCES\n"
+		"  - renewable                 :  1   R\n"
+		"  - nonrenewable              :  0   N\n"
+		"  - doubly constrained        :  0   D\n"
+		"************************************************************************\n"
+		"PROJECT INFORMATION:\n"
+		"pronr.  #jobs rel.date duedate tardcost  MPM-Time\n"
+		"    1     4       0       8        0       33\n"
+		"************************************************************************\n"
+		"PRECEDENCE RELATIONS:\n"
+		"jobnr.    #modes  #successors   successors\n"
+		"   1        1          2           2   3\n"
+		"   2        1          1           4\n"
+		"   3        1          1           4\n"
+		"   4        1          0\n"
+		"************************************************************************\n"
+		"REQUESTS/DURATIONS:\n"
+		"jobnr. mode duration  R 1\n"
+		"------------------------------------------------------------------------\n"
+		"  1      1     0       0\n"
+		"  2      1     2       1\n"
+		"  3      1     2       1\n"
+		"  4      1     0       0\n"
+		"************************************************************************\n"
+		"RESOURCEAVAILABILITIES:\n"
+		"  R 1\n"
+		"    1\n"
+		"************************************************************************\n";
+
 void PaperConsistencyTest::SetUp() {
-	p = make_unique<ProjectWithOvertime>("ExampleFromPaper", EXAMPLE_STR);
+	p = make_unique<ProjectWithOvertime>("ExampleFromPaper", EXAMPLE_PROJECT_STR);
 	p->kappa = { 10 };
 }
 
@@ -164,12 +202,20 @@ TEST_F(PaperConsistencyTest, testLambdaZrCrossover) {
 TEST_F(PaperConsistencyTest, testLambdaZrtCrossover) {
 	LambdaZrt mother({ 0,1,2,3,4,5,6,7 }, Matrix<int>({{3,3,3,3,3,3}, {1,1,4,4,4,4}}));
 	LambdaZrt father({ 0,1,3,5,2,4,6,7 }, Matrix<int>({ { 2,2,2,2,6,6 },{ 0,0,1,1,1,1 } }));
-	LambdaZrt expDaughter({ 0,1,2,3,5,4,6,7 }, Matrix<int>({ {3, 3, 3, 3, 6, 6 }, { 1, 1, 4, 4, 1, 1 } }));
+	LambdaZrt expDaughter1({ 0,1,2,3,5,4,6,7 }, Matrix<int>({ {3, 3, 3, 3, 6, 6 }, { 1, 1, 4, 4, 1, 1 } }));
+	LambdaZrt expDaughter2({ 0,1,2,3,5,4,6,7 }, Matrix<int>({ { 3, 3, 3, 3, 3, 3 },{ 0, 0, 1, 1, 1, 1 } }));
+
 	LambdaZrt daughter(p->numJobs, 2, 6);
+
 	daughter.independentOnePointCrossovers(mother, father, 2, 3, LambdaZrt::CrossoverPartitionType::PERIOD_WISE);
 	cout << daughter.z.toString() << endl;
-	TestHelpers::arrayEquals(expDaughter.order, daughter.order);
-	TestHelpers::matrixEquals(expDaughter.z, daughter.z);
+	TestHelpers::arrayEquals(expDaughter1.order, daughter.order);
+	TestHelpers::matrixEquals(expDaughter1.z, daughter.z);
+
+	daughter.independentOnePointCrossovers(mother, father, 2, 0, LambdaZrt::CrossoverPartitionType::RESOURCE_WISE);
+	cout << daughter.z.toString() << endl;
+	TestHelpers::arrayEquals(expDaughter2.order, daughter.order);
+	TestHelpers::matrixEquals(expDaughter2.z, daughter.z);
 }
 
 TEST_F(PaperConsistencyTest, testDelayWithoutOvertimeIncrease) {
@@ -178,4 +224,49 @@ TEST_F(PaperConsistencyTest, testDelayWithoutOvertimeIncrease) {
 	auto delayedResult = p->delayWithoutOvertimeIncrease({0,1,3,2,5,4,6,7}, scheduleFigure7, baseResRem, 9);
 	vector<int> scheduleFigure8 = { 0, 0, 2, 4, 4, 6, 7, 9 };
 	ASSERT_EQ(scheduleFigure8, delayedResult.sts);
+}
+
+void MinimalProjectTest::SetUp() {
+	p = make_unique<ProjectWithOvertime>("MiniExampleFromPaper", MINI_PROJECT_STR);
+	p->kappa = { 0.5f };
+	for(int t=0; t<p->revenue.size(); t++) {
+		p->revenue[t] = (t <= 3) ? 2.0f : 1.0f;
+	}
+}
+
+TEST_F(MinimalProjectTest, testMinimalProjectCorrectlyLoaded) {
+	ASSERT_EQ(4, p->numJobs);
+	ASSERT_EQ(1, p->numRes);
+	ASSERT_TRUE(4 < p->numPeriods);
+
+	vector<int> expDurs = { 0, 2, 2, 0 };
+	TestHelpers::arrayEquals(expDurs, p->durations);
+	
+	vector<int> expDems = { 0, 1, 1, 0 };
+	auto actualDemands = p->demands.column(0);
+	TestHelpers::arrayEquals(expDems, actualDemands);
+
+	ASSERT_EQ(1, p->kappa.size());
+	ASSERT_EQ(0.5f, p->kappa[0]);
+
+	ASSERT_EQ(2.0f, p->revenue[0]);
+	ASSERT_EQ(2.0f, p->revenue[1]);
+	ASSERT_EQ(2.0f, p->revenue[2]);
+	ASSERT_EQ(2.0f, p->revenue[3]);
+	ASSERT_EQ(1.0f, p->revenue[4]);
+
+}
+
+TEST_F(MinimalProjectTest, testMinimalProjectSchedules) {
+	vector<int> scheduleFigure6c = { 0, 0, 0, 2 };
+	vector<int> scheduleFigure6d = { 0, 0, 1, 3 };
+	vector<int> scheduleFigure6e = { 0, 0, 2, 4 };
+
+	ASSERT_EQ(2.0f*0.5f, p->totalCosts(scheduleFigure6c));
+	ASSERT_EQ(1.0f*0.5f, p->totalCosts(scheduleFigure6d));
+	ASSERT_EQ(0.0f*0.5f, p->totalCosts(scheduleFigure6e));
+
+	ASSERT_EQ(1.0f, p->calcProfit(scheduleFigure6c));
+	ASSERT_EQ(1.5f, p->calcProfit(scheduleFigure6d));
+	ASSERT_EQ(1.0f, p->calcProfit(scheduleFigure6e));
 }
