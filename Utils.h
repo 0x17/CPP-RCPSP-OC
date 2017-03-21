@@ -98,7 +98,7 @@ namespace Utils {
     }
 
 	template<class Func, class A, class B>
-	vector<B> mapVec(Func f, vector<A> &elems) {
+	vector<B> mapVec(Func f, const vector<A> &elems) {
 		vector<B> res(elems.size());
 		for (int i = 0; i < elems.size(); i++)
 			res[i] = f(elems[i]);

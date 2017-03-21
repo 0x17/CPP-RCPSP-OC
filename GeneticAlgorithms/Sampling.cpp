@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <numeric>
 
-vector<float> Sampling::computeProbsForDecisionSet(vector<bool> &eligible, vector<float> &priorityValues) {
+vector<float> Sampling::computeProbsForDecisionSet(const vector<bool> &eligible, const vector<float> &priorityValues) {
     int len = static_cast<int>(priorityValues.size());
     float minPrio = numeric_limits<float>::max(); // use filter iterator from boost instead?
     for(int j = 0; j < len; j++) {
@@ -33,29 +33,29 @@ vector<float> Sampling::computeProbsForDecisionSet(vector<bool> &eligible, vecto
     return probs;
 }
 
-int Sampling::pickFromDecisionSet(vector<bool> &eligible, vector<float> &priorityValues) {
+int Sampling::pickFromDecisionSet(const vector<bool> &eligible, const vector<float> &priorityValues) {
     auto probs = computeProbsForDecisionSet(eligible, priorityValues);
 	return Utils::pickWithDistribution(probs);
 }
 
-vector<int> Sampling::regretBasedBiasedRandomSampling(Project &p, vector<int> &priorityValues) {
+vector<int> Sampling::regretBasedBiasedRandomSampling(const Project &p, const vector<int> &priorityValues) {
 	vector<float> pvalsFloat = Utils::mapVec<float(int), int, float>([](int pval) { return static_cast<float>(pval); }, priorityValues);
 	return regretBasedBiasedRandomSampling(p, pvalsFloat);
 }
 
-vector<int> Sampling::regretBasedBiasedRandomSamplingInv(Project &p, vector<int> &priorityValues) {
+vector<int> Sampling::regretBasedBiasedRandomSamplingInv(const Project &p, const vector<int> &priorityValues) {
 	vector<float> pvalsFloat = Utils::mapVec<float(int), int, float>([](int pval) { return -static_cast<float>(pval); }, priorityValues);
 	return regretBasedBiasedRandomSampling(p, pvalsFloat);
 }
 
-void Sampling::updateEligible(Project &p, vector<int> &order, int curIndex, vector<bool> &eligible) {
+void Sampling::updateEligible(const Project &p, const vector<int> &order, int curIndex, vector<bool> &eligible) {
 	eligible[order[curIndex]] = false;
 	for (int j = 0; j < p.numJobs; j++)
 		if (p.adjMx(order[curIndex], j))
 			eligible[j] = !p.hasPredNotBeforeInOrder(j, curIndex+1, order);
 }
 
-vector<int> Sampling::regretBasedBiasedRandomSampling(Project &p, vector<float> &priorityValues) {
+vector<int> Sampling::regretBasedBiasedRandomSampling(const Project &p, const vector<float> &priorityValues) {
 	vector<bool> eligible(p.numJobs, false);
 	vector<int> order(p.numJobs);
 	eligible[0] = true;
@@ -67,7 +67,7 @@ vector<int> Sampling::regretBasedBiasedRandomSampling(Project &p, vector<float> 
 	return order;
 }
 
-vector<int> Sampling::naiveSampling(Project& p) {
+vector<int> Sampling::naiveSampling(const Project& p) {
 	vector<bool> eligible(p.numJobs, false);
 	vector<int> order(p.numJobs);
 	eligible[0] = true;
@@ -79,10 +79,10 @@ vector<int> Sampling::naiveSampling(Project& p) {
 	return order;
 }
 
-vector<int> Sampling::regretBasedBiasedRandomSamplingForLfts(Project &p){
+vector<int> Sampling::regretBasedBiasedRandomSamplingForLfts(const Project &p){
     return regretBasedBiasedRandomSamplingInv(p, p.lfts);
 }
 
-vector<int> Sampling::sample(bool rbbrs, Project &p) {
+vector<int> Sampling::sample(bool rbbrs, const Project &p) {
     return rbbrs ? Sampling::regretBasedBiasedRandomSamplingForLfts(p) : Sampling::naiveSampling(p);
 }

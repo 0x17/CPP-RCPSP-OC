@@ -11,8 +11,7 @@
 
 class SamplingTest : public ProjectTest {};
 
-template<class Func>
-void testSamplingCommon(Project &p, Func samplingFunc) {
+void testSamplingCommon(Project &p, const std::function<vector<int>(const Project &p)> samplingFunc) {
     vector<vector<int>> orders(10);
     for(int i=0; i<10; i++) {
         orders[i] = samplingFunc(p);
@@ -56,7 +55,7 @@ TEST_F(SamplingTest, testNaiveSampling) {
 }
 
 TEST_F(SamplingTest, testRegretBasedBiasedRandomSampling) {
-    auto sfunc = [](Project &p) {
+    auto sfunc = [](const Project &p) {
         return Sampling::regretBasedBiasedRandomSampling(p, p.lfts);
     };
     testSamplingCommon(*p, sfunc);

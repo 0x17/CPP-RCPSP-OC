@@ -9,19 +9,19 @@
 #include "../Project.h"
 
 namespace Sampling {
-    vector<int> naiveSampling(Project &p);
+    vector<int> naiveSampling(const Project &p);
 
-    vector<int> regretBasedBiasedRandomSamplingForLfts(Project &p);
-    vector<int> regretBasedBiasedRandomSampling(Project &p, vector<float> &priorityValues);
-	vector<int> regretBasedBiasedRandomSampling(Project &p, vector<int> &priorityValues);
-	vector<int> regretBasedBiasedRandomSamplingInv(Project &p, vector<int> &priorityValues);
+    vector<int> regretBasedBiasedRandomSamplingForLfts(const Project &p);
+    vector<int> regretBasedBiasedRandomSampling(const Project &p, const vector<float> &priorityValues);
+	vector<int> regretBasedBiasedRandomSampling(const Project &p, const vector<int> &priorityValues);
+	vector<int> regretBasedBiasedRandomSamplingInv(const Project &p, const vector<int> &priorityValues);
 
-    int pickFromDecisionSet(vector<bool> &eligible, vector<float> &priorityValues);
-    vector<float> computeProbsForDecisionSet(vector<bool> &eligible, vector<float> &priorityValues);
+    int pickFromDecisionSet(const vector<bool> &eligible, const vector<float> &priorityValues);
+    vector<float> computeProbsForDecisionSet(const vector<bool> &eligible, const vector<float> &priorityValues);
 
-	void updateEligible(Project &p, vector<int> &order, int curIndex, vector<bool> &eligible);
+	void updateEligible(const Project &p, const vector<int> &order, int curIndex, vector<bool> &eligible);
 
-    vector<int> sample(bool rbbrs, Project &p);
+    vector<int> sample(bool rbbrs, const Project &p);
 };
 
 
