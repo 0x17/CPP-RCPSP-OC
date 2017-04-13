@@ -1,6 +1,7 @@
-
 #include "MatrixTest.h"
 #include <array>
+
+using namespace std;
 
 void assertEqualsExampleMatrix(Matrix<int> &m) {
 	for (int i = 0; i<3; i++) {
@@ -25,7 +26,7 @@ TEST_F(MatrixTest, testCopyConstructor) {
 }
 
 TEST_F(MatrixTest, testRowColumnConstructor) {
-	std::vector<int> vec = { 1, 2, 3, 4 };
+	vector<int> vec = { 1, 2, 3, 4 };
 	Matrix<int> mx(Matrix<int>::Mode::COLUMN_VECTOR, vec);
 	for (int i = 0; i < 4; i++)
 		ASSERT_EQ(vec[i], mx.at(i, 0));
@@ -79,12 +80,12 @@ TEST_F(MatrixTest, testResize) {
 }
 
 TEST_F(MatrixTest, testRow) {
-	std::vector<int> firstRow = { 1, 2, 3, 4 };
-	std::vector<int> secondRow = { 5, 6, 7, 8 };
-	std::vector<int> thirdRow = { 9, 10, 11, 12 };
-	std::array<std::vector<int>, 3> expRows = { firstRow, secondRow, thirdRow };
+	vector<int> firstRow = { 1, 2, 3, 4 };
+	vector<int> secondRow = { 5, 6, 7, 8 };
+	vector<int> thirdRow = { 9, 10, 11, 12 };
+	std::array<vector<int>, 3> expRows = { firstRow, secondRow, thirdRow };
 
-	std::vector<int> actualRow;
+	vector<int> actualRow;
 	for(int i=0; i<3; i++) {
 		actualRow = m->row(i);
 		TestHelpers::arrayEquals(expRows[i], actualRow);
@@ -92,13 +93,13 @@ TEST_F(MatrixTest, testRow) {
 }
 
 TEST_F(MatrixTest, testColumn) {
-	std::vector<int> firstCol = { 1, 5, 9 };
-	std::vector<int> secondCol = { 2, 6, 10};
-	std::vector<int> thirdCol = { 3, 7, 11 };
-	std::vector<int> fourthCol = { 4, 8, 12 };
-	std::array<std::vector<int>, 4> expColumns = { firstCol, secondCol, thirdCol, fourthCol };
+	vector<int> firstCol = { 1, 5, 9 };
+	vector<int> secondCol = { 2, 6, 10};
+	vector<int> thirdCol = { 3, 7, 11 };
+	vector<int> fourthCol = { 4, 8, 12 };
+	std::array<vector<int>, 4> expColumns = { firstCol, secondCol, thirdCol, fourthCol };
 
-	std::vector<int> actualColumn;
+	vector<int> actualColumn;
 	for (int i = 0; i<4; i++) {
 		actualColumn = m->column(i);
 		TestHelpers::arrayEquals(expColumns[i], actualColumn);

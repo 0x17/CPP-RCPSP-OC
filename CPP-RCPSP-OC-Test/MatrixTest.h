@@ -1,9 +1,10 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <memory>
+
 #include "TestHelpers.h"
 #include "../Matrix.h"
-#include <memory>
 
 class MatrixTest : public testing::Test {
 protected:

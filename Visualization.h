@@ -2,8 +2,7 @@
 // Created by André Schnabel on 25.10.15.
 //
 
-#ifndef CPP_RCPSP_OC_VISUALIZATION_H
-#define CPP_RCPSP_OC_VISUALIZATION_H
+#pragma once
 
 #include "ProjectWithOvertime.h"
 
@@ -13,4 +12,3 @@ namespace Visualization {
     string activityOnNodeGraphDOT(Project &p);
 };
 
-#endif //CPP_RCPSP_OC_SCHEDULEVISUALIZER_H

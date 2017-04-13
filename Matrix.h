@@ -2,8 +2,7 @@
 // Created by André Schnabel on 05.11.15.
 //
 
-#ifndef CPP_RCPSP_OC_MATRIX_H
-#define CPP_RCPSP_OC_MATRIX_H
+#pragma once
 
 #include <vector>
 #include <sstream>
@@ -119,6 +118,3 @@ public:
 		return out.str();
 	}
 };
-
-
-#endif //CPP_RCPSP_OC_MATRIX_H

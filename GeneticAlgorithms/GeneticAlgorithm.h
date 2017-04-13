@@ -2,20 +2,24 @@
 // Created by André Schnabel on 25.10.15.
 //
 
-#ifndef CPP_RCPSP_OC_GENETICALGORITHMS_H
-#define CPP_RCPSP_OC_GENETICALGORITHMS_H
+#pragma once
 
 #include <vector>
+#include <string>
 #include <algorithm>
 #include <iostream>
 #include <thread>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
-#include "../ProjectWithOvertime.h"
-#include "../Stopwatch.h"
 #include <boost/filesystem/operations.hpp>
 
-using namespace std;
+#include "../ProjectWithOvertime.h"
+#include "../Stopwatch.h"
+
+using std::string;
+using std::vector;
+using std::pair;
+using std::to_string;
 
 const bool FORCE_SINGLE_THREAD = true;
 
@@ -149,7 +153,7 @@ template<class Individual>
 void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
     params = _params;
     if(params.traceobj && tr == nullptr) {
-        tr = make_unique<Utils::Tracer>(traceFilenameForGeneticAlgorithm(params.outPath, name, p.instanceName));
+        tr = std::make_unique<Utils::Tracer>(traceFilenameForGeneticAlgorithm(params.outPath, name, p.instanceName));
     }
 }
 
@@ -195,7 +199,7 @@ int GeneticAlgorithm<Individual>::mutateAndFitnessRange(vector<pair<Individual, 
 
 template<class Individual>
 void GeneticAlgorithm<Individual>::selectBest(vector<pair<Individual, float>> &pop) {
-	sort(pop.begin(), pop.end(), [](auto &left, auto &right) { return left.second < right.second; });
+	std::sort(pop.begin(), pop.end(), [](auto &left, auto &right) { return left.second < right.second; });
 }
 
 template<class T>
@@ -250,7 +254,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
     vector<pair<Individual, float>> pop(params.popSize*2);
 
     const int NUM_THREADS = 4;
-    thread *threads[NUM_THREADS];
+    std::thread *threads[NUM_THREADS];
     int numPerThread = params.popSize / NUM_THREADS;
 
 	int scheduleCount = 0;
@@ -274,7 +278,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 		}
     }	
 
-    float lastBestVal = numeric_limits<float>::max();
+    float lastBestVal = std::numeric_limits<float>::max();
 
 	/*auto iterationLogger = [&](int i) {
 		static TimePoint lupdate = chrono::system_clock::now();		
@@ -305,7 +309,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
             for(int tix = 0; tix < NUM_THREADS; tix++) {
                 int six = params.popSize+tix*numPerThread;
                 int eix = params.popSize+(tix+1)*numPerThread-1;
-                threads[tix] = new thread(&GeneticAlgorithm<Individual>::mutateAndFitnessRange, this, &pop, six, eix);
+                threads[tix] = new std::thread(&GeneticAlgorithm<Individual>::mutateAndFitnessRange, this, &pop, six, eix);
             }
 
             for(auto thrd : threads) {
@@ -335,7 +339,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 
 		// Show improvements
         if(pop[0].second < lastBestVal) {
-			if (lastBestVal == numeric_limits<float>::max())
+			if (lastBestVal == std::numeric_limits<float>::max())
 				LOG_I("Initial improvement by " + to_string(-pop[0].second));
 			else
 				LOG_I("Improvement by " + to_string(lastBestVal - pop[0].second));
@@ -351,9 +355,5 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 	}
 
     auto best = pop[0];
-	return make_pair(decode(best.first), -best.second);
+	return std::make_pair(decode(best.first), -best.second);
 }
-
-
-
-#endif //CPP_RCPSP_OC_GENETICALGORITHMS_H

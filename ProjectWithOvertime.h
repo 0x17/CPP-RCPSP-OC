@@ -2,11 +2,10 @@
 // Created by André Schnabel on 23.10.15.
 //
 
-#ifndef SSGS_PROJECTWITHOVERTIME_H
-#define SSGS_PROJECTWITHOVERTIME_H
+#pragma once
 
-#include <list>
 #include <map>
+
 #include "Project.h"
 
 //typedef pair<bool, SGSResult> SGSDeadlineResult;
@@ -86,13 +85,10 @@ public:
 
 	bool isScheduleResourceFeasible(const vector<int>& sts) const override;
 
-	map<int, pair<int, float>> heuristicProfitsAndActualMakespanForRelevantDeadlines(const vector<int> &order) const;
+	std::map<int, std::pair<int, float>> heuristicProfitsAndActualMakespanForRelevantDeadlines(const vector<int> &order) const;
 
 private:
     void computeRevenueFunction();
     int computeTKappa() const;
 	bool enoughCapacityForJobWithOvertime(int job, int t, const Matrix<int> & resRem) const;
 };
-
-
-#endif //SSGS_PROJECTWITHOVERTIME_H

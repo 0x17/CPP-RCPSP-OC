@@ -2,8 +2,7 @@
 // Created by André Schnabel on 30.10.15.
 //
 
-#ifndef CPP_RCPSP_OC_TIMEWINDOWGAS_H
-#define CPP_RCPSP_OC_TIMEWINDOWGAS_H
+#pragma once
 
 #include <map>
 
@@ -50,7 +49,7 @@ private:
 
 class ActivityListBasedGA : public GeneticAlgorithm<Lambda> {
 public:	
-	using TDecoder = function<SGSResult(const ProjectWithOvertime &p, const vector<int>&)>;
+	using TDecoder = std::function<SGSResult(const ProjectWithOvertime &p, const vector<int>&)>;
 
 	enum class DecoderType {
 		CompareAlternatives,
@@ -82,6 +81,3 @@ class GoldenSectionSearchGA : public ActivityListBasedGA {
 public:
 	GoldenSectionSearchGA(ProjectWithOvertime& _p);
 };
-
-
-#endif //CPP_RCPSP_OC_TIMEWINDOWGAS_H

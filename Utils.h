@@ -2,33 +2,36 @@
 // Created by André Schnabel on 23.10.15.
 //
 
-#ifndef SSGS_UTILS_H
-#define SSGS_UTILS_H
+#pragma once
 
-#include <vector>
 #include <cstdlib>
+#include <vector>
 #include <list>
-#include <boost/format.hpp>
 #include <fstream>
 #include <chrono>
+
+#include <boost/format.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
-#include "Stopwatch.h"
 
-using namespace std;
+#include "Stopwatch.h"
 
 #define LOG_I(msg) Utils::Logger::getInstance()->log(Utils::Logger::LogLevel::INFO, msg)
 #define LOG_W(msg) Utils::Logger::getInstance()->log(Utils::Logger::LogLevel::WARNING, msg)
 #define LOG_E(msg) Utils::Logger::getInstance()->log(Utils::Logger::LogLevel::ERROR, msg)
 
+using std::string;
+using std::vector;
+using std::list;
+
 namespace Utils {
 	string slurp(string filename);
 	vector<string> readLines(string filename);
     int extractIntFromStr(string s, string rx);
-    vector<int> extractIntsFromLine(string line);
+	vector<int> extractIntsFromLine(string line);
 
     template<class T>
-    void batchResize(int size, initializer_list<vector<T> *> vecs) {
+    void batchResize(int size, std::initializer_list<vector<T> *> vecs) {
         for(auto v : vecs) v->resize(size);
     }
 
@@ -69,7 +72,7 @@ namespace Utils {
 				if (xth == nth) return k;
 				xth++;
 			}
-		throw runtime_error("No nth found!");
+		throw std::runtime_error("No nth found!");
 	}
 
 	template<class T>
@@ -89,7 +92,7 @@ namespace Utils {
 
     template<class Func>
     float maxInRangeIncl(int lb, int ub, Func transform) {
-        float r = numeric_limits<float>::lowest();
+        float r = std::numeric_limits<float>::lowest();
         for(int i = lb; i<=ub; i++) {
             float v = transform(i);
             if(v > r) r = v;
@@ -135,7 +138,7 @@ namespace Utils {
 	list<string> filenamesInDirWithExt(const string& dir, const string& ext);
 
     class Tracer {
-        ofstream f;
+		std::ofstream f;
 		std::chrono::time_point<std::chrono::system_clock> lupdate;
 		double last_slvtime;
 		Stopwatch sw;
@@ -172,7 +175,7 @@ namespace Utils {
 
 	private:
 		string logName;
-		ofstream f;
+		std::ofstream f;
 		LogMode mode;
 		static Logger *instance;
 
@@ -208,5 +211,3 @@ namespace Utils {
 		return -1;
 	}
 }
-
-#endif //SSGS_UTILS_H

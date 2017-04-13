@@ -10,6 +10,7 @@
 #include <boost/filesystem.hpp>
 
 using namespace boost::algorithm;
+using namespace std;
 
 const string
 		testString = "These are some\nLines in a\nTextfile.",

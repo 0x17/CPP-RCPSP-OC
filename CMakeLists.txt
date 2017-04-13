@@ -12,7 +12,6 @@ if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -llocalsolver -lgurobi_c++ -lgurobi70")
 else()
-
     set(GUROBI_INCLUDE_DIRS ~/gurobi701/linux64/include)
     set(LOCALSOLVER_INCLUDE_DIRS /opt/localsolver_6_5/include ~/localsolver_6_5/include)
     set(GUROBI_LIB_DIRS ~/gurobi701/linux64/lib)

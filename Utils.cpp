@@ -2,12 +2,13 @@
 // Created by André Schnabel on 23.10.15.
 //
 
+#include <cmath>
 #include <regex>
 #include <fstream>
 #include <iostream>
+
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-#include <cmath>
 
 #include "Utils.h"
 #include "Stopwatch.h"
@@ -16,29 +17,29 @@ namespace fs = boost::filesystem;
 namespace algo = boost::algorithm;
 
 string Utils::slurp(string filename) {
-	ifstream fp(filename);
-	if(!fp) throw runtime_error("Unable to open file: " + filename);
-	string s((istreambuf_iterator<char>(fp)), istreambuf_iterator<char>());
+	std::ifstream fp(filename);
+	if(!fp) throw std::runtime_error("Unable to open file: " + filename);
+	string s((std::istreambuf_iterator<char>(fp)), std::istreambuf_iterator<char>());
 	return s;
 }
 
 vector<string> Utils::readLines(string filename) {
     vector<string> lines;
     string line;
-    ifstream f(filename);
-    if(!f) throw runtime_error("Unable to open file: " + filename);
+	std::ifstream f(filename);
+    if(!f) throw std::runtime_error("Unable to open file: " + filename);
     while(!f.eof()) {
-        getline(f, line);
+		std::getline(f, line);
         lines.push_back(line);
     }
     return lines;
 }
 
 int Utils::extractIntFromStr(string s, string rx) {
-    regex rxObj(rx);
-    smatch result;
-    regex_search(s, result, rxObj);
-    return stoi(result[1]);
+	std::regex rxObj(rx);
+	std::smatch result;
+	std::regex_search(s, result, rxObj);
+    return std::stoi(result[1]);
 }
 
 vector<int> Utils::extractIntsFromLine(string line) {
@@ -60,7 +61,7 @@ vector<int> Utils::extractIntsFromLine(string line) {
 }
 
 void Utils::serializeSchedule(vector<int> & sts, const string filename) {
-	ofstream f(filename);
+	std::ofstream f(filename);
 	if(f.is_open()) {
 		for (int j = 0; j < sts.size(); j++) {
 			f << (j + 1) << "->" << sts[j];
@@ -72,7 +73,7 @@ void Utils::serializeSchedule(vector<int> & sts, const string filename) {
 }
 
 void Utils::serializeProfit(float profit, const string filename) {
-	spit(to_string(profit), filename);
+	spit(std::to_string(profit), filename);
 }
 
 int Utils::pickWithDistribution(vector<float> &probs, float q) {
@@ -88,7 +89,7 @@ int Utils::pickWithDistribution(vector<float> &probs, float q) {
 }
 
 void Utils::spit(const string s, const string filename) {
-    ofstream f(filename);
+	std::ofstream f(filename);
     if(f.is_open()) {
         f << s;
         f.close();
@@ -122,7 +123,7 @@ list<string> Utils::filenamesInDirWithExt(const string& dir, const string& ext) 
 }
 
 void Utils::spitAppend(const string s, const string filename) {
-    ofstream f(filename, ios_base::app);
+    std::ofstream f(filename, std::ios_base::app);
     if(f.is_open()) {
         f << s;
         f.close();
@@ -132,10 +133,10 @@ void Utils::spitAppend(const string s, const string filename) {
 namespace Utils {
     Tracer::Tracer(const string filePrefix) : f(filePrefix + ".txt") {
 		sw.start();
-		lupdate = chrono::system_clock::now();
+		lupdate = std::chrono::system_clock::now();
 		last_slvtime = 0.0;
         if(!f.is_open())
-            throw runtime_error("Unable to create " + filePrefix + ".txt!");
+            throw std::runtime_error("Unable to create " + filePrefix + ".txt!");
         f << "slvtime,bks_objval\n";
 		trace(0.0, 0.0f);
     }
@@ -148,21 +149,21 @@ namespace Utils {
 		double insecs = (slvtime / 1000.0);
 		if (trunc_secs) insecs = trunc(insecs);
 		// FIXME: Specify number of decimal places!
-		f << (boost::format("%.2f") % insecs) << "," << bks_objval << endl;
+		f << (boost::format("%.2f") % insecs) << "," << bks_objval << std::endl;
     }
 
 	void Tracer::intervalTrace(float bks_objval) {
 		double slvtime = sw.look();
-		double deltat = chrono::duration<double, milli>(chrono::system_clock::now() - lupdate).count();
+		double deltat = std::chrono::duration<double, std::milli>(std::chrono::system_clock::now() - lupdate).count();
 		if(slvtime < 1000.0 && deltat >= MSECS_BETWEEN_TRACES_SHORT) {
-			lupdate = chrono::system_clock::now();
+			lupdate = std::chrono::system_clock::now();
 			trace(slvtime, bks_objval);
 		} else if(slvtime >= 1000.0 && last_slvtime < 1000.0) {
-			lupdate = chrono::system_clock::now();
+			lupdate = std::chrono::system_clock::now();
 			trace(slvtime, bks_objval, true);
 		} else if(slvtime >= 1000.0 && deltat >= MSECS_BETWEEN_TRACES_LONG) {
 			//cout << "Nodes visited = " << nodeCtr << ", Boundings = " << boundCtr << ", Opt = " << lb << ", Time = " << (boost::format("%.2f") % (sw.look() / 1000.0)) << endl;
-			lupdate = chrono::system_clock::now();
+			lupdate = std::chrono::system_clock::now();
 			trace(slvtime, bks_objval, true);
 		}
 		last_slvtime = slvtime;
@@ -187,9 +188,9 @@ namespace Utils {
 	void Logger::log(LogLevel level, const string& message) {
 		if(mode == LogMode::QUIET || (level == LogLevel::INFO && mode == LogMode::MEDIUM)) return;
 		string timestr = formattedNow();
-		f << "[" << logName << ", " << timestr << "]: " << message << endl;
+		f << "[" << logName << ", " << timestr << "]: " << message << std::endl;
 		f.flush();
-		cout << "[" << logName << ", " << timestr << "]: " << message << endl;		
+		std::cout << "[" << logName << ", " << timestr << "]: " << message << std::endl;
 	}
 
 	Logger* Logger::getInstance() {
@@ -217,7 +218,7 @@ namespace Utils {
 		boost::filesystem::path dirPrefix = boost::filesystem::path(dirPath).remove_trailing_separator();
 
 		auto directoryNameForIx = [&dirPrefix, &infix](int index) {
-			return dirPrefix.string() + infix + to_string(index);
+			return dirPrefix.string() + infix + std::to_string(index);
 		};
 
 		auto creatDirForIx = [&directoryNameForIx](int index) {

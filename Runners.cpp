@@ -16,8 +16,9 @@ namespace Runners {
 		methodIndex(_methodIndex),
 		variant(_variant) {}
 
-	unique_ptr<ListModel> genListModelWithIndex(ProjectWithOvertime &p, int index, int variant) {
-		unique_ptr<ListModel> lm = nullptr;
+	std::unique_ptr<ListModel> genListModelWithIndex(ProjectWithOvertime &p, int index, int variant) {
+		using std::make_unique;
+		std::unique_ptr<ListModel> lm = nullptr;
 		switch (index) {
 		default:
 		case 0:
@@ -76,7 +77,7 @@ namespace Runners {
 
 	GAResult run(ProjectWithOvertime &p, GAParameters &params, int index) {
 		if (index < 0 || index >= funcs.size()) {
-			throw new runtime_error("Genetic algorithm index " + to_string(index) + " is out of range!");
+			throw new std::runtime_error("Genetic algorithm index " + to_string(index) + " is out of range!");
 		}
 		auto gafunc = funcs[index];
 		auto result = gafunc(p, params);
@@ -118,7 +119,7 @@ namespace Runners {
 
 	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime& p, RunnerParams rparams) {
 		vector<int> sts;
-		unique_ptr<ListModel> lm = genListModelWithIndex(p, rparams.methodIndex, rparams.variant);
+		std::unique_ptr<ListModel> lm = genListModelWithIndex(p, rparams.methodIndex, rparams.variant);
 		SolverParams params(rparams.timeLimit, rparams.iterLimit);
 		params.traceobj = rparams.traceobj;
 		params.solverIx = rparams.methodIndex;

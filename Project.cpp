@@ -6,9 +6,13 @@
 #include <list>
 #include <algorithm>
 #include <string>
-#include "Project.h"
+
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
+
+#include "Project.h"
+
+using std::to_string;
 
 Project::Project(const string &filename) : Project(boost::filesystem::path(filename).stem().string(), Utils::readLines(filename)) {}
 
@@ -46,7 +50,7 @@ vector<int> Project::serialSGS(const vector<int>& order) const {
 	return serialSGSCore(order, resRem);
 }
 
-pair<vector<int>, Matrix<int>> Project::serialSGSForPartial(const vector<int>& sts, const vector<int>& order, Matrix<int>& resRem) const {
+std::pair<vector<int>, Matrix<int>> Project::serialSGSForPartial(const vector<int>& sts, const vector<int>& order, Matrix<int>& resRem) const {
 	vector<int> fts(numJobs, UNSCHEDULED), nsts = sts;
 	transferAlreadyScheduledToFts(fts, sts);
 
@@ -62,7 +66,7 @@ pair<vector<int>, Matrix<int>> Project::serialSGSForPartial(const vector<int>& s
 	return make_pair(nsts, resRem);
 }
 
-pair<vector<int>, Matrix<int>> Project::serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const {
+std::pair<vector<int>, Matrix<int>> Project::serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const {
     Matrix<int> resRem = resRemForPartial(sts);
 	return serialSGSForPartial(sts, order, resRem);
 }
@@ -101,7 +105,7 @@ int Project::chooseEligibleWithLowestIndex(const vector<int>& sts, const vector<
 		if (sts[j] == UNSCHEDULED && allPredsScheduled(j, sts))
 			return j;
 	}
-	throw runtime_error("No eligible job found!");
+	throw std::runtime_error("No eligible job found!");
 }
 
 int Project::chooseEligibleWithLowestIndex(const vector<bool>& unscheduled, const vector<int>& order) const {
@@ -110,7 +114,7 @@ int Project::chooseEligibleWithLowestIndex(const vector<bool>& unscheduled, cons
 		if (unscheduled[j] && allPredsScheduled(j, unscheduled))
 			return j;
 	}
-	throw runtime_error("No eligible job found!");
+	throw std::runtime_error("No eligible job found!");
 }
 
 
@@ -120,7 +124,7 @@ int Project::chooseEligibleWithHighestIndex(const vector<bool>& unscheduled, con
 		if(unscheduled[j] && allSuccsScheduled(j, unscheduled))
 			return j;
 	}
-	throw runtime_error("No eligible job found!");
+	throw std::runtime_error("No eligible job found!");
 }
 
 bool Project::isScheduleFeasible(const vector<int>& sts) const {
@@ -130,13 +134,13 @@ bool Project::isScheduleFeasible(const vector<int>& sts) const {
 bool Project::isSchedulePrecedenceFeasible(const vector<int>& sts) const {
 	for(int i = 0; i < numJobs; i++) {
 		if (sts[i] < 0 || sts[i] + durations[i] > T) {
-			LOG_W("Starting time of activity " + to_string(i) + " out of time horizon. t = " + to_string(sts[i]));
+			LOG_W("Starting time of activity " + std::to_string(i) + " out of time horizon. t = " + std::to_string(sts[i]));
 			return false;
 		}
 
 		for(int j = 0; j < numJobs; j++) {
 			if (adjMx(i, j) && sts[i] + durations[i] > sts[j]) {
-				LOG_W("Order feasibility violated. ft" + to_string(i) + "=" + to_string(sts[i] + durations[i]) + " > st" + to_string(j) + "=" + to_string(sts[j]));
+				LOG_W("Order feasibility violated. ft" + std::to_string(i) + "=" + std::to_string(sts[i] + durations[i]) + " > st" + std::to_string(j) + "=" + std::to_string(sts[j]));
 				return false;
 			}
 		}
@@ -455,7 +459,7 @@ int Project::latestStartingTimeInPartial(const vector<int>& sts) const {
 }
 
 int Project::earliestStartingTimeInPartial(const vector<int> &sts) const {
-    int minSt = numeric_limits<int>::max();
+    int minSt = std::numeric_limits<int>::max();
     EACH_JOB(if(sts[j] != UNSCHEDULED && sts[j] < minSt) minSt = sts[j])
     return minSt;
 }

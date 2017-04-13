@@ -3,6 +3,8 @@
 #include "GurobiSolver.h"
 #include "ProjectWithOvertime.h"
 
+using namespace std;
+
 GurobiSolver::Options::Options() :
 	BasicSolverParameters(GRB_INFINITY, -1, false, "GurobiTrace_", 0),
 	useSeedSol(true),
@@ -154,7 +156,7 @@ void GurobiSolver::setupFeasibleMipStart() {
 		p.eachJobConst([&](int j) {
 			cumDemand += sts[j] + 1 < t && t <= sts[j] + p.durations[j] ? p.demands(j,r) : 0;
 		});
-		zrt(r, t).set(GRB_DoubleAttr_Start, max(0, cumDemand-p.capacities[r]));
+		zrt(r, t).set(GRB_DoubleAttr_Start, std::max(0, cumDemand-p.capacities[r]));
 	});
 }
 

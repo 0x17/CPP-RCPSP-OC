@@ -1,5 +1,4 @@
-﻿#ifndef __BRANCH_AND_BOUND_H__
-#define __BRANCH_AND_BOUND_H__
+﻿#pragma once
 
 #include <vector>
 #include <string>
@@ -7,8 +6,6 @@
 #include "Matrix.h"
 #include "Stopwatch.h"
 #include "Utils.h"
-
-using namespace std;
 
 class ProjectWithOvertime;
 class Stopwatch;
@@ -34,10 +31,10 @@ private:
     //TimePoint lupdate;
 	double timeLimit;
 	int iterLimit;
-    unique_ptr<Utils::Tracer> tr;
+	std::unique_ptr<Utils::Tracer> tr;
 	
 	bool isEligible(vector<int> &sts, int j) const;
-	pair<bool,bool> resourceFeasibilityCheck(vector<int> &sts, int j, int stj) const;
+	std::pair<bool,bool> resourceFeasibilityCheck(vector<int> &sts, int j, int stj) const;
 	void branch(vector<int> sts, int job, int stj);
     void foundLeaf(vector<int> &sts);
     
@@ -54,5 +51,3 @@ private:
 	void drawGraph();
 	void graphPreamble();
 };
-
-#endif

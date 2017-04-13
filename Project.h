@@ -2,11 +2,11 @@
 // Created by André Schnabel on 23.10.15.
 //
 
-#ifndef SSGS_PROJECT_H
-#define SSGS_PROJECT_H
+#pragma once
 
 #include "Utils.h"
 #include "Matrix.h"
+
 #include <boost/filesystem/path.hpp>
 
 #define EACH_COMMON(ix, ubExcl, code) \
@@ -62,12 +62,12 @@ public:
 
     int numJobs, numRes, numPeriods, T, lastJob;
     Matrix<char> adjMx;
-    vector<int> durations, capacities;
+	vector<int> durations, capacities;
     Matrix<int> demands;
 
 	vector<int> topOrder, revTopOrder;
 
-    vector<int> ests, lsts, efts, lfts;
+	vector<int> ests, lsts, efts, lfts;
 
     const bool USE_DISPOSITION_METHOD = false;
 
@@ -78,8 +78,8 @@ public:
 	virtual ~Project() {}
 
 	vector<int> serialSGS(const vector<int>& order) const;
-	pair<vector<int>, Matrix<int>> serialSGSForPartial(const vector<int> &sts, const vector<int> &order, Matrix<int> &resRem) const;
-    pair<vector<int>, Matrix<int>> serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const;
+	std::pair<vector<int>, Matrix<int>> serialSGSForPartial(const vector<int> &sts, const vector<int> &order, Matrix<int> &resRem) const;
+	std::pair<vector<int>, Matrix<int>> serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const;
 	SGSResult serialSGS(const vector<int>& order, const vector<int>& zr, bool robust = false) const;
 	SGSResult serialSGS(const vector<int>& order, const Matrix<int>& zrt, bool robust = false) const;
 
@@ -125,8 +125,8 @@ public:
     int latestStartingTimeInPartial(const vector<int> &sts) const;
     int earliestStartingTimeInPartial(const vector<int> &sts) const;
 
-    vector<int> earliestStartingTimesForPartial(const vector<int> &sts) const;
-    vector<int> latestFinishingTimesForPartial(const vector<int> &sts, int deadline) const;
+	vector<int> earliestStartingTimesForPartial(const vector<int> &sts) const;
+	vector<int> latestFinishingTimesForPartial(const vector<int> &sts, int deadline) const;
 
 	int chooseEligibleWithLowestIndex(const vector<int> &sts, const vector<int> &order) const;
 	int chooseEligibleWithLowestIndex(const vector<bool> &unscheduled, const vector<int> &order) const;
@@ -204,7 +204,7 @@ inline void Project::timeWindow(int j, Func code) const {
 
 template<class Func>
 inline void Project::timeWindowBounded(int j, Func code) const {
-	for (int t = efts[j]; t <= min(lfts[j], heuristicMaxMs); t++) { code(t); }
+	for (int t = efts[j]; t <= std::min(lfts[j], heuristicMaxMs); t++) { code(t); }
 }
 
 template <class Func>
@@ -219,7 +219,7 @@ inline void Project::eachJobTimeWindow(Func code) const {
 template <class Func>
 inline void Project::eachJobTimeWindowBounded(Func code) const {
 	eachJobConst([&](int j) {
-		for (int t = efts[j]; t <= min(lfts[j], heuristicMaxMs); t++) {
+		for (int t = efts[j]; t <= std::min(lfts[j], heuristicMaxMs); t++) {
 			code(j, t);
 		}
 	});
@@ -227,7 +227,7 @@ inline void Project::eachJobTimeWindowBounded(Func code) const {
 
 template <class Func>
 inline void Project::demandInPeriodMIP(int j, int t, Func code) const {
-	for(int tau = t; tau < min(t + durations[j], getHeuristicMaxMakespan() + 1); tau++) {
+	for(int tau = t; tau < std::min(t + durations[j], getHeuristicMaxMakespan() + 1); tau++) {
 		code(tau);
 	}
 }
@@ -240,4 +240,3 @@ inline int Project::getHeuristicMaxMakespan() const {
 	return heuristicMaxMs;
 }
 
-#endif //SSGS_PROJECT_H

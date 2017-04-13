@@ -12,7 +12,7 @@
 
 //======================================================================================================================
 
-pair<LSModel, Matrix<LSExpression>> buildModel(ProjectWithOvertime &p, LocalSolver &ls) {
+std::pair<LSModel, Matrix<LSExpression>> buildModel(ProjectWithOvertime &p, LocalSolver &ls) {
 	auto model = ls.getModel();
 	auto dummyExpr = model.createConstant(0LL);
 
@@ -70,7 +70,7 @@ pair<LSModel, Matrix<LSExpression>> buildModel(ProjectWithOvertime &p, LocalSolv
 	model.addObjective(objfunc, OD_Maximize);
 	model.close();
 
-	return make_pair(model, x);
+	return std::make_pair(model, x);
 }
 
 vector<int> parseSolution(ProjectWithOvertime &p, Matrix<LSExpression> &x, LSSolution &sol) {
@@ -119,7 +119,7 @@ vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, int iterLi
 	}
 
 	auto solvetime = ls.getStatistics().getRunningTime();
-	cout << "Solvetime = " << solvetime << endl;
+	std::cout << "Solvetime = " << solvetime << std::endl;
 
 	return parseSolution(p, x, sol);
 }
@@ -225,34 +225,34 @@ vector<int> LSSolver::solveNative(ProjectWithOvertime &p) {
 void LSSolver::writeLSPModelParamFile(ProjectWithOvertime &p, string outFilename) {
 	list<string> outLines = {
 		"njobs/nperiods/nres",
-		to_string(p.numJobs),
-		to_string(p.numPeriods),
-		to_string(p.numRes) };
+		std::to_string(p.numJobs),
+		std::to_string(p.numPeriods),
+		std::to_string(p.numRes) };
 
 	outLines.push_back("durations");
-	p.eachJob([&](int j) { outLines.push_back(to_string(p.durations[j])); });
+	p.eachJob([&](int j) { outLines.push_back(std::to_string(p.durations[j])); });
 	outLines.push_back("demands (j,r)-matrix (row major order)");
-	p.eachJob([&](int j) { p.eachRes([&](int r) { outLines.push_back(to_string(p.demands(j, r))); }); });
+	p.eachJob([&](int j) { p.eachRes([&](int r) { outLines.push_back(std::to_string(p.demands(j, r))); }); });
 	outLines.push_back("adjacency matrix (row major order)");
 	p.eachJobPair([&](int i, int j) { outLines.push_back(p.adjMx(i, j) ? "1" : "0"); });
 	outLines.push_back("capacities");
-	p.eachRes([&](int r) { outLines.push_back(to_string(p.capacities[r])); });
+	p.eachRes([&](int r) { outLines.push_back(std::to_string(p.capacities[r])); });
 
 	outLines.push_back("earliest finishing times");
-	p.eachJob([&](int j) { outLines.push_back(to_string(p.efts[j])); });
+	p.eachJob([&](int j) { outLines.push_back(std::to_string(p.efts[j])); });
 	outLines.push_back("latest finishing times");
-	p.eachJob([&](int j) { outLines.push_back(to_string(p.lfts[j])); });
+	p.eachJob([&](int j) { outLines.push_back(std::to_string(p.lfts[j])); });
 
 	outLines.push_back("revenue");
 	for (int t = 0; t<p.numPeriods + 1; t++) {
-		outLines.push_back(to_string(p.revenue[t]));
+		outLines.push_back(std::to_string(p.revenue[t]));
 	}
 	outLines.push_back("upper bound for overtime");
-	p.eachRes([&](int r) { outLines.push_back(to_string(p.zmax[r])); });
+	p.eachRes([&](int r) { outLines.push_back(std::to_string(p.zmax[r])); });
 	outLines.push_back("kappa");
-	p.eachRes([&](int r) { outLines.push_back(to_string(p.kappa[r])); });
+	p.eachRes([&](int r) { outLines.push_back(std::to_string(p.kappa[r])); });
 
-	ofstream f(outFilename);
+	std::ofstream f(outFilename);
 	if (!f.is_open()) return;
 	for (auto onum : outLines)
 		f << onum << "\n";

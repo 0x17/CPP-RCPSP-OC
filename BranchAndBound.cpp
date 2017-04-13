@@ -10,14 +10,14 @@
 #include "GeneticAlgorithms/OvertimeBound.h"
 
 BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, double _timeLimit, int _iterLimit, bool _writeGraph)
-	: p(_p), lb(numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph), timeLimit(_timeLimit), iterLimit(_iterLimit), tr(nullptr) {}
+	: p(_p), lb(std::numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph), timeLimit(_timeLimit), iterLimit(_iterLimit), tr(nullptr) {}
 
 BranchAndBound::~BranchAndBound() {
 }
 
 vector<int> BranchAndBound::solve(bool seedWithGA, bool traceobj, string outPath) {
     if(traceobj && tr == nullptr) {
-        tr = make_unique<Utils::Tracer>(getTraceFilename(outPath, p.instanceName));
+        tr = std::make_unique<Utils::Tracer>(getTraceFilename(outPath, p.instanceName));
     }
 
     //lupdate = chrono::system_clock::now();
@@ -28,7 +28,7 @@ vector<int> BranchAndBound::solve(bool seedWithGA, bool traceobj, string outPath
 		auto res = ga.solve();
 		candidate = res.first;
 		lb = res.second;
-		cout << endl << "Lower bound seeded by genetic algorithm = " << lb << endl;
+		std::cout << std::endl << "Lower bound seeded by genetic algorithm = " << lb << std::endl;
 	} else {
         candidate = p.serialSGS(p.topOrder);
         lb = p.calcProfit(candidate);
@@ -44,9 +44,9 @@ vector<int> BranchAndBound::solve(bool seedWithGA, bool traceobj, string outPath
     
     double solvetime = sw.look();
 
-	cout << "Number of nodes visited: " << nodeCtr << endl;
-	cout << "Number of boundings: " << boundCtr << endl;
-	cout << "Total solvetime: " << solvetime << endl;
+	std::cout << "Number of nodes visited: " << nodeCtr << std::endl;
+	std::cout << "Number of boundings: " << boundCtr << std::endl;
+	std::cout << "Total solvetime: " << solvetime << std::endl;
 
 	drawGraph();
 
@@ -76,13 +76,13 @@ pair<bool,bool> BranchAndBound::resourceFeasibilityCheck(vector<int>& sts, int j
 			cdemand += p.demands(j, r);
 
 			if(cdemand > p.capacities[r] + p.zmax[r])
-				return make_pair(false, false);
+				return std::make_pair(false, false);
 
 			if(feasWoutOC && cdemand > p.capacities[r])
 				feasWoutOC = false;
 		}
 	}
-	return make_pair(true, feasWoutOC);
+	return std::make_pair(true, feasWoutOC);
 }
 
 struct BranchAndBound::AreaData {
@@ -138,7 +138,7 @@ float BranchAndBound::upperBoundForPartial2(const vector<int> &sts) const {
 
 	vector<int> essFeas = p.earliestStartingTimesForPartialRespectZmax(sts, resRem);
 
-	int minStUnscheduled = numeric_limits<int>::max();
+	int minStUnscheduled = std::numeric_limits<int>::max();
 	for (int j = 0; j < p.numJobs; j++) {
 		if (sts[j] == Project::UNSCHEDULED && essFeas[j] < minStUnscheduled)
 			minStUnscheduled = essFeas[j];
@@ -148,7 +148,7 @@ float BranchAndBound::upperBoundForPartial2(const vector<int> &sts) const {
 
     AreaData data = computeAreas(sts, resRem, minStUnscheduled, essFeasMakespan);
 
-    float bestProfit = numeric_limits<float>::lowest();
+    float bestProfit = std::numeric_limits<float>::lowest();
     int delayPeriods = 0;
 
     while(true) {
@@ -180,7 +180,7 @@ void BranchAndBound::foundLeaf(vector<int> &sts) {
     if(profit > lb) {
         candidate = sts;
         lb = profit;
-        cout << "Updated lower bound = " << lb << endl;
+        std::cout << "Updated lower bound = " << lb << std::endl;
 		//if(tr != nullptr) tr->trace(sw.look(), lb);
     }
 }
@@ -228,7 +228,7 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 					sts[j] = Project::UNSCHEDULED;
 
 					// fathom proven suboptimal schedules
-					if(ub > lb) ubToT.push_back(make_pair(-ub, t));
+					if(ub > lb) ubToT.push_back(std::make_pair(-ub, t));
 					else boundCtr++;
 				}
 
@@ -284,13 +284,13 @@ void BranchAndBound::graphPreamble() {
 
 void BranchAndBound::solvePath(const string path) {
     auto instanceFilenames = Utils::filenamesInDirWithExt(path, ".sm");
-    ofstream outFile("branchandboundresults.csv");
+    std::ofstream outFile("branchandboundresults.csv");
     if(!outFile.is_open()) return;
     for(auto instanceFn : instanceFilenames) {
         ProjectWithOvertime p(instanceFn);
         BranchAndBound bandb(p);
         auto sts = bandb.solve(true);
-        outFile << instanceFn << ";" << to_string(p.calcProfit(sts)) << endl;
+        outFile << instanceFn << ";" << to_string(p.calcProfit(sts)) << std::endl;
     }
     outFile.close();
 }

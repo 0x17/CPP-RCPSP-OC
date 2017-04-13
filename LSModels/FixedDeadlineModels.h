@@ -2,7 +2,6 @@
 
 #include "ListModel.h"
 
-
 class GSListModel : public ListModel {
 	class QuasistableSGSFunction : public SchedulingNativeFunction {
 	public:

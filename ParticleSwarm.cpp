@@ -1,9 +1,10 @@
 // TODO: Implement full method! Follow original paper of pseudo PSO!
 
+#include <cmath>
+
 #include "ParticleSwarm.h"
 #include "GeneticAlgorithms/Sampling.h"
 #include "ProjectWithOvertime.h"
-#include <cmath>
 
 ParticleSwarm::ParticleSwarm(ProjectWithOvertime& _p) : p(_p) {
 }
@@ -58,7 +59,7 @@ SGSResult ParticleSwarm::solve() {
 }
 
 vector<vector<int>> ParticleSwarm::generateSwarm(int nsw, int iter, list<pair<vector<int>, float>>& popWithFitness) const {
-	map<vector<int>, double> distp;
+	std::map<vector<int>, double> distp;
 
 	auto mindist = [](int i) {
 		return i < 3 ? 1 : (i < 4 ? 2 : (i < 7 ? 3 : 4));
@@ -72,7 +73,7 @@ vector<vector<int>> ParticleSwarm::generateSwarm(int nsw, int iter, list<pair<ve
 				dp = distance(pair.first, al);
 			}
 			else {
-				dp = min(distp[pair.first], distance(pair.first, al));
+				dp = std::min(distp[pair.first], distance(pair.first, al));
 			}
 			distp[pair.first] = dp;
 			double d = mindist(iter);

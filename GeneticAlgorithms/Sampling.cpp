@@ -9,7 +9,7 @@
 
 vector<float> Sampling::computeProbsForDecisionSet(const vector<bool> &eligible, const vector<float> &priorityValues) {
     int len = static_cast<int>(priorityValues.size());
-    float minPrio = numeric_limits<float>::max(); // use filter iterator from boost instead?
+    float minPrio = std::numeric_limits<float>::max(); // use filter iterator from boost instead?
     for(int j = 0; j < len; j++) {
         if (eligible[j] && priorityValues[j] < minPrio)
             minPrio = priorityValues[j];

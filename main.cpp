@@ -34,7 +34,7 @@ namespace Main {
 void Main::plotHeuristicProfits() {
 	boost::filesystem::path path("../../Projekte/j30/");
 
-	int maxDiff = numeric_limits<int>::lowest();
+	int maxDiff = std::numeric_limits<int>::lowest();
 	string maxDiffInstance = "";
 
 	for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(path), {})) {
@@ -63,7 +63,7 @@ void computeScheduleAttributes(string smfilename) {
 	ProjectWithOvertime p(smfilename);
 	for(auto resfile : resfiles) {
 		vector<int> sts = Utils::deserializeSchedule(p.numJobs, resfile);
-		cout << resfile << " profit=" << p.calcProfit(sts) << ", makespan=" << p.makespan(sts) << endl;
+		std::cout << resfile << " profit=" << p.calcProfit(sts) << ", makespan=" << p.makespan(sts) << std::endl;
 	}
 }
 
@@ -95,7 +95,7 @@ void Main::Testing::fixedScheduleLimitSolveTimesForProjects() {
         avgSolvetimes[ctr++] = Main::Testing::averageSolvetime(ix, 1000, j30path);
     }
     for(int i=0; i<avgSolvetimes.size(); i++)
-        cout << "Method " << Runners::getDescription(relevantGaIndices[i]) << " average solvetime = " << avgSolvetimes[i] << endl;
+        std::cout << "Method " << Runners::getDescription(relevantGaIndices[i]) << " average solvetime = " << avgSolvetimes[i] << std::endl;
 }
 
 double Main::Testing::averageSolvetime(int gaIndex, int scheduleLimit, const string &path) {
@@ -123,10 +123,10 @@ void Main::showUsage() {
 	list<string> solMethods = { "BranchAndBound", "LocalSolver", "Gurobi" };
 	for (int i = 0; i < 8; i++) solMethods.push_back("GA" + to_string(i) + " // " + Runners::getDescription(i));
 	for (int i = 0; i < 8; i++) solMethods.push_back("LocalSolverNative" + to_string(i) + " // " + Runners::getDescription(i));
-	cout << "Number of arguments must be >= 4" << endl;
-	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ScheduleLimit ProjectFileSM [traceobj]" << endl;
-	cout << "Solution methods: " << endl;
-	for (auto method : solMethods) cout << "\t" << method << endl;
+	std::cout << "Number of arguments must be >= 4" << std::endl;
+	std::cout << "Usage: Solver SolutionMethod TimeLimitInSecs ScheduleLimit ProjectFileSM [traceobj]" << std::endl;
+	std::cout << "Solution methods: " << std::endl;
+	for (auto method : solMethods) std::cout << "\t" << method << std::endl;
 }
 
 int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
@@ -164,7 +164,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
         ProjectWithOvertime p(argv[4]);
         
         if(computeMinMaxMakespanDifference(p) <= 0) {
-            cout << "maxMs - minMs <= 0... ---> skipping!" << endl;
+			std::cout << "maxMs - minMs <= 0... ---> skipping!" << std::endl;
             return;
         }
 
@@ -220,7 +220,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			sts = res.sts;			
 #endif
         } else {
-			throw runtime_error("Unknown method: " + solMethod + "!");
+			throw std::runtime_error("Unknown method: " + solMethod + "!");
         }
         
 		// FIXME: specify number of decimal places!
@@ -293,7 +293,7 @@ boost::optional<Runners::GAResult> Main::Testing::benchmarkGeneticAlgorithm(int 
     ProjectWithOvertime p(projFilename);
 
     if(computeMinMaxMakespanDifference(p) <= 0) {
-        cout << "maxMs - minMs <= 0... ---> skipping!" << endl;
+		std::cout << "maxMs - minMs <= 0... ---> skipping!" << std::endl;
         return boost::optional<Runners::GAResult>();
     }
 
@@ -316,7 +316,7 @@ boost::optional<Runners::GAResult> Main::Testing::benchmarkGeneticAlgorithm(int 
 	Utils::serializeProfit(p.calcProfit(res.sts), "myprofit.txt");
 	//cout << (p.calcProfit(res.sts) == res.profit) << endl;
 
-	cout << "Solvetime = " << res.solvetime << endl;
+	std::cout << "Solvetime = " << res.solvetime << std::endl;
 
     return res;
 }

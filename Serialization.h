@@ -2,7 +2,11 @@
 
 #include <string>
 #include <vector>
+
 #include "Matrix.h"
+
+using std::string;
+using std::vector;
 
 class Project;
 class ProjectWithOvertime;
@@ -10,21 +14,21 @@ class ProjectWithOvertime;
 namespace Serialization {
 
 	namespace JSON {
-		std::string serializeProject(const Project &p);
-		std::string serializeProject(const ProjectWithOvertime &p);
-		std::string serializeSchedule(const std::vector<int> &sts);
+		string serializeProject(const Project &p);
+		string serializeProject(const ProjectWithOvertime &p);
+		string serializeSchedule(const vector<int> &sts);
 	}
 
 	namespace GAMS {
-		std::string serializeSet(std::string setName, std::string indexPrefix, int lb, int ub);
+		string serializeSet(string setName, string indexPrefix, int lb, int ub);
 
 		template<class T>
-		std::string serializeParam1D(std::string setDepName, std::string indexPrefix, std::vector<T> &elements) {
+		string serializeParam1D(string setDepName, string indexPrefix, vector<T> &elements) {
 			// TODO: Implement me!
 		}
 
 		template<class T>
-		std::string serializeParam2D(std::string setDepName1, std::string setDepName2, std::string indexPrefix1, std::string indexPrefix2, Matrix<T> &elements) {
+		string serializeParam2D(string setDepName1, string setDepName2, string indexPrefix1, string indexPrefix2, Matrix<T> &elements) {
 			// TODO: Implement me!
 		}
 	}

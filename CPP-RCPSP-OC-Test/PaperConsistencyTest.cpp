@@ -2,6 +2,8 @@
 #include "TestHelpers.h"
 #include "../GeneticAlgorithms/Representations.h"
 
+using namespace std;
+
 const static string EXAMPLE_PROJECT_STR =
 		"************************************************************************\n"
 		"file with basedata            : ..\\EXAMPLE\\EXPL.BAS\n"

@@ -1,5 +1,4 @@
-#ifndef __LIST_MODEL_H__
-#define __LIST_MODEL_H__
+#pragma once
 
 #include "../ProjectWithOvertime.h"
 #include <localsolver.h>
@@ -65,5 +64,3 @@ public:
     virtual void callback(LocalSolver &solver, LSCallbackType type) override;
     virtual ~TraceCallback();
 };
-
-#endif

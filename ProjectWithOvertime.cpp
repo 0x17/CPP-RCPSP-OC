@@ -5,8 +5,10 @@
 #include <cmath>
 #include <string>
 #include <map>
-#include "ProjectWithOvertime.h"
+
 #include <boost/algorithm/clamp.hpp>
+
+#include "ProjectWithOvertime.h"
 
 ProjectWithOvertime::ProjectWithOvertime(const string &filename) :
 	ProjectWithOvertime(boost::filesystem::path(filename).stem().string(), Utils::readLines(filename)) {}
@@ -212,7 +214,7 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 		SGSResult result;
 
 		string toString() const {
-			return "deadline=" + to_string(deadline) + ", profit=" + to_string(profit);
+			return "deadline=" + std::to_string(deadline) + ", profit=" + std::to_string(profit);
 		}
 
 	} lb, ub, a, b;
@@ -280,17 +282,17 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector
 	return lb.result;
 }
 
-map<int, pair<int, float>> ProjectWithOvertime::heuristicProfitsAndActualMakespanForRelevantDeadlines(const vector<int> &order) const {
+std::map<int, std::pair<int, float>> ProjectWithOvertime::heuristicProfitsAndActualMakespanForRelevantDeadlines(const vector<int> &order) const {
 	auto tminRes = serialSGS(order, zmax);
 	auto tmaxRes = serialSGS(order, zzero);
 	int lb = makespan(tminRes.sts);
 	int ub = makespan(tmaxRes.sts);
-	map<int, pair<int, float>> profitForMakespan;
+	std::map<int, std::pair<int, float>> profitForMakespan;
 	for(int t=lb; t <= ub; t++) {
 		auto result = forwardBackwardIterations(order, tminRes, t);
 		int actualMakespan = makespan(result);
 		float delayedProfit = calcProfit(result);
-		profitForMakespan[t] = make_pair(actualMakespan, delayedProfit);
+		profitForMakespan[t] = std::make_pair(actualMakespan, delayedProfit);
 	}
 	return profitForMakespan;
 }
@@ -311,7 +313,7 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order, b
         int t;
         for (t = lastPredFinished; !enoughCapacityForJobWithOvertime(job, t, resRem); t++);
 
-        pair<int, float> bestT = make_pair(t, numeric_limits<float>::lowest());
+        std::pair<int, float> bestT = std::make_pair(t, std::numeric_limits<float>::lowest());
 
         for(;; t++) {
             if(!enoughCapacityForJobWithOvertime(job, t, resRem))
@@ -395,9 +397,9 @@ void ProjectWithOvertime::scheduleJobBorderUpper(int job, int lastPredFinished, 
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, BorderSchedulingOptions options, bool robust) const {
-	unique_ptr<ResidualData> residuals = nullptr;
+	std::unique_ptr<ResidualData> residuals = nullptr;
 	if(options.upper) {
-		residuals = make_unique<ResidualData>(this);
+		residuals = std::make_unique<ResidualData>(this);
 	}
 
 	PartialScheduleData data(this);
@@ -490,7 +492,7 @@ SGSResult ProjectWithOvertime::forwardBackwardIterations(const vector<int> &orde
 		//checkAndOutput(result, deadline, i);
 		result = (i % 2 == 0) ? delayWithoutOvertimeIncrease(order, result.sts, result.resRem, deadline, robust) : earlierWithoutOvertimeIncrease(order, result.sts, result.resRem, robust);
 		float currentCosts = totalCosts(result.resRem);
-		if (abs(currentCosts - lastCosts) <= DEADLINE_IMPROVEMENT_TOLERANCE) {
+		if (std::abs(currentCosts - lastCosts) <= DEADLINE_IMPROVEMENT_TOLERANCE) {
 			//checkAndOutput(result, deadline, i);
 			break;
 		}

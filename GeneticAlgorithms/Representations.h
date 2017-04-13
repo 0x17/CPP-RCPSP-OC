@@ -2,8 +2,7 @@
 // Created by André Schnabel on 06.02.16.
 //
 
-#ifndef CPP_RCPSP_OC_REPRESENTATIONS_H
-#define CPP_RCPSP_OC_REPRESENTATIONS_H
+#pragma once
 
 #include "../Matrix.h"
 #include "../Utils.h"
@@ -121,4 +120,3 @@ public:
     virtual void swap(int i1, int i2) override;
 };
 
-#endif //CPP_RCPSP_OC_REPRESENTATIONS_H

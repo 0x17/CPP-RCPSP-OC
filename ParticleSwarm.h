@@ -4,6 +4,8 @@
 
 class ProjectWithOvertime;
 
+using std::pair;
+
 class ParticleSwarm
 {	
 public:

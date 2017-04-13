@@ -1,6 +1,9 @@
 #include "ListModel.h"
 #include "../Stopwatch.h"
 
+using std::numeric_limits;
+using std::to_string;
+
 lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 	vector<int> order(p.numJobs);
 	if (context.count() < varCount()) return numeric_limits<double>::lowest();
@@ -40,13 +43,13 @@ ListModel::~ListModel() {
 }
 
 vector<int> ListModel::solve(SolverParams params) {
-    unique_ptr<Utils::Tracer> tr = nullptr;
-	unique_ptr<TraceCallback> cback = nullptr;
+	std::unique_ptr<Utils::Tracer> tr = nullptr;
+	std::unique_ptr<TraceCallback> cback = nullptr;
 	buildModel();
 	applyParams(params);
     if(params.traceobj) {
-        tr = make_unique<Utils::Tracer>(traceFilenameForListModel(params.outPath, params.solverIx, p.instanceName));
-		cback = make_unique<TraceCallback>(*tr);
+        tr = std::make_unique<Utils::Tracer>(traceFilenameForListModel(params.outPath, params.solverIx, p.instanceName));
+		cback = std::make_unique<TraceCallback>(*tr);
         //ls.addCallback(CT_TimeTicked, cback);
 		decoder->setTracer(tr.get());
     }

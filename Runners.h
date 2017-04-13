@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+
 #include "GeneticAlgorithms/GeneticAlgorithm.h"
 #include "Utils.h"
 
@@ -23,13 +24,13 @@ namespace Runners {
 		RunnerParams(int _methodIndex, int _variant, double _timeLimit, int _iterLimit, bool _traceobj, const string& _outPath);
 	};
 
-	unique_ptr<ListModel> genListModelWithIndex(ProjectWithOvertime &p, int index, int variant = 0);
+	std::unique_ptr<ListModel> genListModelWithIndex(ProjectWithOvertime &p, int index, int variant = 0);
 
 	struct GAResult {
-		std::vector<int> sts;
+		vector<int> sts;
 		float profit;
 		double solvetime;
-		std::string name;
+		string name;
 	};
 
 	template<class T>
@@ -52,7 +53,7 @@ namespace Runners {
 
 	GAResult run(ProjectWithOvertime &p, GAParameters &params, int index);
 
-	std::string getDescription(int index);
+	string getDescription(int index);
 
 	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, RunnerParams rparams);
 	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, RunnerParams rparams);

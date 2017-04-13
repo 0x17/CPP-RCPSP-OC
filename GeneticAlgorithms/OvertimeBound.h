@@ -2,8 +2,7 @@
 // Created by André Schnabel on 30.10.15.
 //
 
-#ifndef CPP_RCPSP_OC_OVERTIMEBOUNDGAS_H
-#define CPP_RCPSP_OC_OVERTIMEBOUNDGAS_H
+#pragma once
 
 #include "GeneticAlgorithm.h"
 #include "Representations.h"
@@ -33,6 +32,3 @@ private:
 
 	void mutateOvertime(vector<int> &z);
 };
-
-
-#endif //CPP_RCPSP_OC_OVERTIMEBOUNDGAS_H

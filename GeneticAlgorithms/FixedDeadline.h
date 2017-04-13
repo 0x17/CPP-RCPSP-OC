@@ -2,8 +2,7 @@
 // Created by André Schnabel on 30.10.15.
 //
 
-#ifndef CPP_RCPSP_OC_FIXEDDEADLINE_H
-#define CPP_RCPSP_OC_FIXEDDEADLINE_H
+#pragma once
 
 #include "GeneticAlgorithm.h"
 #include "Representations.h"
@@ -21,6 +20,3 @@ private:
 
     int deadlineOffsetLB, deadlineOffsetUB;
 };
-
-
-#endif //CPP_RCPSP_OC_FIXEDDEADLINE_H

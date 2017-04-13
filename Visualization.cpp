@@ -2,8 +2,11 @@
 // Created by André Schnabel on 25.10.15.
 //
 
-#include "Visualization.h"
 #include <string>
+
+#include "Visualization.h"
+
+using namespace std;
 
 //#define USE_PODOFO
 
