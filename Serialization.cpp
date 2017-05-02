@@ -3,8 +3,17 @@
 #include "ProjectWithOvertime.h"
 
 json11::Json serializeProjectCommon(const Project& p) {
-	// TODO: Implement me!
-	return json11::Json();
+	json11::Json obj = json11::Json::object {
+			{"instanceName", p.instanceName},
+			{"numJobs",      p.numJobs},
+			{"numRes",       p.numRes},
+			{"numPeriods",   p.numPeriods},
+			{"capacities",   p.capacities},
+			{"durations",    p.durations},
+			{"demands",      Serialization::JSON::matrixToJson<int>(p.demands)},
+			{"adjMx",        Serialization::JSON::matrixToJson<char>(p.adjMx)}
+	};
+	return obj;
 }
 
 string Serialization::JSON::serializeProject(const Project &p) {
@@ -24,8 +33,5 @@ string Serialization::JSON::serializeSchedule(const vector<int>& sts) {
 }
 
 string Serialization::GAMS::serializeSet(string setName, string indexPrefix, int lb, int ub) {
-	string elems = "";
-	for(int i = lb; i <= ub; i++)
-		elems += indexPrefix + std::to_string(i) + (i == ub ? "" : ",");
-	return "set " + setName + " /" + elems + "/;\n";
+	return "set " + setName + " /" + indexPrefix + std::to_string(lb) + ".." + indexPrefix + std::to_string(ub) + "/;\n";
 }

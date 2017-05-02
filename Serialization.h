@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Matrix.h"
+#include "Libraries/json11.hpp"
 
 using std::string;
 using std::vector;
@@ -14,6 +15,15 @@ class ProjectWithOvertime;
 namespace Serialization {
 
 	namespace JSON {
+		template<class T>
+		json11::Json matrixToJson(const Matrix<T> &m) {
+			vector<vector<T>> rows(m.getM());
+			for(int i=0; i<m.getM(); i++) {
+				rows[i] = m.row(i);
+			}
+			return rows;
+		}
+
 		string serializeProject(const Project &p);
 		string serializeProject(const ProjectWithOvertime &p);
 		string serializeSchedule(const vector<int> &sts);
