@@ -10,6 +10,8 @@
 
 #include "ProjectWithOvertime.h"
 
+using namespace std;
+
 ProjectWithOvertime::ProjectWithOvertime(const string &filename) :
 	ProjectWithOvertime(boost::filesystem::path(filename).stem().string(), Utils::readLines(filename)) {}
 

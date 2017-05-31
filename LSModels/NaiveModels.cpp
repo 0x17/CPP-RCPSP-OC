@@ -10,6 +10,9 @@
 #include "../Stopwatch.h"
 #include "ListModel.h"
 
+using namespace std;
+using namespace localsolver;
+
 //======================================================================================================================
 
 std::pair<LSModel, Matrix<LSExpression>> buildModel(ProjectWithOvertime &p, LocalSolver &ls) {
@@ -32,7 +35,7 @@ std::pair<LSModel, Matrix<LSExpression>> buildModel(ProjectWithOvertime &p, Loca
 		return s;
 	});
 
-	vector<LSExpression> ft(p.numJobs);
+	std::vector<LSExpression> ft(p.numJobs);
 	p.eachJobConst([&](int j) {
 		auto s = model.sum();
 		p.timeWindow(j, [&](int t) { s += t * x(j, t); });
@@ -73,8 +76,8 @@ std::pair<LSModel, Matrix<LSExpression>> buildModel(ProjectWithOvertime &p, Loca
 	return std::make_pair(model, x);
 }
 
-vector<int> parseSolution(ProjectWithOvertime &p, Matrix<LSExpression> &x, LSSolution &sol) {
-	vector<int> sts(p.numJobs);
+std::vector<int> parseSolution(ProjectWithOvertime &p, Matrix<LSExpression> &x, LSSolution &sol) {
+	std::vector<int> sts(p.numJobs);
 	p.eachJobTimeWindow([&](int j, int t) {
 		if (sol.getValue(x(j, t)) == 1)
 			sts[j] = t - p.durations[j];
@@ -84,7 +87,7 @@ vector<int> parseSolution(ProjectWithOvertime &p, Matrix<LSExpression> &x, LSSol
 
 //======================================================================================================================
 
-vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, int iterLimit, bool traceobj, string outPath) {
+std::vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, int iterLimit, bool traceobj, string outPath) {
 	LocalSolver ls;
 	Utils::Tracer tr(outPath + "LocalSolverTrace_" + p.instanceName);
 
@@ -160,8 +163,8 @@ lsdouble CumulatedDemandFunction::call(const LSNativeContext &context) {
 
 //======================================================================================================================
 
-vector<int> LSSolver::solveNative(ProjectWithOvertime &p) {
-	vector<int> sts(p.numJobs);
+std::vector<int> LSSolver::solveNative(ProjectWithOvertime &p) {
+	std::vector<int> sts(p.numJobs);
 
 	LocalSolver ls;
 	auto model = ls.getModel();
@@ -173,7 +176,7 @@ vector<int> LSSolver::solveNative(ProjectWithOvertime &p) {
 	LSExpression cumDemFuncExpr = model.createNativeFunction(&cumDemFunc);
 
 	// Decision variables
-	vector<LSExpression> Sj(p.numJobs);
+	std::vector<LSExpression> Sj(p.numJobs);
 	p.eachJob([&](int j) {Sj[j] = model.intVar(0, p.numPeriods - 1); });
 	Matrix<LSExpression> zrt(p.numRes, p.numPeriods);
 	p.eachResPeriod([&](int r, int t) { zrt(r, t) = model.intVar(0, p.zmax[r]); });

@@ -7,13 +7,13 @@ class ListBetaModel : public ListModel {
 	public:
 		explicit SerialSGSBetaFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(vector<int>& order, const LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
 
-	void addAdditionalData(LSModel &model, LSExpression& obj) override;
-	vector<int> parseScheduleFromSolution(LSSolution& sol) override;
+	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression& obj) override;
+	std::vector<int> parseScheduleFromSolution(localsolver::LSSolution& sol) override;
 
-	vector<LSExpression> betaVar;
+	std::vector<localsolver::LSExpression> betaVar;
 	static ProjectWithOvertime::BorderSchedulingOptions options;
 
 public:
@@ -30,13 +30,13 @@ class ListTauModel : public ListModel {
 	public:
 		explicit SerialSGSTauFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(vector<int>& order, const LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
 
-	vector<LSExpression> tauVar;
+	std::vector<localsolver::LSExpression> tauVar;
 
-	void addAdditionalData(LSModel &model, LSExpression& obj) override;
-	vector<int> parseScheduleFromSolution(LSSolution& sol) override;
+	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression& obj) override;
+	std::vector<int> parseScheduleFromSolution(localsolver::LSSolution& sol) override;
 public:
 	ListTauModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSTauFunction(_p)), tauVar(p.numJobs) {}
 	virtual ~ListTauModel() {}
@@ -49,14 +49,14 @@ class ListTauDiscreteModel : public ListModel {
 	public:
 		explicit SerialSGSIntegerFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(vector<int>& order, const LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
 
-	static const lsint IV_COUNT = 4;
-	vector<LSExpression> tauVar;
+	static const localsolver::lsint IV_COUNT = 4;
+	std::vector<localsolver::LSExpression> tauVar;
 
-	void addAdditionalData(LSModel &model, LSExpression& obj) override;
-	vector<int> parseScheduleFromSolution(LSSolution& sol) override;
+	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression& obj) override;
+	std::vector<int> parseScheduleFromSolution(localsolver::LSSolution& sol) override;
 public:
 	ListTauDiscreteModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSIntegerFunction(_p)), tauVar(p.numJobs) {}
 	virtual ~ListTauDiscreteModel() {}
@@ -69,11 +69,11 @@ class ListAlternativesModel : public ListModel {
 	public:
 		explicit SerialSGSAlternativesDecoder(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(vector<int>& order, const LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
 
-	vector<int> parseScheduleFromSolution(LSSolution &sol) override;
-	void addAdditionalData(LSModel &model, LSExpression &obj) override {}
+	std::vector<int> parseScheduleFromSolution(localsolver::LSSolution &sol) override;
+	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression &obj) override {}
 public:
 	ListAlternativesModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSAlternativesDecoder(_p)) {}
 	virtual ~ListAlternativesModel() {}

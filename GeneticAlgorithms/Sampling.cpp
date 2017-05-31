@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <numeric>
 
+using namespace std;
+
 vector<float> Sampling::computeProbsForDecisionSet(const vector<bool> &eligible, const vector<float> &priorityValues) {
     int len = static_cast<int>(priorityValues.size());
     float minPrio = std::numeric_limits<float>::max(); // use filter iterator from boost instead?

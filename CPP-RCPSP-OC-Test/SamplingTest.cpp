@@ -9,6 +9,8 @@
 #include "ProjectTest.h"
 #include "TestHelpers.h"
 
+using namespace std;
+
 class SamplingTest : public ProjectTest {};
 
 void testSamplingCommon(Project &p, const std::function<vector<int>(const Project &p)> samplingFunc) {

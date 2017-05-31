@@ -1,8 +1,8 @@
 #include "ListModel.h"
 #include "../Stopwatch.h"
 
-using std::numeric_limits;
-using std::to_string;
+using namespace std;
+using namespace localsolver;
 
 lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 	vector<int> order(p.numJobs);

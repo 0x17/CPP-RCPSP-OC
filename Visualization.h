@@ -7,8 +7,8 @@
 #include "ProjectWithOvertime.h"
 
 namespace Visualization {
-    void drawActivityOnNodeGraphToPDF(Project &p, string filename);
-    void drawScheduleToPDF(ProjectWithOvertime &p, vector<int> sts, string filename);
-    string activityOnNodeGraphDOT(Project &p);
+    void drawActivityOnNodeGraphToPDF(Project &p, std::string filename);
+    void drawScheduleToPDF(ProjectWithOvertime &p, std::vector<int> sts, std::string filename);
+	std::string activityOnNodeGraphDOT(Project &p);
 };
 

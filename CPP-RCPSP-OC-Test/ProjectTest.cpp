@@ -5,6 +5,8 @@
 #include "ProjectTest.h"
 #include "TestHelpers.h"
 
+using namespace std;
+
 TEST_F(ProjectTest, testConstructor) {
     ASSERT_EQ(5, p->numJobs);
     ASSERT_EQ(7, p->numPeriods);

@@ -20,18 +20,14 @@
 #define LOG_W(msg) Utils::Logger::getInstance()->log(Utils::Logger::LogLevel::WARNING, msg)
 #define LOG_E(msg) Utils::Logger::getInstance()->log(Utils::Logger::LogLevel::ERROR, msg)
 
-using std::string;
-using std::vector;
-using std::list;
-
 namespace Utils {
-	string slurp(string filename);
-	vector<string> readLines(string filename);
-    int extractIntFromStr(string s, string rx);
-	vector<int> extractIntsFromLine(string line);
+	std::string slurp(std::string filename);
+	std::vector<std::string> readLines(std::string filename);
+    int extractIntFromStr(std::string s, std::string rx);
+	std::vector<int> extractIntsFromLine(std::string line);
 
     template<class T>
-    void batchResize(int size, std::initializer_list<vector<T> *> vecs) {
+    void batchResize(int size, std::initializer_list<std::vector<T> *> vecs) {
         for(auto v : vecs) v->resize(size);
     }
 
@@ -40,8 +36,8 @@ namespace Utils {
 	inline int min(int a, int b) { return a < b ? a : b; }
 	inline int min(int a, int b, int c) { return min(min(a, b), c); }
 
-	void serializeSchedule(vector<int> & sts, const string filename);
-	void serializeProfit(float profit, const string filename);
+	void serializeSchedule(std::vector<int> & sts, const std::string filename);
+	void serializeProfit(float profit, const std::string filename);
 
     inline bool randBool() {
         return rand() % 2 == 0;
@@ -55,17 +51,17 @@ namespace Utils {
         return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
     }
 
-    int pickWithDistribution(vector<float> &probs, float q = randUnitFloat());
+    int pickWithDistribution(std::vector<float> &probs, float q = randUnitFloat());
 
     template<class T>
-    bool rangeInclContains(const vector<T> &elems, int lb, int ub, int e) {
+    bool rangeInclContains(const std::vector<T> &elems, int lb, int ub, int e) {
         for(int i=lb; i<=ub; i++)
             if(elems[i] == e) return true;
         return false;
     }
 
 	template<class T>
-	int indexOfNthEqualTo(int nth, T val, const vector<T> & coll) {
+	int indexOfNthEqualTo(int nth, T val, const std::vector<T> & coll) {
 		int xth = 0;
 		for (int k = 0; k < coll.size(); k++)
 			if (coll[k] == val) {
@@ -76,15 +72,15 @@ namespace Utils {
 	}
 
 	template<class T>
-	int indexOfFirstEqualTo(T val, const vector<T> & coll) {
+	int indexOfFirstEqualTo(T val, const std::vector<T> & coll) {
 		return indexOfNthEqualTo(0, val, coll);
     }
 
-    void spit(const string s, const string filename);
-    void spitAppend(const string s, const string filename);
+    void spit(const std::string s, const std::string filename);
+    void spitAppend(const std::string s, const std::string filename);
 
     template<class T>
-    void swap(vector<T> &v, int i1, int i2) {
+    void swap(std::vector<T> &v, int i1, int i2) {
         T tmp = v[i1];
         v[i1] = v[i2];
         v[i2] = tmp;
@@ -101,24 +97,24 @@ namespace Utils {
     }
 
 	template<class Func, class A, class B>
-	vector<B> mapVec(Func f, const vector<A> &elems) {
-		vector<B> res(elems.size());
+	std::vector<B> mapVec(Func f, const std::vector<A> &elems) {
+		std::vector<B> res(elems.size());
 		for (int i = 0; i < elems.size(); i++)
 			res[i] = f(elems[i]);
 		return res;
     }
 
 	template<class Func, class A, class B>
-	list<B> mapLst(Func f, list<A> &elems) {
-		list<B> res;
+	std::list<B> mapLst(Func f, std::list<A> &elems) {
+		std::list<B> res;
 		for(auto elem : elems)
 			res.push_back(elem);
 		return res;
 	}
 
 	template<class A, class Func>
-	vector<A> constructVector(int size, Func f) {
-		vector<A> v(size);
+	std::vector<A> constructVector(int size, Func f) {
+		std::vector<A> v(size);
 		for(int i=0; i<size; i++) {
 			v[i] = f(i);
 		}
@@ -126,16 +122,16 @@ namespace Utils {
     }
 
 	template<class A, class Func>
-	list<A> constructList(int size, Func f) {
-		list<A> l;
+	std::list<A> constructList(int size, Func f) {
+		std::list<A> l;
 		for(int i=0; i<size; i++) {
 			l.push_back(f(i));
 		}
 		return l;
     }
 
-	list<string> filenamesInDir(const string &dir);
-	list<string> filenamesInDirWithExt(const string& dir, const string& ext);
+	std::list<std::string> filenamesInDir(const std::string &dir);
+	std::list<std::string> filenamesInDirWithExt(const std::string& dir, const std::string& ext);
 
     class Tracer {
 		std::ofstream f;
@@ -143,7 +139,7 @@ namespace Utils {
 		double last_slvtime;
 		Stopwatch sw;
     public:
-        Tracer(const string filePrefix = "SolverTrace");
+        Tracer(const std::string filePrefix = "SolverTrace");
         ~Tracer();
         void trace(double slvtime, float bks_objval, bool trunc_secs = false);
 	    void intervalTrace(float bks_objval);
@@ -157,7 +153,7 @@ namespace Utils {
 		return b ? 1 : 0;
 	}
 
-	string formattedNow();
+	std::string formattedNow();
 
 	class Logger {
 	public:
@@ -174,14 +170,14 @@ namespace Utils {
 		};
 
 	private:
-		string logName;
+		std::string logName;
 		std::ofstream f;
 		LogMode mode;
 		static Logger *instance;
 
 	public:
-		Logger(const string& _logName, LogMode _mode);
-		void log(LogLevel level, const string& message);
+		Logger(const std::string& _logName, LogMode _mode);
+		void log(LogLevel level, const std::string& message);
 
 		static Logger* getInstance();
 	};
@@ -190,20 +186,20 @@ namespace Utils {
 		double timeLimit;
 		int iterLimit;
 		bool traceobj;
-		string outPath;
+		std::string outPath;
 		int threadCount;
 
-		BasicSolverParameters(double time_limit, int iter_limit, bool traceobj, const string& out_path, int thread_count);
+		BasicSolverParameters(double time_limit, int iter_limit, bool traceobj, const std::string& out_path, int thread_count);
 	};
 
-	void partitionDirectory(const string& dirPath, int numPartitions, const string& infix = "_");
+	void partitionDirectory(const std::string& dirPath, int numPartitions, const std::string& infix = "_");
 
-	vector<int> deserializeSchedule(int njobs, const string &filename);
+	std::vector<int> deserializeSchedule(int njobs, const std::string &filename);
 
-	vector<string> splitLines(const string& s);
+	std::vector<std::string> splitLines(const std::string& s);
 
 	template<class T, class Pred>
-	int indexOf(vector<T> elems, Pred p) {
+	int indexOf(std::vector<T> elems, Pred p) {
 		for(int i=0; i<elems.size(); i++) {
 			if (p(elems[i]))
 				return i;

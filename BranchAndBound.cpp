@@ -9,6 +9,8 @@
 #include "ProjectWithOvertime.h"
 #include "GeneticAlgorithms/OvertimeBound.h"
 
+using namespace std;
+
 BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, double _timeLimit, int _iterLimit, bool _writeGraph)
 	: p(_p), lb(std::numeric_limits<float>::lowest()), nodeCtr(0), boundCtr(0), writeGraph(_writeGraph), timeLimit(_timeLimit), iterLimit(_iterLimit), tr(nullptr) {}
 

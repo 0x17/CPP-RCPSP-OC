@@ -46,50 +46,50 @@
         code; \
     }
 
-//typedef pair<vector<int>, Matrix<int>> SGSResult;
+//typedef pair<std::vector<int>, Matrix<int>> SGSResult;
 struct SGSResult {
-	vector<int> sts;
+	std::vector<int> sts;
 	Matrix<int> resRem;
 	int numSchedulesGenerated = 1;
 
-	SGSResult(vector<int> _sts, Matrix<int> _resRem, int _numSchedulesGenerated = 1) : sts(_sts), resRem(_resRem), numSchedulesGenerated(_numSchedulesGenerated) {}
+	SGSResult(std::vector<int> _sts, Matrix<int> _resRem, int _numSchedulesGenerated = 1) : sts(_sts), resRem(_resRem), numSchedulesGenerated(_numSchedulesGenerated) {}
 	SGSResult() {}
 };
 
 class Project {
 public:
-	string name, instanceName;
+	std::string name, instanceName;
 
     int numJobs, numRes, numPeriods, T, lastJob;
     Matrix<char> adjMx;
-	vector<int> durations, capacities;
+	std::vector<int> durations, capacities;
     Matrix<int> demands;
 
-	vector<int> topOrder, revTopOrder;
+	std::vector<int> topOrder, revTopOrder;
 
-	vector<int> ests, lsts, efts, lfts;
+	std::vector<int> ests, lsts, efts, lfts;
 
     const bool USE_DISPOSITION_METHOD = false;
 
 	enum { UNSCHEDULED = -1 };
 
-	explicit Project(const string &filename);
-	Project(const string& projectName, const string& s);
+	explicit Project(const std::string &filename);
+	Project(const std::string& projectName, const std::string& s);
 	virtual ~Project() {}
 
-	vector<int> serialSGS(const vector<int>& order) const;
-	std::pair<vector<int>, Matrix<int>> serialSGSForPartial(const vector<int> &sts, const vector<int> &order, Matrix<int> &resRem) const;
-	std::pair<vector<int>, Matrix<int>> serialSGSForPartial(const vector<int> &sts, const vector<int> &order) const;
-	SGSResult serialSGS(const vector<int>& order, const vector<int>& zr, bool robust = false) const;
-	SGSResult serialSGS(const vector<int>& order, const Matrix<int>& zrt, bool robust = false) const;
+	std::vector<int> serialSGS(const std::vector<int>& order) const;
+	std::pair<std::vector<int>, Matrix<int>> serialSGSForPartial(const std::vector<int> &sts, const std::vector<int> &order, Matrix<int> &resRem) const;
+	std::pair<std::vector<int>, Matrix<int>> serialSGSForPartial(const std::vector<int> &sts, const std::vector<int> &order) const;
+	SGSResult serialSGS(const std::vector<int>& order, const std::vector<int>& zr, bool robust = false) const;
+	SGSResult serialSGS(const std::vector<int>& order, const Matrix<int>& zrt, bool robust = false) const;
 
-	static bool jobBeforeInOrder(int job, int curIndex, const vector<int>& order);
-	bool hasPredNotBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
-	bool hasSuccNotBeforeInOrder(int job, int curIndex, const vector<int>& order) const;
+	static bool jobBeforeInOrder(int job, int curIndex, const std::vector<int>& order);
+	bool hasPredNotBeforeInOrder(int job, int curIndex, const std::vector<int>& order) const;
+	bool hasSuccNotBeforeInOrder(int job, int curIndex, const std::vector<int>& order) const;
 
-	bool isOrderFeasible(const vector<int> &order) const;
+	bool isOrderFeasible(const std::vector<int> &order) const;
 
-    int makespan(const vector<int>& sts) const;
+    int makespan(const std::vector<int>& sts) const;
 	int makespan(const SGSResult& res) const;
 
 	EACH_FUNC(eachJob, eachJobConst, j, numJobs)
@@ -118,81 +118,81 @@ public:
 	template <class Func>
 	void demandInPeriodMIP(int j, int t, Func code) const;
 
-	Matrix<int> resRemForPartial(const vector<int> &sts) const;
+	Matrix<int> resRemForPartial(const std::vector<int> &sts) const;
 
-    int computeLastPredFinishingTime(const vector<int> &fts, int job) const;
-    int computeLastPredFinishingTimeForSts(const vector<int> &sts, int job) const;
-    int latestStartingTimeInPartial(const vector<int> &sts) const;
-    int earliestStartingTimeInPartial(const vector<int> &sts) const;
+    int computeLastPredFinishingTime(const std::vector<int> &fts, int job) const;
+    int computeLastPredFinishingTimeForSts(const std::vector<int> &sts, int job) const;
+    int latestStartingTimeInPartial(const std::vector<int> &sts) const;
+    int earliestStartingTimeInPartial(const std::vector<int> &sts) const;
 
-	vector<int> earliestStartingTimesForPartial(const vector<int> &sts) const;
-	vector<int> latestFinishingTimesForPartial(const vector<int> &sts, int deadline) const;
+	std::vector<int> earliestStartingTimesForPartial(const std::vector<int> &sts) const;
+	std::vector<int> latestFinishingTimesForPartial(const std::vector<int> &sts, int deadline) const;
 
-	int chooseEligibleWithLowestIndex(const vector<int> &sts, const vector<int> &order) const;
-	int chooseEligibleWithLowestIndex(const vector<bool> &unscheduled, const vector<int> &order) const;
-	int chooseEligibleWithHighestIndex(const vector<bool>& unscheduled, const vector<int>& order) const;
+	int chooseEligibleWithLowestIndex(const std::vector<int> &sts, const std::vector<int> &order) const;
+	int chooseEligibleWithLowestIndex(const std::vector<bool> &unscheduled, const std::vector<int> &order) const;
+	int chooseEligibleWithHighestIndex(const std::vector<bool>& unscheduled, const std::vector<int>& order) const;
 	
-	void complementPartialWithSSGS(const vector<int>& order, int startIx, vector<int> &fts, Matrix<int> &resRem, bool robust = false) const;
+	void complementPartialWithSSGS(const std::vector<int>& order, int startIx, std::vector<int> &fts, Matrix<int> &resRem, bool robust = false) const;
 
 	Matrix<int> normalCapacityProfile() const;
 
-	vector<int> emptySchedule() const;
+	std::vector<int> emptySchedule() const;
 
 	int getHeuristicMaxMakespan() const;
 
-	bool isScheduleFeasible(const vector<int>& sts) const;
-	bool isSchedulePrecedenceFeasible(const vector<int>& sts) const;
-	virtual bool isScheduleResourceFeasible(const vector<int>& sts) const;
-	bool isScheduleResourceFeasible(const vector<int>& sts, const vector<int>& zr) const;
+	bool isScheduleFeasible(const std::vector<int>& sts) const;
+	bool isSchedulePrecedenceFeasible(const std::vector<int>& sts) const;
+	virtual bool isScheduleResourceFeasible(const std::vector<int>& sts) const;
+	bool isScheduleResourceFeasible(const std::vector<int>& sts, const std::vector<int>& zr) const;
 
-	bool isResRemValid(const vector<int>& sts, const Matrix<int>& resRem) const;
+	bool isResRemValid(const std::vector<int>& sts, const Matrix<int>& resRem) const;
 
-	static string coreInstanceName(const string & parentPath, const string & filename);
+	static std::string coreInstanceName(const std::string & parentPath, const std::string & filename);
 
 protected:
-	bool allPredsScheduled(int j, const vector<int> &sts) const;
-	bool allPredsScheduled(int j, const vector<bool>& unscheduled) const;
-	bool allSuccsScheduled(int j, const vector<bool>& unscheduled) const;
+	bool allPredsScheduled(int j, const std::vector<int> &sts) const;
+	bool allPredsScheduled(int j, const std::vector<bool>& unscheduled) const;
+	bool allSuccsScheduled(int j, const std::vector<bool>& unscheduled) const;
 
-	vector<int> serialSGSCore(const vector<int>& order, Matrix<int> &resRem, bool robust = false) const;
+	std::vector<int> serialSGSCore(const std::vector<int>& order, Matrix<int> &resRem, bool robust = false) const;
 
     bool enoughCapacityForJob(int job, int t, Matrix<int> & resRem) const;
 
-    int computeFirstSuccStartingTime(const vector<int> &sts, int job) const;
-	int computeFirstSuccStartingTimeForPartial(const vector<int> &fts, int job) const;
-    int computeLastPredFinishingTimeForPartial(const vector<int> &fts, int job) const;
+    int computeFirstSuccStartingTime(const std::vector<int> &sts, int job) const;
+	int computeFirstSuccStartingTimeForPartial(const std::vector<int> &fts, int job) const;
+    int computeLastPredFinishingTimeForPartial(const std::vector<int> &fts, int job) const;
 
-    void scheduleJobAt(int job, int t, vector<int> &sts, vector<int> &fts, Matrix<int> &resRem) const;
-	void scheduleJobAt(int job, int t, vector<int> &sts, Matrix<int> &resRem) const;
+    void scheduleJobAt(int job, int t, std::vector<int> &sts, std::vector<int> &fts, Matrix<int> &resRem) const;
+	void scheduleJobAt(int job, int t, std::vector<int> &sts, Matrix<int> &resRem) const;
 
-	void unscheduleJob(int j, vector<int>& sts, vector<int>& fts, Matrix<int>& resRem) const;
-	void unscheduleJob(int j, vector<int>& sts, Matrix<int>& resRem) const;
+	void unscheduleJob(int j, std::vector<int>& sts, std::vector<int>& fts, Matrix<int>& resRem) const;
+	void unscheduleJob(int j, std::vector<int>& sts, Matrix<int>& resRem) const;
 
 	SGSResult earliestStartSchedule() const;
 
-    void transferAlreadyScheduled(vector<int> &destSts, const vector<int> &partialSts) const;
-	void transferAlreadyScheduledToFts(vector<int> &destFts, const vector<int> &partialSts) const;
+    void transferAlreadyScheduled(std::vector<int> &destSts, const std::vector<int> &partialSts) const;
+	void transferAlreadyScheduledToFts(std::vector<int> &destFts, const std::vector<int> &partialSts) const;
 
-	void shiftScheduleLeftBy(int offset, vector<int> &sts, Matrix<int> &resRem) const;
+	void shiftScheduleLeftBy(int offset, std::vector<int> &sts, Matrix<int> &resRem) const;
 
-	vector<int> stsToFts(const vector<int>& sts) const;
+	std::vector<int> stsToFts(const std::vector<int>& sts) const;
 
-	Project(const string &projectName, const vector<string>& lines);
+	Project(const std::string &projectName, const std::vector<std::string>& lines);
 
 private:
-    void parsePrecedenceRelation(const vector<string> &lines);
-    void parseDurationsAndDemands(const vector<string> &lines);
+    void parsePrecedenceRelation(const std::vector<std::string> &lines);
+    void parseDurationsAndDemands(const std::vector<std::string> &lines);
 
     void reorderDispositionMethod();
 
 	template <class Pred>
-	vector<int> topOrderComputationCore(Pred isEligible) const;
-	vector<int> computeTopOrder() const;
-	vector<int> computeReverseTopOrder() const;
+	std::vector<int> topOrderComputationCore(Pred isEligible) const;
+	std::vector<int> computeTopOrder() const;
+	std::vector<int> computeReverseTopOrder() const;
 
     void computeELSFTs();
 
-    void computeNodeDepths(int root, int curDepth, vector<int> &nodeDepths);
+    void computeNodeDepths(int root, int curDepth, std::vector<int> &nodeDepths);
 
 	int heuristicMaxMs;
 };
@@ -232,7 +232,7 @@ inline void Project::demandInPeriodMIP(int j, int t, Func code) const {
 	}
 }
 
-inline int Project::makespan(const vector<int>& sts) const {
+inline int Project::makespan(const std::vector<int>& sts) const {
     return sts[lastJob];
 }
 

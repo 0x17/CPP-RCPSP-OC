@@ -7,13 +7,13 @@ class ListFixedOvertimeModel : public ListModel {
 	public:
 		explicit SerialSGSZrDecoder(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(vector<int>& order, const LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
 
-	void addAdditionalData(LSModel &model, LSExpression& obj) override;
-	vector<int> parseScheduleFromSolution(LSSolution& sol) override;
+	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression& obj) override;
+	std::vector<int> parseScheduleFromSolution(localsolver::LSSolution& sol) override;
 
-	vector<LSExpression> zrVar;
+	std::vector<localsolver::LSExpression> zrVar;
 
 public:
 	ListFixedOvertimeModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSZrDecoder(_p)), zrVar(p.numRes) {}
@@ -25,13 +25,13 @@ class ListDynamicOvertimeModel : public ListModel {
 	public:
 		explicit SerialSGSZrtDecoder(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(vector<int>& order, const LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
 
-	void addAdditionalData(LSModel &model, LSExpression& obj) override;
-	vector<int> parseScheduleFromSolution(LSSolution& sol) override;
+	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression& obj) override;
+	std::vector<int> parseScheduleFromSolution(localsolver::LSSolution& sol) override;
 
-	Matrix<LSExpression> zrtVar;
+	Matrix<localsolver::LSExpression> zrtVar;
 
 public:
 	ListDynamicOvertimeModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSZrtDecoder(_p)), zrtVar(p.numRes, p.heuristicMakespanUpperBound()) {}

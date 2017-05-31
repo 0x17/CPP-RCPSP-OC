@@ -4,8 +4,6 @@
 
 class ProjectWithOvertime;
 
-using std::pair;
-
 class ParticleSwarm
 {	
 public:
@@ -14,16 +12,16 @@ public:
 
 	SGSResult solve();
 
-	static double distance(const vector<int>& x1, const vector<int>& x2);
-	static void sortDescendingFitness(list<pair<vector<int>, float>>& popWithFitness);
-	static void pathRelinking(const vector<int>& x1, const vector<int>& x2, list<pair<vector<int>, float>> &popWithFitness);
+	static double distance(const std::vector<int>& x1, const std::vector<int>& x2);
+	static void sortDescendingFitness(std::list<std::pair<std::vector<int>, float>>& popWithFitness);
+	static void pathRelinking(const std::vector<int>& x1, const std::vector<int>& x2, std::list<std::pair<std::vector<int>, float>> &popWithFitness);
 	
-	void feasibleMaintain(int job, vector<int>& x) const;
-	int successorOfJobWithMinPosition(int job, const vector<int>& x) const;
+	void feasibleMaintain(int job, std::vector<int>& x) const;
+	int successorOfJobWithMinPosition(int job, const std::vector<int>& x) const;
 
 private:
 	ProjectWithOvertime &p;
 
-	vector<vector<int>> generateSwarm(int nsw, int iter, list<pair<vector<int>, float>>& popWithFitness) const;
+	std::vector<std::vector<int>> generateSwarm(int nsw, int iter, std::list<std::pair<std::vector<int>, float>>& popWithFitness) const;
 };
 

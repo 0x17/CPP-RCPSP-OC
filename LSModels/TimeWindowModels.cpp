@@ -1,6 +1,9 @@
 
 #include "TimeWindowModels.h"
 
+using namespace std;
+using namespace localsolver;
+
 ProjectWithOvertime::BorderSchedulingOptions ListBetaModel::options;
 
 void ListBetaModel::setVariant(int variant) {

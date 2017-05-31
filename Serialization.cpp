@@ -2,6 +2,8 @@
 #include "Serialization.h"
 #include "ProjectWithOvertime.h"
 
+using namespace std;
+
 json11::Json serializeProjectCommon(const Project& p) {
 	json11::Json obj = json11::Json::object {
 			{"instanceName", p.instanceName},

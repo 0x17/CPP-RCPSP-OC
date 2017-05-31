@@ -7,12 +7,12 @@ class GSListModel : public ListModel {
 	public:
 		explicit QuasistableSGSFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(vector<int>& order, const LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
 
 protected:
-	void addAdditionalData(LSModel &model, LSExpression& obj) override;
-	vector<int> parseScheduleFromSolution(LSSolution& sol) override;
+	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression& obj) override;
+	std::vector<int> parseScheduleFromSolution(localsolver::LSSolution& sol) override;
 
 public:
 	GSListModel(ProjectWithOvertime &_p, SchedulingNativeFunction *func);
@@ -25,14 +25,14 @@ class ListDeadlineModel : public ListModel {
 	public:
 		explicit QuasistableSGSFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(vector<int>& order, const LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
 
 protected:
-	LSExpression deadlineOffsetVar;
+	localsolver::LSExpression deadlineOffsetVar;
 
-	void addAdditionalData(LSModel &model, LSExpression& obj) override;
-	vector<int> parseScheduleFromSolution(LSSolution& sol) override;
+	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression& obj) override;
+	std::vector<int> parseScheduleFromSolution(localsolver::LSSolution& sol) override;
 
 public:
 	ListDeadlineModel(ProjectWithOvertime &_p, SchedulingNativeFunction *func);

@@ -12,7 +12,8 @@ GurobiSolver::Options::Options() :
 	displayInterval(1) {
 }
 
-GurobiSolver::CustomCallback::CustomCallback(string outPath, string instanceName) : tr(traceFilenameForInstance(outPath, instanceName)) {
+GurobiSolver::CustomCallback::CustomCallback(const string &outPath, const string &instanceName) :
+		tr(traceFilenameForInstance(outPath, instanceName)) {
 	sw.start();
 }
 
@@ -26,7 +27,7 @@ void GurobiSolver::CustomCallback::manualCallback(float bks) {
 	tr.trace(sw.look(), bks);
 }
 
-GurobiSolver::Result::Result(vector<int> sts, bool optimal): sts(sts), optimal(optimal) {}
+GurobiSolver::Result::Result(vector<int> &_sts, bool _optimal): sts(_sts), optimal(_optimal) {}
 
 GurobiSolver::GurobiSolver(ProjectWithOvertime &_p, Options _opts) :
 	p(_p),

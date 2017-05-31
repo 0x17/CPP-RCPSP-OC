@@ -6,6 +6,8 @@
 #include "GeneticAlgorithms/Sampling.h"
 #include "ProjectWithOvertime.h"
 
+using namespace std;
+
 ParticleSwarm::ParticleSwarm(ProjectWithOvertime& _p) : p(_p) {
 }
 
@@ -22,7 +24,7 @@ SGSResult ParticleSwarm::solve() {
 	float c1, c2, c3;
 	c1 = c2 = c3 = 0.2f;
 
-	auto popWithFitness = Utils::constructList<pair<vector<int>,float>>(npop, [&](int j) {
+	auto popWithFitness = Utils::constructList<pair<std::vector<int>,float>>(npop, [&](int j) {
 		auto order = Sampling::sample(true, p);
 		SGSResult result = p.serialSGS(order, p.zzero);
 		int makespan = p.makespan(result);
@@ -58,14 +60,14 @@ SGSResult ParticleSwarm::solve() {
 	return res;
 }
 
-vector<vector<int>> ParticleSwarm::generateSwarm(int nsw, int iter, list<pair<vector<int>, float>>& popWithFitness) const {
-	std::map<vector<int>, double> distp;
+std::vector<std::vector<int>> ParticleSwarm::generateSwarm(int nsw, int iter, std::list<pair<std::vector<int>, float>>& popWithFitness) const {
+	std::map<std::vector<int>, double> distp;
 
 	auto mindist = [](int i) {
 		return i < 3 ? 1 : (i < 4 ? 2 : (i < 7 ? 3 : 4));
 	};
 
-	auto removeSimiliarFromPopulation = [&](const vector<int> &al) {
+	auto removeSimiliarFromPopulation = [&](const std::vector<int> &al) {
 		for (auto it = popWithFitness.begin(); it != popWithFitness.end();) {
 			auto pair = *it;
 			double dp;
@@ -88,15 +90,15 @@ vector<vector<int>> ParticleSwarm::generateSwarm(int nsw, int iter, list<pair<ve
 		
 	sortDescendingFitness(popWithFitness);
 
-	return Utils::constructVector<vector<int>>(nsw, [&](int j) {
-		vector<int> al = popWithFitness.front().first;
+	return Utils::constructVector<std::vector<int>>(nsw, [&](int j) {
+		std::vector<int> al = popWithFitness.front().first;
 		popWithFitness.pop_front();
 		removeSimiliarFromPopulation(al);
 		return al;
 	});
 }
 
-double ParticleSwarm::distance(const vector<int>& x1, const vector<int>& x2) {
+double ParticleSwarm::distance(const std::vector<int>& x1, const std::vector<int>& x2) {
 	int dsum = 0;
 	for(int j=0; j<x1.size(); j++) {
 		dsum += abs(Utils::indexOfFirstEqualTo(j, x1) - Utils::indexOfFirstEqualTo(j, x2));
@@ -104,14 +106,14 @@ double ParticleSwarm::distance(const vector<int>& x1, const vector<int>& x2) {
 	return (double)dsum / (double)x1.size();
 }
 
-void ParticleSwarm::sortDescendingFitness(list<pair<vector<int>, float>>& popWithFitness) {
+void ParticleSwarm::sortDescendingFitness(std::list<pair<std::vector<int>, float>>& popWithFitness) {
 	popWithFitness.sort([](auto& left, auto& right) {
 		return left.second < right.second;
 	});
 }
 
-void ParticleSwarm::pathRelinking(const vector<int>& x1, const vector<int>& x2, list<pair<vector<int>, float>> &popWithFitness) {
-	list<pair<vector<int>, float>> newSolutions;
+void ParticleSwarm::pathRelinking(const std::vector<int>& x1, const std::vector<int>& x2, std::list<pair<std::vector<int>, float>> &popWithFitness) {
+	std::list<pair<std::vector<int>, float>> newSolutions;
 	int r2 = Utils::randRangeIncl(1, x1.size() - 1);
 	int r1 = Utils::randRangeIncl(0, r2 - 1);
 	for(int i = r1; i <= r2; i++) {
@@ -123,7 +125,7 @@ void ParticleSwarm::pathRelinking(const vector<int>& x1, const vector<int>& x2, 
 	// ...
 }
 
-void ParticleSwarm::feasibleMaintain(int job, vector<int>& x) const {
+void ParticleSwarm::feasibleMaintain(int job, std::vector<int>& x) const {
 	int b = successorOfJobWithMinPosition(job, x);
 	if(Utils::indexOfFirstEqualTo(job, x) > Utils::indexOfFirstEqualTo(b, x)) {
 		Utils::swap(x, job, b);
@@ -131,7 +133,7 @@ void ParticleSwarm::feasibleMaintain(int job, vector<int>& x) const {
 	}	
 }
 
-int ParticleSwarm::successorOfJobWithMinPosition(int job, const vector<int>& x) const {
+int ParticleSwarm::successorOfJobWithMinPosition(int job, const std::vector<int>& x) const {
 	int posb = 0, b;
 	p.eachJobConst([&](int succ) {
 		if(p.adjMx(job, succ)) {

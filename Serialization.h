@@ -6,9 +6,6 @@
 #include "Matrix.h"
 #include "Libraries/json11.hpp"
 
-using std::string;
-using std::vector;
-
 class Project;
 class ProjectWithOvertime;
 
@@ -17,28 +14,28 @@ namespace Serialization {
 	namespace JSON {
 		template<class T>
 		json11::Json matrixToJson(const Matrix<T> &m) {
-			vector<vector<T>> rows(m.getM());
+			std::vector<std::vector<T>> rows(m.getM());
 			for(int i=0; i<m.getM(); i++) {
 				rows[i] = m.row(i);
 			}
 			return rows;
 		}
 
-		string serializeProject(const Project &p);
-		string serializeProject(const ProjectWithOvertime &p);
-		string serializeSchedule(const vector<int> &sts);
+		std::string serializeProject(const Project &p);
+		std::string serializeProject(const ProjectWithOvertime &p);
+		std::string serializeSchedule(const std::vector<int> &sts);
 	}
 
 	namespace GAMS {
-		string serializeSet(string setName, string indexPrefix, int lb, int ub);
+		std::string serializeSet(std::string setName, std::string indexPrefix, int lb, int ub);
 
 		template<class T>
-		string serializeParam1D(string setDepName, string indexPrefix, vector<T> &elements) {
+		std::string serializeParam1D(std::string setDepName, std::string indexPrefix, std::vector<T> &elements) {
 			// TODO: Implement me!
 		}
 
 		template<class T>
-		string serializeParam2D(string setDepName1, string setDepName2, string indexPrefix1, string indexPrefix2, Matrix<T> &elements) {
+		std::string serializeParam2D(std::string setDepName1, std::string setDepName2, std::string indexPrefix1, std::string indexPrefix2, Matrix<T> &elements) {
 			// TODO: Implement me!
 		}
 	}

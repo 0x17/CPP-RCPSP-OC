@@ -16,6 +16,8 @@
 namespace fs = boost::filesystem;
 namespace algo = boost::algorithm;
 
+using namespace std;
+
 string Utils::slurp(string filename) {
 	std::ifstream fp(filename);
 	if(!fp) throw std::runtime_error("Unable to open file: " + filename);

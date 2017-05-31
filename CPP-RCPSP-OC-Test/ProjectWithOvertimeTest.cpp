@@ -6,6 +6,8 @@
 #include "ProjectWithOvertimeTest.h"
 #include "TestHelpers.h"
 
+using namespace std;
+
 TEST_F(ProjectWithOvertimeTest, testChooseEligibleWithLowestIndex) {
     vector<int> sts(p->numJobs, Project::UNSCHEDULED);
     sts[0] = 0;

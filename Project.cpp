@@ -12,7 +12,7 @@
 
 #include "Project.h"
 
-using std::to_string;
+using namespace std;
 
 Project::Project(const string &filename) : Project(boost::filesystem::path(filename).stem().string(), Utils::readLines(filename)) {}
 

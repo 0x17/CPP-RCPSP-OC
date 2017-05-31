@@ -1,6 +1,9 @@
 
 #include "OvertimeBoundModels.h"
 
+using namespace std;
+using namespace localsolver;
+
 int ListFixedOvertimeModel::SerialSGSZrDecoder::varCount() { return p.numJobs + p.numRes; }
 
 SGSResult ListFixedOvertimeModel::SerialSGSZrDecoder::decode(vector<int>& order, const LSNativeContext& context) {

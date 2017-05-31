@@ -7,17 +7,17 @@
 #include "../Project.h"
 
 namespace Sampling {
-    vector<int> naiveSampling(const Project &p);
+    std::vector<int> naiveSampling(const Project &p);
 
-    vector<int> regretBasedBiasedRandomSamplingForLfts(const Project &p);
-    vector<int> regretBasedBiasedRandomSampling(const Project &p, const vector<float> &priorityValues);
-	vector<int> regretBasedBiasedRandomSampling(const Project &p, const vector<int> &priorityValues);
-	vector<int> regretBasedBiasedRandomSamplingInv(const Project &p, const vector<int> &priorityValues);
+    std::vector<int> regretBasedBiasedRandomSamplingForLfts(const Project &p);
+    std::vector<int> regretBasedBiasedRandomSampling(const Project &p, const std::vector<float> &priorityValues);
+	std::vector<int> regretBasedBiasedRandomSampling(const Project &p, const std::vector<int> &priorityValues);
+	std::vector<int> regretBasedBiasedRandomSamplingInv(const Project &p, const std::vector<int> &priorityValues);
 
-    int pickFromDecisionSet(const vector<bool> &eligible, const vector<float> &priorityValues);
-    vector<float> computeProbsForDecisionSet(const vector<bool> &eligible, const vector<float> &priorityValues);
+    int pickFromDecisionSet(const std::vector<bool> &eligible, const std::vector<float> &priorityValues);
+    std::vector<float> computeProbsForDecisionSet(const std::vector<bool> &eligible, const std::vector<float> &priorityValues);
 
-	void updateEligible(const Project &p, const vector<int> &order, int curIndex, vector<bool> &eligible);
+	void updateEligible(const Project &p, const std::vector<int> &order, int curIndex, std::vector<bool> &eligible);
 
-    vector<int> sample(bool rbbrs, const Project &p);
+    std::vector<int> sample(bool rbbrs, const Project &p);
 };

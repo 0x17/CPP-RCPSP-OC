@@ -3,9 +3,10 @@
 #ifndef DISABLE_GUROBI
 
 #include <vector>
+#include <gurobi_c++.h>
+
 #include "Matrix.h"
 #include "Utils.h"
-#include <gurobi_c++.h>
 
 class ProjectWithOvertime;
 
@@ -19,25 +20,26 @@ public:
 	};
 
 	struct Result {
-		vector<int> sts;
+		std::vector<int> sts;
 		bool optimal;
-		Result(vector<int> sts, bool optimal);
+		Result(std::vector<int> &_sts, bool _optimal);
 	};
 
 	GurobiSolver(ProjectWithOvertime& _p, Options _opts);
 
 	void restrictJobToTimeWindow(int j, int eft, int lft);
+
 	void relaxJob(int j);
 	void relaxAllJobs();
 
 	Result solve();
 
-	static string traceFilenameForInstance(const string& outPath, const string& instanceName);
+	static string traceFilenameForInstance(const std::string& outPath, const std::string& instanceName);
 
 private:
 	class CustomCallback : public GRBCallback {
 	public:
-		CustomCallback(string outPath, string instanceName);
+		CustomCallback(const std::string &outPath, const std::string& instanceName);
 		void manualCallback(float bks);
 
 	private:
@@ -54,11 +56,12 @@ private:
 	CustomCallback cback;
 
 	static GRBEnv setupOptions(Options opts);
+
 	void setupObjectiveFunction();
 	void setupConstraints();
 	void setupFeasibleMipStart();
 
-	vector<int> parseSchedule() const;
+	std::vector<int> parseSchedule() const;
 };
 
 #endif

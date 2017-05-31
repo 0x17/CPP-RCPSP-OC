@@ -3,9 +3,7 @@
 #include "../ProjectWithOvertime.h"
 #include <localsolver.h>
 
-using namespace localsolver;
-
-class BaseSchedulingNativeFunction : public LSNativeFunction {
+class BaseSchedulingNativeFunction : public localsolver::LSNativeFunction {
 protected:
 	ProjectWithOvertime &p;
 public:
@@ -15,15 +13,15 @@ public:
 
 class SchedulingNativeFunction : public BaseSchedulingNativeFunction {
 	Utils::Tracer *tr = nullptr;
-	lsdouble bks = 0.0;
+	localsolver::lsdouble bks = 0.0;
 public:
 	explicit SchedulingNativeFunction(ProjectWithOvertime &_p) : BaseSchedulingNativeFunction(_p) {}
 	virtual ~SchedulingNativeFunction() {}
 
 	virtual int varCount() = 0;
-	virtual SGSResult decode(vector<int> &order, const LSNativeContext &context) = 0;
+	virtual SGSResult decode(std::vector<int> &order, const localsolver::LSNativeContext &context) = 0;
 
-	virtual lsdouble call(const LSNativeContext& context) override;
+	virtual localsolver::lsdouble call(const localsolver::LSNativeContext& context) override;
 
 	void setTracer(Utils::Tracer *tr) { this->tr = tr; }
 };
@@ -36,31 +34,31 @@ struct SolverParams : Utils::BasicSolverParameters {
 class ListModel {
 protected:
 	ProjectWithOvertime &p;
-	LocalSolver ls;
+	localsolver::LocalSolver ls;
 	SchedulingNativeFunction *decoder;
-	vector<LSExpression> listElems;
+	std::vector<localsolver::LSExpression> listElems;
 
-	virtual void addAdditionalData(LSModel &model, LSExpression &obj) = 0;
-	virtual vector<int> parseScheduleFromSolution(LSSolution &sol) = 0;
+	virtual void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression &obj) = 0;
+	virtual std::vector<int> parseScheduleFromSolution(localsolver::LSSolution &sol) = 0;
 
 public:
 	ListModel(ProjectWithOvertime &_p, SchedulingNativeFunction *_decoder);
 	virtual ~ListModel();
 
-	vector<int> solve(SolverParams params);
+	std::vector<int> solve(SolverParams params);
 
-	static string traceFilenameForListModel(const string& outPath, int lsIndex, const string& instanceName);
+	static std::string traceFilenameForListModel(const std::string& outPath, int lsIndex, const std::string& instanceName);
 
 private:
 	void buildModel();
 	void applyParams(SolverParams &params);
 };
 
-class TraceCallback : public LSCallback {
+class TraceCallback : public localsolver::LSCallback {
     Utils::Tracer &tr;
     double secCtr;
 public:
     TraceCallback(Utils::Tracer &_tr);
-    virtual void callback(LocalSolver &solver, LSCallbackType type) override;
+    virtual void callback(localsolver::LocalSolver &solver, localsolver::LSCallbackType type) override;
     virtual ~TraceCallback();
 };

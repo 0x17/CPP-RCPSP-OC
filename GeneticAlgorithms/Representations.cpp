@@ -3,8 +3,10 @@
 //
 
 #include <cmath>
-#include "Representations.h"
 #include <boost/algorithm/clamp.hpp>
+#include "Representations.h"
+
+using namespace std;
 
 Lambda::Lambda(int numJobs) : order(numJobs) {}
 

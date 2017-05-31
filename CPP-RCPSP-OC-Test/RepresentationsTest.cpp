@@ -4,6 +4,8 @@
 
 #include "RepresentationsTest.h"
 
+using namespace std;
+
 TEST_F(LambdaTest, testOnePointCrossover) {
     Lambda m(p->numJobs), f(p->numJobs);
     m.order = { 0, 1, 2, 3, 4 };
