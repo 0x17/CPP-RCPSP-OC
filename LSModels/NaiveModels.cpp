@@ -44,8 +44,8 @@ std::pair<LSModel, Matrix<LSExpression>> buildModel(ProjectWithOvertime &p, Loca
 
 	// Objective function
 	auto objfunc = model.sum();
-	p.timeWindow(p.numJobs - 1, [&](int t) { objfunc += p.revenue[t] * x(p.numJobs - 1, t); });
-	p.eachResPeriod([&](int r, int t) { objfunc += -p.kappa[r] * model.max(0, cumulatedDemand(r, t) - p.capacities[r]); });
+	p.timeWindow(p.numJobs - 1, [&](int t) { objfunc += x(p.numJobs - 1, t) * p.revenue[t]; });
+	p.eachResPeriod([&](int r, int t) { objfunc += model.max(0, cumulatedDemand(r, t) - p.capacities[r]) * -p.kappa[r]; });
 
 	// Constraints
 
@@ -186,7 +186,7 @@ std::vector<int> LSSolver::solveNative(ProjectWithOvertime &p) {
 	LSExpression revenueExpr = model.createExpression(O_Call, revFuncExpr);
 	revenueExpr.addOperand(Sj[p.numJobs - 1]);
 	objfunc += revenueExpr;
-	p.eachResPeriod([&](int r, int t) { objfunc += -p.kappa[r] * zrt(r, t); });
+	p.eachResPeriod([&](int r, int t) { objfunc += zrt(r, t) * -p.kappa[r]; });
 
 	// Precedence restriction
 	p.eachJob([&](int j) {
