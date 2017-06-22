@@ -17,7 +17,7 @@ BranchAndBound::BranchAndBound(ProjectWithOvertime& _p, double _timeLimit, int _
 BranchAndBound::~BranchAndBound() {
 }
 
-vector<int> BranchAndBound::solve(bool seedWithGA, bool traceobj, string outPath) {
+vector<int> BranchAndBound::solve(bool seedWithGA, bool traceobj, const string &outPath) {
     if(traceobj && tr == nullptr) {
         tr = std::make_unique<Utils::Tracer>(getTraceFilename(outPath, p.instanceName));
     }
@@ -55,7 +55,7 @@ vector<int> BranchAndBound::solve(bool seedWithGA, bool traceobj, string outPath
 	return candidate;
 }
 
-bool BranchAndBound::isEligible(vector<int>& sts, int j) const {
+bool BranchAndBound::isEligible(const vector<int> &sts, int j) const {
     if(sts[j] != Project::UNSCHEDULED)
         return false;
 
@@ -284,15 +284,15 @@ void BranchAndBound::graphPreamble() {
     dotGraph = "digraph precedence{\n";
 }
 
-void BranchAndBound::solvePath(const string path) {
+void BranchAndBound::solvePath(const string &path) {
     auto instanceFilenames = Utils::filenamesInDirWithExt(path, ".sm");
-    std::ofstream outFile("branchandboundresults.csv");
+    ofstream outFile("branchandboundresults.csv");
     if(!outFile.is_open()) return;
     for(auto instanceFn : instanceFilenames) {
         ProjectWithOvertime p(instanceFn);
         BranchAndBound bandb(p);
         auto sts = bandb.solve(true);
-        outFile << instanceFn << ";" << to_string(p.calcProfit(sts)) << std::endl;
+        outFile << instanceFn << ";" << to_string(p.calcProfit(sts)) << endl;
     }
     outFile.close();
 }

@@ -104,7 +104,7 @@ list<string> Utils::filenamesInDir(const string& dir) {
 	for (auto it = fs::directory_iterator(p); it != fs::directory_iterator(); ++it) {
 		auto entry = *it;
 		string filename = entry.path().string();
-		if (fs::is_regular_file(entry))
+		if (!fs::is_directory(entry))
 			fnames.push_back(filename);
 
 	}
@@ -112,14 +112,14 @@ list<string> Utils::filenamesInDir(const string& dir) {
 }
 
 list<string> Utils::filenamesInDirWithExt(const string& dir, const string& ext) {
-	list<string> fnames;
+	list<string> fnames, all;
 	fs::path p(dir);
 	for (auto it = fs::directory_iterator(p); it != fs::directory_iterator(); ++it) {
 		auto entry = *it;
-		string filename = entry.path().string();
-		if (fs::is_regular_file(entry) && algo::ends_with(filename, ext))
-			fnames.push_back(filename);
-
+		string filePath = entry.path().string();
+		if (!fs::is_directory(entry) && algo::ends_with(filePath, ext)) {
+			fnames.push_back(filePath);
+		}
 	}
 	return fnames;
 }

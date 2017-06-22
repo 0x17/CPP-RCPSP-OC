@@ -14,9 +14,9 @@ class BranchAndBound {
 public:
 	explicit BranchAndBound(ProjectWithOvertime& _p, double _timeLimit = 60.0, int _iterLimit = -1, bool _writeGraph = false);
     ~BranchAndBound();
-	std::vector<int> solve(bool seedWithGA = false, bool traceobj = false, std::string outPath = "");
+	std::vector<int> solve(bool seedWithGA = false, bool traceobj = false, const std::string &outPath = "");
 
-    static void solvePath(const std::string path);
+    static void solvePath(const std::string &path);
 
 	static std::string getTraceFilename(const std::string& outPath, const std::string& instanceName);
 
@@ -33,7 +33,7 @@ private:
 	int iterLimit;
 	std::unique_ptr<Utils::Tracer> tr;
 	
-	bool isEligible(std::vector<int> &sts, int j) const;
+	bool isEligible(const std::vector<int> &sts, int j) const;
 	std::pair<bool,bool> resourceFeasibilityCheck(std::vector<int> &sts, int j, int stj) const;
 	void branch(std::vector<int> sts, int job, int stj);
     void foundLeaf(std::vector<int> &sts);
