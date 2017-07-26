@@ -10,6 +10,8 @@
 #include "GurobiSolver.h"
 #include "Utils.h"
 
+using namespace std;
+
 namespace Main {
 	void showUsage();
 	void commandLineRunner(int argc, char * argv[]);
@@ -120,7 +122,7 @@ void Main::convertArgFileToLSP(int argc, const char * argv[]) {
 }
 
 void Main::showUsage() {
-	list<string> solMethods = { "BranchAndBound", "LocalSolver", "Gurobi" };
+	std::list<string> solMethods = { "BranchAndBound", "LocalSolver", "Gurobi" };
 	for (int i = 0; i < 8; i++) solMethods.push_back("GA" + to_string(i) + " // " + Runners::getDescription(i));
 	for (int i = 0; i < 8; i++) solMethods.push_back("LocalSolverNative" + to_string(i) + " // " + Runners::getDescription(i));
 	std::cout << "Number of arguments must be >= 4" << std::endl;

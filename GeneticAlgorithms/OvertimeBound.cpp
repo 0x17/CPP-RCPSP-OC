@@ -6,6 +6,8 @@
 #include "Sampling.h"
 #include <boost/algorithm/clamp.hpp>
 
+using namespace std;
+
 TimeVaryingCapacityGA::TimeVaryingCapacityGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "TimeVaryingCapacityGA") {
     useThreads = false;
 }

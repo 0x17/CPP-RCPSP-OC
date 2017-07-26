@@ -20,7 +20,7 @@ protected:
 	virtual void crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) override;
     virtual void mutate(LambdaBeta &i) override;
     virtual FitnessResult fitness(LambdaBeta &i) override;
-	virtual vector<int> decode(LambdaBeta& i) override;
+	virtual std::vector<int> decode(LambdaBeta& i) override;
 };
 
 class TimeWindowArbitraryGA : public GeneticAlgorithm<LambdaTau> {
@@ -31,7 +31,7 @@ private:
     virtual void crossover(LambdaTau &mother, LambdaTau &father, LambdaTau &daughter) override;
     virtual void mutate(LambdaTau &i) override;
     virtual FitnessResult fitness(LambdaTau &i) override;
-	virtual vector<int> decode(LambdaTau& i) override;
+	virtual std::vector<int> decode(LambdaTau& i) override;
 };
 
 class TimeWindowArbitraryDiscretizedGA : public GeneticAlgorithm<LambdaBeta> {
@@ -42,25 +42,25 @@ private:
 	virtual void crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) override;
 	virtual void mutate(LambdaBeta &i) override;
 	virtual FitnessResult fitness(LambdaBeta &i) override;
-	virtual vector<int> decode(LambdaBeta& i) override;
+	virtual std::vector<int> decode(LambdaBeta& i) override;
 
 	int ub;
 };
 
 class ActivityListBasedGA : public GeneticAlgorithm<Lambda> {
 public:	
-	using TDecoder = std::function<SGSResult(const ProjectWithOvertime &p, const vector<int>&)>;
+	using TDecoder = std::function<SGSResult(const ProjectWithOvertime &p, const std::vector<int>&)>;
 
 	enum class DecoderType {
 		CompareAlternatives,
 		GoldenSectionSearch
 	};
 
-	ActivityListBasedGA(ProjectWithOvertime &_p, string name, TDecoder _decoder);
+	ActivityListBasedGA(ProjectWithOvertime &_p, const std::string &name, TDecoder _decoder);
 	ActivityListBasedGA(ProjectWithOvertime &_p, DecoderType type);
 	
 	static TDecoder selectDecoder(DecoderType type);
-	static string selectName(DecoderType type);
+	static std::string selectName(DecoderType type);
 
 private:
 	TDecoder decoder;
@@ -69,7 +69,7 @@ private:
     virtual void crossover(Lambda &mother, Lambda &father, Lambda &daughter) override;
     virtual void mutate(Lambda &i) override;
     virtual FitnessResult fitness(Lambda &i) override;
-	virtual vector<int> decode(Lambda& i) override;
+	virtual std::vector<int> decode(Lambda& i) override;
 };
 
 class CompareAlternativesGA : public ActivityListBasedGA {

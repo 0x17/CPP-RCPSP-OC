@@ -36,6 +36,6 @@ FitnessResult FixedDeadlineGA::fitness(DeadlineLambda &i) {
     return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
-vector<int> FixedDeadlineGA::decode(DeadlineLambda &i) {
+std::vector<int> FixedDeadlineGA::decode(DeadlineLambda &i) {
     return p.forwardBackwardDeadlineOffsetSGS(i.order, i.deadlineOffset).sts;
 }

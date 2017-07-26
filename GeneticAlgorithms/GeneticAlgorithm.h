@@ -16,11 +16,6 @@
 #include "../ProjectWithOvertime.h"
 #include "../Stopwatch.h"
 
-using std::string;
-using std::vector;
-using std::pair;
-using std::to_string;
-
 const bool FORCE_SINGLE_THREAD = true;
 
 enum class SelectionMethod {
@@ -28,14 +23,14 @@ enum class SelectionMethod {
 	DUEL
 };
 
-inline string traceFilenameForGeneticAlgorithm(const string &outPath, const string &gaName, const string &instanceName) {
+inline std::string traceFilenameForGeneticAlgorithm(const std::string &outPath, const std::string &gaName, const std::string &instanceName) {
 	return outPath + "GA" + gaName + "Trace_" + instanceName;
 }
 
 struct GAParameters : Utils::BasicSolverParameters {
 	GAParameters();
-	void parseFromString(string s);
-	void parseFromDisk(string fn = "GAParameters.txt");
+	void parseFromString(const std::string &s);
+	void parseFromDisk(const std::string &fn = "GAParameters.txt");
 
 	int numGens, popSize, pmutate;
     bool fitnessBasedPairing;
@@ -53,8 +48,8 @@ inline GAParameters::GAParameters() :
 	rbbrs(false) {
 }
 
-inline void GAParameters::parseFromString(string s) {
-	vector<string> lines, parts;
+inline void GAParameters::parseFromString(const std::string &s) {
+	std::vector<std::string> lines, parts;
 	boost::split(lines, s, boost::is_any_of("\n"));
 	for(auto line : lines) {
 		if (!boost::contains(line, "=")) continue;
@@ -79,7 +74,7 @@ inline void GAParameters::parseFromString(string s) {
 	}
 }
 
-inline void GAParameters::parseFromDisk(string fn) {
+inline void GAParameters::parseFromDisk(const std::string &fn) {
 	if(boost::filesystem::exists(fn))
 		parseFromString(Utils::slurp(fn));
 }
@@ -100,11 +95,11 @@ class GeneticAlgorithm {
 public:
     virtual ~GeneticAlgorithm();
 
-    pair<vector<int>, float> solve();
+    std::pair<std::vector<int>, float> solve();
 
     void setParameters(GAParameters _params);
 
-	string getName() const { return name; }
+	std::string getName() const { return name; }
 
 protected:
     GAParameters params;
@@ -114,11 +109,11 @@ protected:
 
 	// also consider FORCE_SINGLE_THREAD!
     bool useThreads = false;
-	const string name;
+	const std::string name;
 
-    GeneticAlgorithm(ProjectWithOvertime &_p, string _name = "GenericGA") : p(_p), tr(nullptr), name(_name) {}
+    GeneticAlgorithm(ProjectWithOvertime &_p, std::string _name = "GenericGA") : p(_p), tr(nullptr), name(_name) {}
 
-	void generateChildren(vector<pair<Individual, float>> & population);
+	void generateChildren(std::vector<std::pair<Individual, float>> & population);
 
     virtual Individual init(int ix) = 0;
     virtual void crossover(Individual &mother, Individual &father, Individual &daughter) = 0;
@@ -126,14 +121,14 @@ protected:
 
     virtual FitnessResult fitness(Individual &i) = 0;
 
-	virtual vector<int> decode(Individual &i) = 0;	
+	virtual std::vector<int> decode(Individual &i) = 0;
 
-    pair<int, int> computePair(const vector<bool> &alreadySelected);
+	std::pair<int, int> computePair(const std::vector<bool> &alreadySelected);
 
-    int mutateAndFitnessRange(vector<pair<Individual, float>> *pop, int startIx, int endIx);
+    int mutateAndFitnessRange(std::vector<std::pair<Individual, float>> *pop, int startIx, int endIx);
 
-	void selectBest(vector<pair<Individual, float>> &pop);
-	void selectDuel(vector<pair<Individual, float>> &pop);
+	void selectBest(std::vector<std::pair<Individual, float>> &pop);
+	void selectDuel(std::vector<std::pair<Individual, float>> &pop);
 
     template<class Func>
     void withMutProb(Func code) const;
@@ -158,8 +153,8 @@ void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
 }
 
 template<class Individual>
-pair<int, int> GeneticAlgorithm<Individual>::computePair(const vector<bool> &alreadySelected) {
-    pair<int, int> p;
+std::pair<int, int> GeneticAlgorithm<Individual>::computePair(const std::vector<bool> &alreadySelected) {
+    std::pair<int, int> p;
 
     do {
         p.first = Utils::randRangeIncl(0, params.fitnessBasedPairing ? (params.popSize / 2) - 1 : params.popSize-1);
@@ -172,11 +167,11 @@ pair<int, int> GeneticAlgorithm<Individual>::computePair(const vector<bool> &alr
 };
 
 template<class Individual>
-void GeneticAlgorithm<Individual>::generateChildren(vector<pair<Individual, float>> & pop) {
-    vector<bool> alreadySelected(params.popSize, false);
+void GeneticAlgorithm<Individual>::generateChildren(std::vector<std::pair<Individual, float>> & pop) {
+	std::vector<bool> alreadySelected(params.popSize, false);
 
     for(int childIx=params.popSize; childIx<params.popSize*2; childIx +=2) {
-        pair<int, int> parentIndices = computePair(alreadySelected);
+		std::pair<int, int> parentIndices = computePair(alreadySelected);
         alreadySelected[parentIndices.first] = true;
         alreadySelected[parentIndices.second] = true;
         crossover(pop[parentIndices.first].first, pop[parentIndices.second].first, pop[childIx].first);
@@ -185,7 +180,7 @@ void GeneticAlgorithm<Individual>::generateChildren(vector<pair<Individual, floa
 }
 
 template<class Individual>
-int GeneticAlgorithm<Individual>::mutateAndFitnessRange(vector<pair<Individual, float>> *pop, int startIx, int endIx) {
+int GeneticAlgorithm<Individual>::mutateAndFitnessRange(std::vector<std::pair<Individual, float>> *pop, int startIx, int endIx) {
 	static FitnessResult fres;
 	int scheduleCount = 0;
     for(int i=startIx; i<=endIx; i++) {
@@ -198,19 +193,19 @@ int GeneticAlgorithm<Individual>::mutateAndFitnessRange(vector<pair<Individual, 
 }
 
 template<class Individual>
-void GeneticAlgorithm<Individual>::selectBest(vector<pair<Individual, float>> &pop) {
+void GeneticAlgorithm<Individual>::selectBest(std::vector<std::pair<Individual, float>> &pop) {
 	std::sort(pop.begin(), pop.end(), [](auto &left, auto &right) { return left.second < right.second; });
 }
 
 template<class T>
-void swapIndividuals(vector<T> &pop, int ix1, int ix2) {
+void swapIndividuals(std::vector<T> &pop, int ix1, int ix2) {
 	T tmp = pop[ix1];
 	pop[ix1] = pop[ix2];
 	pop[ix2] = pop[ix1];
 }
 
 template<class T>
-void swapBestIndividualToFront(vector<T> &pop) {
+void swapBestIndividualToFront(std::vector<T> &pop) {
 	int ixOfBest = 0;
 	for (int i = 1; i < pop.size() / 2; i++) {
 		if (pop[i].second < pop[ixOfBest].second) {
@@ -221,11 +216,11 @@ void swapBestIndividualToFront(vector<T> &pop) {
 }
 
 template<class Individual>
-void GeneticAlgorithm<Individual>::selectDuel(vector<pair<Individual, float>> &pop) {
-	vector<bool> alreadySelected(params.popSize*2, false);
+void GeneticAlgorithm<Individual>::selectDuel(std::vector<std::pair<Individual, float>> &pop) {
+	std::vector<bool> alreadySelected(params.popSize*2, false);
 
 	for (int i = 0; i < params.popSize; i++) {
-		pair<int, int> p;
+		std::pair<int, int> p;
 		do {
 			p.first = Utils::randRangeIncl(0, params.popSize - 1);
 		} while (alreadySelected[p.first]);
@@ -245,13 +240,13 @@ void GeneticAlgorithm<Individual>::selectDuel(vector<pair<Individual, float>> &p
 }
 
 template<class Individual>
-pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
+std::pair<std::vector<int>, float> GeneticAlgorithm<Individual>::solve() {
     assert(params.pmutate > 0);
     assert(params.popSize > 0);
 
 	Stopwatch sw;
 	sw.start();
-    vector<pair<Individual, float>> pop(params.popSize*2);
+	std::vector<std::pair<Individual, float>> pop(params.popSize*2);
 
     const int NUM_THREADS = 4;
     std::thread *threads[NUM_THREADS];
@@ -261,7 +256,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 
 	LOG_I("Computing initial population");
 	FitnessResult fres;
-	pair<Individual, float> tmpIndiv;
+	std::pair<Individual, float> tmpIndiv;
     for(int i=0; i<params.popSize*2; i++) {
         pop[i].first = init(i);
 		fres = fitness(pop[i].first);
@@ -290,7 +285,7 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 		}
 	};*/
 
-	LOG_I("Computing with abort criterias: iterLimit=" + to_string(params.iterLimit) + ", numGens=" + to_string(params.numGens) + ", timeLimit=" + to_string(params.timeLimit));
+	LOG_I("Computing with abort criterias: iterLimit=" + std::to_string(params.iterLimit) + ", numGens=" + std::to_string(params.numGens) + ", timeLimit=" + std::to_string(params.timeLimit));
     for(int i=0;   (params.iterLimit == -1 || scheduleCount <= params.iterLimit)
 				&& (params.numGens == -1 || i<params.numGens)
 				&& (params.timeLimit == -1.0 || sw.look() < params.timeLimit * 1000.0); i++) {
@@ -340,9 +335,9 @@ pair<vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 		// Show improvements
         if(pop[0].second < lastBestVal) {
 			if (lastBestVal == std::numeric_limits<float>::max())
-				LOG_I("Initial improvement by " + to_string(-pop[0].second));
+				LOG_I("Initial improvement by " + std::to_string(-pop[0].second));
 			else
-				LOG_I("Improvement by " + to_string(lastBestVal - pop[0].second));
+				LOG_I("Improvement by " + std::to_string(lastBestVal - pop[0].second));
 
 	        //if(params.traceobj)
 			//	tr->trace(sw.look(), -pop[0].second);

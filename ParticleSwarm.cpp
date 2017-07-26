@@ -114,8 +114,8 @@ void ParticleSwarm::sortDescendingFitness(std::list<pair<std::vector<int>, float
 
 void ParticleSwarm::pathRelinking(const std::vector<int>& x1, const std::vector<int>& x2, std::list<pair<std::vector<int>, float>> &popWithFitness) {
 	std::list<pair<std::vector<int>, float>> newSolutions;
-	int r2 = Utils::randRangeIncl(1, x1.size() - 1);
-	int r1 = Utils::randRangeIncl(0, r2 - 1);
+	int r2 = static_cast<int>(Utils::randRangeIncl(1, x1.size() - 1));
+	int r1 = static_cast<int>(Utils::randRangeIncl(0, r2 - 1));
 	for(int i = r1; i <= r2; i++) {
 		if(x1[i] != x2[i]) {
 			//Utils::swap(x1, i, Utils::indexOfFirstEqualTo(x2[i], x2));

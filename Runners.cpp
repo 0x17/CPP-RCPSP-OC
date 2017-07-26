@@ -10,8 +10,10 @@
 #include "LSModels/OvertimeBoundModels.h"
 #include "LSModels/FixedDeadlineModels.h"
 
+using namespace std;
+
 namespace Runners {
-	RunnerParams::RunnerParams(int _methodIndex, int _variant, double _timeLimit, int _iterLimit, bool _traceobj, const string& _outPath)
+	RunnerParams::RunnerParams(int _methodIndex, int _variant, double _timeLimit, int _iterLimit, bool _traceobj, const std::string& _outPath)
 		: BasicSolverParameters(_timeLimit, _iterLimit, _traceobj, _outPath, 1),
 		methodIndex(_methodIndex),
 		variant(_variant) {}

@@ -5,6 +5,8 @@
 #include "TimeWindow.h"
 #include "Sampling.h"
 
+using namespace std;
+
 TimeWindowArbitraryDiscretizedGA::TimeWindowArbitraryDiscretizedGA(ProjectWithOvertime &_p, int _ub) : GeneticAlgorithm(_p, "TimeWindowArbitraryDiscretizedGA"), ub(_ub) {
 	useThreads = false;
 }
@@ -125,7 +127,7 @@ vector<int> TimeWindowBordersGA::decode(LambdaBeta& i) {
 
 //======================================================================================================================
 
-ActivityListBasedGA::ActivityListBasedGA(ProjectWithOvertime &_p, string name, TDecoder _decoder) : GeneticAlgorithm(_p, name), decoder(_decoder) {
+ActivityListBasedGA::ActivityListBasedGA(ProjectWithOvertime &_p, const std::string &name, TDecoder _decoder) : GeneticAlgorithm(_p, name), decoder(_decoder) {
     useThreads = true;
 }
 
@@ -143,7 +145,7 @@ ActivityListBasedGA::TDecoder ActivityListBasedGA::selectDecoder(DecoderType typ
 	}
 }
 
-string ActivityListBasedGA::selectName(DecoderType type) {
+std::string ActivityListBasedGA::selectName(DecoderType type) {
 	switch(type) {
 	case DecoderType::CompareAlternatives:
 		return "CompareAlternativesGA";

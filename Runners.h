@@ -21,16 +21,16 @@ class ListModel;
 namespace Runners {
 	struct RunnerParams : Utils::BasicSolverParameters {
 		int methodIndex, variant;
-		RunnerParams(int _methodIndex, int _variant, double _timeLimit, int _iterLimit, bool _traceobj, const string& _outPath);
+		RunnerParams(int _methodIndex, int _variant, double _timeLimit, int _iterLimit, bool _traceobj, const std::string& _outPath);
 	};
 
 	std::unique_ptr<ListModel> genListModelWithIndex(ProjectWithOvertime &p, int index, int variant = 0);
 
 	struct GAResult {
-		vector<int> sts;
+		std::vector<int> sts;
 		float profit;
 		double solvetime;
-		string name;
+		std::string name;
 	};
 
 	template<class T>
@@ -53,10 +53,10 @@ namespace Runners {
 
 	GAResult run(ProjectWithOvertime &p, GAParameters &params, int index);
 
-	string getDescription(int index);
+	std::string getDescription(int index);
 
-	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, RunnerParams rparams);
-	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, RunnerParams rparams);
+	std::vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, RunnerParams rparams);
+	std::vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime &p, RunnerParams rparams);
 
 	enum RepresentationEnum {
 		RE_LAMBDA_BETA,
