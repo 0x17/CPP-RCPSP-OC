@@ -3,8 +3,8 @@
 #include <cmath>
 
 #include "ParticleSwarm.h"
-#include "GeneticAlgorithms/Sampling.h"
-#include "ProjectWithOvertime.h"
+#include "../GeneticAlgorithms/Sampling.h"
+#include "../ProjectWithOvertime.h"
 
 using namespace std;
 

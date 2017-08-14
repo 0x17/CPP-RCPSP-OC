@@ -3,8 +3,8 @@
 #include <string>
 #include <vector>
 
-#include "Matrix.h"
-#include "Libraries/json11.hpp"
+#include "../Matrix.h"
+#include "../Libraries/json11.hpp"
 
 class Project;
 class ProjectWithOvertime;

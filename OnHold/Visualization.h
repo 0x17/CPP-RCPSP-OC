@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ProjectWithOvertime.h"
+#include "../ProjectWithOvertime.h"
 
 namespace Visualization {
     void drawActivityOnNodeGraphToPDF(Project &p, std::string filename);

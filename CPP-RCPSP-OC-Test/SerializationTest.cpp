@@ -7,7 +7,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "TestHelpers.h"
-#include "../Serialization.h"
+#include "../OnHold/Serialization.h"
 
 
 using namespace Serialization::JSON;
