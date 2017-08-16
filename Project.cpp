@@ -99,6 +99,19 @@ SGSResult Project::serialSGS(const vector<int>& order, const Matrix<int>& z, boo
 	return{ sts, resRem, 1 };
 }
 
+SGSResult Project::serialSGSWithRandomKey(const std::vector<float> &rk) const {
+	Matrix<int> resRem(numRes, numPeriods, [&](int r, int t) { return capacities[r]; });
+	vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs, UNSCHEDULED);
+	for (int i = 0; i < numJobs; i++) {
+		int job = chooseEligibleWithHighestPriority(sts, rk);
+		int lastPredFinished = computeLastPredFinishingTime(fts, job);
+		int t;
+		for (t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++);
+		scheduleJobAt(job, t, sts, fts, resRem);
+	}
+	return {sts, resRem, 1};
+}
+
 int Project::chooseEligibleWithLowestIndex(const vector<int>& sts, const vector<int>& order) const {
 	for (int i = 0; i < numJobs; i++) {
 		int j = order[i];
@@ -125,6 +138,20 @@ int Project::chooseEligibleWithHighestIndex(const vector<bool>& unscheduled, con
 			return j;
 	}
 	throw std::runtime_error("No eligible job found!");
+}
+
+int Project::chooseEligibleWithHighestPriority(const std::vector<int> &sts, const std::vector<float> &rk) const {
+	// lower is better
+	float maxPrioJob = 0, maxPrioVal = std::numeric_limits<float>::max();
+	for(int i = 0; i < numJobs; i++) {
+		if(sts[i] == UNSCHEDULED && allPredsScheduled(i, sts)) {
+			if(rk[i] < maxPrioVal) {
+				maxPrioVal = rk[i];
+				maxPrioJob = i;
+			}
+		}
+	}
+	return maxPrioJob;
 }
 
 bool Project::isScheduleFeasible(const vector<int>& sts) const {
@@ -517,4 +544,39 @@ string Project::coreInstanceName(const string &parentPath, const string &filenam
     boost::replace_first(fn, parentPath + "/", "");
     boost::replace_first(fn, ".sm", "");
     return fn;
+}
+
+std::vector<int> Project::standardizeRandomKey(const std::vector<float> &rk) const {
+	return activityListToRankVector(scheduleToActivityList(serialSGSWithRandomKey(rk).sts));
+}
+
+int Project::earliestJobInScheduleNotAlreadyTaken(const std::vector<int> &sts, const std::vector<bool> &alreadyTaken) const {
+	int earliestJob = 0, earliestT = std::numeric_limits<int>::max();
+	for(int i=0; i<numJobs; i++) {
+		if(sts[i] < earliestT && !alreadyTaken[i]) {
+			earliestT = sts[i];
+			earliestJob = i;
+		}
+	}
+	return earliestJob;
+};
+
+std::vector<int> Project::scheduleToActivityList(const std::vector<int> &sts) const {
+	vector<bool> alreadyTaken(numJobs);
+	vector<int> al(numJobs);
+
+	for(int i=0; i<numJobs; i++) {
+		al[i] = earliestJobInScheduleNotAlreadyTaken(sts, alreadyTaken);
+		alreadyTaken[al[i]] = true;
+ 	}
+
+	return al;
+}
+
+std::vector<int> Project::activityListToRankVector(const std::vector<int> &order) const {
+	vector<int> rankVec(order.size());
+	for(int i=0; i < order.size(); i++) {
+		rankVec[i] = Utils::indexOfFirstEqualTo(i, order);
+	}
+	return rankVec;
 }

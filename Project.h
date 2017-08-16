@@ -82,6 +82,7 @@ public:
 	std::pair<std::vector<int>, Matrix<int>> serialSGSForPartial(const std::vector<int> &sts, const std::vector<int> &order) const;
 	SGSResult serialSGS(const std::vector<int>& order, const std::vector<int>& zr, bool robust = false) const;
 	SGSResult serialSGS(const std::vector<int>& order, const Matrix<int>& zrt, bool robust = false) const;
+	SGSResult serialSGSWithRandomKey(const std::vector<float> &rk) const;
 
 	static bool jobBeforeInOrder(int job, int curIndex, const std::vector<int>& order);
 	bool hasPredNotBeforeInOrder(int job, int curIndex, const std::vector<int>& order) const;
@@ -131,6 +132,7 @@ public:
 	int chooseEligibleWithLowestIndex(const std::vector<int> &sts, const std::vector<int> &order) const;
 	int chooseEligibleWithLowestIndex(const std::vector<bool> &unscheduled, const std::vector<int> &order) const;
 	int chooseEligibleWithHighestIndex(const std::vector<bool>& unscheduled, const std::vector<int>& order) const;
+	int chooseEligibleWithHighestPriority(const std::vector<int> &sts, const std::vector<float> &rk) const;
 	
 	void complementPartialWithSSGS(const std::vector<int>& order, int startIx, std::vector<int> &fts, Matrix<int> &resRem, bool robust = false) const;
 
@@ -148,6 +150,12 @@ public:
 	bool isResRemValid(const std::vector<int>& sts, const Matrix<int>& resRem) const;
 
 	static std::string coreInstanceName(const std::string & parentPath, const std::string & filename);
+
+	std::vector<int> standardizeRandomKey(const std::vector<float> &rk) const;
+	std::vector<int> scheduleToActivityList(const std::vector<int> &sts) const;
+	std::vector<int> activityListToRankVector(const std::vector<int> &order) const;
+
+	int earliestJobInScheduleNotAlreadyTaken(const std::vector<int> &sts, const std::vector<bool> &alreadyTaken) const;
 
 protected:
 	bool allPredsScheduled(int j, const std::vector<int> &sts) const;

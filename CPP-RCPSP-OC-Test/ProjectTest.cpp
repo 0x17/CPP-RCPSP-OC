@@ -35,9 +35,11 @@ TEST_F(ProjectTest, testConstructor) {
 }
 
 TEST_F(ProjectTest, testSerialSGS) {
-    auto actualSts = p->serialSGS({0, 1, 2, 3, 4});
-    vector<int> expSts = { 0, 0, 2, 4, 6 };
-    TestHelpers::arrayEquals(expSts, actualSts);
+	TestHelpers::arrayEquals({0, 0, 2, 4, 6 }, p->serialSGS({0, 1, 2, 3, 4}));
+}
+
+TEST_F(ProjectTest, testSerialSGSWithRandomKey) {
+	TestHelpers::arrayEquals({0, 0, 2, 4, 6 }, p->serialSGSWithRandomKey({ 0, 1, 2, 3, 4 }).sts);
 }
 
 TEST_F(ProjectTest, testJobBeforeInOrder) {
@@ -105,6 +107,19 @@ TEST_F(ProjectTest, testLatestFinishingTimesForPartial) {
 	TestHelpers::arrayEquals(alfts, plfts);
 }
 
+TEST_F(ProjectTest, testChooseEligibleWithHighestPriority) {
+	vector<int> sts = {0, 0, -1, -1, -1 };
+	vector<float> rk = { 0.0, 0.3, 0.9, 0.5, 0.95 };
+
+	ASSERT_EQ(3, p->chooseEligibleWithHighestPriority(sts, rk));
+
+	sts[3] = 4;
+	ASSERT_EQ(2, p->chooseEligibleWithHighestPriority(sts, rk));
+
+	sts[2] = 2;
+	ASSERT_EQ(4, p->chooseEligibleWithHighestPriority(sts, rk));
+}
+
 TEST_F(ProjectTest, testIsSchedulePrecedenceFeasible) {
 	vector<int> sts = p->emptySchedule();
 	ASSERT_FALSE(p->isSchedulePrecedenceFeasible(sts));
@@ -113,4 +128,23 @@ TEST_F(ProjectTest, testIsSchedulePrecedenceFeasible) {
 
 TEST_F(ProjectTest, testIsScheduleResourceFeasible) {
 	ASSERT_TRUE(p->isScheduleResourceFeasible(p->serialSGS(p->topOrder)));
+}
+
+TEST_F(ProjectTest, testScheduleToActivityList) {
+	TestHelpers::arrayEquals({ 0, 1, 2, 3, 4 }, p->scheduleToActivityList({ 0, 0, 3, 3, 5 }));
+	TestHelpers::arrayEquals({ 0, 3, 1, 2, 4 }, p->scheduleToActivityList({0, 2, 4, 0, 6}));
+}
+
+TEST_F(ProjectTest, testActivityListToRankVector) {
+}
+
+TEST_F(ProjectTest, testStandardizeRandomKey) {
+	TestHelpers::arrayEquals({0, 2, 3, 1, 4}, p->standardizeRandomKey({ 0.0, 25.0, 3.0, 0.5, 30.0 }));
+}
+
+TEST_F(ProjectTest, testEarliestJobInScheduleNotAlreadyTaken) {
+	ASSERT_EQ(3, p->earliestJobInScheduleNotAlreadyTaken({ 0, 2, 4, 0, 6 }, { true, false, false, false, false }));
+	ASSERT_EQ(1, p->earliestJobInScheduleNotAlreadyTaken({ 0, 2, 4, 0, 6 }, { true, false, false, true, false }));
+	ASSERT_EQ(2, p->earliestJobInScheduleNotAlreadyTaken({ 0, 2, 4, 0, 6 }, { true, true, false, true, false }));
+	ASSERT_EQ(4, p->earliestJobInScheduleNotAlreadyTaken({ 0, 2, 4, 0, 6 }, { true, true, true, true, false }));
 }
