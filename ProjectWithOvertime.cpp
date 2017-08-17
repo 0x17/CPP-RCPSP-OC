@@ -417,24 +417,27 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &ord
 	return{ data.sts, data.resRem };
 }
 
+// (lambda, beta)
 SGSResult ProjectWithOvertime::serialSGSTimeWindowBordersWithForwardBackwardImprovement(const vector<int>& order, const vector<int>& beta, BorderSchedulingOptions options, bool robust) const {
 	SGSResult res = serialSGSTimeWindowBorders(order, beta, options, robust);
 	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
-	fbres.numSchedulesGenerated += res.numSchedulesGenerated;
+	//fbres.numSchedulesGenerated += res.numSchedulesGenerated;
 	return fbres;
 }
 
+// (lambda, zr)
 SGSResult ProjectWithOvertime::serialSGSWithForwardBackwardImprovement(const vector<int>& order, const vector<int>& z, bool robust) const {
 	SGSResult res = serialSGS(order, z, robust);
 	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
-	fbres.numSchedulesGenerated += res.numSchedulesGenerated;
+	//fbres.numSchedulesGenerated += res.numSchedulesGenerated;
 	return fbres;
 }
 
+// (lambda, zrt)
 SGSResult ProjectWithOvertime::serialSGSWithForwardBackwardImprovement(const vector<int>& order, const Matrix<int>& z, bool robust) const {
 	SGSResult res = serialSGS(order, z, robust);
 	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
-	fbres.numSchedulesGenerated += res.numSchedulesGenerated;
+	//fbres.numSchedulesGenerated += res.numSchedulesGenerated;
 	return fbres;
 }
 
@@ -507,6 +510,15 @@ SGSResult ProjectWithOvertime::forwardBackwardIterations(const vector<int> &orde
 SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(const vector<int> &order, const vector<float> &tau, bool robust) const {
 	SGSResult res = serialSGSTimeWindowArbitrary(order, tau, robust);
 	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
+	fbres.numSchedulesGenerated += res.numSchedulesGenerated;
+	return fbres;
+}
+
+SGSResult ProjectWithOvertime::serialSGSWithRandomKeyAndFBI(const std::vector<float> &rk, const Matrix<int> &z) const {
+	SGSResult res = serialSGSWithRandomKey(rk);
+	vector<int> order;
+	// FIXME: Add modified FBI with RK as input instead of AL
+	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>());
 	fbres.numSchedulesGenerated += res.numSchedulesGenerated;
 	return fbres;
 }
