@@ -320,7 +320,7 @@ TEST(UtilsTest, testPartitionDirectory) {
 	}
 
 	for (string expDir : expDirectories) {
-		ASSERT_TRUE(boost::filesystem::exists(expDir));
+		ASSERT_TRUE(boost::filesystem::is_directory(expDir));
 	}
 
 	boost::filesystem::remove_all(tmpDir);

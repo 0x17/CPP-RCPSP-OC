@@ -209,7 +209,7 @@ namespace Utils {
 	}
 
 	void partitionDirectory(const string& dirPath, int numPartitions, const string& infix) {
-		if(!boost::filesystem::exists(dirPath)) {
+		if(!boost::filesystem::is_directory(dirPath)) {
 			LOG_W("Unable to partition directory " + dirPath + ", it does not exist!");
 			return;
 		}

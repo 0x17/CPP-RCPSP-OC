@@ -75,7 +75,7 @@ inline void GAParameters::parseFromString(const std::string &s) {
 }
 
 inline void GAParameters::parseFromDisk(const std::string &fn) {
-	if(boost::filesystem::exists(fn))
+	if(boost::filesystem::is_regular_file(fn))
 		parseFromString(Utils::slurp(fn));
 }
 

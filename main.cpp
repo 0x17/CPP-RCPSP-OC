@@ -72,8 +72,8 @@ void computeScheduleAttributes(string smfilename) {
 int main(int argc, char * argv[]) {
 	//computeScheduleAttributes("PaperBeispiel.sm");
 
-	//Main::commandLineRunner(argc, argv);
-	Main::plotHeuristicProfits();
+	Main::commandLineRunner(argc, argv);
+	//Main::plotHeuristicProfits();
 
 	//Main::Testing::testGurobi();
 
@@ -128,7 +128,7 @@ void Main::showUsage() {
 	std::cout << "Number of arguments must be >= 4" << std::endl;
 	std::cout << "Usage: Solver SolutionMethod TimeLimitInSecs ScheduleLimit ProjectFileSM [traceobj]" << std::endl;
 	std::cout << "Solution methods: " << std::endl;
-	for (auto method : solMethods) std::cout << "\t" << method << std::endl;
+	for (const auto &method : solMethods) std::cout << "\t" << method << std::endl;
 }
 
 int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
@@ -138,19 +138,23 @@ int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
 }
 
 bool Main::instanceAlreadySolvedInResultFile(const string& coreName, const string& resultFilename) {
-	if (!boost::filesystem::exists(resultFilename)) return false;
+	if (!boost::filesystem::is_regular_file(resultFilename)) {
+		return false;
+	}
 
-	for(string line : Utils::readLines(resultFilename)) {
+	for (const string &line : Utils::readLines(resultFilename)) {
 		if (boost::starts_with(line, coreName)) {
-			LOG_W("Instance " + coreName + " is already solved in result file " + resultFilename + ", skipping result recomputation!");
+			LOG_W("Instance " + coreName + " is already solved in result file " + resultFilename +
+				  ", skipping result recomputation!");
 			return true;
 		}
 	}
+
 	return false;
 }
 
 void Main::purgeOldTraceFile(const string &traceFilename) {
-	if (boost::filesystem::exists(traceFilename)) {
+	if (boost::filesystem::is_regular_file(traceFilename)) {
 		LOG_W("Found old trace file " + traceFilename + ", deleting it!");
 		boost::filesystem::remove(traceFilename);
 	}
@@ -173,7 +177,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
         bool traceobj = (argc == 6 && !string("traceobj").compare(argv[5]));
 
 		string parentPath = boost::filesystem::path(string(argv[4])).parent_path().string();
-		string outPath = parentPath + "_" + to_string(int(round(timeLimit))) + "secs/";
+		string outPath = parentPath + "_" + (iterLimit == -1 ? to_string(int(round(timeLimit))) + "secs/" : to_string(iterLimit) + "schedules/");
 		string outFn = outPath;
 		boost::filesystem::create_directory(boost::filesystem::path(outPath));
 		string coreName = Project::coreInstanceName(parentPath, string(argv[4]));
