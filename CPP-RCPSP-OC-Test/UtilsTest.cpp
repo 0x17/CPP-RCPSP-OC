@@ -42,7 +42,7 @@ TEST(UtilsTest, testReadLinesSynthetic) {
 }
 
 TEST(UtilsTest, testReadLines) {
-    auto actLines = Utils::readLines("MiniBeispiel.DAT");
+    auto actLines = Utils::readLines("Data/MiniBeispiel.DAT");
 	auto actLinesTr = Utils::mapVec<string(string), string, string>([](string line) { return trim_copy(line); }, actLines);
     ASSERT_EQ("************************************************************************", actLinesTr[0]);
     ASSERT_EQ("projects                      :  1", actLinesTr[4]);
@@ -236,8 +236,8 @@ string removeWhitespace(string s) {
 }
 
 TEST(UtilsTest, testFilenamesInDirWithExt) {
-    auto fnames = Utils::filenamesInDirWithExt(".", "DAT");
-    list<string> expFnames = { "MiniBeispiel.DAT", "QBWLBeispiel.DAT" };
+    auto fnames = Utils::filenamesInDirWithExt("Data", "DAT");
+    list<string> expFnames = { "Data/MiniBeispiel.DAT", "Data/QBWLBeispiel.DAT" };
 	auto expFnamesRplced = Utils::mapLst<string(string), string, string>(removeWhitespace, expFnames);
     TestHelpers::listEquals(expFnamesRplced, fnames);
 

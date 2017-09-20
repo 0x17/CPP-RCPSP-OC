@@ -281,7 +281,7 @@ void Main::Testing::testFixedDeadlineHeuristic() {
 }
 
 void Main::Testing::testLocalSolverNative(int seed) {
-	string projFilename = "MiniBeispiel.DAT";
+	string projFilename = "Data/MiniBeispiel.DAT";
 	ProjectWithOvertime p(projFilename);
 	//ListAlternativesModel lm(p);
 	ListDeadlineModel lm(p);

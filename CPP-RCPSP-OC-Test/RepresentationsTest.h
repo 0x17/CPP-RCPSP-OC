@@ -16,7 +16,7 @@ protected:
 	std::unique_ptr<ProjectWithOvertime> p;
 
     void SetUp() override {
-        p = std::make_unique<ProjectWithOvertime>("MiniBeispiel.DAT");
+        p = std::make_unique<ProjectWithOvertime>("Data/MiniBeispiel.DAT");
         l = std::make_unique<Lambda>(p->numJobs);
         l->order = p->topOrder;
     }

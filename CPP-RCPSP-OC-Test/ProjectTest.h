@@ -12,7 +12,7 @@ protected:
     std::unique_ptr<Project> p;
 
 	void SetUp() override {
-        p = std::make_unique<Project>("MiniBeispiel.DAT");
+        p = std::make_unique<Project>("Data/MiniBeispiel.DAT");
     }
 
 	void TearDown() override {
