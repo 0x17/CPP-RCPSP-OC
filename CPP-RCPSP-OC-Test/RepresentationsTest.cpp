@@ -35,3 +35,28 @@ TEST_F(LambdaTest, testNeighborhoodSwap) {
         }
     }
 }
+
+//======================================================================================================================
+
+TEST_F(LambdaZrtTest, testIndependentTwoPointCrossover) {
+	LambdaZrt m(p->numJobs, p->numRes, p->numPeriods),
+			  f(p->numJobs, p->numRes, p->numPeriods);
+
+	m.order = { 0, 1, 3, 2, 4 };
+	f.order = { 0, 2, 3, 1, 4 };
+	pair<int,int> qj = {1, 2};
+
+	m.z = Matrix<int>({{1,2,3,4,5,6,7}});
+	f.z = Matrix<int>({{7,6,5,4,3,2,1}});
+	pair<int,int> q2 = {2, 4};
+	auto ctype = LambdaZrt::CrossoverPartitionType::PERIOD_WISE;
+
+	lzrt->independentTwoPointCrossovers(m, f, qj, q2, ctype);
+
+	vector<int> expOrder = { 0, 1, 2, 3, 4 };
+	Matrix<int> expProfile({{1,2,3,4,3,6,7}});
+	LambdaZrt expDaughter(expOrder, expProfile);
+
+	TestHelpers::arrayEquals(expDaughter.order, lzrt->order);
+	TestHelpers::matrixEquals(expDaughter.z, lzrt->z);
+}
