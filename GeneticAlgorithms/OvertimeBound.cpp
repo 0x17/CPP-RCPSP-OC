@@ -27,7 +27,14 @@ LambdaZrt TimeVaryingCapacityGA::init(int ix) {
 }
 
 void TimeVaryingCapacityGA::crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter) {
-	daughter.randomIndependentOnePointCrossovers(mother, father, p.getHeuristicMaxMakespan());
+	switch(params.crossoverMethod) {
+		case CrossoverMethod::OPC:
+			daughter.randomIndependentOnePointCrossovers(mother, father, p.getHeuristicMaxMakespan());
+			break;
+		case CrossoverMethod::TPC:
+			daughter.randomIndependentTwoPointCrossovers(mother, father, p.getHeuristicMaxMakespan());
+			break;
+	}
 }
 
 void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {

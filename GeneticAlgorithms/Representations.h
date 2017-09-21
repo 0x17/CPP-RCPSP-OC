@@ -87,6 +87,9 @@ public:
 	void randomIndependentOnePointCrossovers(const LambdaZrt& mother, const LambdaZrt& father, int heuristicMaxMakespan);
 	void independentOnePointCrossovers(const LambdaZrt& mother, const LambdaZrt& father, int qj, int q2, CrossoverPartitionType ctype);
 
+	void randomIndependentTwoPointCrossovers(const LambdaZrt& mother, const LambdaZrt& father, int heuristicMaxMakespan);
+	void independentTwoPointCrossovers(const LambdaZrt& mother, const LambdaZrt& father, std::pair<int,int> qj, std::pair<int,int> q2, CrossoverPartitionType ctype);
+
 	void independentMutations(const Matrix<char>& adjMx, const std::vector<int> &zmax, int pmutate);
 };
 

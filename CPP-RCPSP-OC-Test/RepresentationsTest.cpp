@@ -15,6 +15,15 @@ TEST_F(LambdaTest, testOnePointCrossover) {
     TestHelpers::arrayEquals(expDaughter.order, l->order);
 }
 
+TEST_F(LambdaTest, testTwoPointCrossover) {
+	Lambda m(p->numJobs), f(p->numJobs);
+	m.order = { 0, 1, 3, 2, 4 };
+	f.order = { 0, 2, 3, 1, 4 };
+	l->twoPointCrossover(m, f, 1, 2);
+	Lambda expDaughter({ 0, 1, 2, 3, 4 });
+	TestHelpers::arrayEquals(expDaughter.order, l->order);
+}
+
 TEST_F(LambdaTest, testNeighborhoodSwap) {
     vector<int> orderBefore = l->order;
     l->neighborhoodSwap(p->adjMx, 1);

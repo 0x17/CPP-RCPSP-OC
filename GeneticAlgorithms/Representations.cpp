@@ -91,7 +91,7 @@ void DeadlineLambda::randomOnePointCrossover(const Lambda &mother, const Lambda 
 
 LambdaZr::LambdaZr(int numJobs, int numRes) : Lambda(numJobs), z(numRes) {}
 
-LambdaZr::LambdaZr() {}
+LambdaZr::LambdaZr() = default;
 
 void LambdaZr::randomIndependentOnePointCrossovers(const LambdaZr& mother, const LambdaZr& father) {
 	int qj = Utils::randRangeIncl(0, static_cast<int>(order.size()) - 1);
@@ -109,7 +109,7 @@ void LambdaZr::independentOnePointCrossovers(const LambdaZr& mother, const Lambd
 
 LambdaZrt::LambdaZrt(int numJobs, int numRes, int numPeriods) : Lambda(numJobs), z(numRes, numPeriods) {}
 
-LambdaZrt::LambdaZrt() {}
+LambdaZrt::LambdaZrt() = default;
 
 void LambdaZrt::randomIndependentOnePointCrossovers(const LambdaZrt& mother, const LambdaZrt& father, int heuristicMaxMakespan) {
 	CrossoverPartitionType ctype = Utils::randBool() ? CrossoverPartitionType::PERIOD_WISE : CrossoverPartitionType::RESOURCE_WISE;
@@ -121,7 +121,6 @@ void LambdaZrt::randomIndependentOnePointCrossovers(const LambdaZrt& mother, con
 void LambdaZrt::independentOnePointCrossovers(const LambdaZrt& mother, const LambdaZrt& father, int qj, int q2, CrossoverPartitionType ctype) {
 	onePointCrossover(mother, father, qj);
 	switch(ctype) {
-	default:
 	case CrossoverPartitionType::RESOURCE_WISE:
 		z.foreachAssign([&](int r, int t) {
 			return r <= q2 ? mother.z(r, t) : father.z(r, t);
@@ -132,6 +131,36 @@ void LambdaZrt::independentOnePointCrossovers(const LambdaZrt& mother, const Lam
 			return t <= q2 ? mother.z(r, t) : father.z(r, t);
 		});
 		break;
+	}
+}
+
+void LambdaZrt::randomIndependentTwoPointCrossovers(const LambdaZrt& mother, const LambdaZrt& father, int heuristicMaxMakespan) {
+	CrossoverPartitionType ctype = Utils::randBool() ? CrossoverPartitionType::PERIOD_WISE : CrossoverPartitionType::RESOURCE_WISE;
+
+	pair<int,int> qj;
+	qj.first = Utils::randRangeIncl(0, static_cast<int>(order.size()) - 2);
+	qj.second = Utils::randRangeIncl(qj.first + 1, static_cast<int>(order.size()) - 1);
+
+	pair<int,int> q2;
+	q2.first = Utils::randRangeIncl(0, (ctype == CrossoverPartitionType::PERIOD_WISE ? heuristicMaxMakespan : z.getM()) - 1);
+	q2.second = Utils::randRangeIncl(q2.first+1, (ctype == CrossoverPartitionType::PERIOD_WISE ? heuristicMaxMakespan : z.getM()) - 1);
+
+	independentTwoPointCrossovers(mother, father, qj, q2, ctype);
+}
+
+void LambdaZrt::independentTwoPointCrossovers(const LambdaZrt& mother, const LambdaZrt& father, pair<int,int> qj, pair<int,int> q2, CrossoverPartitionType ctype) {
+	twoPointCrossover(mother, father, qj.first, qj.second);
+	switch(ctype) {
+		case CrossoverPartitionType::RESOURCE_WISE:
+			z.foreachAssign([&](int r, int t) {
+				return r <= q2.first || r > q2.second ? mother.z(r, t) : father.z(r, t);
+			});
+			break;
+		case CrossoverPartitionType::PERIOD_WISE:
+			z.foreachAssign([&](int r, int t) {
+				return t <= q2.first || t > q2.second ? mother.z(r, t) : father.z(r, t);
+			});
+			break;
 	}
 }
 

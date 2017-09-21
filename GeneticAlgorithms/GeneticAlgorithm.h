@@ -23,6 +23,11 @@ enum class SelectionMethod {
 	DUEL
 };
 
+enum class CrossoverMethod {
+	OPC,
+	TPC
+};
+
 inline std::string traceFilenameForGeneticAlgorithm(const std::string &outPath, const std::string &gaName, const std::string &instanceName) {
 	return outPath + "GA" + gaName + "Trace_" + instanceName;
 }
@@ -35,6 +40,7 @@ struct GAParameters : Utils::BasicSolverParameters {
 	int numGens, popSize, pmutate;
     bool fitnessBasedPairing;
 	SelectionMethod selectionMethod;
+	CrossoverMethod crossoverMethod;
     bool rbbrs;
 };
 
@@ -45,6 +51,7 @@ inline GAParameters::GAParameters() :
 	pmutate(5),
 	fitnessBasedPairing(false),
 	selectionMethod(SelectionMethod::BEST),
+	crossoverMethod(CrossoverMethod::OPC),
 	rbbrs(false) {
 }
 
@@ -69,6 +76,8 @@ inline void GAParameters::parseFromString(const std::string &s) {
 			fitnessBasedPairing = boost::equals(parts[1], "true");
 		else if (boost::equals(parts[0], "selectionMethod"))
 			selectionMethod = (boost::equals(parts[1], "best")) ? SelectionMethod::BEST : SelectionMethod::DUEL;
+		else if(boost::equals(parts[0], "crossoverMethod"))
+			crossoverMethod = (boost::equals(parts[1], "TPC")) ? CrossoverMethod::TPC : CrossoverMethod::OPC;
 		else if (boost::equals(parts[0], "rbbrs"))
 			rbbrs = boost::equals(parts[1], "true");
 	}
