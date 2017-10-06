@@ -61,7 +61,8 @@ inline void GAParameters::parseFromString(const std::string &s) {
 	for(auto line : lines) {
 		if (!boost::contains(line, "=")) continue;
 
-		boost::split(parts, line, boost::is_any_of("="));		
+		boost::split(parts, line, boost::is_any_of("="));
+		boost::trim_right(parts[1]);
 		if (boost::equals(parts[0], "numGens"))
 			numGens = stoi(parts[1]);
 		else if (boost::equals(parts[0], "popSize"))
@@ -84,7 +85,7 @@ inline void GAParameters::parseFromString(const std::string &s) {
 }
 
 inline void GAParameters::parseFromDisk(const std::string &fn) {
-	if(boost::filesystem::is_regular_file(fn))
+	if(boost::filesystem::exists(fn))
 		parseFromString(Utils::slurp(fn));
 }
 

@@ -34,7 +34,7 @@ public:
 
 	Result solve();
 
-	static string traceFilenameForInstance(const std::string& outPath, const std::string& instanceName);
+	static std::string traceFilenameForInstance(const std::string& outPath, const std::string& instanceName);
 
 private:
 	class CustomCallback : public GRBCallback {

@@ -142,8 +142,9 @@ void LambdaZrt::randomIndependentTwoPointCrossovers(const LambdaZrt& mother, con
 	qj.second = Utils::randRangeIncl(qj.first + 1, static_cast<int>(order.size()) - 1);
 
 	pair<int,int> q2;
-	q2.first = Utils::randRangeIncl(0, (ctype == CrossoverPartitionType::PERIOD_WISE ? heuristicMaxMakespan : z.getM()) - 1);
-	q2.second = Utils::randRangeIncl(q2.first+1, (ctype == CrossoverPartitionType::PERIOD_WISE ? heuristicMaxMakespan : z.getM()) - 1);
+	int q2ub = (ctype == CrossoverPartitionType::PERIOD_WISE ? heuristicMaxMakespan : z.getM()) - 1;
+	q2.first = Utils::randRangeIncl(0, q2ub);
+	q2.second = Utils::randRangeIncl(min(q2.first+1, q2ub), q2ub);
 
 	independentTwoPointCrossovers(mother, father, qj, q2, ctype);
 }
