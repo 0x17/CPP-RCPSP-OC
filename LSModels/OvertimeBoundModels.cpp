@@ -12,7 +12,7 @@ SGSResult ListFixedOvertimeModel::SerialSGSZrDecoder::decode(vector<int>& order,
 	for (int r = 0; r < p.numRes; r++)
 		zr[r] = static_cast<int>(context.getIntValue(p.numJobs + r));
 
-	auto res = p.serialSGSWithForwardBackwardImprovement(order, zr, true);
+	auto res = p.serialSGSWithForwardBackwardImprovement(order, zr, !enforceTopOrdering);
 	return res;
 }
 
@@ -32,7 +32,7 @@ vector<int> ListFixedOvertimeModel::parseScheduleFromSolution(LSSolution& sol) {
 	for (int r = 0; r < p.numRes; r++)
 		zr[r] = static_cast<int>(sol.getIntValue(zrVar[r]));
 
-	return p.serialSGSWithForwardBackwardImprovement(order, zr, true).sts;
+	return p.serialSGSWithForwardBackwardImprovement(order, zr, !enforceTopOrdering).sts;
 }
 
 //==============================================================================================================
@@ -46,7 +46,8 @@ SGSResult ListDynamicOvertimeModel::SerialSGSZrtDecoder::decode(vector<int>& ord
 	Matrix<int> zrt(p.numRes, nperiods, [this, &context, nperiods](int r, int t) {
 		return static_cast<int>(context.getIntValue(p.numJobs + r * nperiods + t));
 	});
-	auto res = p.serialSGSWithForwardBackwardImprovement(order, zrt, true);
+
+	auto res = p.serialSGSWithForwardBackwardImprovement(order, zrt, !enforceTopOrdering);
 	return res;
 }
 
@@ -65,5 +66,5 @@ vector<int> ListDynamicOvertimeModel::parseScheduleFromSolution(LSSolution& sol)
 	Matrix<int> zrt(p.numRes, p.heuristicMakespanUpperBound(), [this, &sol](int r, int t) {
 		return static_cast<int>(sol.getIntValue(zrtVar(r, t)));
 	});
-	return p.serialSGSWithForwardBackwardImprovement(order, zrt, true).sts;
+	return p.serialSGSWithForwardBackwardImprovement(order, zrt, !enforceTopOrdering).sts;
 }

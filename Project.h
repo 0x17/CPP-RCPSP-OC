@@ -46,7 +46,6 @@
         code; \
     }
 
-//typedef pair<std::vector<int>, Matrix<int>> SGSResult;
 struct SGSResult {
 	std::vector<int> sts;
 	Matrix<int> resRem;

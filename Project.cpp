@@ -353,7 +353,7 @@ bool Project::hasSuccNotBeforeInOrder(int job, int curIndex, const vector<int>& 
 }
 
 bool Project::isOrderFeasible(const vector<int>& order) const {
-	EACH_JOBi(if(hasPredNotBeforeInOrder(order[i], i, order)) return false)
+	EACH_JOBi(if (hasPredNotBeforeInOrder(order[i], i, order)) return false)
 	return true;
 }
 

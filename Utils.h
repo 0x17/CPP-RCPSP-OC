@@ -139,7 +139,7 @@ namespace Utils {
 		double last_slvtime;
 		Stopwatch sw;
     public:
-        Tracer(const std::string filePrefix = "SolverTrace");
+        explicit Tracer(const std::string filePrefix = "SolverTrace");
         ~Tracer();
         void trace(double slvtime, float bks_objval, bool trunc_secs = false);
 	    void intervalTrace(float bks_objval);

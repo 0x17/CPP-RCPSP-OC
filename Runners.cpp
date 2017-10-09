@@ -37,7 +37,7 @@ namespace Runners {
 			lm = make_unique<ListFixedOvertimeModel>(p);
 			break;
 		case 4:
-			lm = make_unique<ListDynamicOvertimeModel>(p);
+			lm = make_unique<ListDynamicOvertimeModel>(p, true);
 			break;
 		case 5:
 			lm = make_unique<ListAlternativesModel>(p);
@@ -120,14 +120,12 @@ namespace Runners {
 	}
 
 	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime& p, RunnerParams rparams) {
-		vector<int> sts;
-		std::unique_ptr<ListModel> lm = genListModelWithIndex(p, rparams.methodIndex, rparams.variant);
+		unique_ptr<ListModel> lm = genListModelWithIndex(p, rparams.methodIndex, rparams.variant);
 		SolverParams params(rparams.timeLimit, rparams.iterLimit);
 		params.traceobj = rparams.traceobj;
 		params.solverIx = rparams.methodIndex;
 		params.outPath = rparams.outPath;
-		sts = lm->solve(params);
-		return sts;
+		return lm->solve(params);
 	}
 
 }

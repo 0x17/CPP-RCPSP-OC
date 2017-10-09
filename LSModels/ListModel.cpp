@@ -5,7 +5,7 @@ using namespace std;
 using namespace localsolver;
 
 lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
-	vector<int> order(p.numJobs);
+	vector<int> order(static_cast<unsigned long>(p.numJobs));
 	if (context.count() < varCount()) return numeric_limits<double>::lowest();
 
 	for (int i = 0; i < p.numJobs; i++) {
@@ -13,8 +13,13 @@ lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 		if (order[i] == Project::UNSCHEDULED)
 			return numeric_limits<double>::lowest();
 	}
+
+	if (enforceTopOrdering && !p.isOrderFeasible(order)) {
+		return numeric_limits<double>::lowest();
+	}
+
 	SGSResult result = decode(order, context);
-	lsdouble profit = static_cast<lsdouble>(p.calcProfit(result));
+	auto profit = static_cast<lsdouble>(p.calcProfit(result));
 
 	if (tr != nullptr) {
 		if(profit > bks)
@@ -27,6 +32,18 @@ lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 	return profit;
 }
 
+lsdouble TopOrderChecker::call(const LSNativeContext& context) {
+	vector<int> order(static_cast<unsigned long>(p.numJobs));
+	if(context.count() < order.size()) return numeric_limits<double>::lowest();
+	for(int i = 0; i < p.numJobs; i++) {
+		order[i] = static_cast<int>(context.getIntValue(i));
+		if(order[i] == Project::UNSCHEDULED)
+			return numeric_limits<double>::lowest();
+	}
+	return p.isOrderFeasible(order) ? 1.0 : 0.0;
+
+}
+
 SolverParams::SolverParams(double _tlimit, int _ilimit): BasicSolverParameters(_tlimit, _ilimit, false, "LocalSolverNative_", 1), seed(0), verbosityLevel(2), solverIx(0) {
 }
 
@@ -34,12 +51,14 @@ string ListModel::traceFilenameForListModel(const string& outPath, int lsIndex, 
 	return outPath + "LocalSolverNative" + to_string(lsIndex) + "Trace_" + instanceName;
 }
 
-ListModel::ListModel(ProjectWithOvertime& _p, SchedulingNativeFunction *_decoder) : p(_p), decoder(_decoder), listElems(_p.numJobs) {
+ListModel::ListModel(ProjectWithOvertime& _p, SchedulingNativeFunction *_decoder, bool _enforceTopOrdering) : p(_p), decoder(_decoder), listElems(_p.numJobs), enforceTopOrdering(_enforceTopOrdering), topOrderChecker(_enforceTopOrdering ? new TopOrderChecker(_p) : nullptr) {
 }
 
 ListModel::~ListModel() {
 	if (decoder != nullptr)
 		delete decoder;
+	if (topOrderChecker != nullptr)
+		delete topOrderChecker;
 }
 
 vector<int> ListModel::solve(SolverParams params) {
@@ -55,7 +74,48 @@ vector<int> ListModel::solve(SolverParams params) {
     }
 	ls.solve();
 	auto sol = ls.getSolution();
+	assert(sol.getStatus() == LSSolutionStatus::SS_Feasible || sol.getStatus() == LSSolutionStatus::SS_Optimal);
 	return parseScheduleFromSolution(sol);
+}
+
+template<class T>
+LSExpression convertMatrixToRowMajorLocalSolverArray(LSModel &model, const Matrix<T>& mx) {
+	auto lsarray = model.array();
+	for (int i = 0; i<mx.getM(); i++) {
+		for (int j = 0; j<mx.getN(); j++) {
+			lsarray.addOperand(mx(i, j));
+		}
+	}
+	return lsarray;
+}
+
+LSExpression accessRowMajorLocalSolverArray(LSModel &model, LSExpression &arr, int m, LSExpression &i, LSExpression &j) {
+	return model.at(arr, i * m + j);
+}
+
+void ListModel::addTopologicalOrderingConstraint(LSModel &model, LSExpression &activityList) const {
+	/*for(int i=0; i<p.numJobs; i++) {
+		for(int j=0; j<p.numJobs; j++) {
+			if(p.adjMx(i,j)) {
+				model.constraint(model.indexOf(activityList, i) < model.indexOf(activityList, j));
+			}
+		}
+	}*/
+	auto topOrderCheckerFunc = model.createNativeFunction(topOrderChecker);
+	auto topOrderCheckerExpr = model.call(topOrderCheckerFunc);
+	for(int i=0; i<p.numJobs; i++)
+		topOrderCheckerExpr.addOperand(listElems[i]);
+	model.constraint(topOrderCheckerExpr == 1.0);
+
+	/*for(int ix = 0; ix < p.numJobs; ix++) {
+		auto atIndex = model.at(activityList, ix);
+		for(int bix = 0; bix < ix; bix++) {
+			auto atBeforeIndex = model.at(activityList, bix);
+			auto adjMxArray = convertMatrixToRowMajorLocalSolverArray<char>(model, p.adjMx);
+			auto atIndexIsPredOfBeforeIndex = accessRowMajorLocalSolverArray(model, adjMxArray, p.numJobs, atIndex, atBeforeIndex);
+			model.constraint(atIndexIsPredOfBeforeIndex == 0);
+		}
+	}*/
 }
 
 void ListModel::buildModel() {	
@@ -73,9 +133,12 @@ void ListModel::buildModel() {
 			obj.addOperand(listElems[i]);
 		}
 
+		if(enforceTopOrdering)
+			addTopologicalOrderingConstraint(model, activityList);
+
 		addAdditionalData(model, obj);
 
-		model.addObjective(obj, OD_Maximize);
+		model.maximize(obj);
 		model.close();
 
 		// initial solution 0, 1, ..., njobs
@@ -98,7 +161,7 @@ void ListModel::applyParams(SolverParams &params) {
 		param.setSeed(params.seed);
 		param.setVerbosity(params.verbosityLevel);
 		if (params.traceobj) {
-			int timeBetweenDisplays = static_cast<int>(ceil(MSECS_BETWEEN_TRACES_LONG / 1000.0));
+			auto timeBetweenDisplays = static_cast<int>(ceil(MSECS_BETWEEN_TRACES_LONG / 1000.0));
 			param.setTimeBetweenDisplays(timeBetweenDisplays);
 		}
 	}
@@ -113,7 +176,3 @@ void TraceCallback::callback(LocalSolver &solver, LSCallbackType type) {
         tr.trace(secCtr, static_cast<float>(objval));
     }
 }
-
-TraceCallback::~TraceCallback() {
-}
-

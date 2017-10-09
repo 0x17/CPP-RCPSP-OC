@@ -19,7 +19,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Visualization.cpp" />
     <ClCompile Include="..\BranchAndBound.cpp" />
     <ClCompile Include="..\Project.cpp" />
     <ClCompile Include="..\ProjectWithOvertime.cpp" />
@@ -60,15 +59,10 @@
     <ClCompile Include="..\Libraries\json11.cpp">
       <Filter>Libraries</Filter>
     </ClCompile>
-    <ClCompile Include="..\Serialization.cpp" />
-    <ClCompile Include="..\ParticleSwarm.cpp" />
     <ClCompile Include="MatrixTest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
     <ClCompile Include="PaperConsistencyTest.cpp">
-      <Filter>Tests</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleSwarmTest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
     <ClCompile Include="ProjectTest.cpp">
@@ -91,7 +85,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Visualization.h" />
     <ClInclude Include="..\BranchAndBound.h" />
     <ClInclude Include="..\matrix.h" />
     <ClInclude Include="..\Project.h" />
@@ -135,8 +128,6 @@
     <ClInclude Include="..\Libraries\json11.hpp">
       <Filter>Libraries</Filter>
     </ClInclude>
-    <ClInclude Include="..\Serialization.h" />
-    <ClInclude Include="..\ParticleSwarm.h" />
     <ClInclude Include="MatrixTest.h">
       <Filter>Tests</Filter>
     </ClInclude>

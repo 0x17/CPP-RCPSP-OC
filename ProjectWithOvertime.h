@@ -8,12 +8,6 @@
 
 #include "Project.h"
 
-//typedef pair<bool, SGSResult> SGSDeadlineResult;
-struct SGSDeadlineResult : SGSResult {
-	bool valid;
-	SGSDeadlineResult(bool _valid, std::vector<int> _sts, Matrix<int> _resRem) : valid(_valid), SGSResult(_sts, _resRem) {}
-};
-
 class ProjectWithOvertime : public Project {
 public:
     std::vector<int> zmax, zzero;
@@ -43,18 +37,18 @@ public:
 
 		BorderSchedulingOptions();
 		BorderSchedulingOptions(bool _separateCrossover, bool _assocIndex, bool _upper);
-		BorderSchedulingOptions(int ix);
+		explicit BorderSchedulingOptions(int ix);
 
 		void setFromIndex(int ix);
 	};
 	struct PartialScheduleData {
 		Matrix<int> resRem;
 		std::vector<int> sts, fts;
-		PartialScheduleData(ProjectWithOvertime const* p);
+		explicit PartialScheduleData(ProjectWithOvertime const* p);
 	};
 	struct ResidualData {
 		Matrix<int> normal, overtime;
-		ResidualData(ProjectWithOvertime const* p);
+		explicit ResidualData(ProjectWithOvertime const* p);
 	};
 	void scheduleJobSeparateResiduals(int job, int t, int bval, PartialScheduleData& data, ResidualData& residuals) const;
 	void scheduleJobBorderLower(int job, int lastPredFinished, int bval, PartialScheduleData& data) const;

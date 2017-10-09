@@ -109,7 +109,7 @@ TEST_F(ProjectTest, testLatestFinishingTimesForPartial) {
 
 TEST_F(ProjectTest, testChooseEligibleWithHighestPriority) {
 	vector<int> sts = {0, 0, -1, -1, -1 };
-	vector<float> rk = { 0.0, 0.3, 0.9, 0.5, 0.95 };
+	vector<float> rk = { 0.0f, 0.3f, 0.9f, 0.5f, 0.95f };
 
 	ASSERT_EQ(3, p->chooseEligibleWithHighestPriority(sts, rk));
 
