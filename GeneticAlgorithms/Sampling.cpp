@@ -6,6 +6,7 @@
 #include "../Project.h"
 #include <algorithm>
 #include <numeric>
+#include <random>
 
 using namespace std;
 
@@ -87,4 +88,12 @@ vector<int> Sampling::regretBasedBiasedRandomSamplingForLfts(const Project &p){
 
 vector<int> Sampling::sample(bool rbbrs, const Project &p) {
     return rbbrs ? Sampling::regretBasedBiasedRandomSamplingForLfts(p) : Sampling::naiveSampling(p);
+}
+
+std::vector<int> Sampling::randomPermutation(int n) {
+	vector<int> p(n);
+	for(int i=0; i<n; i++)
+		p[i] = i;
+	shuffle(p.begin(), p.end(), std::mt19937(std::random_device()()));
+	return p;
 }

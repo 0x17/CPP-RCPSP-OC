@@ -7,12 +7,14 @@
 
 #include "Matrix.h"
 #include "Utils.h"
+#include "Logger.h"
+#include "BasicSolverParameters.h"
 
 class ProjectWithOvertime;
 
 class GurobiSolver {
 public:	
-	struct Options : Utils::BasicSolverParameters {
+	struct Options : BasicSolverParameters {
 		bool useSeedSol;
 		double gap;
 		int displayInterval;

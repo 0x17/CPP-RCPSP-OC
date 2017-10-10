@@ -15,6 +15,8 @@
 
 #include "../ProjectWithOvertime.h"
 #include "../Stopwatch.h"
+#include "../BasicSolverParameters.h"
+#include "../Logger.h"
 
 const bool FORCE_SINGLE_THREAD = true;
 
@@ -32,78 +34,31 @@ inline std::string traceFilenameForGeneticAlgorithm(const std::string &outPath, 
 	return outPath + "GA" + gaName + "Trace_" + instanceName;
 }
 
-struct GAParameters : Utils::BasicSolverParameters {
+struct GAParameters : BasicSolverParameters {
 	GAParameters();
-	void parseFromString(const std::string &s);
-	void parseFromDisk(const std::string &fn = "GAParameters.txt");
+
+	void parseJsonFromDisk(const std::string &fn = "GAParameters.json");
+	void parseJsonFromString(const std::string &s);
 
 	int numGens, popSize, pmutate;
     bool fitnessBasedPairing;
 	SelectionMethod selectionMethod;
 	CrossoverMethod crossoverMethod;
-    bool rbbrs;
+    bool rbbrs, enforceTopOrdering;
 };
-
-inline GAParameters::GAParameters() :
-	BasicSolverParameters(-1.0, -1, false, "GATrace_", 1),
-	numGens(200),
-	popSize(100),
-	pmutate(5),
-	fitnessBasedPairing(false),
-	selectionMethod(SelectionMethod::BEST),
-	crossoverMethod(CrossoverMethod::OPC),
-	rbbrs(false) {
-}
-
-inline void GAParameters::parseFromString(const std::string &s) {
-	std::vector<std::string> lines, parts;
-	boost::split(lines, s, boost::is_any_of("\n"));
-	for(auto line : lines) {
-		if (!boost::contains(line, "=")) continue;
-
-		boost::split(parts, line, boost::is_any_of("="));
-		boost::trim_right(parts[1]);
-		if (boost::equals(parts[0], "numGens"))
-			numGens = stoi(parts[1]);
-		else if (boost::equals(parts[0], "popSize"))
-			popSize = stoi(parts[1]);
-		else if (boost::equals(parts[0], "pmutate"))
-			pmutate = stoi(parts[1]);
-		else if (boost::equals(parts[0], "timeLimit"))
-			timeLimit = stod(parts[1]);
-		else if (boost::equals(parts[0], "iterLimit"))
-			iterLimit = stoi(parts[1]);
-		else if (boost::equals(parts[0], "fitnessBasedPairing"))
-			fitnessBasedPairing = boost::equals(parts[1], "true");
-		else if (boost::equals(parts[0], "selectionMethod"))
-			selectionMethod = (boost::equals(parts[1], "best")) ? SelectionMethod::BEST : SelectionMethod::DUEL;
-		else if(boost::equals(parts[0], "crossoverMethod"))
-			crossoverMethod = (boost::equals(parts[1], "TPC")) ? CrossoverMethod::TPC : CrossoverMethod::OPC;
-		else if (boost::equals(parts[0], "rbbrs"))
-			rbbrs = boost::equals(parts[1], "true");
-	}
-}
-
-inline void GAParameters::parseFromDisk(const std::string &fn) {
-	if(boost::filesystem::exists(fn))
-		parseFromString(Utils::slurp(fn));
-}
 
 struct FitnessResult {
 	float value;
 	int numSchedulesGenerated;
 
-	FitnessResult(float value, int numSchedulesGenerated)
-			: value(value),
-			  numSchedulesGenerated(numSchedulesGenerated) {}
-
-	FitnessResult() : value(0.0f), numSchedulesGenerated(0) {}
+	FitnessResult(float value, int numSchedulesGenerated);
+	FitnessResult();
 };
 
 template<class Individual>
 class GeneticAlgorithm {
 public:
-    virtual ~GeneticAlgorithm();
+    virtual ~GeneticAlgorithm() = default;
 
     std::pair<std::vector<int>, float> solve();
 
@@ -121,7 +76,7 @@ protected:
     bool useThreads = false;
 	const std::string name;
 
-    GeneticAlgorithm(ProjectWithOvertime &_p, std::string _name = "GenericGA") : p(_p), tr(nullptr), name(_name) {}
+    explicit GeneticAlgorithm(ProjectWithOvertime &_p, const std::string &_name = "GenericGA") : p(_p), tr(nullptr), name(_name) {}
 
 	void generateChildren(std::vector<std::pair<Individual, float>> & population);
 
@@ -143,10 +98,6 @@ protected:
     template<class Func>
     void withMutProb(Func code) const;
 };
-
-template<class Individual>
-GeneticAlgorithm<Individual>::~GeneticAlgorithm() {
-}
 
 template<class Individual>
 template<class Func>

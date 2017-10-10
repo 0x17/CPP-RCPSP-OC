@@ -11,6 +11,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "Project.h"
+#include "Logger.h"
 
 using namespace std;
 

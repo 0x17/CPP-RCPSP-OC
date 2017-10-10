@@ -1,5 +1,6 @@
 #include "ListModel.h"
 #include "../Stopwatch.h"
+#include "../Logger.h"
 
 using namespace std;
 using namespace localsolver;

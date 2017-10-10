@@ -20,4 +20,6 @@ namespace Sampling {
 	void updateEligible(const Project &p, const std::vector<int> &order, int curIndex, std::vector<bool> &eligible);
 
     std::vector<int> sample(bool rbbrs, const Project &p);
+
+	std::vector<int> randomPermutation(int n);
 };

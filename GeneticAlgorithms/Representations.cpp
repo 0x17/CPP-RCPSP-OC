@@ -14,9 +14,9 @@ Lambda::Lambda(const vector<int> &_order) : order(_order) {}
 
 Lambda::Lambda() {}
 
-void Lambda::neighborhoodSwap(const Matrix<char> &adjMx, int pmutate) {
+void Lambda::neighborhoodSwap(const Matrix<char> &adjMx, int pmutate, bool keepTopOrder) {
     for(int i=1; i<order.size(); i++) {
-        if(Utils::randRangeIncl(1, 100) <= pmutate && !adjMx(order[i - 1], order[i])) {
+        if(Utils::randRangeIncl(1, 100) <= pmutate && (!keepTopOrder || !adjMx(order[i - 1], order[i]))) {
             swap(i-1, i);
         }
     }
@@ -165,8 +165,8 @@ void LambdaZrt::independentTwoPointCrossovers(const LambdaZrt& mother, const Lam
 	}
 }
 
-void LambdaZrt::independentMutations(const Matrix<char>& adjMx, const vector<int> &zmax, int pmutate) {
-	neighborhoodSwap(adjMx, pmutate);
+void LambdaZrt::independentMutations(const Matrix<char>& adjMx, const vector<int> &zmax, int pmutate, bool keepTopOrder) {
+	neighborhoodSwap(adjMx, pmutate, keepTopOrder);
 	for(int r = 0; r < z.getM(); r++) {
 		int zOffset = Utils::randBool() ? 1 : -1;
 		for(int t = 0; t < z.getN(); t++) {

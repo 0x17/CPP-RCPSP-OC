@@ -9,26 +9,26 @@
 
 class TimeVaryingCapacityGA : public GeneticAlgorithm<LambdaZrt> {
 public:
-    TimeVaryingCapacityGA(ProjectWithOvertime &_p);
+    explicit TimeVaryingCapacityGA(ProjectWithOvertime &_p);
 private:
-    virtual LambdaZrt init(int ix) override;
-    virtual void crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter) override;
-	virtual void mutate(LambdaZrt &i) override;
-    virtual FitnessResult fitness(LambdaZrt &i) override;
-	virtual std::vector<int> decode(LambdaZrt& i) override;
+	LambdaZrt init(int ix) override;
+	void crossover(LambdaZrt &mother, LambdaZrt &father, LambdaZrt &daughter) override;
+	void mutate(LambdaZrt &i) override;
+    FitnessResult fitness(LambdaZrt &i) override;
+	std::vector<int> decode(LambdaZrt& i) override;
 
 	void mutateOvertime(Matrix<int> &z) const;
 };
 
 class FixedCapacityGA : public GeneticAlgorithm<LambdaZr> {
 public:
-    FixedCapacityGA(ProjectWithOvertime &_p);
+    explicit FixedCapacityGA(ProjectWithOvertime &_p);
 private:
-    virtual LambdaZr init(int ix) override;
-	virtual void crossover(LambdaZr &mother, LambdaZr &father, LambdaZr &daughter) override;	
-	virtual void mutate(LambdaZr &i) override;
-    virtual FitnessResult fitness(LambdaZr &i) override;
-	virtual std::vector<int> decode(LambdaZr& i) override;
+    LambdaZr init(int ix) override;
+	void crossover(LambdaZr &mother, LambdaZr &father, LambdaZr &daughter) override;
+	void mutate(LambdaZr &i) override;
+    FitnessResult fitness(LambdaZr &i) override;
+	std::vector<int> decode(LambdaZr& i) override;
 
 	void mutateOvertime(std::vector<int> &z);
 };

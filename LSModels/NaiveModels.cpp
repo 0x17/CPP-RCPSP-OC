@@ -1,5 +1,5 @@
 //
-// Created by Andr� Schnabel on 24.10.15.
+// Created by André Schnabel on 24.10.15.
 //
 
 #include <list>
@@ -8,6 +8,7 @@
 
 #include "NaiveModels.h"
 #include "../Stopwatch.h"
+#include "../Logger.h"
 #include "ListModel.h"
 
 using namespace std;

@@ -26,12 +26,13 @@ TEST_F(LambdaTest, testTwoPointCrossover) {
 
 TEST_F(LambdaTest, testNeighborhoodSwap) {
     vector<int> orderBefore = l->order;
-    l->neighborhoodSwap(p->adjMx, 1);
+    l->neighborhoodSwap(p->adjMx, 1, true);
     for(int i=0; i<orderBefore.size(); i++) {
         if(l->order[i] != orderBefore[i]) {
             ASSERT_TRUE(i+1 < orderBefore.size());
             ASSERT_TRUE(l->order[i] == orderBefore[i+1]);
             ASSERT_TRUE(l->order[i+1] == orderBefore[i]);
+			ASSERT_FALSE(p->adjMx(i+1,i));
         }
     }
 }

@@ -14,6 +14,8 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 
+#include "Libraries/json11.hpp"
+
 #include "Stopwatch.h"
 
 #define LOG_I(msg) Utils::Logger::getInstance()->log(Utils::Logger::LogLevel::INFO, msg)
@@ -21,10 +23,13 @@
 #define LOG_E(msg) Utils::Logger::getInstance()->log(Utils::Logger::LogLevel::ERROR, msg)
 
 namespace Utils {
-	std::string slurp(std::string filename);
-	std::vector<std::string> readLines(std::string filename);
-    int extractIntFromStr(std::string s, std::string rx);
-	std::vector<int> extractIntsFromLine(std::string line);
+	std::string slurp(const std::string &filename);
+	std::vector<std::string> readLines(const std::string &filename);
+    int extractIntFromStr(const std::string &s, const std::string &rx);
+	std::vector<int> extractIntsFromLine(const std::string &line);
+
+	json11::Json readJsonFromString(const std::string &s);
+	json11::Json readJsonFromFile(const std::string &filename);
 
     template<class T>
     void batchResize(int size, std::initializer_list<std::vector<T> *> vecs) {
@@ -36,8 +41,8 @@ namespace Utils {
 	inline int min(int a, int b) { return a < b ? a : b; }
 	inline int min(int a, int b, int c) { return min(min(a, b), c); }
 
-	void serializeSchedule(std::vector<int> & sts, const std::string filename);
-	void serializeProfit(float profit, const std::string filename);
+	void serializeSchedule(const std::vector<int> &sts, const std::string &filename);
+	void serializeProfit(float profit, const std::string &filename);
 
     inline bool randBool() {
         return rand() % 2 == 0;
@@ -76,8 +81,8 @@ namespace Utils {
 		return indexOfNthEqualTo(0, val, coll);
     }
 
-    void spit(const std::string s, const std::string filename);
-    void spitAppend(const std::string s, const std::string filename);
+    void spit(const std::string &s, const std::string &filename);
+    void spitAppend(const std::string &s, const std::string &filename);
 
     template<class T>
     void swap(std::vector<T> &v, int i1, int i2) {
@@ -133,18 +138,6 @@ namespace Utils {
 	std::list<std::string> filenamesInDir(const std::string &dir);
 	std::list<std::string> filenamesInDirWithExt(const std::string& dir, const std::string& ext);
 
-    class Tracer {
-		std::ofstream f;
-		std::chrono::time_point<std::chrono::system_clock> lupdate;
-		double last_slvtime;
-		Stopwatch sw;
-    public:
-        explicit Tracer(const std::string filePrefix = "SolverTrace");
-        ~Tracer();
-        void trace(double slvtime, float bks_objval, bool trunc_secs = false);
-	    void intervalTrace(float bks_objval);
-    };
-
 	inline bool int2bool(int i) {
 		return i != 0;
 	}
@@ -154,43 +147,6 @@ namespace Utils {
 	}
 
 	std::string formattedNow();
-
-	class Logger {
-	public:
-		enum class LogLevel {
-			INFO = 0,
-			WARNING,
-			ERROR
-		};
-
-		enum class LogMode {
-			QUIET = 0,
-			MEDIUM,
-			VERBOSE
-		};
-
-	private:
-		std::string logName;
-		std::ofstream f;
-		LogMode mode;
-		static Logger *instance;
-
-	public:
-		Logger(const std::string& _logName, LogMode _mode);
-		void log(LogLevel level, const std::string& message);
-
-		static Logger* getInstance();
-	};
-
-	struct BasicSolverParameters {
-		double timeLimit;
-		int iterLimit;
-		bool traceobj;
-		std::string outPath;
-		int threadCount;
-
-		BasicSolverParameters(double time_limit, int iter_limit, bool traceobj, const std::string& out_path, int thread_count);
-	};
 
 	void partitionDirectory(const std::string& dirPath, int numPartitions, const std::string& infix = "_");
 

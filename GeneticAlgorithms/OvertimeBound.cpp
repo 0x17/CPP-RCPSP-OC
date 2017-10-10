@@ -14,7 +14,7 @@ TimeVaryingCapacityGA::TimeVaryingCapacityGA(ProjectWithOvertime &_p) : GeneticA
 
 LambdaZrt TimeVaryingCapacityGA::init(int ix) {
     LambdaZrt indiv(p.numJobs, p.numRes, p.heuristicMakespanUpperBound());
-	indiv.order = ix == 0 ? p.topOrder : Sampling::sample(params.rbbrs, p);
+	indiv.order = params.enforceTopOrdering ? (ix == 0 ? p.topOrder : Sampling::sample(params.rbbrs, p)) : Sampling::randomPermutation(p.numJobs);
 
 	p.eachResConst([&](int r) {
 		int zr = ix == 0 ? 0 : Utils::randRangeIncl(0, p.zmax[r]);
@@ -40,16 +40,16 @@ void TimeVaryingCapacityGA::crossover(LambdaZrt &mother, LambdaZrt &father, Lamb
 void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
     //i.neighborhoodSwap(p.adjMx, params.pmutate);
 	//mutateOvertime(i.z);
-	i.independentMutations(p.adjMx, p.zmax, params.pmutate);
+	i.independentMutations(p.adjMx, p.zmax, params.pmutate, params.enforceTopOrdering);
 }
 
 FitnessResult TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
-	auto pair = p.serialSGSWithForwardBackwardImprovement(i.order, i.z);
+	auto pair = p.serialSGSWithForwardBackwardImprovement(i.order, i.z, !params.enforceTopOrdering);
 	return { p.calcProfit(pair), pair.numSchedulesGenerated };
 }
 
 vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
-	return p.serialSGSWithForwardBackwardImprovement(i.order, i.z).sts;
+	return p.serialSGSWithForwardBackwardImprovement(i.order, i.z, !params.enforceTopOrdering).sts;
 }
 
 void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) const {
@@ -81,7 +81,7 @@ void FixedCapacityGA::crossover(LambdaZr &mother, LambdaZr &father, LambdaZr &da
 }
 
 void FixedCapacityGA::mutate(LambdaZr &i) {
-    i.neighborhoodSwap(p.adjMx, params.pmutate);
+    i.neighborhoodSwap(p.adjMx, params.pmutate, params.enforceTopOrdering);
 	mutateOvertime(i.z);
 }
 

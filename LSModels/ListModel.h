@@ -1,7 +1,12 @@
 #pragma once
 
 #include "../ProjectWithOvertime.h"
+#include "../BasicSolverParameters.h"
 #include <localsolver.h>
+
+namespace Utils {
+	class Tracer;
+}
 
 class BaseSchedulingNativeFunction : public localsolver::LSNativeFunction {
 protected:
@@ -35,7 +40,7 @@ public:
 	localsolver::lsdouble call(const localsolver::LSNativeContext& context) override;
 };
 
-struct SolverParams : Utils::BasicSolverParameters {
+struct SolverParams : BasicSolverParameters {
 	int seed, verbosityLevel, solverIx;
 	explicit SolverParams(double _tlimit = -1.0, int _ilimit = -1);
 };

@@ -25,7 +25,7 @@ void FixedDeadlineGA::crossover(DeadlineLambda &mother, DeadlineLambda &father, 
 }
 
 void FixedDeadlineGA::mutate(DeadlineLambda &i) {
-    i.neighborhoodSwap(p.adjMx, params.pmutate);
+    i.neighborhoodSwap(p.adjMx, params.pmutate, params.enforceTopOrdering);
     withMutProb([&] {
 		i.deadlineOffset = boost::algorithm::clamp(i.deadlineOffset + (Utils::randBool() ? -1 : 1), deadlineOffsetLB, deadlineOffsetUB);
 	});

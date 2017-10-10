@@ -110,7 +110,7 @@ namespace Runners {
 		params.rbbrs = true;
 		params.outPath = rparams.outPath;
 
-		params.parseFromDisk();
+		params.parseJsonFromDisk();
 
 		if (rparams.methodIndex == 0)
 			TimeWindowBordersGA::setVariant(rparams.variant);

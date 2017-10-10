@@ -29,15 +29,13 @@ namespace Main {
 		void testLocalSolverNative(int seed);
 		void testGurobi();
 	};
-
-
 }
 
 void Main::plotHeuristicProfits() {
 	boost::filesystem::path path("../../Projekte/j30/");
 
-	int maxDiff = std::numeric_limits<int>::lowest();
-	string maxDiffInstance = "";
+	int maxDiff = numeric_limits<int>::lowest();
+	string maxDiffInstance;
 
 	for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(path), {})) {
 		ProjectWithOvertime p(entry.path().string());
@@ -60,12 +58,12 @@ void Main::plotHeuristicProfits() {
 	cout << p.calcProfit(gsresult) << endl;*/
 }
 
-void computeScheduleAttributes(string smfilename) {
+void computeScheduleAttributes(const string &smfilename) {
 	vector<string> resfiles = {"result_sts_0.txt", "result_sts_1.txt", "result_sts_2.txt", "result_sts_oc.txt"};
 	ProjectWithOvertime p(smfilename);
-	for(auto resfile : resfiles) {
+	for(const auto &resfile : resfiles) {
 		vector<int> sts = Utils::deserializeSchedule(p.numJobs, resfile);
-		std::cout << resfile << " profit=" << p.calcProfit(sts) << ", makespan=" << p.makespan(sts) << std::endl;
+		cout << resfile << " profit=" << p.calcProfit(sts) << ", makespan=" << p.makespan(sts) << endl;
 	}
 }
 
@@ -97,14 +95,14 @@ void Main::Testing::fixedScheduleLimitSolveTimesForProjects() {
         avgSolvetimes[ctr++] = Main::Testing::averageSolvetime(ix, 1000, j30path);
     }
     for(int i=0; i<avgSolvetimes.size(); i++)
-        std::cout << "Method " << Runners::getDescription(relevantGaIndices[i]) << " average solvetime = " << avgSolvetimes[i] << std::endl;
+        cout << "Method " << Runners::getDescription(relevantGaIndices[i]) << " average solvetime = " << avgSolvetimes[i] << endl;
 }
 
 double Main::Testing::averageSolvetime(int gaIndex, int scheduleLimit, const string &path) {
     double result = 0.0;
     int ctr = 0;
     auto filenames = Utils::filenamesInDirWithExt(path, ".sm");
-    for(auto fn : filenames) {
+    for(const auto &fn : filenames) {
         auto res = Main::Testing::benchmarkGeneticAlgorithm(gaIndex, scheduleLimit, fn);
         if(res) {
             result += res.get().solvetime;
@@ -122,13 +120,13 @@ void Main::convertArgFileToLSP(int argc, const char * argv[]) {
 }
 
 void Main::showUsage() {
-	std::list<string> solMethods = { "BranchAndBound", "LocalSolver", "Gurobi" };
+	list<string> solMethods = { "BranchAndBound", "LocalSolver", "Gurobi" };
 	for (int i = 0; i < 8; i++) solMethods.push_back("GA" + to_string(i) + " // " + Runners::getDescription(i));
 	for (int i = 0; i < 8; i++) solMethods.push_back("LocalSolverNative" + to_string(i) + " // " + Runners::getDescription(i));
-	std::cout << "Number of arguments must be >= 4" << std::endl;
-	std::cout << "Usage: Solver SolutionMethod TimeLimitInSecs ScheduleLimit ProjectFileSM [traceobj]" << std::endl;
-	std::cout << "Solution methods: " << std::endl;
-	for (const auto &method : solMethods) std::cout << "\t" << method << std::endl;
+	cout << "Number of arguments must be >= 4" << endl;
+	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ScheduleLimit ProjectFileSM [traceobj]" << endl;
+	cout << "Solution methods: " << endl;
+	for (const auto &method : solMethods) cout << "\t" << method << endl;
 }
 
 int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
@@ -170,11 +168,11 @@ void Main::commandLineRunner(int argc, char * argv[]) {
         ProjectWithOvertime p(argv[4]);
         
         if(computeMinMaxMakespanDifference(p) <= 0) {
-			std::cout << "maxMs - minMs <= 0... ---> skipping!" << std::endl;
+			cout << "maxMs - minMs <= 0... ---> skipping!" << endl;
             return;
         }
 
-        bool traceobj = (argc == 6 && !string("traceobj").compare(argv[5]));
+        bool traceobj = (argc == 6 && string(argv[5]) == "traceobj");
 
 		string parentPath = boost::filesystem::path(string(argv[4])).parent_path().string();
 		string outPath = parentPath + "_" + (iterLimit == -1 ? to_string(int(round(timeLimit))) + "secs/" : to_string(iterLimit) + "schedules/");
@@ -184,7 +182,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 
 		srand(23);
 
-		if(!solMethod.compare("BranchAndBound")) {
+		if(solMethod == "BranchAndBound") {
             BranchAndBound b(p, timeLimit, iterLimit);
 			outFn += "BranchAndBoundResults.txt";
 			if(instanceAlreadySolvedInResultFile(coreName, outFn)) return;
@@ -198,7 +196,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			//purgeOldTraceFile(traceFilenameForGeneticAlgorithm(outPath, ))
 			sts = Runners::runGeneticAlgorithmWithIndex(p, { gaIndex, variant, timeLimit, iterLimit, traceobj, outPath });            
 		}
-		else if (!solMethod.compare("LocalSolver")) {
+		else if (solMethod == "LocalSolver") {
 			outFn += "LocalSolverResults.txt";
 			sts = LSSolver::solve(p, timeLimit, iterLimit, traceobj, outPath);			
 		} else if(boost::starts_with(solMethod, "LocalSolverNative")) {
@@ -208,7 +206,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			if (instanceAlreadySolvedInResultFile(coreName, outFn)) return;
 			purgeOldTraceFile(ListModel::traceFilenameForListModel(outPath, lsnIndex, p.instanceName));
 			sts = Runners::runLocalSolverModelWithIndex(p, { lsnIndex, variant, timeLimit, iterLimit, traceobj, outPath });			
-        }  else if(!solMethod.compare("Gurobi")) {
+        }  else if(solMethod == "Gurobi") {
 #ifndef DISABLE_GUROBI
 			GurobiSolver::Options opts;
 			opts.outPath = outPath;
@@ -226,7 +224,7 @@ void Main::commandLineRunner(int argc, char * argv[]) {
 			sts = res.sts;			
 #endif
         } else {
-			throw std::runtime_error("Unknown method: " + solMethod + "!");
+			throw runtime_error("Unknown method: " + solMethod + "!");
         }
         
 		// FIXME: specify number of decimal places!
@@ -299,7 +297,7 @@ boost::optional<Runners::GAResult> Main::Testing::benchmarkGeneticAlgorithm(int 
     ProjectWithOvertime p(projFilename);
 
     if(computeMinMaxMakespanDifference(p) <= 0) {
-		std::cout << "maxMs - minMs <= 0... ---> skipping!" << std::endl;
+		cout << "maxMs - minMs <= 0... ---> skipping!" << endl;
         return boost::optional<Runners::GAResult>();
     }
 
@@ -322,7 +320,7 @@ boost::optional<Runners::GAResult> Main::Testing::benchmarkGeneticAlgorithm(int 
 	Utils::serializeProfit(p.calcProfit(res.sts), "myprofit.txt");
 	//cout << (p.calcProfit(res.sts) == res.profit) << endl;
 
-	std::cout << "Solvetime = " << res.solvetime << std::endl;
+	cout << "Solvetime = " << res.solvetime << endl;
 
     return res;
 }

@@ -23,7 +23,7 @@ void TimeWindowArbitraryDiscretizedGA::crossover(LambdaBeta &mother, LambdaBeta 
 }
 
 void TimeWindowArbitraryDiscretizedGA::mutate(LambdaBeta &i) {
-	i.neighborhoodSwap(p.adjMx, params.pmutate);
+	i.neighborhoodSwap(p.adjMx, params.pmutate, params.enforceTopOrdering);
 	p.eachJob([&](int j) {
 		withMutProb([&] {
 			i.beta[j] = Utils::randRangeIncl(0, ub-1);
@@ -64,7 +64,7 @@ void TimeWindowArbitraryGA::crossover(LambdaTau &mother, LambdaTau &father, Lamb
 }
 
 void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
-    i.neighborhoodSwap(p.adjMx, params.pmutate);
+    i.neighborhoodSwap(p.adjMx, params.pmutate, params.enforceTopOrdering);
 	p.eachJob([&](int j) {
         withMutProb([&] {
 			i.tau[j] = Utils::randUnitFloat();
@@ -107,7 +107,7 @@ void TimeWindowBordersGA::crossover(LambdaBeta &mother, LambdaBeta &father, Lamb
 }
 
 void TimeWindowBordersGA::mutate(LambdaBeta &i) {
-    i.neighborhoodSwap(p.adjMx, params.pmutate);
+    i.neighborhoodSwap(p.adjMx, params.pmutate, params.enforceTopOrdering);
 	p.eachJobConst([&](int j) {
 		withMutProb([&] {
 			i.beta[j] = 1 - i.beta[j];
@@ -169,7 +169,7 @@ void ActivityListBasedGA::crossover(Lambda &mother, Lambda &father, Lambda &daug
 }
 
 void ActivityListBasedGA::mutate(Lambda &i) {
-    i.neighborhoodSwap(p.adjMx, params.pmutate);
+    i.neighborhoodSwap(p.adjMx, params.pmutate, params.enforceTopOrdering);
 }
 
 FitnessResult ActivityListBasedGA::fitness(Lambda &i) {

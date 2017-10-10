@@ -9,6 +9,9 @@
 
 class ProjectWithOvertime;
 class Stopwatch;
+namespace Utils {
+	class Tracer;
+}
 
 class BranchAndBound {
 public:

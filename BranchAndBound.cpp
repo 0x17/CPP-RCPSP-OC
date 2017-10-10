@@ -6,6 +6,7 @@
 
 #include "BranchAndBound.h"
 #include "Utils.h"
+#include "Logger.h"
 #include "ProjectWithOvertime.h"
 #include "GeneticAlgorithms/OvertimeBound.h"
 
