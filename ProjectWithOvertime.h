@@ -17,7 +17,7 @@ public:
 	ProjectWithOvertime(const std::string& projectName, const std::string& s);
 	ProjectWithOvertime(const std::string& projectName, const std::vector<std::string> &lines);
 
-	virtual ~ProjectWithOvertime() {}
+	~ProjectWithOvertime() final = default;
 
 	float calcProfit(int makespan, const Matrix<int> &resRem) const;
 	float calcProfit(const SGSResult& result) const;
@@ -50,12 +50,12 @@ public:
 		Matrix<int> normal, overtime;
 		explicit ResidualData(ProjectWithOvertime const* p);
 	};
+
 	void scheduleJobSeparateResiduals(int job, int t, int bval, PartialScheduleData& data, ResidualData& residuals) const;
 	void scheduleJobBorderLower(int job, int lastPredFinished, int bval, PartialScheduleData& data) const;
 	void scheduleJobBorderUpper(int job, int lastPredFinished, int bval, PartialScheduleData& data, ResidualData& residuals) const;
-	SGSResult serialSGSTimeWindowBorders(const std::vector<int> &order, const std::vector<int> &beta, BorderSchedulingOptions options, bool robust = false) const;
-
-	SGSResult serialSGSTimeWindowBordersWithForwardBackwardImprovement(const std::vector<int>& order, const std::vector<int>& beta, BorderSchedulingOptions options, bool robust = false) const;
+	SGSResult serialSGSTimeWindowBorders(const std::vector<int> &order, const std::vector<int> &beta, const BorderSchedulingOptions &options, bool robust = false) const;
+	SGSResult serialSGSTimeWindowBordersWithForwardBackwardImprovement(const std::vector<int> &order, const std::vector<int> &beta, const BorderSchedulingOptions &options, bool robust = false) const;
 	// END (lambda|beta)
 
 	SGSResult serialSGSWithForwardBackwardImprovement(const std::vector<int>& order, const std::vector<int>& z, bool robust = false) const;

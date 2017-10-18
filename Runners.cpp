@@ -37,7 +37,7 @@ namespace Runners {
 			lm = make_unique<ListFixedOvertimeModel>(p);
 			break;
 		case 4:
-			lm = make_unique<ListDynamicOvertimeModel>(p, true);
+			lm = make_unique<ListDynamicOvertimeModel>(p, false);
 			break;
 		case 5:
 			lm = make_unique<ListAlternativesModel>(p);
@@ -110,7 +110,7 @@ namespace Runners {
 		params.rbbrs = true;
 		params.outPath = rparams.outPath;
 
-		params.parseJsonFromDisk();
+		params.fromJsonFile();
 
 		if (rparams.methodIndex == 0)
 			TimeWindowBordersGA::setVariant(rparams.variant);

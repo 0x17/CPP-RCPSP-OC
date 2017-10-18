@@ -19,13 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\BasicSolverParameters.cpp" />
     <ClCompile Include="..\BranchAndBound.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\FixedDeadline.cpp" />
+    <ClCompile Include="..\GeneticAlgorithms\GeneticAlgorithm.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\OvertimeBound.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\Representations.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\Sampling.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\TimeWindow.cpp" />
     <ClCompile Include="..\Libraries\json11.cpp" />
+    <ClCompile Include="..\Logger.cpp" />
     <ClCompile Include="..\LSModels\FixedDeadlineModels.cpp" />
     <ClCompile Include="..\LSModels\ListModel.cpp" />
     <ClCompile Include="..\LSModels\NaiveModels.cpp" />
@@ -47,6 +50,7 @@
     <ClCompile Include="UtilsTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\BasicSolverParameters.h" />
     <ClInclude Include="..\BranchAndBound.h" />
     <ClInclude Include="..\GeneticAlgorithms\FixedDeadline.h" />
     <ClInclude Include="..\GeneticAlgorithms\GeneticAlgorithm.h" />
@@ -55,6 +59,7 @@
     <ClInclude Include="..\GeneticAlgorithms\Sampling.h" />
     <ClInclude Include="..\GeneticAlgorithms\TimeWindow.h" />
     <ClInclude Include="..\Libraries\json11.hpp" />
+    <ClInclude Include="..\Logger.h" />
     <ClInclude Include="..\LSModels\FixedDeadlineModels.h" />
     <ClInclude Include="..\LSModels\ListModel.h" />
     <ClInclude Include="..\LSModels\NaiveModels.h" />

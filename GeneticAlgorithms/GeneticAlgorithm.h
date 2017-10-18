@@ -37,8 +37,8 @@ inline std::string traceFilenameForGeneticAlgorithm(const std::string &outPath, 
 struct GAParameters : BasicSolverParameters {
 	GAParameters();
 
-	void parseJsonFromDisk(const std::string &fn = "GAParameters.json");
-	void parseJsonFromString(const std::string &s);
+	void fromJsonFile(const std::string &fn = "GAParameters.json");
+	void fromJsonStr(const std::string &s);
 
 	int numGens, popSize, pmutate;
     bool fitnessBasedPairing;

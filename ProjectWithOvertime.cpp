@@ -398,7 +398,7 @@ void ProjectWithOvertime::scheduleJobBorderUpper(int job, int lastPredFinished, 
 	scheduleJobSeparateResiduals(job, t, bval, data, residuals);
 }
 
-SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, BorderSchedulingOptions options, bool robust) const {
+SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, const BorderSchedulingOptions &options, bool robust) const {
 	std::unique_ptr<ResidualData> residuals = nullptr;
 	if(options.upper) {
 		residuals = std::make_unique<ResidualData>(this);
@@ -418,7 +418,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &ord
 }
 
 // (lambda, beta)
-SGSResult ProjectWithOvertime::serialSGSTimeWindowBordersWithForwardBackwardImprovement(const vector<int>& order, const vector<int>& beta, BorderSchedulingOptions options, bool robust) const {
+SGSResult ProjectWithOvertime::serialSGSTimeWindowBordersWithForwardBackwardImprovement(const vector<int>& order, const vector<int>& beta, const BorderSchedulingOptions &options, bool robust) const {
 	SGSResult res = serialSGSTimeWindowBorders(order, beta, options, robust);
 	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
 	//fbres.numSchedulesGenerated += res.numSchedulesGenerated;

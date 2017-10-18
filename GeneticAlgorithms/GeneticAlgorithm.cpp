@@ -28,7 +28,7 @@ void assignNumberSlotsFromJsonWithMapping(const json11::Json &obj, const std::ma
 	}
 }
 
-void GAParameters::parseJsonFromString(const std::string &s) {
+void GAParameters::fromJsonStr(const std::string &s) {
 	auto obj = Utils::readJsonFromString(s);
 
 	std::map<std::string, int *> keyNamesToIntSlots = {
@@ -60,7 +60,7 @@ void GAParameters::parseJsonFromString(const std::string &s) {
 	}
 }
 
-void GAParameters::parseJsonFromDisk(const std::string &fn) {
+void GAParameters::fromJsonFile(const std::string &fn) {
 	if(boost::filesystem::exists(fn))
-		parseJsonFromString(Utils::slurp(fn));
+		fromJsonStr(Utils::slurp(fn));
 }

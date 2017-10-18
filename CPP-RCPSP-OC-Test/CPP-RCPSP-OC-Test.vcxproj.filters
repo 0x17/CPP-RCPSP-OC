@@ -83,6 +83,11 @@
     <ClCompile Include="UtilsTest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\BasicSolverParameters.cpp" />
+    <ClCompile Include="..\Logger.cpp" />
+    <ClCompile Include="..\GeneticAlgorithms\GeneticAlgorithm.cpp">
+      <Filter>GeneticAlgorithms</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BranchAndBound.h" />
@@ -146,5 +151,7 @@
     <ClInclude Include="TestHelpers.h">
       <Filter>Tests</Filter>
     </ClInclude>
+    <ClInclude Include="..\BasicSolverParameters.h" />
+    <ClInclude Include="..\Logger.h" />
   </ItemGroup>
 </Project>
