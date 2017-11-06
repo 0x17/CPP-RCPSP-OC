@@ -414,31 +414,25 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &ord
 		else scheduleJobBorderUpper(job, lastPredFinished, bval, data, *residuals);
     }
 
-	return{ data.sts, data.resRem };
+	return { data.sts, data.resRem, 1 };
 }
 
 // (lambda, beta)
 SGSResult ProjectWithOvertime::serialSGSTimeWindowBordersWithForwardBackwardImprovement(const vector<int>& order, const vector<int>& beta, const BorderSchedulingOptions &options, bool robust) const {
 	SGSResult res = serialSGSTimeWindowBorders(order, beta, options, robust);
-	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
-	//fbres.numSchedulesGenerated += res.numSchedulesGenerated;
-	return fbres;
+	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
 }
 
 // (lambda, zr)
 SGSResult ProjectWithOvertime::serialSGSWithForwardBackwardImprovement(const vector<int>& order, const vector<int>& z, bool robust) const {
 	SGSResult res = serialSGS(order, z, robust);
-	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
-	//fbres.numSchedulesGenerated += res.numSchedulesGenerated;
-	return fbres;
+	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
 }
 
 // (lambda, zrt)
 SGSResult ProjectWithOvertime::serialSGSWithForwardBackwardImprovement(const vector<int>& order, const Matrix<int>& z, bool robust) const {
 	SGSResult res = serialSGS(order, z, robust);
-	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
-	//fbres.numSchedulesGenerated += res.numSchedulesGenerated;
-	return fbres;
+	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau, bool robust) const {
@@ -457,7 +451,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &o
         scheduleJobAt(job, t, sts, fts, resRem);
     }
 
-	return{ sts, resRem };
+	return{ sts, resRem, 1 };
 }
 
 vector<int> ProjectWithOvertime::earliestStartingTimesForPartialRespectZmax(const vector<int> &sts, const Matrix<int> &resRem) const {
@@ -499,26 +493,23 @@ SGSResult ProjectWithOvertime::forwardBackwardIterations(const vector<int> &orde
 		float currentCosts = totalCosts(result.resRem);
 		if (std::abs(currentCosts - lastCosts) <= DEADLINE_IMPROVEMENT_TOLERANCE) {
 			//checkAndOutput(result, deadline, i);
+			i++;
 			break;
 		}
 		lastCosts = currentCosts;
 	}
-	result.numSchedulesGenerated = i+1;
+	result.numSchedulesGenerated += i;
 	return result;
 }
 
 SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(const vector<int> &order, const vector<float> &tau, bool robust) const {
 	SGSResult res = serialSGSTimeWindowArbitrary(order, tau, robust);
-	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
-	fbres.numSchedulesGenerated += res.numSchedulesGenerated;
-	return fbres;
+	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
 }
 
 SGSResult ProjectWithOvertime::serialSGSWithRandomKeyAndFBI(const std::vector<float> &rk, const Matrix<int> &z) const {
 	SGSResult res = serialSGSWithRandomKey(rk);
 	vector<int> order;
 	// FIXME: Add modified FBI with RK as input instead of AL
-	auto fbres = forwardBackwardIterations(order, res, makespan(res), boost::optional<int>());
-	fbres.numSchedulesGenerated += res.numSchedulesGenerated;
-	return fbres;
+	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>());
 }

@@ -194,7 +194,7 @@ void BranchAndBound::branch(vector<int> sts, int job, int stj) {
 		return;
 
 	if(tr != nullptr) {
-		tr->intervalTrace(lb);
+		tr->intervalTrace(lb, 1, 1);
 	}
 
 	sts[job] = stj;

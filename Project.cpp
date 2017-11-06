@@ -143,7 +143,8 @@ int Project::chooseEligibleWithHighestIndex(const vector<bool>& unscheduled, con
 
 int Project::chooseEligibleWithHighestPriority(const std::vector<int> &sts, const std::vector<float> &rk) const {
 	// lower is better
-	float maxPrioJob = 0, maxPrioVal = std::numeric_limits<float>::max();
+	int maxPrioJob = 0;
+	float maxPrioVal = std::numeric_limits<float>::max();
 	for(int i = 0; i < numJobs; i++) {
 		if(sts[i] == UNSCHEDULED && allPredsScheduled(i, sts)) {
 			if(rk[i] < maxPrioVal) {

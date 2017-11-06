@@ -18,7 +18,7 @@ public:
 
 class SchedulingNativeFunction : public BaseSchedulingNativeFunction {
 	Utils::Tracer *tr = nullptr;
-	localsolver::lsdouble bks = 0.0;
+	localsolver::lsdouble bks = 0.0;	
 protected:
 	bool enforceTopOrdering;
 public:

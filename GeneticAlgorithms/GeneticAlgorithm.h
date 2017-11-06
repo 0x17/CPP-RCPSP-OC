@@ -70,7 +70,7 @@ protected:
     GAParameters params;
 	ProjectWithOvertime &p;
 
-    std::unique_ptr<Utils::Tracer> tr = nullptr;   
+    std::unique_ptr<Utils::Tracer> tr = nullptr;
 
 	// also consider FORCE_SINGLE_THREAD!
     bool useThreads = false;
@@ -78,25 +78,25 @@ protected:
 
     explicit GeneticAlgorithm(ProjectWithOvertime &_p, const std::string &_name = "GenericGA") : p(_p), tr(nullptr), name(_name) {}
 
-	void generateChildren(std::vector<std::pair<Individual, float>> & population);
-
     virtual Individual init(int ix) = 0;
     virtual void crossover(Individual &mother, Individual &father, Individual &daughter) = 0;
     virtual void mutate(Individual &i) = 0;
 
     virtual FitnessResult fitness(Individual &i) = 0;
-
 	virtual std::vector<int> decode(Individual &i) = 0;
-
-	std::pair<int, int> computePair(const std::vector<bool> &alreadySelected);
-
-    int mutateAndFitnessRange(std::vector<std::pair<Individual, float>> *pop, int startIx, int endIx);
-
-	void selectBest(std::vector<std::pair<Individual, float>> &pop);
-	void selectDuel(std::vector<std::pair<Individual, float>> &pop);
-
+	
     template<class Func>
     void withMutProb(Func code) const;
+
+private:
+	std::vector<std::pair<Individual, float>> computeInitialPopulation(int popSize, int &scheduleCount, int &indivCount);
+	void generateChildren(std::vector<std::pair<Individual, float>> & population);
+
+	std::pair<int, int> computePair(const std::vector<bool> &alreadySelected) const;
+	std::pair<int, int> mutateAndFitnessRange(std::vector<std::pair<Individual, float>> *pop, int startIx, int endIx);
+
+	void selectBest(std::vector<std::pair<Individual, float>> &pop);
+	void selectDuel(std::vector<std::pair<Individual, float>> &pop);	
 };
 
 template<class Individual>
@@ -114,7 +114,7 @@ void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
 }
 
 template<class Individual>
-std::pair<int, int> GeneticAlgorithm<Individual>::computePair(const std::vector<bool> &alreadySelected) {
+std::pair<int, int> GeneticAlgorithm<Individual>::computePair(const std::vector<bool> &alreadySelected) const {
     std::pair<int, int> p;
 
     do {
@@ -141,16 +141,17 @@ void GeneticAlgorithm<Individual>::generateChildren(std::vector<std::pair<Indivi
 }
 
 template<class Individual>
-int GeneticAlgorithm<Individual>::mutateAndFitnessRange(std::vector<std::pair<Individual, float>> *pop, int startIx, int endIx) {
+std::pair<int,int> GeneticAlgorithm<Individual>::mutateAndFitnessRange(std::vector<std::pair<Individual, float>> *pop, int startIx, int endIx) {
 	static FitnessResult fres;
-	int scheduleCount = 0;
+	int scheduleCount = 0, indivCount = 0;
     for(int i=startIx; i<=endIx; i++) {
         mutate((*pop)[i].first);
 		fres = fitness((*pop)[i].first);
         (*pop)[i].second = -fres.value;
 		scheduleCount += fres.numSchedulesGenerated;
+		indivCount++;
     }
-	return scheduleCount;
+	return { scheduleCount, indivCount };
 }
 
 template<class Individual>
@@ -200,40 +201,57 @@ void GeneticAlgorithm<Individual>::selectDuel(std::vector<std::pair<Individual, 
 	swapBestIndividualToFront(pop);
 }
 
+template<class Individual> 
+std::vector<std::pair<Individual, float>> GeneticAlgorithm<Individual>::computeInitialPopulation(int popSize, int &scheduleCount, int &indivCount) {
+	std::vector<std::pair<Individual, float>> pop(popSize*2);
+
+	LOG_I("Computing initial population");
+
+	for (int i = 0; i<params.popSize * 2; i++) {
+		pop[i].first = init(i);
+
+		if (i < params.popSize) {
+			FitnessResult fres = fitness(pop[i].first);
+			pop[i].second = -fres.value;
+			scheduleCount += fres.numSchedulesGenerated;
+			indivCount++;
+
+			if (pop[i].second < pop[0].second) {
+				std::pair<Individual, float> tmpIndiv = pop[0];
+				pop[0] = pop[i];
+				pop[i] = tmpIndiv;
+			}
+
+			if (tr != nullptr && indivCount > 0) {
+				tr->countTrace(-pop[0].second, scheduleCount, indivCount);
+				tr->intervalTrace(-pop[0].second, scheduleCount, indivCount);
+			}
+		}
+		else {
+			pop[i].second = 0.0f;
+		}
+	}
+
+	return pop;
+}
+
 template<class Individual>
 std::pair<std::vector<int>, float> GeneticAlgorithm<Individual>::solve() {
+	if(tr != nullptr)
+		tr->setTraceMode(Utils::Tracer::TraceMode::ONLY_COUNT);
+
     assert(params.pmutate > 0);
     assert(params.popSize > 0);
 
 	Stopwatch sw;
 	sw.start();
-	std::vector<std::pair<Individual, float>> pop(params.popSize*2);
 
     const int NUM_THREADS = 4;
     std::thread *threads[NUM_THREADS];
     int numPerThread = params.popSize / NUM_THREADS;
 
-	int scheduleCount = 0;
-
-	LOG_I("Computing initial population");
-	FitnessResult fres;
-	std::pair<Individual, float> tmpIndiv;
-    for(int i=0; i<params.popSize*2; i++) {
-        pop[i].first = init(i);
-		fres = fitness(pop[i].first);
-		pop[i].second = i < params.popSize ? -fres.value : 0.0f;
-		scheduleCount += fres.numSchedulesGenerated;
-
-		if(pop[i].second < pop[0].second) {
-			tmpIndiv = pop[0];
-			pop[0] = pop[i];
-			pop[i] = tmpIndiv;
-			if(tr != nullptr) {
-				tr->intervalTrace(-pop[0].second);
-			}
-		}
-    }	
-
+	int scheduleCount = 0, indivCount = 0;
+	std::vector<std::pair<Individual, float>> pop = computeInitialPopulation(params.popSize, scheduleCount, indivCount);
     float lastBestVal = std::numeric_limits<float>::max();
 
 	/*auto iterationLogger = [&](int i) {
@@ -248,11 +266,11 @@ std::pair<std::vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 
 	LOG_I("Computing with abort criterias: iterLimit=" + std::to_string(params.iterLimit) + ", numGens=" + std::to_string(params.numGens) + ", timeLimit=" + std::to_string(params.timeLimit));
     for(int i=0;   (params.iterLimit == -1 || scheduleCount <= params.iterLimit)
-				&& (params.numGens == -1 || i<params.numGens)
+				&& (params.numGens == -1 || i < params.numGens)
 				&& (params.timeLimit == -1.0 || sw.look() < params.timeLimit * 1000.0); i++) {
 
 		if (tr != nullptr) {
-			tr->intervalTrace(-pop[0].second);
+			tr->intervalTrace(-pop[0].second, scheduleCount, indivCount);
 		}
 
 		//iterationLogger(i);
@@ -275,9 +293,12 @@ std::pair<std::vector<int>, float> GeneticAlgorithm<Individual>::solve() {
         } else {
             for(int j=params.popSize; j<params.popSize*2; j++) {
                 mutate(pop[j].first);
-				fres = fitness(pop[j].first);
+				FitnessResult fres = fitness(pop[j].first);
                 pop[j].second = -fres.value;
 				scheduleCount += fres.numSchedulesGenerated;
+				indivCount++;
+				if(tr != nullptr)
+					tr->countTrace(-pop[0].second, scheduleCount, indivCount);
             }
         }
 
@@ -300,14 +321,15 @@ std::pair<std::vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 			else
 				LOG_I("Improvement by " + std::to_string(lastBestVal - pop[0].second));
 
-	        //if(params.traceobj)
-			//	tr->trace(sw.look(), -pop[0].second);
+	        /*if(params.traceobj)
+				tr->trace(sw.look(), -pop[0].second, scheduleCount, indivCount);*/
         }
         lastBestVal = pop[0].second;
     }
 
 	if (tr != nullptr) {
-		tr->intervalTrace(-pop[0].second);
+		tr->intervalTrace(-pop[0].second, scheduleCount, indivCount);
+		tr->countTrace(-pop[0].second, scheduleCount, indivCount);
 	}
 
     auto best = pop[0];

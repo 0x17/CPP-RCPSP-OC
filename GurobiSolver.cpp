@@ -19,12 +19,13 @@ GurobiSolver::CustomCallback::CustomCallback(const string &outPath, const string
 
 void GurobiSolver::CustomCallback::callback() {
 	if (where == GRB_CB_MIP) {
-		tr.trace(/*getDoubleInfo(GRB_CB_RUNTIME)*/ sw.look(), static_cast<float>(getDoubleInfo(GRB_CB_MIP_OBJBST)));
+		/*getDoubleInfo(GRB_CB_RUNTIME)*/
+		tr.trace(sw.look(), static_cast<float>(getDoubleInfo(GRB_CB_MIP_OBJBST)), getIntInfo(GRB_CB_MIP_ITRCNT), getIntInfo(GRB_CB_MIP_ITRCNT));
 	}
 }
 
 void GurobiSolver::CustomCallback::manualCallback(float bks) {
-	tr.trace(sw.look(), bks);
+	tr.trace(sw.look(), bks, getIntInfo(GRB_CB_MIP_ITRCNT), getIntInfo(GRB_CB_MIP_ITRCNT));
 }
 
 GurobiSolver::Result::Result(vector<int> &_sts, bool _optimal): sts(_sts), optimal(_optimal) {}
