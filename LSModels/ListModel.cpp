@@ -95,7 +95,8 @@ vector<int> ListModel::solve(SolverParams params) {
 		decoder->setTracer(tr.get());
     }
 #ifdef DIRTY_ENFORCE_ITERLIM_HACK
-	tr->setTraceMode(Utils::Tracer::TraceMode::ONLY_COUNT);
+	if(tr != nullptr)
+		tr->setTraceMode(Utils::Tracer::TraceMode::ONLY_COUNT);
 	_nschedules = _nindividuals = 0;
 #endif
 	ls.solve();
