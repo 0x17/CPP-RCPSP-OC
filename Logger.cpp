@@ -52,7 +52,7 @@ namespace Utils {
 		f << (boost::format("%.2f") % insecs) << "," << bks_objval << "," << nschedules << "," << nindividuals << endl;
 	}
 
-#define FIRST_EXCEED(curVal, lastVal, threshold) curVal >= threshold && lastVal < threshold
+#define FIRST_EXCEED(curVal, lastVal, threshold) (curVal >= threshold && lastVal < threshold)
 
 	void Tracer::countTrace(float bks_objval, int nschedules, int nindividuals) {		
 		if(traceMode == TraceMode::ONLY_INTERVAL) return;
