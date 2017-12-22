@@ -14,9 +14,8 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 
-#include "Libraries/json11.hpp"
-
 #include "Stopwatch.h"
+#include "Matrix.h"
 
 #define LOG_I(msg) Utils::Logger::getInstance()->log(Utils::Logger::LogLevel::INFO, msg)
 #define LOG_W(msg) Utils::Logger::getInstance()->log(Utils::Logger::LogLevel::WARNING, msg)
@@ -27,9 +26,6 @@ namespace Utils {
 	std::vector<std::string> readLines(const std::string &filename);
     int extractIntFromStr(const std::string &s, const std::string &rx);
 	std::vector<int> extractIntsFromLine(const std::string &line);
-
-	json11::Json readJsonFromString(const std::string &s);
-	json11::Json readJsonFromFile(const std::string &filename);
 
     template<class T>
     void batchResize(int size, std::initializer_list<std::vector<T> *> vecs) {

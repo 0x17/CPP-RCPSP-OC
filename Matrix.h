@@ -54,6 +54,26 @@ public:
     inline T operator()(int i, int j) const { return data[i*n+j]; }
     inline T &operator()(int i, int j) { return data[i*n+j]; }
 
+    bool operator==(const Matrix<T> &mx) const {
+        return equals(mx);
+    }
+
+    bool equals(const Matrix &mx) const {
+		if(m != mx.getM() || n != mx.getN()) return false;
+        return mx.forAll([this](int i, int j, int v) {
+            return at(i, j) == v;
+        });
+    }
+
+    template<class Func>
+    bool forAll(Func pred) const {
+        bool res = true;
+        foreach([&res,&pred](int i, int j, int v) {
+            res &= pred(i, j, v);
+        });
+        return res;
+    }
+
 	T at(int i, int j) const { return data[i*n + j]; }
 
     Matrix &operator=(const Matrix &mx) {

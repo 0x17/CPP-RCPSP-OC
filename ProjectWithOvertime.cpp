@@ -299,6 +299,22 @@ std::map<int, std::pair<int, float>> ProjectWithOvertime::heuristicProfitsAndAct
 	return profitForMakespan;
 }
 
+json11::Json ProjectWithOvertime::to_json() const {
+	const auto rocObj = json11::Json::object {
+		{"u", revenue},
+		{"kappa", kappa},
+		{"zmax", zmax}
+	};
+	return JsonUtils::mergeObjects(Project::to_json(), rocObj);
+}
+
+void ProjectWithOvertime::from_json(const json11::Json& obj) {
+	Project::from_json(obj);
+	revenue = JsonUtils::extractNumberArrayFromObj(obj, "u");
+	kappa = JsonUtils::extractNumberArrayFromObj(obj, "kappa");
+	zmax = JsonUtils::extractIntArrayFromObj(obj, "zmax");
+}
+
 bool ProjectWithOvertime::isScheduleResourceFeasible(const vector<int>& sts) const {
 	return Project::isScheduleResourceFeasible(sts, zmax);
 }

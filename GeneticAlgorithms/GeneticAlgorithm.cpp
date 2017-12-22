@@ -29,7 +29,7 @@ void assignNumberSlotsFromJsonWithMapping(const json11::Json &obj, const std::ma
 }
 
 void GAParameters::fromJsonStr(const std::string &s) {
-	auto obj = Utils::readJsonFromString(s);
+	auto obj = JsonUtils::readJsonFromString(s);
 
 	std::map<std::string, int *> keyNamesToIntSlots = {
 			{"numGens", &numGens},

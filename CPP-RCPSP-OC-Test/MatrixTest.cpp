@@ -130,6 +130,29 @@ TEST_F(MatrixTest, testForeachAssign) {
 			ASSERT_EQ(1, entryVisited(i, j));
 }
 
+TEST_F(MatrixTest, testEqualsAndOperator) {
+	Matrix<int> different({{1,2,3,4},
+						  {5,6,8,8},
+						  {9,10,11,12}});
+	Matrix<int> empty(0,0);
+	Matrix<int> radicallyDifferent({{1,2},{3,4}});
+
+	ASSERT_TRUE(m->equals(*m));
+	ASSERT_FALSE(m->equals(different));
+	ASSERT_FALSE(m->equals(radicallyDifferent));
+	ASSERT_FALSE(m->equals(empty));
+}
+
+TEST_F(MatrixTest, testForAll) {
+	Matrix<bool> some({{false, false, true, false, true},{true, true, true, true, true}});
+	Matrix<bool> all(10, 10, 1);
+	Matrix<bool> empty(0, 0);
+	auto ident = [](int i, int j, int v) { return v; };
+	ASSERT_FALSE(some.forAll(ident));
+	ASSERT_TRUE(all.forAll(ident));
+	ASSERT_TRUE(empty.forAll(ident));
+}
+
 TEST_F(MatrixTest, testToString) {
 	ASSERT_EQ("Matrix(m=3,n=4,\n{{1,2,3,4},\n{5,6,7,8},\n{9,10,11,12}\n}\n", m->toString());
 }

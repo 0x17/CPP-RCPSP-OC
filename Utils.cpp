@@ -200,15 +200,3 @@ vector<string> Utils::splitLines(const string& s) {
 	return lines;
 }
 
-json11::Json Utils::readJsonFromString(const std::string &s) {
-	std::string err;
-	auto obj = json11::Json::parse(s, err);
-	if(!err.empty()) {
-		throw new std::runtime_error("Parse error: " + err);
-	}
-	return obj;
-}
-
-json11::Json Utils::readJsonFromFile(const std::string &filename) {
-	return readJsonFromString(slurp(filename));
-}

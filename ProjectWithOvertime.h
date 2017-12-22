@@ -83,6 +83,9 @@ public:
 
 	std::map<int, std::pair<int, float>> heuristicProfitsAndActualMakespanForRelevantDeadlines(const std::vector<int> &order) const;
 
+	json11::Json to_json() const override;
+	void from_json(const json11::Json& obj) override;
+
 private:
     void computeRevenueFunction();
     int computeTKappa() const;

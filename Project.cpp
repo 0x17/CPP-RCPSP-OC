@@ -441,6 +441,53 @@ void Project::computeNodeDepths(int root, int curDepth, vector<int> &nodeDepths)
 }
 #pragma clang diagnostic pop
 
+json11::Json Project::to_json() const {
+    Matrix<int> adjMxInt = Matrix<int>(adjMx.getM(), adjMx.getN(), [this](int i, int j) {
+        return (int)adjMx(i,j);
+    });
+
+	return json11::Json::object {
+	        {"name", name},
+			{"instanceName", instanceName},
+
+			{"numJobs", numJobs},
+			{"numRes", numRes},
+			{"numPeriods", numPeriods},
+			{"T", T},
+			{"lastJob", lastJob},
+
+			{"adjMx", JsonUtils::matrixIntToJson(adjMxInt)},
+			{"capacities", capacities},
+            {"durations", durations},
+			{"demands", JsonUtils::matrixIntToJson(demands)},
+
+			{"topOrder", topOrder},
+			{"revTopOrder", revTopOrder},
+
+			{"ests", ests},
+            {"efts", efts},
+
+			{"lsts", lsts},
+            {"lfts", lfts}
+	};
+}
+
+void Project::from_json(const json11::Json & obj)  {
+    JsonUtils::fillStrFieldsWithObject(obj, {"name", "instanceName"}, {&name, &instanceName});
+    JsonUtils::fillIntFieldsWithObject(obj, {"numJobs", "numRes", "numPeriods", "T", "lastJob"}, {&numJobs, &numRes, &numPeriods, &T, &lastJob});
+
+    durations = JsonUtils::extractIntArrayFromObj(obj, "durations");
+    capacities = JsonUtils::extractIntArrayFromObj(obj, "capacities");
+
+    Matrix<int> adjMxInt = JsonUtils::matrixIntFromJson(obj["adjMx"]);
+    adjMx.resize(adjMxInt.getM(), adjMxInt.getN());
+    for(int i=0; i<adjMxInt.getM(); i++)
+        for(int j=0; j<adjMxInt.getN(); j++)
+            adjMx(i,j) = (char)adjMxInt(i,j);
+
+    demands = JsonUtils::matrixIntFromJson(obj["demands"]);
+}
+
 void Project::reorderDispositionMethod() {
     vector<int> nodeDepths(numJobs, -1);
     nodeDepths[0] = 0;

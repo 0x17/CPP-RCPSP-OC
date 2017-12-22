@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Utils.h"
+#include "JsonUtils.h"
 #include "Matrix.h"
 
 #include <boost/filesystem/path.hpp>
@@ -55,7 +56,7 @@ struct SGSResult {
 	SGSResult() {}
 };
 
-class Project {
+class Project : public JsonUtils::IJsonSerializable {
 public:
 	std::string name, instanceName;
 
@@ -155,6 +156,9 @@ public:
 	std::vector<int> activityListToRankVector(const std::vector<int> &order) const;
 
 	int earliestJobInScheduleNotAlreadyTaken(const std::vector<int> &sts, const std::vector<bool> &alreadyTaken) const;
+
+	json11::Json to_json() const override;
+	void from_json(const json11::Json & obj) override;
 
 protected:
 	bool allPredsScheduled(int j, const std::vector<int> &sts) const;

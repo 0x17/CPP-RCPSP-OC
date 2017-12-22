@@ -349,3 +349,4 @@ TEST(UtilsTest, testIndexOf) {
 	vector<int> nums = { 1, 3, 8, 10, 9, 5, 4 };
 	ASSERT_EQ(3, Utils::indexOf(nums, [](int i) { return i % 10 == 0;  }));
 }
+
