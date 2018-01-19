@@ -32,3 +32,16 @@ private:
 
 	void mutateOvertime(std::vector<int> &z);
 };
+
+// TODO: Refactor random key codepath for reduced redundancy
+
+class TimeVaryingCapacityRandomKeyGA : public GeneticAlgorithm<RandomKeyZrt> {
+public:
+	explicit TimeVaryingCapacityRandomKeyGA(ProjectWithOvertime &_p);
+private:
+	RandomKeyZrt init(int ix) override;
+	void crossover(RandomKeyZrt &mother, RandomKeyZrt &father, RandomKeyZrt &daughter) override;
+	void mutate(RandomKeyZrt &i) override;
+	FitnessResult fitness(RandomKeyZrt &i) override;
+	std::vector<int> decode(RandomKeyZrt& i) override;
+};

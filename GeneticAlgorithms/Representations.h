@@ -123,3 +123,38 @@ public:
     void swap(int i1, int i2) override;
 };
 
+// TODO: Refactor random key codepath for reduced redundancy
+
+class RandomKey {
+public:
+	std::vector<float> priorities;
+
+	explicit RandomKey(int numJobs);
+	explicit RandomKey(const std::vector<float>& _priorities);
+	RandomKey();
+	virtual ~RandomKey() = default;
+
+	void mutate(int pmutate);
+
+	virtual void randomOnePointCrossover(const RandomKey& mother, const RandomKey& father);
+	virtual void onePointCrossover(const RandomKey& mother, const RandomKey& father, int q);
+};
+
+class RandomKeyZrt : public RandomKey {
+public:
+	Matrix<int> z;
+
+	RandomKeyZrt(int numJobs, int numRes, int numPeriods);
+	RandomKeyZrt();
+	RandomKeyZrt(const std::vector<float>& _order, const Matrix<int>& _z);
+	~RandomKeyZrt() final = default;
+
+	enum class CrossoverPartitionType {
+		RESOURCE_WISE,
+		PERIOD_WISE
+	};
+
+	void randomIndependentOnePointCrossovers(const RandomKeyZrt& mother, const RandomKeyZrt& father, int heuristicMaxMakespan);
+	void independentOnePointCrossovers(const RandomKeyZrt& mother, const RandomKeyZrt& father, int qj, int q2, CrossoverPartitionType ctype);
+	void independentMutations(const Matrix<char>& adjMx, const std::vector<int>& zmax, int pmutate);
+};

@@ -44,7 +44,7 @@ struct GAParameters : BasicSolverParameters {
     bool fitnessBasedPairing;
 	SelectionMethod selectionMethod;
 	CrossoverMethod crossoverMethod;
-    bool rbbrs, enforceTopOrdering;
+	bool rbbrs, enforceTopOrdering, fbiFeedbackInjection;
 };
 
 struct FitnessResult {

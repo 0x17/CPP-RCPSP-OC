@@ -15,9 +15,14 @@
 
 using namespace std;
 
+Project::Project(JsonWrap obj) {
+    from_json(obj.obj);
+    heuristicMaxMs = makespan(serialSGS(topOrder));
+}
+
 Project::Project(const string &filename) : Project(boost::filesystem::path(filename).stem().string(), Utils::readLines(filename)) {}
 
-Project::Project(const string& projectName, const string& s) : Project(projectName, Utils::splitLines(s)) {}
+Project::Project(const string& projectName, const string& contents) : Project(projectName, Utils::splitLines(contents)) {}
 
 Project::Project(const string& projectName, const vector<string>& lines) : name(projectName), instanceName(projectName) {
 	numJobs = Utils::extractIntFromStr(lines[5], "jobs \\(incl. supersource\\/sink \\):  (\\d+)");
@@ -468,7 +473,9 @@ json11::Json Project::to_json() const {
             {"efts", efts},
 
 			{"lsts", lsts},
-            {"lfts", lfts}
+            {"lfts", lfts},
+
+            {"heuristicMaxMakespan", heuristicMaxMs}
 	};
 }
 
@@ -486,6 +493,9 @@ void Project::from_json(const json11::Json & obj)  {
             adjMx(i,j) = (char)adjMxInt(i,j);
 
     demands = JsonUtils::matrixIntFromJson(obj["demands"]);
+
+    if(obj["heuristicMaxMakespan"].is_number())
+        heuristicMaxMs = obj["heuristicMaxMakespan"].int_value();
 }
 
 void Project::reorderDispositionMethod() {
@@ -629,3 +639,4 @@ std::vector<int> Project::activityListToRankVector(const std::vector<int> &order
 	}
 	return rankVec;
 }
+

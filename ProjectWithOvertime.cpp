@@ -12,11 +12,18 @@
 
 using namespace std;
 
+ProjectWithOvertime::ProjectWithOvertime(JsonWrap _obj) : Project(_obj) {
+	auto obj = _obj.obj;
+    revenue = JsonUtils::extractNumberArrayFromObj(obj, "u");
+    kappa = JsonUtils::extractNumberArrayFromObj(obj, "kappa");
+    zmax = JsonUtils::extractIntArrayFromObj(obj, "zmax");
+}
+
 ProjectWithOvertime::ProjectWithOvertime(const string &filename) :
 	ProjectWithOvertime(boost::filesystem::path(filename).stem().string(), Utils::readLines(filename)) {}
 
-ProjectWithOvertime::ProjectWithOvertime(const string& projectName, const string& s) :
-	ProjectWithOvertime(projectName, Utils::splitLines(s)) {}
+ProjectWithOvertime::ProjectWithOvertime(const string& projectName, const string& contents) :
+	ProjectWithOvertime(projectName, Utils::splitLines(contents)) {}
 
 ProjectWithOvertime::ProjectWithOvertime(const string& projectName, const vector<string>& lines) :
 	Project(projectName, lines),
@@ -506,7 +513,7 @@ SGSResult ProjectWithOvertime::forwardBackwardIterations(const vector<int> &orde
 	for(i=0; numIterations ? i < *numIterations : true; i++) {
 		//checkAndOutput(result, deadline, i);
 		result = (i % 2 == 0) ? delayWithoutOvertimeIncrease(order, result.sts, result.resRem, deadline, robust) : earlierWithoutOvertimeIncrease(order, result.sts, result.resRem, robust);
-		float currentCosts = totalCosts(result.resRem);
+		const float currentCosts = totalCosts(result.resRem);
 		if (std::abs(currentCosts - lastCosts) <= DEADLINE_IMPROVEMENT_TOLERANCE) {
 			//checkAndOutput(result, deadline, i);
 			i++;
@@ -525,7 +532,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitraryWithForwardBackwardIm
 
 SGSResult ProjectWithOvertime::serialSGSWithRandomKeyAndFBI(const std::vector<float> &rk, const Matrix<int> &z) const {
 	SGSResult res = serialSGSWithRandomKey(rk);
-	vector<int> order;
-	// FIXME: Add modified FBI with RK as input instead of AL
+	vector<int> order = scheduleToActivityList(res.sts);
 	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>());
 }
+

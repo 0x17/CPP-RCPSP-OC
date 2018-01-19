@@ -14,7 +14,8 @@ public:
 	std::vector<float> kappa, revenue;
 
 	explicit ProjectWithOvertime(const std::string &filename);
-	ProjectWithOvertime(const std::string& projectName, const std::string& s);
+    explicit ProjectWithOvertime(JsonWrap obj);
+	ProjectWithOvertime(const std::string& projectName, const std::string& contents);
 	ProjectWithOvertime(const std::string& projectName, const std::vector<std::string> &lines);
 
 	~ProjectWithOvertime() final = default;

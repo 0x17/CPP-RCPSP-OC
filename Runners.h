@@ -7,6 +7,7 @@
 
 class ProjectWithOvertime;
 class ListModel;
+class ISolver;
 
 #define RUN_GA_FUNC_SIGN(funcname, gaType) \
 	GAResult funcname(ProjectWithOvertime &p, GAParameters &params);
@@ -24,7 +25,7 @@ namespace Runners {
 		RunnerParams(int _methodIndex, int _variant, double _timeLimit, int _iterLimit, bool _traceobj, const std::string& _outPath);
 	};
 
-	std::unique_ptr<ListModel> genListModelWithIndex(ProjectWithOvertime &p, int index, int variant = 0);
+	std::unique_ptr<ISolver> genListModelWithIndex(ProjectWithOvertime &p, int index, int variant = 0);
 
 	struct GAResult {
 		std::vector<int> sts;
@@ -50,6 +51,7 @@ namespace Runners {
 	RUN_GA_FUNC_SIGN(runCompAltsGA, CompareAlternativesGA)
 	RUN_GA_FUNC_SIGN(runGoldenSectionSearchGA, GoldenSectionSearchGA)
 	RUN_GA_FUNC_SIGN(runFixedDeadlineGA, FixedDeadlineGA)
+	RUN_GA_FUNC_SIGN(runTimeVaryCapaRandomKeyGA, TimeVaryingCapacityRandomKeyGA)
 
 	GAResult run(ProjectWithOvertime &p, GAParameters &params, int index);
 
@@ -66,6 +68,7 @@ namespace Runners {
 		RE_LAMBDA_ZRT,
 		RE_LAMBDA_ALTS,
 		RE_LAMBDA_GS,
-		RE_LAMBDA_DEADLINE_OFFSET
+		RE_LAMBDA_DEADLINE_OFFSET,
+		RE_RANDKEY_ZRT
 	};
 }

@@ -200,3 +200,9 @@ vector<string> Utils::splitLines(const string& s) {
 	return lines;
 }
 
+vector<string> Utils::parseArgumentList(int argc, const char** argv) {
+	return Utils::constructVector<string>(argc-1, [&argv](int i) {
+		return argv[i+1];
+	});
+}
+

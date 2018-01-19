@@ -28,6 +28,7 @@
     <ClCompile Include="GeneticAlgorithms\Sampling.cpp" />
     <ClCompile Include="GeneticAlgorithms\TimeWindow.cpp" />
     <ClCompile Include="GurobiSolver.cpp" />
+    <ClCompile Include="JsonUtils.cpp" />
     <ClCompile Include="Libraries\json11.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="LSModels\FixedDeadlineModels.cpp" />
@@ -55,6 +56,7 @@
     <ClInclude Include="GeneticAlgorithms\Sampling.h" />
     <ClInclude Include="GeneticAlgorithms\TimeWindow.h" />
     <ClInclude Include="GurobiSolver.h" />
+    <ClInclude Include="JsonUtils.h" />
     <ClInclude Include="Libraries\json11.hpp" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="LSModels\FixedDeadlineModels.h" />
@@ -131,12 +133,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Boost\include\boost-1_59;C:\localsolver_7_0\include;C:\gurobi751\win64\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Boost\lib;C:\localsolver_7_0\bin;C:\gurobi751\win64\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\local\boost_1_66_0;C:\localsolver_7_5\include;C:\gurobi752\win64\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\local\boost_1_66_0\lib64-msvc-14.1;C:\localsolver_7_5\bin;C:\gurobi752\win64\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Boost\include\boost-1_59;C:\localsolver_7_0\include;C:\gurobi751\win64\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Boost\lib;C:\localsolver_7_0\bin;C:\gurobi751\win64\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\local\boost_1_66_0;C:\localsolver_7_5\include;C:\gurobi752\win64\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\local\boost_1_66_0\lib64-msvc-14.1;C:\localsolver_7_5\bin;C:\gurobi752\win64\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

@@ -97,3 +97,7 @@ std::vector<int> Sampling::randomPermutation(int n) {
 	shuffle(p.begin(), p.end(), std::mt19937(std::random_device()()));
 	return p;
 }
+
+std::vector<float> Sampling::randomUnitFloats(int n) {
+	return Utils::constructVector<float>(n, [](int i) { return Utils::randUnitFloat();  });
+}

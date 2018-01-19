@@ -158,4 +158,6 @@ namespace Utils {
 		}
 		return -1;
 	}
+
+	std::vector<std::string> parseArgumentList(int argc, const char** argv);
 }

@@ -16,7 +16,8 @@ GAParameters::GAParameters() :
 		selectionMethod(SelectionMethod::BEST),
 		crossoverMethod(CrossoverMethod::OPC),
 		rbbrs(false),
-		enforceTopOrdering(true) {
+		enforceTopOrdering(true),
+		fbiFeedbackInjection(false) {
 }
 
 template<class T>
@@ -28,28 +29,38 @@ void assignNumberSlotsFromJsonWithMapping(const json11::Json &obj, const std::ma
 	}
 }
 
-void GAParameters::fromJsonStr(const std::string &s) {
-	auto obj = JsonUtils::readJsonFromString(s);
+void assignBooleanSlotsFromJsonWithMapping(const json11::Json &obj, const std::map<std::string, bool *> mapping) {
+	for (const auto &pair : mapping) {
+		if (obj[pair.first].is_bool()) {
+			*pair.second = obj[pair.first].bool_value();
+		}
+	}
+}
 
-	std::map<std::string, int *> keyNamesToIntSlots = {
+void GAParameters::fromJsonStr(const std::string &s) {
+	const auto obj = JsonUtils::readJsonFromString(s);
+
+	const std::map<std::string, int *> keyNamesToIntSlots = {
 			{"numGens", &numGens},
 			{"popSize", &popSize},
 			{"pmutate", &pmutate},
-			{"iterLimit", &iterLimit},
+			{"iterLimit", &iterLimit}
 	};
 
-	std::map<std::string, double *> keyNamesToDoubleSlots = {
-			{"timeLimit", &timeLimit},
+	const std::map<std::string, double *> keyNamesToDoubleSlots = {
+			{"timeLimit", &timeLimit}
 	};
 
-	std::map<std::string, bool *> keyNamesToBooleanSlots = {
+	const std::map<std::string, bool *> keyNamesToBooleanSlots = {
 			{"fitnessBasedPairing", &fitnessBasedPairing},
 			{"enforceTopOrdering", &enforceTopOrdering},
 			{"rbbrs", &rbbrs},
+			{"fbiFeedbackInjection", &fbiFeedbackInjection}
 	};
 
 	assignNumberSlotsFromJsonWithMapping<int>(obj, keyNamesToIntSlots);
 	assignNumberSlotsFromJsonWithMapping<double>(obj, keyNamesToDoubleSlots);
+	assignBooleanSlotsFromJsonWithMapping(obj, keyNamesToBooleanSlots);
 
 	if(obj["selectionMethod"].is_string()) {
 		selectionMethod = boost::equals(obj["selectionMethod"].string_value(), "best") ? SelectionMethod::BEST : SelectionMethod::DUEL;

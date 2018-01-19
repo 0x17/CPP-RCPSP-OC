@@ -44,7 +44,12 @@ void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
 }
 
 FitnessResult TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
-	auto pair = p.serialSGSWithForwardBackwardImprovement(i.order, i.z, !params.enforceTopOrdering);
+	const auto pair = p.serialSGSWithForwardBackwardImprovement(i.order, i.z, !params.enforceTopOrdering);
+
+	if(params.fbiFeedbackInjection) {
+		i.order = p.scheduleToActivityList(pair.sts);
+	}
+
 	return { p.calcProfit(pair), pair.numSchedulesGenerated };
 }
 
@@ -101,3 +106,43 @@ void FixedCapacityGA::mutateOvertime(vector<int> &z) {
         });
     });
 }
+
+//============================================================================================
+
+// TODO: Refactor random key codepath for reduced redundancy
+
+TimeVaryingCapacityRandomKeyGA::TimeVaryingCapacityRandomKeyGA(ProjectWithOvertime& _p) : GeneticAlgorithm(_p, "RandomKeyTimeVaryingCapacityGA") {
+	useThreads = false;
+}
+
+RandomKeyZrt TimeVaryingCapacityRandomKeyGA::init(int ix) {
+	RandomKeyZrt indiv(p.numJobs, p.numRes, p.heuristicMakespanUpperBound());
+	indiv.priorities = Sampling::randomUnitFloats(p.numJobs);
+
+	p.eachResConst([&](int r) {
+		int zr = ix == 0 ? 0 : Utils::randRangeIncl(0, p.zmax[r]);
+		p.eachPeriodBoundedConst([&](int t) {
+			indiv.z(r, t) = zr;
+		});
+	});
+
+	return indiv;
+}
+
+void TimeVaryingCapacityRandomKeyGA::crossover(RandomKeyZrt& mother, RandomKeyZrt& father, RandomKeyZrt& daughter) {
+	daughter.randomIndependentOnePointCrossovers(mother, father, p.getHeuristicMaxMakespan());
+}
+
+void TimeVaryingCapacityRandomKeyGA::mutate(RandomKeyZrt& i) {
+	i.independentMutations(p.adjMx, p.zmax, params.pmutate);
+}
+
+FitnessResult TimeVaryingCapacityRandomKeyGA::fitness(RandomKeyZrt& i) {
+	auto res = p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z);
+	return { p.calcProfit(res), res.numSchedulesGenerated };
+}
+
+std::vector<int> TimeVaryingCapacityRandomKeyGA::decode(RandomKeyZrt& i) {
+	return p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z).sts;
+}
+

@@ -22,4 +22,6 @@ namespace Sampling {
     std::vector<int> sample(bool rbbrs, const Project &p);
 
 	std::vector<int> randomPermutation(int n);
+
+	std::vector<float> randomUnitFloats(int n);
 };

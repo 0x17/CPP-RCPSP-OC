@@ -9,6 +9,7 @@
 
 class ProjectWithOvertime;
 class Stopwatch;
+
 namespace Utils {
 	class Tracer;
 }

@@ -68,3 +68,36 @@ vector<int> ListDynamicOvertimeModel::parseScheduleFromSolution(LSSolution& sol)
 	});
 	return p.serialSGSWithForwardBackwardImprovement(order, zrt, !enforceTopOrdering).sts;
 }
+
+//==============================================================================================================
+
+int RandomKeyDynamicOvertimeModel::SerialSGSRandomKeyZrtDecoder::varCount() {
+	return p.numJobs + p.numRes * p.heuristicMakespanUpperBound();
+}
+
+SGSResult RandomKeyDynamicOvertimeModel::SerialSGSRandomKeyZrtDecoder::decode(vector<float>& priorities, const LSNativeContext& context) {
+	int nperiods = p.heuristicMakespanUpperBound();
+	Matrix<int> zrt(p.numRes, nperiods, [this, &context, nperiods](int r, int t) {
+		return static_cast<int>(context.getIntValue(p.numJobs + r * nperiods + t));
+	});
+
+	return p.serialSGSWithRandomKeyAndFBI(priorities, zrt);
+}
+
+void RandomKeyDynamicOvertimeModel::addAdditionalData(LSModel &model, LSExpression& obj) {
+	zrtVar.foreachAssign([this, &model, &obj](int r, int t) {
+		auto v = model.intVar(0, p.zmax[r]);
+		obj.addOperand(v);
+		return v;
+	});
+}
+
+vector<int> RandomKeyDynamicOvertimeModel::parseScheduleFromSolution(LSSolution& sol) {
+	const vector<float> priorities = Utils::constructVector<float>(p.numJobs, [this, &sol](int i) {
+		return static_cast<float>(sol.getDoubleValue(prioritiesElems[i]));
+	});
+	const Matrix<int> zrt(p.numRes, p.heuristicMakespanUpperBound(), [this, &sol](int r, int t) {
+		return static_cast<int>(sol.getIntValue(zrtVar(r, t)));
+	});
+	return p.serialSGSWithRandomKeyAndFBI(priorities, zrt).sts;
+}

@@ -18,41 +18,43 @@ namespace Runners {
 		methodIndex(_methodIndex),
 		variant(_variant) {}
 
-	std::unique_ptr<ListModel> genListModelWithIndex(ProjectWithOvertime &p, int index, int variant) {
+	std::unique_ptr<ISolver> genListModelWithIndex(ProjectWithOvertime &p, int index, int variant) {
 		using std::make_unique;
-		std::unique_ptr<ListModel> lm = nullptr;
+		std::unique_ptr<ISolver> solveModel = nullptr;
 		switch (index) {
 		default:
 		case 0:
 			ListBetaModel::setVariant(variant);
-			lm = make_unique<ListBetaModel>(p);
+			solveModel = make_unique<ListBetaModel>(p);
 			break;
 		case 1:
-			lm = make_unique<ListTauModel>(p);
+			solveModel = make_unique<ListTauModel>(p);
 			break;
 		case 2:
-			lm = make_unique<ListTauDiscreteModel>(p);
+			solveModel = make_unique<ListTauDiscreteModel>(p);
 			break;
 		case 3:
-			lm = make_unique<ListFixedOvertimeModel>(p);
+			solveModel = make_unique<ListFixedOvertimeModel>(p);
 			break;
 		case 4:
-			lm = make_unique<ListDynamicOvertimeModel>(p, false);
+			solveModel = make_unique<ListDynamicOvertimeModel>(p, false);
 			break;
 		case 5:
-			lm = make_unique<ListAlternativesModel>(p);
+			solveModel = make_unique<ListAlternativesModel>(p);
 			break;
 		case 6:
-			lm = make_unique<GSListModel>(p);
+			solveModel = make_unique<GSListModel>(p);
 			break;
 		case 7:
-			lm = make_unique<ListDeadlineModel>(p);
+			solveModel = make_unique<ListDeadlineModel>(p);
+			break;
+		case 8:
+			solveModel = make_unique<RandomKeyDynamicOvertimeModel>(p);
 			break;
 		}
-		return lm;
+		return solveModel;
 	}
-
-
+	
 	vector<GAResult(*)(ProjectWithOvertime &, GAParameters &)> funcs = {
 		runTwBorderGA,				// 0
 		runTwArbitraryGA,			// 1
@@ -61,7 +63,8 @@ namespace Runners {
 		runTimeVaryCapaGA,			// 4
 		runCompAltsGA,				// 5
 		runGoldenSectionSearchGA,	// 6
-		runFixedDeadlineGA			// 7
+		runFixedDeadlineGA,			// 7
+		runTimeVaryCapaRandomKeyGA  // 8
 	};
 
 	static vector<string> representationDescriptions = {
@@ -72,7 +75,8 @@ namespace Runners {
 		"(lambda|zrt)",
 		"(lambda) alts",
 		"(lambda) gs",
-		"(lambda|deadline-offset)"
+		"(lambda|deadline-offset)",
+		"(rk|zrt)"
 	};
 
 	string getDescription(int ix) { return representationDescriptions[ix]; }
@@ -95,6 +99,7 @@ namespace Runners {
 	RUN_GA_FUNC_IMPL(runCompAltsGA, CompareAlternativesGA)
 	RUN_GA_FUNC_IMPL(runGoldenSectionSearchGA, GoldenSectionSearchGA)
 	RUN_GA_FUNC_IMPL(runFixedDeadlineGA, FixedDeadlineGA)
+	RUN_GA_FUNC_IMPL(runTimeVaryCapaRandomKeyGA, TimeVaryingCapacityRandomKeyGA)
 
 
 	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, RunnerParams rparams) {
@@ -120,7 +125,7 @@ namespace Runners {
 	}
 
 	vector<int> runLocalSolverModelWithIndex(ProjectWithOvertime& p, RunnerParams rparams) {
-		unique_ptr<ListModel> lm = genListModelWithIndex(p, rparams.methodIndex, rparams.variant);
+		unique_ptr<ISolver> lm = genListModelWithIndex(p, rparams.methodIndex, rparams.variant);
 		SolverParams params(rparams.timeLimit, rparams.iterLimit);
 		params.traceobj = rparams.traceobj;
 		params.solverIx = rparams.methodIndex;

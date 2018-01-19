@@ -35,8 +35,8 @@ lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 		return numeric_limits<double>::lowest();
 	}
 
-	SGSResult result = decode(order, context);
-	auto profit = static_cast<lsdouble>(p.calcProfit(result));
+	const SGSResult result = decode(order, context);
+	const auto profit = static_cast<lsdouble>(p.calcProfit(result));
 
 #ifdef DIRTY_ENFORCE_ITERLIM_HACK
 	_nschedules += result.numSchedulesGenerated;
@@ -210,4 +210,124 @@ void TraceCallback::callback(LocalSolver &solver, LSCallbackType type) {
         lsdouble objval = solver.getModel().getObjective(0).getDoubleValue();
         tr.trace(secCtr, static_cast<float>(objval), -1, -1);
     }
+}
+
+//=================================================================================================
+
+// TODO: Refactor random key codepath for reduced redundancy
+
+lsdouble RandomKeySchedulingNativeFunction::call(const LSNativeContext& context) {
+#ifdef DIRTY_ENFORCE_ITERLIM_HACK
+	if (_schedule_limit != -1 && _nschedules >= _schedule_limit && _ls != nullptr) {
+		_ls->stop();
+		return -1.0;
+	}
+#endif
+
+	vector<float> priorities(static_cast<unsigned long>(p.numJobs));
+	if (context.count() < varCount()) return numeric_limits<double>::lowest();
+
+	for (int i = 0; i < p.numJobs; i++) {
+		priorities[i] = static_cast<float>(context.getDoubleValue(i));
+	}
+
+	const SGSResult result = decode(priorities, context);
+	const auto profit = static_cast<lsdouble>(p.calcProfit(result));
+
+#ifdef DIRTY_ENFORCE_ITERLIM_HACK
+	_nschedules += result.numSchedulesGenerated;
+	_nindividuals++;
+#endif
+
+	if (tr != nullptr) {
+		if (profit > bks)
+			bks = profit;
+
+		tr->intervalTrace(static_cast<float>(bks), _nschedules, _nindividuals);
+		tr->countTrace(static_cast<float>(bks), _nschedules, _nindividuals);
+	}
+
+	return profit;
+}
+
+string RandomKeyModel::traceFilenameForRandomKeyModel(const string& outPath, int lsIndex, const string& instanceName) {
+	return outPath + "LocalSolverNative" + to_string(lsIndex) + "Trace_" + instanceName;
+}
+
+RandomKeyModel::RandomKeyModel(ProjectWithOvertime& _p, RandomKeySchedulingNativeFunction *_decoder, bool _enforceTopOrdering) : p(_p), decoder(_decoder), prioritiesElems(_p.numJobs) {
+}
+
+RandomKeyModel::~RandomKeyModel() {
+	if (decoder != nullptr)
+		delete decoder;
+}
+
+vector<int> RandomKeyModel::solve(SolverParams params) {
+	std::unique_ptr<Utils::Tracer> tr = nullptr;
+	std::unique_ptr<TraceCallback> cback = nullptr;
+	buildModel();
+	applyParams(params);
+	if (params.traceobj) {
+		tr = std::make_unique<Utils::Tracer>(traceFilenameForRandomKeyModel(params.outPath, params.solverIx, p.instanceName));
+		cback = std::make_unique<TraceCallback>(*tr);
+		//ls.addCallback(CT_TimeTicked, cback);
+		decoder->setTracer(tr.get());
+	}
+#ifdef DIRTY_ENFORCE_ITERLIM_HACK
+	if (tr != nullptr)
+		tr->setTraceMode(Utils::Tracer::TraceMode::ONLY_COUNT);
+	_nschedules = _nindividuals = 0;
+#endif
+	ls.solve();
+	auto sol = ls.getSolution();
+	assert(sol.getStatus() == LSSolutionStatus::SS_Feasible || sol.getStatus() == LSSolutionStatus::SS_Optimal);
+#ifdef DIRTY_ENFORCE_ITERLIM_HACK
+	LOG_I("Number of calls: " + to_string(_nschedules) + " vs. iteration limit = " + to_string(params.iterLimit));
+#endif
+	return parseScheduleFromSolution(sol);
+}
+
+void RandomKeyModel::buildModel() {
+	LOG_I("Building local solver list variable model");
+	LSModel model = ls.getModel();
+	if (model.getNbObjectives() == 0) {
+		auto nfunc = model.createNativeFunction(decoder);
+		LSExpression obj = model.call(nfunc);
+
+		for (int i = 0; i < p.numJobs; i++) {
+			prioritiesElems[i] = model.floatVar(0.0, 1.0);
+			obj.addOperand(prioritiesElems[i]);
+		}
+
+		addAdditionalData(model, obj);
+
+		model.maximize(obj);
+		model.close();
+
+		// TODO: initial solution?
+	}
+}
+
+void RandomKeyModel::applyParams(SolverParams &params) {
+	LOG_I("Applying custom parameters");
+	if (ls.getNbPhases() == 0) {
+		auto phase = ls.createPhase();
+		if (params.iterLimit != -1) {
+			phase.setIterationLimit(static_cast<long long>(params.iterLimit));
+#ifdef DIRTY_ENFORCE_ITERLIM_HACK
+			_schedule_limit = params.iterLimit;
+			_ls = &ls;
+#endif
+		}
+		if (params.timeLimit != -1.0)
+			phase.setTimeLimit(static_cast<int>(params.timeLimit));
+		auto param = ls.getParam();
+		param.setNbThreads(params.threadCount);
+		param.setSeed(params.seed);
+		param.setVerbosity(params.verbosityLevel);
+		if (params.traceobj) {
+			auto timeBetweenDisplays = static_cast<int>(ceil(MSECS_BETWEEN_TRACES_LONG / 1000.0));
+			param.setTimeBetweenDisplays(timeBetweenDisplays);
+		}
+	}
 }

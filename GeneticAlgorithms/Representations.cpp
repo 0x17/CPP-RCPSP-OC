@@ -12,7 +12,7 @@ Lambda::Lambda(int numJobs) : order(numJobs) {}
 
 Lambda::Lambda(const vector<int> &_order) : order(_order) {}
 
-Lambda::Lambda() {}
+Lambda::Lambda() = default;
 
 void Lambda::neighborhoodSwap(const Matrix<char> &adjMx, int pmutate, bool keepTopOrder) {
     for(int i=1; i<order.size(); i++) {
@@ -209,7 +209,7 @@ void LambdaBeta::setOptions(ProjectWithOvertime::BorderSchedulingOptions _option
 
 LambdaTau::LambdaTau(int numJobs) : Lambda(numJobs), tau(numJobs) {}
 
-LambdaTau::LambdaTau() {}
+LambdaTau::LambdaTau() = default;
 
 void LambdaTau::inherit(const Lambda &parent, int destIx, int srcIx) {
     Lambda::inherit(parent, destIx, srcIx);
@@ -219,4 +219,72 @@ void LambdaTau::inherit(const Lambda &parent, int destIx, int srcIx) {
 void LambdaTau::swap(int i1, int i2) {
     Lambda::swap(i1, i2);
     Utils::swap(tau, i1, i2);
+}
+
+//======================================================================================================================
+
+RandomKey::RandomKey(int numJobs) : priorities(numJobs) {}
+RandomKey::RandomKey(const std::vector<float>& _priorities): priorities(_priorities) {}
+RandomKey::RandomKey() = default;
+
+void RandomKey::mutate(int pmutate) {
+	for (int i = 1; i < priorities.size(); i++) {
+		if (Utils::randRangeIncl(1, 100) <= pmutate) {
+			priorities[i] = Utils::randUnitFloat();
+		}
+	}
+	
+}
+
+void RandomKey::randomOnePointCrossover(const RandomKey& mother, const RandomKey& father) {
+	int q = Utils::randRangeIncl(0, static_cast<int>(priorities.size()) - 1);
+	onePointCrossover(mother, father, q);
+}
+
+void RandomKey::onePointCrossover(const RandomKey& mother, const RandomKey& father, int q) {
+	for(int i = 0; i < priorities.size(); i++)
+		priorities[i] = i <= q ? mother.priorities[i] : father.priorities[i];
+}
+
+//======================================================================================================================
+
+// TODO: Refactor random key codepath for reduced redundancy
+
+RandomKeyZrt::RandomKeyZrt(int numJobs, int numRes, int numPeriods) : RandomKey(numJobs), z(numRes, numPeriods) {}
+RandomKeyZrt::RandomKeyZrt() = default;
+RandomKeyZrt::RandomKeyZrt(const std::vector<float>& _order, const Matrix<int>& _z): RandomKey(_order), z(_z) {}
+
+void RandomKeyZrt::randomIndependentOnePointCrossovers(const RandomKeyZrt& mother, const RandomKeyZrt& father, int heuristicMaxMakespan) {
+	CrossoverPartitionType ctype = Utils::randBool() ? CrossoverPartitionType::PERIOD_WISE : CrossoverPartitionType::RESOURCE_WISE;
+	int qj = Utils::randRangeIncl(0, static_cast<int>(priorities.size()) - 1);
+	int q2 = Utils::randRangeIncl(0, (ctype == CrossoverPartitionType::PERIOD_WISE ? heuristicMaxMakespan : z.getM()) - 1);
+	independentOnePointCrossovers(mother, father, qj, q2, ctype);
+}
+
+void RandomKeyZrt::independentOnePointCrossovers(const RandomKeyZrt& mother, const RandomKeyZrt& father, int qj, int q2, CrossoverPartitionType ctype) {
+	onePointCrossover(mother, father, qj);
+	switch (ctype) {
+	case CrossoverPartitionType::RESOURCE_WISE:
+		z.foreachAssign([&](int r, int t) {
+			return r <= q2 ? mother.z(r, t) : father.z(r, t);
+		});
+		break;
+	case CrossoverPartitionType::PERIOD_WISE:
+		z.foreachAssign([&](int r, int t) {
+			return t <= q2 ? mother.z(r, t) : father.z(r, t);
+		});
+		break;
+	}
+}
+
+void RandomKeyZrt::independentMutations(const Matrix<char>& adjMx, const std::vector<int>& zmax, int pmutate) {
+	mutate(pmutate);
+	for (int r = 0; r < z.getM(); r++) {
+		int zOffset = Utils::randBool() ? 1 : -1;
+		for (int t = 0; t < z.getN(); t++) {
+			if (Utils::randRangeIncl(1, 100) <= pmutate) {
+				z(r, t) = boost::algorithm::clamp(z(r, t) + zOffset, 0, zmax[r]);
+			}
+		}
+	}
 }

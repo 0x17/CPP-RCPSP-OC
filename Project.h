@@ -56,6 +56,10 @@ struct SGSResult {
 	SGSResult() {}
 };
 
+struct JsonWrap {
+	json11::Json &obj;
+};
+
 class Project : public JsonUtils::IJsonSerializable {
 public:
 	std::string name, instanceName;
@@ -74,8 +78,9 @@ public:
 	enum { UNSCHEDULED = -1 };
 
 	explicit Project(const std::string &filename);
-	Project(const std::string& projectName, const std::string& s);
-	virtual ~Project() {}
+	explicit Project(JsonWrap wrappedObj);
+	Project(const std::string& projectName, const std::string& contents);
+	virtual ~Project() = default;
 
 	std::vector<int> serialSGS(const std::vector<int>& order) const;
 	std::pair<std::vector<int>, Matrix<int>> serialSGSForPartial(const std::vector<int> &sts, const std::vector<int> &order, Matrix<int> &resRem) const;

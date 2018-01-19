@@ -14,12 +14,13 @@ using namespace std;
 
 namespace Main {
 	void showUsage();
-	void commandLineRunner(int argc, char * argv[]);
+	void commandLineRunner(int argc, const char * argv[]);
 	int computeMinMaxMakespanDifference(ProjectWithOvertime &p);
 	void convertArgFileToLSP(int argc, const char * argv[]);
 	bool instanceAlreadySolvedInResultFile(const string& coreName, const string& resultFilename);
 	void purgeOldTraceFile(const string &traceFilename);
 	void plotHeuristicProfits();
+	void jsonConverter(int argc, const char** argv);
 
 	namespace Testing {
         void fixedScheduleLimitSolveTimesForProjects();
@@ -28,7 +29,7 @@ namespace Main {
 		void testFixedDeadlineHeuristic();
 		void testLocalSolverNative(int seed);
 		void testGurobi();
-	};
+	}
 }
 
 void Main::plotHeuristicProfits() {
@@ -58,6 +59,27 @@ void Main::plotHeuristicProfits() {
 	cout << p.calcProfit(gsresult) << endl;*/
 }
 
+void Main::jsonConverter(int argc, const char** argv) {
+	const auto showConverterUsage = []() {
+		cout << "Usage: Converter inpath outpath" << endl;
+		cout << "Example usage: Converter ../../Projekte/j30/j3010_1.sm j3010_1.json" << endl;
+	};
+
+	vector<string> args = Utils::parseArgumentList(argc, argv);
+
+	if (args.empty()) {
+		showConverterUsage();
+		return;
+	}
+
+	const string inpath = !args.empty() ? args[0] : "../../Projekte/j30/j3010_1.sm";
+	const auto projectName = boost::filesystem::path(inpath).stem().string();
+	const string outpath = args.size() > 1 ? args[1] : projectName + ".json";
+
+	ProjectWithOvertime p(inpath);
+	p.to_disk(outpath);
+}
+
 void computeScheduleAttributes(const string &smfilename) {
 	vector<string> resfiles = {"result_sts_0.txt", "result_sts_1.txt", "result_sts_2.txt", "result_sts_oc.txt"};
 	ProjectWithOvertime p(smfilename);
@@ -67,10 +89,9 @@ void computeScheduleAttributes(const string &smfilename) {
 	}
 }
 
-int main(int argc, char * argv[]) {
+int main(int argc, const char * argv[]) {
 	//computeScheduleAttributes("PaperBeispiel.sm");
 
-	Main::commandLineRunner(argc, argv);
 	//Main::plotHeuristicProfits();
 
 	//Main::Testing::testGurobi();
@@ -82,7 +103,12 @@ int main(int argc, char * argv[]) {
 	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_ZR, 100000);
     //Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_ZRT, 100000);
 	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_GS, 100000);
-    //Main::Testing::fixedScheduleLimitSolveTimesForProjects();
+	//Main::Testing::fixedScheduleLimitSolveTimesForProjects();
+
+	//Main::jsonConverter(argc, argv);
+
+	Main::commandLineRunner(argc, argv);
+	
     return 0;
 }
 
@@ -158,7 +184,7 @@ void Main::purgeOldTraceFile(const string &traceFilename) {
 	}
 }
 
-void Main::commandLineRunner(int argc, char * argv[]) {
+void Main::commandLineRunner(int argc, const char * argv[]) {
     if(argc >= 4) {
 		vector<int> sts;
 
@@ -172,13 +198,13 @@ void Main::commandLineRunner(int argc, char * argv[]) {
             return;
         }
 
-        bool traceobj = (argc == 6 && string(argv[5]) == "traceobj");
+	    const bool traceobj = (argc == 6 && string(argv[5]) == "traceobj");
 
-		string parentPath = boost::filesystem::path(string(argv[4])).parent_path().string();
-		string outPath = parentPath + "_" + (iterLimit == -1 ? to_string(int(round(timeLimit))) + "secs/" : to_string(iterLimit) + "schedules/");
+		const string parentPath = boost::filesystem::path(string(argv[4])).parent_path().string();
+		const string outPath = parentPath + "_" + (iterLimit == -1 ? to_string(int(round(timeLimit))) + "secs/" : to_string(iterLimit) + "schedules/");
 		string outFn = outPath;
 		boost::filesystem::create_directory(boost::filesystem::path(outPath));
-		string coreName = Project::coreInstanceName(parentPath, string(argv[4]));
+		const string coreName = Project::coreInstanceName(parentPath, string(argv[4]));
 
 		srand(23);
 
