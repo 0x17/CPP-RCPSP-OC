@@ -108,6 +108,7 @@ int main(int argc, const char * argv[]) {
 	//Main::jsonConverter(argc, argv);
 
 	Main::commandLineRunner(argc, argv);
+	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_RANDKEY_ZRT, 10000, "j30/j3010_1.sm");
 	
     return 0;
 }
@@ -147,8 +148,8 @@ void Main::convertArgFileToLSP(int argc, const char * argv[]) {
 
 void Main::showUsage() {
 	list<string> solMethods = { "BranchAndBound", "LocalSolver", "Gurobi" };
-	for (int i = 0; i < 8; i++) solMethods.push_back("GA" + to_string(i) + " // " + Runners::getDescription(i));
-	for (int i = 0; i < 8; i++) solMethods.push_back("LocalSolverNative" + to_string(i) + " // " + Runners::getDescription(i));
+	for (int i = 0; i < 10; i++) solMethods.push_back("GA" + to_string(i) + " // " + Runners::getDescription(i));
+	for (int i = 0; i < 10; i++) solMethods.push_back("LocalSolverNative" + to_string(i) + " // " + Runners::getDescription(i));
 	cout << "Number of arguments must be >= 4" << endl;
 	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ScheduleLimit ProjectFileSM [traceobj]" << endl;
 	cout << "Solution methods: " << endl;

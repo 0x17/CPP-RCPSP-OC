@@ -35,6 +35,19 @@ private:
 
 // TODO: Refactor random key codepath for reduced redundancy
 
+class FixedCapacityRandomKeyGA : public GeneticAlgorithm<RandomKeyZr> {
+public:
+	explicit FixedCapacityRandomKeyGA(ProjectWithOvertime &_p);
+private:
+	RandomKeyZr init(int ix) override;
+	void crossover(RandomKeyZr &mother, RandomKeyZr &father, RandomKeyZr &daughter) override;
+	void mutate(RandomKeyZr &i) override;
+	FitnessResult fitness(RandomKeyZr &i) override;
+	std::vector<int> decode(RandomKeyZr& i) override;
+
+	void mutateOvertime(std::vector<int> &z);
+};
+
 class TimeVaryingCapacityRandomKeyGA : public GeneticAlgorithm<RandomKeyZrt> {
 public:
 	explicit TimeVaryingCapacityRandomKeyGA(ProjectWithOvertime &_p);

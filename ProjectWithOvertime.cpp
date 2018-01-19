@@ -536,3 +536,9 @@ SGSResult ProjectWithOvertime::serialSGSWithRandomKeyAndFBI(const std::vector<fl
 	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>());
 }
 
+SGSResult ProjectWithOvertime::serialSGSWithRandomKeyAndFBI(const std::vector<float>& rk, const std::vector<int>& z) const {
+	const SGSResult res = serialSGSWithRandomKey(rk, z);
+	const vector<int> order = scheduleToActivityList(res.sts);
+	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>());
+}
+

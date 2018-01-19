@@ -101,3 +101,38 @@ vector<int> RandomKeyDynamicOvertimeModel::parseScheduleFromSolution(LSSolution&
 	});
 	return p.serialSGSWithRandomKeyAndFBI(priorities, zrt).sts;
 }
+
+//==============================================================================================================
+
+
+int RandomKeyFixedOvertimeModel::SerialSGSRandomKeyZrDecoder::varCount() { return p.numJobs + p.numRes; }
+
+SGSResult RandomKeyFixedOvertimeModel::SerialSGSRandomKeyZrDecoder::decode(vector<float>& priorities, const LSNativeContext& context) {
+	vector<int> zr(p.numRes);
+
+	for (int r = 0; r < p.numRes; r++)
+		zr[r] = static_cast<int>(context.getIntValue(p.numJobs + r));
+
+	auto res = p.serialSGSWithRandomKeyAndFBI(priorities, zr);
+	return res;
+}
+
+void RandomKeyFixedOvertimeModel::addAdditionalData(LSModel &model, LSExpression& obj) {
+	for (int r = 0; r < p.numRes; r++) {
+		zrVar[r] = model.intVar(0, p.zmax[r]);
+		obj.addOperand(zrVar[r]);
+	}
+}
+
+vector<int> RandomKeyFixedOvertimeModel::parseScheduleFromSolution(LSSolution& sol) {
+	vector<float> priorities(p.numJobs);
+	vector<int> zr(p.numRes);
+
+	for (int i = 0; i<p.numJobs; i++)
+		priorities[i] = static_cast<float>(sol.getDoubleValue(prioritiesElems[i]));
+
+	for (int r = 0; r < p.numRes; r++)
+		zr[r] = static_cast<int>(sol.getIntValue(zrVar[r]));
+
+	return p.serialSGSWithRandomKeyAndFBI(priorities, zr).sts;
+}

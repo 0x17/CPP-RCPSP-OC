@@ -250,6 +250,24 @@ void RandomKey::onePointCrossover(const RandomKey& mother, const RandomKey& fath
 
 // TODO: Refactor random key codepath for reduced redundancy
 
+RandomKeyZr::RandomKeyZr(int numJobs, int numRes) : RandomKey(numJobs), z(numRes) {}
+
+RandomKeyZr::RandomKeyZr() = default;
+
+void RandomKeyZr::randomIndependentOnePointCrossovers(const RandomKeyZr& mother, const RandomKeyZr& father) {
+	int qj = Utils::randRangeIncl(0, static_cast<int>(priorities.size()) - 1);
+	int qr = Utils::randRangeIncl(0, static_cast<int>(z.size()) - 1);
+	independentOnePointCrossovers(mother, father, qj, qr);
+}
+
+void RandomKeyZr::independentOnePointCrossovers(const RandomKeyZr& mother, const RandomKeyZr& father, int qj, int qr) {
+	onePointCrossover(mother, father, qj);
+	for (int r = 0; r < z.size(); r++)
+		z[r] = r <= qr ? mother.z[r] : father.z[r];
+}
+
+//======================================================================================================================
+
 RandomKeyZrt::RandomKeyZrt(int numJobs, int numRes, int numPeriods) : RandomKey(numJobs), z(numRes, numPeriods) {}
 RandomKeyZrt::RandomKeyZrt() = default;
 RandomKeyZrt::RandomKeyZrt(const std::vector<float>& _order, const Matrix<int>& _z): RandomKey(_order), z(_z) {}

@@ -63,6 +63,7 @@ public:
 	SGSResult serialSGSWithForwardBackwardImprovement(const std::vector<int>& order, const Matrix<int>& z, bool robust = false) const;
 
 	SGSResult serialSGSWithRandomKeyAndFBI(const std::vector<float> &rk, const Matrix<int>& z) const;
+	SGSResult serialSGSWithRandomKeyAndFBI(const std::vector<float> &rk, const std::vector<int>& z) const;
 
     SGSResult serialSGSTimeWindowArbitrary(const std::vector<int> &order, const std::vector<float> &tau, bool robust = false) const;
 	SGSResult serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(const std::vector<int> &order, const std::vector<float> &tau, bool robust = false) const;

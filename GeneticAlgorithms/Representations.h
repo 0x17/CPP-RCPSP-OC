@@ -140,6 +140,20 @@ public:
 	virtual void onePointCrossover(const RandomKey& mother, const RandomKey& father, int q);
 };
 
+class RandomKeyZr : public RandomKey {
+public:
+	std::vector<int> z;
+
+	RandomKeyZr(int numJobs, int numRes);
+	RandomKeyZr();
+	RandomKeyZr(const std::vector<float> &_order, const std::vector<int> &_z) : RandomKey(_order), z(_z) {}
+	~RandomKeyZr() final = default;
+
+	void randomIndependentOnePointCrossovers(const RandomKeyZr& mother, const RandomKeyZr& father);
+	void independentOnePointCrossovers(const RandomKeyZr& mother, const RandomKeyZr& father, int qj, int qr);
+};
+
+
 class RandomKeyZrt : public RandomKey {
 public:
 	Matrix<int> z;

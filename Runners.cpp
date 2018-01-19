@@ -49,8 +49,12 @@ namespace Runners {
 			solveModel = make_unique<ListDeadlineModel>(p);
 			break;
 		case 8:
+			solveModel = make_unique<RandomKeyFixedOvertimeModel>(p);
+			break;
+		case 9:
 			solveModel = make_unique<RandomKeyDynamicOvertimeModel>(p);
 			break;
+			
 		}
 		return solveModel;
 	}
@@ -64,7 +68,8 @@ namespace Runners {
 		runCompAltsGA,				// 5
 		runGoldenSectionSearchGA,	// 6
 		runFixedDeadlineGA,			// 7
-		runTimeVaryCapaRandomKeyGA  // 8
+		runFixedCapaGA,				// 8
+		runTimeVaryCapaRandomKeyGA  // 9
 	};
 
 	static vector<string> representationDescriptions = {
@@ -76,6 +81,7 @@ namespace Runners {
 		"(lambda) alts",
 		"(lambda) gs",
 		"(lambda|deadline-offset)",
+		"(rk|zr)",
 		"(rk|zrt)"
 	};
 
@@ -99,6 +105,7 @@ namespace Runners {
 	RUN_GA_FUNC_IMPL(runCompAltsGA, CompareAlternativesGA)
 	RUN_GA_FUNC_IMPL(runGoldenSectionSearchGA, GoldenSectionSearchGA)
 	RUN_GA_FUNC_IMPL(runFixedDeadlineGA, FixedDeadlineGA)
+	RUN_GA_FUNC_IMPL(runFixedCapaRandomKeyGA, FixedCapacityRandomKeyGA)
 	RUN_GA_FUNC_IMPL(runTimeVaryCapaRandomKeyGA, TimeVaryingCapacityRandomKeyGA)
 
 

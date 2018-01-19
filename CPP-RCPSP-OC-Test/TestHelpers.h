@@ -13,6 +13,15 @@
 
 class TestHelpers {
 public:
+	static void floatArrayEquals(const std::vector<float> &expected, const std::vector<float> &actual) {
+		ASSERT_EQ(expected.size(), actual.size());
+		for (int i = 0; i<actual.size(); i++) {
+			ASSERT_FLOAT_EQ(expected[i], actual[i])
+				<< "expected[" << i << "]=" << expected[i]
+				<< " != actual[" << i << "] = " << actual[i] << "!";
+		}
+	}
+
     template<class T>
     static void arrayEquals(const std::vector<T> &expected, const std::vector<T> &actual) {
         ASSERT_EQ(expected.size(), actual.size());

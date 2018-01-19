@@ -51,6 +51,7 @@ namespace Runners {
 	RUN_GA_FUNC_SIGN(runCompAltsGA, CompareAlternativesGA)
 	RUN_GA_FUNC_SIGN(runGoldenSectionSearchGA, GoldenSectionSearchGA)
 	RUN_GA_FUNC_SIGN(runFixedDeadlineGA, FixedDeadlineGA)
+	RUN_GA_FUNC_SIGN(runFixedCapaRandomKeyGA, FixedCapacityRandomKeyGA)
 	RUN_GA_FUNC_SIGN(runTimeVaryCapaRandomKeyGA, TimeVaryingCapacityRandomKeyGA)
 
 	GAResult run(ProjectWithOvertime &p, GAParameters &params, int index);

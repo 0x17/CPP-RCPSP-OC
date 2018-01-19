@@ -89,6 +89,7 @@ public:
 	SGSResult serialSGS(const std::vector<int>& order, const Matrix<int>& z, bool robust = false) const;
 
 	std::vector<int> serialSGSWithRandomKey(const std::vector<float> &rk) const;
+	SGSResult serialSGSWithRandomKey(const std::vector<float>& rk, const std::vector<int>& z) const;
 	SGSResult serialSGSWithRandomKey(const std::vector<float>& rk, const Matrix<int>& z) const;
 
 	static bool jobBeforeInOrder(int job, int curIndex, const std::vector<int>& order);
@@ -160,6 +161,7 @@ public:
 
 	std::vector<int> standardizeRandomKey(const std::vector<float> &rk) const;
 	std::vector<int> scheduleToActivityList(const std::vector<int> &sts) const;
+	std::vector<float> activityListToRandomKey(const std::vector<int> &order) const;
 	std::vector<int> activityListToRankVector(const std::vector<int> &order) const;
 
 	int earliestJobInScheduleNotAlreadyTaken(const std::vector<int> &sts, const std::vector<bool> &alreadyTaken) const;

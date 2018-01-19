@@ -111,13 +111,13 @@ void FixedCapacityGA::mutateOvertime(vector<int> &z) {
 
 // TODO: Refactor random key codepath for reduced redundancy
 
-TimeVaryingCapacityRandomKeyGA::TimeVaryingCapacityRandomKeyGA(ProjectWithOvertime& _p) : GeneticAlgorithm(_p, "RandomKeyTimeVaryingCapacityGA") {
+TimeVaryingCapacityRandomKeyGA::TimeVaryingCapacityRandomKeyGA(ProjectWithOvertime& _p) : GeneticAlgorithm(_p, "TimeVaryingCapacityRandomKeyGA") {
 	useThreads = false;
 }
 
 RandomKeyZrt TimeVaryingCapacityRandomKeyGA::init(int ix) {
 	RandomKeyZrt indiv(p.numJobs, p.numRes, p.heuristicMakespanUpperBound());
-	indiv.priorities = Sampling::randomUnitFloats(p.numJobs);
+	indiv.priorities = params.rbbrs ? p.activityListToRandomKey(Sampling::sample(true, p)) : Sampling::randomUnitFloats(p.numJobs);
 
 	p.eachResConst([&](int r) {
 		int zr = ix == 0 ? 0 : Utils::randRangeIncl(0, p.zmax[r]);
@@ -146,3 +146,41 @@ std::vector<int> TimeVaryingCapacityRandomKeyGA::decode(RandomKeyZrt& i) {
 	return p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z).sts;
 }
 
+//============================================================================================
+
+FixedCapacityRandomKeyGA::FixedCapacityRandomKeyGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "FixedCapacityRandomKeyGA") {
+	useThreads = false;
+}
+
+RandomKeyZr FixedCapacityRandomKeyGA::init(int ix) {
+	RandomKeyZr indiv(p.numJobs, p.numRes);
+	indiv.priorities = params.rbbrs ? p.activityListToRandomKey(Sampling::sample(true, p)) : Sampling::randomUnitFloats(p.numJobs);
+	p.eachRes([&](int r) { indiv.z[r] = ix == 0 ? 0 : Utils::randRangeIncl(0, p.zmax[r]); });
+	return indiv;
+}
+
+void FixedCapacityRandomKeyGA::crossover(RandomKeyZr &mother, RandomKeyZr &father, RandomKeyZr &daughter) {
+	daughter.randomIndependentOnePointCrossovers(mother, father);
+}
+
+void FixedCapacityRandomKeyGA::mutate(RandomKeyZr &i) {
+	i.mutate(params.pmutate);
+	mutateOvertime(i.z);
+}
+
+FitnessResult FixedCapacityRandomKeyGA::fitness(RandomKeyZr &i) {
+	auto res = p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z);
+	return { p.calcProfit(res), res.numSchedulesGenerated };
+}
+
+vector<int> FixedCapacityRandomKeyGA::decode(RandomKeyZr& i) {
+	return p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z).sts;
+}
+
+void FixedCapacityRandomKeyGA::mutateOvertime(vector<int> &z) {
+	p.eachRes([&](int r) {
+		withMutProb([&] {
+			z[r] = boost::algorithm::clamp(z[r] + (Utils::randBool() ? 1 : -1), 0, p.zmax[r]);
+		});
+	});
+}

@@ -5,6 +5,8 @@
 #include "ProjectTest.h"
 #include "TestHelpers.h"
 
+#include <gtest/gtest.h>
+
 using namespace std;
 
 TEST_F(ProjectTest, testConstructor) {
@@ -39,8 +41,12 @@ TEST_F(ProjectTest, testSerialSGS) {
 }
 
 TEST_F(ProjectTest, testSerialSGSWithRandomKey) {
-	TestHelpers::arrayEquals({0, 0, 2, 4, 6 }, p->serialSGSWithRandomKey({ 0, 1, 2, 3, 4 }));
-	TestHelpers::arrayEquals({ 0, 0, 2, 4, 6 }, p->serialSGSWithRandomKey({ 0.1f, 0.3f, 0.5f, 0.8f, 0.9f }));
+	TestHelpers::arrayEquals({0, 0, 2, 4, 6 }, p->serialSGSWithRandomKey({ 0.4f, 0.3f, 0.2f, 0.1f, 0.0f }));
+	TestHelpers::arrayEquals({ 0, 0, 2, 4, 6 }, p->serialSGSWithRandomKey({ 0.9f, 0.8f, 0.5f, 0.3f, 0.1f }));
+}
+
+TEST_F(ProjectTest, testActivityListToRandomKey) {
+	TestHelpers::floatArrayEquals({1.0f, 0.8f, 0.6f, 0.4f, 0.2f}, p->activityListToRandomKey({ 0, 1, 2, 3, 4, }));
 }
 
 TEST_F(ProjectTest, testJobBeforeInOrder) {
@@ -112,12 +118,16 @@ TEST_F(ProjectTest, testChooseEligibleWithHighestPriority) {
 	vector<int> sts = {0, 0, -1, -1, -1 };
 	vector<float> rk = { 0.0f, 0.3f, 0.9f, 0.5f, 0.95f };
 
-	ASSERT_EQ(3, p->chooseEligibleWithHighestPriority(sts, rk));
-
-	sts[3] = 4;
+	// E={(0,1),(0,3),(1,2),(2,4),(3,4)}
+	// eligible={2, 3} -> 2
 	ASSERT_EQ(2, p->chooseEligibleWithHighestPriority(sts, rk));
 
-	sts[2] = 2;
+	sts[2] = 4;
+	// eligible={3} -> 3
+	ASSERT_EQ(3, p->chooseEligibleWithHighestPriority(sts, rk));
+
+	sts[3] = 2;
+	// eligible={4} -> 4
 	ASSERT_EQ(4, p->chooseEligibleWithHighestPriority(sts, rk));
 }
 
@@ -140,7 +150,7 @@ TEST_F(ProjectTest, testActivityListToRankVector) {
 }
 
 TEST_F(ProjectTest, testStandardizeRandomKey) {
-	TestHelpers::arrayEquals({0, 2, 3, 1, 4}, p->standardizeRandomKey({ 0.0, 25.0, 3.0, 0.5, 30.0 }));
+	TestHelpers::arrayEquals({0, 2, 3, 1, 4}, p->standardizeRandomKey({ 30.0f, 0.5f, 3.0f, 25.0f, 0.0f }));
 }
 
 TEST_F(ProjectTest, testEarliestJobInScheduleNotAlreadyTaken) {

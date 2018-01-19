@@ -122,6 +122,14 @@ vector<int> Project::serialSGSWithRandomKey(const std::vector<float> &rk) const 
 	return serialSGSCoreWithRandomKey(rk, resRem);
 }
 
+SGSResult Project::serialSGSWithRandomKey(const std::vector<float>& rk, const std::vector<int>& z) const {
+	Matrix<int> resRem(numRes, numPeriods, [&](int r, int t) { return capacities[r] + z[r]; });
+	const vector<int> sts = serialSGSCoreWithRandomKey(rk, resRem);
+	eachResPeriodConst([&](int r, int t) { resRem(r, t) -= z[r]; });
+	return{ sts, resRem, 1 };
+
+}
+
 SGSResult Project::serialSGSWithRandomKey(const std::vector<float>& rk, const Matrix<int>& z) const {
 	Matrix<int> resRem(numRes, numPeriods, [&](int r, int t) {
 		return capacities[r] + (t >= z.getN() ? 0 : z(r, t));
@@ -160,15 +168,13 @@ int Project::chooseEligibleWithHighestIndex(const vector<bool>& unscheduled, con
 }
 
 int Project::chooseEligibleWithHighestPriority(const std::vector<int> &sts, const std::vector<float> &rk) const {
-	// lower is better
+	// higher is better
 	int maxPrioJob = 0;
-	float maxPrioVal = std::numeric_limits<float>::max();
+	float maxPrioVal = -1.0f;
 	for(int i = 0; i < numJobs; i++) {
-		if(sts[i] == UNSCHEDULED && allPredsScheduled(i, sts)) {
-			if(rk[i] < maxPrioVal) {
-				maxPrioVal = rk[i];
-				maxPrioJob = i;
-			}
+		if(sts[i] == UNSCHEDULED && allPredsScheduled(i, sts) && rk[i] > maxPrioVal) {
+			maxPrioVal = rk[i];
+			maxPrioJob = i;
 		}
 	}
 	return maxPrioJob;
@@ -643,6 +649,10 @@ std::vector<int> Project::scheduleToActivityList(const std::vector<int> &sts) co
  	}
 
 	return al;
+}
+
+std::vector<float> Project::activityListToRandomKey(const std::vector<int>&order) const {
+	return Utils::constructVector<float>(numJobs, [&order, this](int j) { return 1.0f - static_cast<float>(Utils::indexOfFirstEqualTo(j, order)) / static_cast<float>(numJobs); });
 }
 
 std::vector<int> Project::activityListToRankVector(const std::vector<int> &order) const {
