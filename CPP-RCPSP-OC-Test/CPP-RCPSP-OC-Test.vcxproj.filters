@@ -88,6 +88,7 @@
     <ClCompile Include="..\GeneticAlgorithms\GeneticAlgorithm.cpp">
       <Filter>GeneticAlgorithms</Filter>
     </ClCompile>
+    <ClCompile Include="..\JsonUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BranchAndBound.h" />
@@ -153,5 +154,6 @@
     </ClInclude>
     <ClInclude Include="..\BasicSolverParameters.h" />
     <ClInclude Include="..\Logger.h" />
+    <ClInclude Include="..\JsonUtils.h" />
   </ItemGroup>
 </Project>

@@ -379,8 +379,8 @@ bool ProjectWithOvertime::enoughCapacityForJobWithOvertime(int job, int t, const
 ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions()
 	: separateCrossover(false), assocIndex(false), upper(false) {}
 
-ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions(bool _robust, bool _assocIndex, bool _upper)
-	: separateCrossover(_robust), assocIndex(_assocIndex), upper(_upper) {}
+ProjectWithOvertime::BorderSchedulingOptions::BorderSchedulingOptions(bool _separateCrossover, bool _assocIndex, bool _upper)
+	: separateCrossover(_separateCrossover), assocIndex(_assocIndex), upper(_upper) {}
 
 ProjectWithOvertime::PartialScheduleData::PartialScheduleData(ProjectWithOvertime const* p)
 	: resRem(p->normalCapacityProfile()), sts(p->numJobs, p->UNSCHEDULED), fts(p->numJobs, p->UNSCHEDULED) {}
@@ -531,8 +531,8 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitraryWithForwardBackwardIm
 }
 
 SGSResult ProjectWithOvertime::serialSGSWithRandomKeyAndFBI(const std::vector<float> &rk, const Matrix<int> &z) const {
-	SGSResult res = serialSGSWithRandomKey(rk);
-	vector<int> order = scheduleToActivityList(res.sts);
+	const SGSResult res = serialSGSWithRandomKey(rk, z);
+	const vector<int> order = scheduleToActivityList(res.sts);
 	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>());
 }
 

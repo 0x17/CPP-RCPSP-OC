@@ -27,6 +27,7 @@
     <ClCompile Include="..\GeneticAlgorithms\Representations.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\Sampling.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\TimeWindow.cpp" />
+    <ClCompile Include="..\JsonUtils.cpp" />
     <ClCompile Include="..\Libraries\json11.cpp" />
     <ClCompile Include="..\Logger.cpp" />
     <ClCompile Include="..\LSModels\FixedDeadlineModels.cpp" />
@@ -58,6 +59,7 @@
     <ClInclude Include="..\GeneticAlgorithms\Representations.h" />
     <ClInclude Include="..\GeneticAlgorithms\Sampling.h" />
     <ClInclude Include="..\GeneticAlgorithms\TimeWindow.h" />
+    <ClInclude Include="..\JsonUtils.h" />
     <ClInclude Include="..\Libraries\json11.hpp" />
     <ClInclude Include="..\Logger.h" />
     <ClInclude Include="..\LSModels\FixedDeadlineModels.h" />
@@ -134,16 +136,16 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Boost\include\boost-1_59;C:\localsolver_7_0\include;C:\Users\a.schnabel\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\googletest\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Users\Andre\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\googletest\include</IncludePath>
-    <LibraryPath>C:\Boost\lib;C:\localsolver_7_0\bin;C:\Users\a.schnabel\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;C:\Users\Andre\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\lib</LibraryPath>
+    <IncludePath>C:\local\boost_1_66_0;C:\localsolver_7_5\include;googletest\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>C:\local\boost_1_66_0\lib64-msvc-14.1;C:\localsolver_7_5\bin;lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Boost\include\boost-1_59;C:\localsolver_7_0\include;C:\Users\a.schnabel\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\googletest\include;C:\Users\Andre\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\googletest\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Boost\lib;C:\localsolver_7_0\bin;C:\Users\a.schnabel\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\lib;C:\Users\Andre\Dropbox\Arbeit\Scheduling\Code\CPP-RCPSP-OC\CPP-RCPSP-OC-Test\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\local\boost_1_66_0;C:\localsolver_7_5\include;googletest\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\local\boost_1_66_0\lib64-msvc-14.1;C:\localsolver_7_5\bin;lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

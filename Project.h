@@ -78,16 +78,18 @@ public:
 	enum { UNSCHEDULED = -1 };
 
 	explicit Project(const std::string &filename);
-	explicit Project(JsonWrap wrappedObj);
+	explicit Project(JsonWrap obj);
 	Project(const std::string& projectName, const std::string& contents);
 	virtual ~Project() = default;
 
 	std::vector<int> serialSGS(const std::vector<int>& order) const;
 	std::pair<std::vector<int>, Matrix<int>> serialSGSForPartial(const std::vector<int> &sts, const std::vector<int> &order, Matrix<int> &resRem) const;
 	std::pair<std::vector<int>, Matrix<int>> serialSGSForPartial(const std::vector<int> &sts, const std::vector<int> &order) const;
-	SGSResult serialSGS(const std::vector<int>& order, const std::vector<int>& zr, bool robust = false) const;
-	SGSResult serialSGS(const std::vector<int>& order, const Matrix<int>& zrt, bool robust = false) const;
-	SGSResult serialSGSWithRandomKey(const std::vector<float> &rk) const;
+	SGSResult serialSGS(const std::vector<int>& order, const std::vector<int>& z, bool robust = false) const;
+	SGSResult serialSGS(const std::vector<int>& order, const Matrix<int>& z, bool robust = false) const;
+
+	std::vector<int> serialSGSWithRandomKey(const std::vector<float> &rk) const;
+	SGSResult serialSGSWithRandomKey(const std::vector<float>& rk, const Matrix<int>& z) const;
 
 	static bool jobBeforeInOrder(int job, int curIndex, const std::vector<int>& order);
 	bool hasPredNotBeforeInOrder(int job, int curIndex, const std::vector<int>& order) const;
@@ -171,11 +173,12 @@ protected:
 	bool allSuccsScheduled(int j, const std::vector<bool>& unscheduled) const;
 
 	std::vector<int> serialSGSCore(const std::vector<int>& order, Matrix<int> &resRem, bool robust = false) const;
+	std::vector<int> serialSGSCoreWithRandomKey(const std::vector<float>& rk, Matrix<int>& resRem) const;
 
     bool enoughCapacityForJob(int job, int t, Matrix<int> & resRem) const;
 
     int computeFirstSuccStartingTime(const std::vector<int> &sts, int job) const;
-	int computeFirstSuccStartingTimeForPartial(const std::vector<int> &fts, int job) const;
+	int computeFirstSuccStartingTimeForPartial(const std::vector<int> &sts, int job) const;
     int computeLastPredFinishingTimeForPartial(const std::vector<int> &fts, int job) const;
 
     void scheduleJobAt(int job, int t, std::vector<int> &sts, std::vector<int> &fts, Matrix<int> &resRem) const;
