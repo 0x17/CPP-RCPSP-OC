@@ -50,7 +50,7 @@ void Main::plotHeuristicProfits() {
 	}
 
 	ProjectWithOvertime p(maxDiffInstance);
-	auto profitAndActualMakespanForDeadline = p.heuristicProfitsAndActualMakespanForRelevantDeadlines(p.topOrder);
+	auto profitAndActualMakespanForDeadline = p.heuristicProfitsAndActualMakespanForRelevantDeadlines(al(p.topOrder));
 	Utils::spit("deadline;actualMakespan;profit\n", "heurprofits.txt");
 	for(auto pair : profitAndActualMakespanForDeadline) {
 		Utils::spitAppend(to_string(pair.first) + ";" + to_string(pair.second.first) + ";" + to_string(pair.second.second) + "\n", "heurprofits.txt");

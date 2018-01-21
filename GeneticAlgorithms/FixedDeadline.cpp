@@ -32,10 +32,10 @@ void FixedDeadlineGA::mutate(DeadlineLambda &i) {
 }
 
 FitnessResult FixedDeadlineGA::fitness(DeadlineLambda &i) {
-    auto res = p.forwardBackwardDeadlineOffsetSGS(i.order, i.deadlineOffset);
+    auto res = p.forwardBackwardDeadlineOffsetSGS(ActivityListPrioProvider(i.order), i.deadlineOffset);
     return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
 std::vector<int> FixedDeadlineGA::decode(DeadlineLambda &i) {
-    return p.forwardBackwardDeadlineOffsetSGS(i.order, i.deadlineOffset).sts;
+    return p.forwardBackwardDeadlineOffsetSGS(ActivityListPrioProvider(i.order), i.deadlineOffset).sts;
 }

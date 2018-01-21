@@ -223,7 +223,7 @@ TEST_F(PaperConsistencyTest, testLambdaZrtCrossover) {
 TEST_F(PaperConsistencyTest, testDelayWithoutOvertimeIncrease) {
 	vector<int> scheduleFigure7 = { 0, 0, 0, 3, 2, 5, 6, 8 };
 	auto baseResRem = p->resRemForPartial(scheduleFigure7);
-	auto delayedResult = p->delayWithoutOvertimeIncrease({0,1,3,2,5,4,6,7}, scheduleFigure7, baseResRem, 9);
+	auto delayedResult = p->delayWithoutOvertimeIncrease(al({0,1,3,2,5,4,6,7}), scheduleFigure7, baseResRem, 9);
 	vector<int> scheduleFigure8 = { 0, 0, 2, 4, 4, 6, 7, 9 };
 	ASSERT_EQ(scheduleFigure8, delayedResult.sts);
 }

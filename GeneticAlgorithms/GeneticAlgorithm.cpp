@@ -17,7 +17,8 @@ GAParameters::GAParameters() :
 		crossoverMethod(CrossoverMethod::OPC),
 		rbbrs(false),
 		enforceTopOrdering(true),
-		fbiFeedbackInjection(false) {
+		fbiFeedbackInjection(false),
+		sgs(SGSChoice::SERIAL) {
 }
 
 template<class T>

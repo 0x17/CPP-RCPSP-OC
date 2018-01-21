@@ -30,6 +30,11 @@ enum class CrossoverMethod {
 	TPC
 };
 
+enum class SGSChoice {
+	SERIAL,
+	PARALLEL
+};
+
 inline std::string traceFilenameForGeneticAlgorithm(const std::string &outPath, const std::string &gaName, const std::string &instanceName) {
 	return outPath + "GA" + gaName + "Trace_" + instanceName;
 }
@@ -45,6 +50,7 @@ struct GAParameters : BasicSolverParameters {
 	SelectionMethod selectionMethod;
 	CrossoverMethod crossoverMethod;
 	bool rbbrs, enforceTopOrdering, fbiFeedbackInjection;
+	SGSChoice sgs;
 };
 
 struct FitnessResult {

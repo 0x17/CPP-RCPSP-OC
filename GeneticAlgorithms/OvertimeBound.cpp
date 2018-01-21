@@ -44,7 +44,9 @@ void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
 }
 
 FitnessResult TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
-	const auto pair = p.serialSGSWithForwardBackwardImprovement(i.order, i.z, !params.enforceTopOrdering);
+	// TODO: Employ parallel sgs if chosen
+
+	const auto pair = p.serialSGSWithForwardBackwardImprovement(ActivityListPrioProvider(i.order), i.z, !params.enforceTopOrdering);
 
 	if(params.fbiFeedbackInjection) {
 		i.order = p.scheduleToActivityList(pair.sts);
@@ -54,7 +56,9 @@ FitnessResult TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
 }
 
 vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
-	return p.serialSGSWithForwardBackwardImprovement(i.order, i.z, !params.enforceTopOrdering).sts;
+	// TODO: Employ parallel sgs if chosen
+
+	return p.serialSGSWithForwardBackwardImprovement(ActivityListPrioProvider(i.order), i.z, !params.enforceTopOrdering).sts;
 }
 
 void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) const {
@@ -91,12 +95,16 @@ void FixedCapacityGA::mutate(LambdaZr &i) {
 }
 
 FitnessResult FixedCapacityGA::fitness(LambdaZr &i) {
-	auto res = p.serialSGSWithForwardBackwardImprovement(i.order, i.z);
+	// TODO: Employ parallel sgs if chosen
+
+	auto res = p.serialSGSWithForwardBackwardImprovement(ActivityListPrioProvider(i.order), i.z);
 	return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
 vector<int> FixedCapacityGA::decode(LambdaZr& i) {
-	return p.serialSGSWithForwardBackwardImprovement(i.order, i.z).sts;
+	// TODO: Employ parallel sgs if chosen
+
+	return p.serialSGSWithForwardBackwardImprovement(ActivityListPrioProvider(i.order), i.z).sts;
 }
 
 void FixedCapacityGA::mutateOvertime(vector<int> &z) {

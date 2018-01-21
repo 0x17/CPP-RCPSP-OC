@@ -29,8 +29,8 @@ public:
 	float totalCosts(const SGSResult& result) const;
 	float totalCostsForPartial(const std::vector<int> &sts) const;
 
-    SGSResult serialSGSWithOvertime(const std::vector<int> &order, bool robust = false) const;
-	SGSResult serialSGSWithOvertimeWithForwardBackwardImprovement(const std::vector<int>& order, bool robust = false) const;
+    SGSResult serialSGSWithOvertime(const IJobPrioProvider &order, bool robust = false) const;
+	SGSResult serialSGSWithOvertimeWithForwardBackwardImprovement(const IJobPrioProvider& order, bool robust = false) const;
 
 	// START (lambda|beta)
 	struct BorderSchedulingOptions {
@@ -55,35 +55,35 @@ public:
 	void scheduleJobSeparateResiduals(int job, int t, int bval, PartialScheduleData& data, ResidualData& residuals) const;
 	void scheduleJobBorderLower(int job, int lastPredFinished, int bval, PartialScheduleData& data) const;
 	void scheduleJobBorderUpper(int job, int lastPredFinished, int bval, PartialScheduleData& data, ResidualData& residuals) const;
-	SGSResult serialSGSTimeWindowBorders(const std::vector<int> &order, const std::vector<int> &beta, const BorderSchedulingOptions &options, bool robust = false) const;
-	SGSResult serialSGSTimeWindowBordersWithForwardBackwardImprovement(const std::vector<int> &order, const std::vector<int> &beta, const BorderSchedulingOptions &options, bool robust = false) const;
+	SGSResult serialSGSTimeWindowBorders(const IJobPrioProvider &order, const std::vector<int> &beta, const BorderSchedulingOptions &options, bool robust = false) const;
+	SGSResult serialSGSTimeWindowBordersWithForwardBackwardImprovement(const IJobPrioProvider &order, const std::vector<int> &beta, const BorderSchedulingOptions &options, bool robust = false) const;
 	// END (lambda|beta)
 
-	SGSResult serialSGSWithForwardBackwardImprovement(const std::vector<int>& order, const std::vector<int>& z, bool robust = false) const;
-	SGSResult serialSGSWithForwardBackwardImprovement(const std::vector<int>& order, const Matrix<int>& z, bool robust = false) const;
+	SGSResult serialSGSWithForwardBackwardImprovement(const IJobPrioProvider& order, const std::vector<int>& z, bool robust = false) const;
+	SGSResult serialSGSWithForwardBackwardImprovement(const IJobPrioProvider& order, const Matrix<int>& z, bool robust = false) const;
 
 	SGSResult serialSGSWithRandomKeyAndFBI(const std::vector<float> &rk, const Matrix<int>& z) const;
 	SGSResult serialSGSWithRandomKeyAndFBI(const std::vector<float> &rk, const std::vector<int>& z) const;
 
-    SGSResult serialSGSTimeWindowArbitrary(const std::vector<int> &order, const std::vector<float> &tau, bool robust = false) const;
-	SGSResult serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(const std::vector<int> &order, const std::vector<float> &tau, bool robust = false) const;
+    SGSResult serialSGSTimeWindowArbitrary(const IJobPrioProvider &order, const std::vector<float> &tau, bool robust = false) const;
+	SGSResult serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(const IJobPrioProvider &order, const std::vector<float> &tau, bool robust = false) const;
 
 	std::vector<int> earliestStartingTimesForPartialRespectZmax(const std::vector<int> &sts, const Matrix<int> &resRem) const;
 
 	int heuristicMakespanUpperBound() const;
 
-	SGSResult forwardBackwardDeadlineOffsetSGS(const std::vector<int> &order, int deadlineOffset, bool robust = false) const;
-	SGSResult delayWithoutOvertimeIncrease(const std::vector<int>& order, const std::vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust = false) const;
-	SGSResult earlierWithoutOvertimeIncrease(const std::vector<int>& order, const std::vector<int>& baseSts, const Matrix<int>& baseResRem, bool robust = false) const;
+	SGSResult forwardBackwardDeadlineOffsetSGS(const IJobPrioProvider &order, int deadlineOffset, bool robust = false) const;
+	SGSResult delayWithoutOvertimeIncrease(const IJobPrioProvider& order, const std::vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust = false) const;
+	SGSResult earlierWithoutOvertimeIncrease(const IJobPrioProvider& order, const std::vector<int>& baseSts, const Matrix<int>& baseResRem, bool robust = false) const;
 	boost::optional<float> costsAndFeasibilityCausedByActivity(int j, int stj, const Matrix<int>& resRem) const;
 	int latestCheapestFeasiblePeriod(int j, int baseStj, int lstj, const Matrix<int>& resRem) const;
 	int earliestCheapestFeasiblePeriod(int j, int baseStj, int estj, const Matrix<int>& resRem) const;
-	SGSResult goldenSectionSearchBasedOptimization(const std::vector<int>& order, bool robust = false) const;
-	SGSResult forwardBackwardIterations(const std::vector<int> &order, SGSResult result, int deadline, boost::optional<int> numIterations = boost::optional<int>(), bool robust = false) const;
+	SGSResult goldenSectionSearchBasedOptimization(const IJobPrioProvider& order, bool robust = false) const;
+	SGSResult forwardBackwardIterations(const IJobPrioProvider &order, SGSResult result, int deadline, boost::optional<int> numIterations = boost::optional<int>(), bool robust = false) const;
 
 	bool isScheduleResourceFeasible(const std::vector<int>& sts) const override;
 
-	std::map<int, std::pair<int, float>> heuristicProfitsAndActualMakespanForRelevantDeadlines(const std::vector<int> &order) const;
+	std::map<int, std::pair<int, float>> heuristicProfitsAndActualMakespanForRelevantDeadlines(const IJobPrioProvider &order) const;
 
 	json11::Json to_json() const override;
 	void from_json(const json11::Json& obj) override;

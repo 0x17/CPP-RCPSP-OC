@@ -19,7 +19,7 @@ SGSResult ListBetaModel::SerialSGSBetaFunction::decode(vector<int>& order, const
 	for (int i = 0; i<p.numJobs; i++) {
 		beta[i] = static_cast<int>(context.getIntValue(p.numJobs + i));
 	}
-	return p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(order, beta, options, true);
+	return p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(al(order), beta, options, true);
 }
 
 void ListBetaModel::addAdditionalData(LSModel &model, LSExpression& obj) {
@@ -35,7 +35,7 @@ vector<int> ListBetaModel::parseScheduleFromSolution(LSSolution& sol) {
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
 		betaVarVals[i] = static_cast<int>(sol.getIntValue(betaVar[i]));
 	}
-	return p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(order, betaVarVals, options, true).sts;
+	return p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(al(order), betaVarVals, options, true).sts;
 }
 
 //==============================================================================================================
@@ -49,7 +49,7 @@ SGSResult ListTauModel::SerialSGSTauFunction::decode(vector<int>& order, const L
 	for (int i = 0; i<p.numJobs; i++) {
 		tau[i] = static_cast<float>(context.getDoubleValue(p.numJobs + i));
 	}
-	return p.serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(order, tau, true);
+	return p.serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(al(order), tau, true);
 }
 
 void ListTauModel::addAdditionalData(LSModel &model, LSExpression& obj) {
@@ -66,7 +66,7 @@ vector<int> ListTauModel::parseScheduleFromSolution(LSSolution& sol) {
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
 		tau[i] = static_cast<float>(sol.getDoubleValue(tauVar[i]));
 	}
-	return p.serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(order, tau, true).sts;
+	return p.serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(al(order), tau, true).sts;
 }
 
 //==============================================================================================================
@@ -81,7 +81,7 @@ SGSResult ListTauDiscreteModel::SerialSGSIntegerFunction::decode(vector<int>& or
 		int beta = static_cast<int>(context.getIntValue(p.numJobs + i));
 		tau[i] = static_cast<float>(static_cast<double>(beta) / static_cast<double>(IV_COUNT - 1));
 	}
-	return p.serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(order, tau, true);
+	return p.serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(al(order), tau, true);
 }
 
 void ListTauDiscreteModel::addAdditionalData(LSModel &model, LSExpression& obj) {
@@ -98,7 +98,7 @@ vector<int> ListTauDiscreteModel::parseScheduleFromSolution(LSSolution& sol) {
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
 		tau[i] = static_cast<float>(static_cast<double>(sol.getIntValue(tauVar[i])) / static_cast<double>(IV_COUNT - 1));
 	}
-	return p.serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(order, tau, true).sts;
+	return p.serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(al(order), tau, true).sts;
 }
 
 //==============================================================================================================
@@ -108,7 +108,7 @@ int ListAlternativesModel::SerialSGSAlternativesDecoder::varCount() {
 }
 
 SGSResult ListAlternativesModel::SerialSGSAlternativesDecoder::decode(vector<int>& order, const LSNativeContext& context) {
-	return p.serialSGSWithOvertimeWithForwardBackwardImprovement(order, true);
+	return p.serialSGSWithOvertimeWithForwardBackwardImprovement(al(order), true);
 }
 
 vector<int> ListAlternativesModel::parseScheduleFromSolution(LSSolution &sol) {
@@ -116,5 +116,5 @@ vector<int> ListAlternativesModel::parseScheduleFromSolution(LSSolution &sol) {
 	for (int i = 0; i<p.numJobs; i++) {
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
 	}
-	return p.serialSGSWithOvertimeWithForwardBackwardImprovement(order, true).sts;
+	return p.serialSGSWithOvertimeWithForwardBackwardImprovement(al(order), true).sts;
 }

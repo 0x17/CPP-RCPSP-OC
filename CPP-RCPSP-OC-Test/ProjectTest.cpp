@@ -36,6 +36,10 @@ TEST_F(ProjectTest, testConstructor) {
     ASSERT_EQ(6, p->T);
 }
 
+TEST_F(ProjectTest, testParallelSGS) {
+	TestHelpers::arrayEquals({0, 0, 2, 4, 6 }, p->parallelSGS(al({0, 1, 2, 3, 4})));
+}
+
 TEST_F(ProjectTest, testSerialSGS) {
 	TestHelpers::arrayEquals({0, 0, 2, 4, 6 }, p->serialSGS({0, 1, 2, 3, 4}));
 }
@@ -85,7 +89,7 @@ TEST_F(ProjectTest, testComplementPartialWithSSGS) {
     vector<int> order = {0, 1, 2, 3, 4};
     vector<int> fts(p->numJobs, Project::UNSCHEDULED);
     Matrix<int> resRem(p->numRes, p->numPeriods, [this](int r, int t) { return p->capacities[r]; });
-    p->complementPartialWithSSGS(order, 0, fts, resRem, false);
+    p->complementPartialWithSSGS(al(order), 0, fts, resRem, false);
     vector<int> expFts = { 0, 2, 4, 6, 6 };
     TestHelpers::arrayEquals(expFts, fts);
 }
@@ -114,7 +118,7 @@ TEST_F(ProjectTest, testLatestFinishingTimesForPartial) {
 	TestHelpers::arrayEquals(alfts, plfts);
 }
 
-TEST_F(ProjectTest, testChooseEligibleWithHighestPriority) {
+/*TEST_F(ProjectTest, testChooseEligibleWithHighestPriority) {
 	vector<int> sts = {0, 0, -1, -1, -1 };
 	vector<float> rk = { 0.0f, 0.3f, 0.9f, 0.5f, 0.95f };
 
@@ -129,7 +133,7 @@ TEST_F(ProjectTest, testChooseEligibleWithHighestPriority) {
 	sts[3] = 2;
 	// eligible={4} -> 4
 	ASSERT_EQ(4, p->chooseEligibleWithHighestPriority(sts, rk));
-}
+}*/
 
 TEST_F(ProjectTest, testIsSchedulePrecedenceFeasible) {
 	vector<int> sts = p->emptySchedule();
