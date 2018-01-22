@@ -7,7 +7,6 @@
 #include "Utils.h"
 #include "JsonUtils.h"
 #include "Matrix.h"
-#include "JobPriorityProviders.h"
 
 #include <boost/filesystem/path.hpp>
 
@@ -53,15 +52,13 @@ struct SGSResult {
 	Matrix<int> resRem;
 	int numSchedulesGenerated = 1;
 
-	SGSResult(std::vector<int> _sts, Matrix<int> _resRem, int _numSchedulesGenerated = 1);
-	SGSResult() = default;
+	SGSResult(std::vector<int> _sts, Matrix<int> _resRem, int _numSchedulesGenerated = 1) : sts(_sts), resRem(_resRem), numSchedulesGenerated(_numSchedulesGenerated) {}
+	SGSResult() {}
 };
 
 struct JsonWrap {
 	json11::Json &obj;
 };
-
-class IJobPrioProvider;
 
 class Project : public JsonUtils::IJsonSerializable {
 public:
@@ -83,36 +80,17 @@ public:
 	explicit Project(const std::string &filename);
 	explicit Project(JsonWrap obj);
 	Project(const std::string& projectName, const std::string& contents);
+	virtual ~Project() = default;
 
-    ~Project() override = default;
-
-	inline std::vector<int> serialSGS(const std::vector<int> &order) const {
-		return serialSGS(al(order));
-	}
-
-	inline SGSResult serialSGS(const std::vector<int> &order, const std::vector<int> &z, bool robust = false) const {
-		return serialSGS(al(order), z, robust);
-	}
-
-	inline SGSResult serialSGS(const std::vector<int> &order, const Matrix<int> &z, bool robust = false) const {
-		return serialSGS(al(order), z, robust);
-	}
-
-	std::vector<int> serialSGS(const IJobPrioProvider &order) const;
-
+	std::vector<int> serialSGS(const std::vector<int>& order) const;
 	std::pair<std::vector<int>, Matrix<int>> serialSGSForPartial(const std::vector<int> &sts, const std::vector<int> &order, Matrix<int> &resRem) const;
 	std::pair<std::vector<int>, Matrix<int>> serialSGSForPartial(const std::vector<int> &sts, const std::vector<int> &order) const;
-
-	SGSResult serialSGS(const IJobPrioProvider &order, const std::vector<int> &z, bool robust = false) const;
-	SGSResult serialSGS(const IJobPrioProvider &order, const Matrix<int> &z, bool robust = false) const;
+	SGSResult serialSGS(const std::vector<int>& order, const std::vector<int>& z, bool robust = false) const;
+	SGSResult serialSGS(const std::vector<int>& order, const Matrix<int>& z, bool robust = false) const;
 
 	std::vector<int> serialSGSWithRandomKey(const std::vector<float> &rk) const;
 	SGSResult serialSGSWithRandomKey(const std::vector<float>& rk, const std::vector<int>& z) const;
 	SGSResult serialSGSWithRandomKey(const std::vector<float>& rk, const Matrix<int>& z) const;
-
-	std::vector<int> parallelSGS(const IJobPrioProvider& order) const;
-	std::vector<int> parallelSGS(const IJobPrioProvider& order, const std::vector<int>& z) const;
-	SGSResult parallelSGS(const IJobPrioProvider& order, const Matrix<int>& z) const;
 
 	static bool jobBeforeInOrder(int job, int curIndex, const std::vector<int>& order);
 	bool hasPredNotBeforeInOrder(int job, int curIndex, const std::vector<int>& order) const;
@@ -158,8 +136,13 @@ public:
 
 	std::vector<int> earliestStartingTimesForPartial(const std::vector<int> &sts) const;
 	std::vector<int> latestFinishingTimesForPartial(const std::vector<int> &sts, int deadline) const;
+
+	int chooseEligibleWithLowestIndex(const std::vector<int> &sts, const std::vector<int> &order) const;
+	int chooseEligibleWithLowestIndex(const std::vector<bool> &unscheduled, const std::vector<int> &order) const;
+	int chooseEligibleWithHighestIndex(const std::vector<bool>& unscheduled, const std::vector<int>& order) const;
+	int chooseEligibleWithHighestPriority(const std::vector<int> &sts, const std::vector<float> &rk) const;
 	
-	void complementPartialWithSSGS(const IJobPrioProvider& order, int startIx, std::vector<int> &fts, Matrix<int> &resRem, bool robust = false) const;
+	void complementPartialWithSSGS(const std::vector<int>& order, int startIx, std::vector<int> &fts, Matrix<int> &resRem, bool robust = false) const;
 
 	Matrix<int> normalCapacityProfile() const;
 
@@ -186,30 +169,17 @@ public:
 	json11::Json to_json() const override;
 	void from_json(const json11::Json & obj) override;
 
-	int nextDecisionPoint(const std::vector<int> &sts, int dt) const;
-
-	inline bool isJobActiveInPeriod(const std::vector<int> &sts, int j, int t) const {
-		return sts[j] < t && t <= sts[j] + durations[j];
-	}
-
+protected:
 	bool allPredsScheduled(int j, const std::vector<int> &sts) const;
 	bool allPredsScheduled(int j, const std::vector<bool>& unscheduled) const;
-
 	bool allSuccsScheduled(int j, const std::vector<bool>& unscheduled) const;
-	bool allSuccsScheduled(int j, const std::vector<int>& sts) const;
 
-	bool enoughCapacityForJobInFirstPeriod(int job, const std::vector<int> &resRemDt) const;
-
-	bool enoughCapacityForJob(int job, int t, const Matrix<int> & resRem) const;
-
-protected:
-
-	std::vector<int> serialSGSCore(const IJobPrioProvider &order, Matrix<int> &resRem, bool robust = false) const;
+	std::vector<int> serialSGSCore(const std::vector<int>& order, Matrix<int> &resRem, bool robust = false) const;
 	std::vector<int> serialSGSCoreWithRandomKey(const std::vector<float>& rk, Matrix<int>& resRem) const;
 
-	std::vector<int> parallelSGSCore(const IJobPrioProvider &order, const std::vector<int> &baseResRem) const;
+    bool enoughCapacityForJob(int job, int t, Matrix<int> & resRem) const;
 
-	int computeFirstSuccStartingTime(const std::vector<int> &sts, int job) const;
+    int computeFirstSuccStartingTime(const std::vector<int> &sts, int job) const;
 	int computeFirstSuccStartingTimeForPartial(const std::vector<int> &sts, int job) const;
     int computeLastPredFinishingTimeForPartial(const std::vector<int> &fts, int job) const;
 

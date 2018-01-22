@@ -35,7 +35,7 @@ FitnessResult TimeWindowArbitraryDiscretizedGA::fitness(LambdaBeta &i) {
 	vector<float> tau = Utils::constructVector<float>(static_cast<int>(i.beta.size()), [&i, this](int ix) {
 		return static_cast<float>(static_cast<double>(i.beta[ix]) / static_cast<double>(ub-1));
 	});
-	auto res = p.serialSGSTimeWindowArbitrary(ActivityListPrioProvider(i.order), tau);
+	auto res = p.serialSGSTimeWindowArbitrary(i.order, tau);
 	return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
@@ -43,7 +43,7 @@ vector<int> TimeWindowArbitraryDiscretizedGA::decode(LambdaBeta& i) {
 	vector<float> tau = Utils::constructVector<float>(static_cast<int>(i.beta.size()), [&i, this](int ix) {
 		return static_cast<float>(static_cast<double>(i.beta[ix]) / static_cast<double>(ub-1));
 	});
-	return p.serialSGSTimeWindowArbitrary(ActivityListPrioProvider(i.order), tau).sts;
+	return p.serialSGSTimeWindowArbitrary(i.order, tau).sts;
 }
 
 //======================================================================================================================
@@ -73,12 +73,12 @@ void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
 }
 
 FitnessResult TimeWindowArbitraryGA::fitness(LambdaTau &i) {
-    auto pair = p.serialSGSTimeWindowArbitrary(ActivityListPrioProvider(i.order), i.tau);
+    auto pair = p.serialSGSTimeWindowArbitrary(i.order, i.tau);
 	return { p.calcProfit(pair), pair.numSchedulesGenerated };
 }
 
 vector<int> TimeWindowArbitraryGA::decode(LambdaTau& i)  {
-	return p.serialSGSTimeWindowArbitrary(ActivityListPrioProvider(i.order), i.tau).sts;
+	return p.serialSGSTimeWindowArbitrary(i.order, i.tau).sts;
 }
 
 //======================================================================================================================
@@ -117,12 +117,12 @@ void TimeWindowBordersGA::mutate(LambdaBeta &i) {
 }
 
 FitnessResult TimeWindowBordersGA::fitness(LambdaBeta &i) {
-    auto res = p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(ActivityListPrioProvider(i.order), i.beta, options);
+    auto res = p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(i.order, i.beta, options);
 	return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
 vector<int> TimeWindowBordersGA::decode(LambdaBeta& i) {
-	return p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(ActivityListPrioProvider(i.order), i.beta, options).sts;
+	return p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(i.order, i.beta, options).sts;
 }
 
 //======================================================================================================================
@@ -135,12 +135,12 @@ ActivityListBasedGA::TDecoder ActivityListBasedGA::selectDecoder(DecoderType typ
 	switch(type) {
 	case DecoderType::CompareAlternatives:
 		return [](const ProjectWithOvertime& p, const vector<int>& order) {
-			return p.serialSGSWithOvertime(ActivityListPrioProvider(order));
+			return p.serialSGSWithOvertime(order);
 		};
 	case DecoderType::GoldenSectionSearch:
 	default:
 		return [](const ProjectWithOvertime& p, const vector<int>& order) {
-			return p.goldenSectionSearchBasedOptimization(ActivityListPrioProvider(order));
+			return p.goldenSectionSearchBasedOptimization(order);
 		};
 	}
 }

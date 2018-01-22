@@ -12,7 +12,7 @@ int GSListModel::QuasistableSGSFunction::varCount() {
 }
 
 SGSResult GSListModel::QuasistableSGSFunction::decode(vector<int>& order, const LSNativeContext& context) {
-	return p.goldenSectionSearchBasedOptimization(al(order), true);
+	return p.goldenSectionSearchBasedOptimization(order, true);
 }
 
 void GSListModel::addAdditionalData(LSModel &model, LSExpression& obj) {}
@@ -21,7 +21,7 @@ vector<int> GSListModel::parseScheduleFromSolution(LSSolution& sol) {
 	vector<int> order(p.numJobs);
 	for (int i = 0; i<p.numJobs; i++)
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
-	return p.goldenSectionSearchBasedOptimization(al(order), true).sts;
+	return p.goldenSectionSearchBasedOptimization(order, true).sts;
 }
 
 //=====================================================================================================================
@@ -36,7 +36,7 @@ int ListDeadlineModel::QuasistableSGSFunction::varCount() {
 
 SGSResult ListDeadlineModel::QuasistableSGSFunction::decode(vector<int>& order, const LSNativeContext& context) {
 	int deadlineOffset = static_cast<int>(context.getIntValue(p.numJobs));
-	return p.forwardBackwardDeadlineOffsetSGS(al(order), deadlineOffset, true);
+	return p.forwardBackwardDeadlineOffsetSGS(order, deadlineOffset, true);
 }
 
 void ListDeadlineModel::addAdditionalData(LSModel &model, LSExpression& obj) {
@@ -55,5 +55,5 @@ vector<int> ListDeadlineModel::parseScheduleFromSolution(LSSolution& sol) {
 
 	deadlineOffset = static_cast<int>(sol.getIntValue(deadlineOffsetVar));
 
-	return p.forwardBackwardDeadlineOffsetSGS(al(order), deadlineOffset, true).sts;
+	return p.forwardBackwardDeadlineOffsetSGS(order, deadlineOffset, true).sts;
 }

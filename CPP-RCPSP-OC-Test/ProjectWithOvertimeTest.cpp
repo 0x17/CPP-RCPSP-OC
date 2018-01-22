@@ -8,7 +8,7 @@
 
 using namespace std;
 
-/*TEST_F(ProjectWithOvertimeTest, testChooseEligibleWithLowestIndex) {
+TEST_F(ProjectWithOvertimeTest, testChooseEligibleWithLowestIndex) {
     vector<int> sts(p->numJobs, Project::UNSCHEDULED);
     sts[0] = 0;
     vector<int> order = { 0, 3, 1, 2, 4 };
@@ -17,7 +17,7 @@ using namespace std;
     ASSERT_EQ(1, p->chooseEligibleWithLowestIndex(sts, order));
     sts[1] = 0;
     ASSERT_EQ(2, p->chooseEligibleWithLowestIndex(sts, order));
-}*/
+}
 
 TEST_F(ProjectWithOvertimeTest, testBorderSchedulingOptionsSetFromIndex) {
 	Matrix<int> expectedTable({

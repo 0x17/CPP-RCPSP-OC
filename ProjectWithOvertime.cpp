@@ -10,8 +10,6 @@
 
 #include "ProjectWithOvertime.h"
 
-#include "JobPriorityProviders.h"
-
 using namespace std;
 
 ProjectWithOvertime::ProjectWithOvertime(JsonWrap _obj) : Project(_obj) {
@@ -126,7 +124,7 @@ int ProjectWithOvertime::heuristicMakespanUpperBound() const {
 	return ms;
 }
 
-SGSResult ProjectWithOvertime::forwardBackwardDeadlineOffsetSGS(const IJobPrioProvider &order, int deadlineOffset, bool robust) const {
+SGSResult ProjectWithOvertime::forwardBackwardDeadlineOffsetSGS(const vector<int> &order, int deadlineOffset, bool robust) const {
 	auto baseSchedule = serialSGS(order, zmax, robust);
 	if(deadlineOffset <= 0) return baseSchedule;
     int baseMakespan = makespan(baseSchedule.sts);
@@ -135,7 +133,7 @@ SGSResult ProjectWithOvertime::forwardBackwardDeadlineOffsetSGS(const IJobPrioPr
 	return res;
 }
 
-SGSResult ProjectWithOvertime::delayWithoutOvertimeIncrease(const IJobPrioProvider& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust) const {
+SGSResult ProjectWithOvertime::delayWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, int deadline, bool robust) const {
 	vector<int> sts(baseSts);
 	Matrix<int> resRem(baseResRem);
 	vector<bool> unscheduled(numJobs, true);
@@ -144,7 +142,7 @@ SGSResult ProjectWithOvertime::delayWithoutOvertimeIncrease(const IJobPrioProvid
 	unscheduled[numJobs - 1] = false;
 
 	for(int k = numJobs - 2; k >= 0; k--) {
-		int j = robust ? order.chooseEligibleWithLowestPriority(*this, unscheduled) : order.getJobAtIndex(k);
+		int j = robust ? chooseEligibleWithHighestIndex(unscheduled, order) : order[k];
 		int baseStj = sts[j];
 		int lstj = computeFirstSuccStartingTime(sts, j) - durations[j];
 		unscheduleJob(j, sts, resRem);
@@ -159,7 +157,7 @@ SGSResult ProjectWithOvertime::delayWithoutOvertimeIncrease(const IJobPrioProvid
 	return { sts, resRem };
 }
 
-SGSResult ProjectWithOvertime::earlierWithoutOvertimeIncrease(const IJobPrioProvider& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, bool robust) const {
+SGSResult ProjectWithOvertime::earlierWithoutOvertimeIncrease(const vector<int>& order, const vector<int>& baseSts, const Matrix<int>& baseResRem, bool robust) const {
 	vector<int> sts(baseSts);
 	vector<int> fts = stsToFts(sts);
 	Matrix<int> resRem(baseResRem);
@@ -169,7 +167,7 @@ SGSResult ProjectWithOvertime::earlierWithoutOvertimeIncrease(const IJobPrioProv
 	unscheduled[0] = false;
 
 	for (int k = 1; k < numJobs; k++) {
-		int j = robust ? order.chooseEligibleWithHighestPriority(*this, unscheduled) : order.getJobAtIndex(k);
+		int j = robust ? chooseEligibleWithLowestIndex(unscheduled, order) : order[k];
 		int baseStj = sts[j];
 		int estj = computeLastPredFinishingTime(fts, j);
 		unscheduleJob(j, sts, fts, resRem);
@@ -216,7 +214,7 @@ int ProjectWithOvertime::earliestCheapestFeasiblePeriod(int j, int baseStj, int 
 // Typ-Parameter: x-werte (deadline), y-werte (gewinn), y=g(f(x)), zugehöriger Zwischenwert f(x)
 // f(x) => deadline zu plan
 // g(x) => plan zu gewinn
-SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const IJobPrioProvider& order, bool robust) const {
+SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const vector<int>& order, bool robust) const {
 	int scheduleCount = 0;
 
 	struct DeadlineProfitResultTriple {
@@ -293,7 +291,7 @@ SGSResult ProjectWithOvertime::goldenSectionSearchBasedOptimization(const IJobPr
 	return lb.result;
 }
 
-std::map<int, std::pair<int, float>> ProjectWithOvertime::heuristicProfitsAndActualMakespanForRelevantDeadlines(const IJobPrioProvider &order) const {
+std::map<int, std::pair<int, float>> ProjectWithOvertime::heuristicProfitsAndActualMakespanForRelevantDeadlines(const vector<int> &order) const {
 	auto tminRes = serialSGS(order, zmax);
 	auto tmaxRes = serialSGS(order, zzero);
 	int lb = makespan(tminRes.sts);
@@ -328,13 +326,13 @@ bool ProjectWithOvertime::isScheduleResourceFeasible(const vector<int>& sts) con
 	return Project::isScheduleResourceFeasible(sts, zmax);
 }
 
-SGSResult ProjectWithOvertime::serialSGSWithOvertime(const IJobPrioProvider &order, bool robust) const {
+SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order, bool robust) const {
 	Matrix<int> resRem = normalCapacityProfile();
 
 	vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs, UNSCHEDULED);
 
     for (int k=0; k<numJobs; k++) {
-		int job = robust ? order.chooseEligibleWithHighestPriority(*this, sts) : order.getJobAtIndex(k);
+		int job = robust ? chooseEligibleWithLowestIndex(sts, order) : order[k];
         int lastPredFinished = computeLastPredFinishingTime(fts, job);
 
         int t;
@@ -368,7 +366,7 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(const IJobPrioProvider &ord
 	return {sts, resRem};
 }
 
-SGSResult ProjectWithOvertime::serialSGSWithOvertimeWithForwardBackwardImprovement(const IJobPrioProvider& order, bool robust) const {
+SGSResult ProjectWithOvertime::serialSGSWithOvertimeWithForwardBackwardImprovement(const vector<int>& order, bool robust) const {
 	SGSResult res = serialSGSWithOvertime(order, robust);
 	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
 }
@@ -423,7 +421,7 @@ void ProjectWithOvertime::scheduleJobBorderUpper(int job, int lastPredFinished, 
 	scheduleJobSeparateResiduals(job, t, bval, data, residuals);
 }
 
-SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const IJobPrioProvider &order, const vector<int> &beta, const BorderSchedulingOptions &options, bool robust) const {
+SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const vector<int> &order, const vector<int> &beta, const BorderSchedulingOptions &options, bool robust) const {
 	std::unique_ptr<ResidualData> residuals = nullptr;
 	if(options.upper) {
 		residuals = std::make_unique<ResidualData>(this);
@@ -432,7 +430,7 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const IJobPrioProvider
 	PartialScheduleData data(this);
 
     for (int k=0; k<numJobs; k++) {
-        int job = robust ? order.chooseEligibleWithHighestPriority(*this, data.sts) : order.getJobAtIndex(k);
+        int job = robust ? chooseEligibleWithLowestIndex(data.sts, order) : order[k];
         int lastPredFinished = computeLastPredFinishingTime(data.fts, job);
 		int bval = options.assocIndex ? beta[k] : beta[job];
 		if (!options.upper) scheduleJobBorderLower(job, lastPredFinished, bval, data);
@@ -443,29 +441,29 @@ SGSResult ProjectWithOvertime::serialSGSTimeWindowBorders(const IJobPrioProvider
 }
 
 // (lambda, beta)
-SGSResult ProjectWithOvertime::serialSGSTimeWindowBordersWithForwardBackwardImprovement(const IJobPrioProvider& order, const vector<int>& beta, const BorderSchedulingOptions &options, bool robust) const {
+SGSResult ProjectWithOvertime::serialSGSTimeWindowBordersWithForwardBackwardImprovement(const vector<int>& order, const vector<int>& beta, const BorderSchedulingOptions &options, bool robust) const {
 	SGSResult res = serialSGSTimeWindowBorders(order, beta, options, robust);
 	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
 }
 
 // (lambda, zr)
-SGSResult ProjectWithOvertime::serialSGSWithForwardBackwardImprovement(const IJobPrioProvider& order, const vector<int>& z, bool robust) const {
+SGSResult ProjectWithOvertime::serialSGSWithForwardBackwardImprovement(const vector<int>& order, const vector<int>& z, bool robust) const {
 	SGSResult res = serialSGS(order, z, robust);
 	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
 }
 
 // (lambda, zrt)
-SGSResult ProjectWithOvertime::serialSGSWithForwardBackwardImprovement(const IJobPrioProvider& order, const Matrix<int>& z, bool robust) const {
+SGSResult ProjectWithOvertime::serialSGSWithForwardBackwardImprovement(const vector<int>& order, const Matrix<int>& z, bool robust) const {
 	SGSResult res = serialSGS(order, z, robust);
 	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
 }
 
-SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const IJobPrioProvider &order, const vector<float> &tau, bool robust) const {
+SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitrary(const vector<int> &order, const vector<float> &tau, bool robust) const {
 	Matrix<int> resRem = normalCapacityProfile();
 
     vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs);
     for (int k=0; k<numJobs; k++) {
-        int job = robust ? order.chooseEligibleWithHighestPriority(*this, sts) : order.getJobAtIndex(k);
+        int job = robust ? chooseEligibleWithLowestIndex(sts, order) : order[k];
         int lastPredFinished = computeLastPredFinishingTime(fts, job);
         int t;
         for (t = lastPredFinished; !enoughCapacityForJobWithOvertime(job, t, resRem); t++);
@@ -497,7 +495,7 @@ vector<int> ProjectWithOvertime::earliestStartingTimesForPartialRespectZmax(cons
     return ests;
 }
 
-SGSResult ProjectWithOvertime::forwardBackwardIterations(const IJobPrioProvider &order, SGSResult result, int deadline, boost::optional<int> numIterations, bool robust) const {
+SGSResult ProjectWithOvertime::forwardBackwardIterations(const vector<int> &order, SGSResult result, int deadline, boost::optional<int> numIterations, bool robust) const {
 	/*auto checkAndOutput = [&](const SGSResult &result, int deadline, int nextStepType) {
 		const vector<string> stepTypes = { "delay", "earlier" };
 		if(!isSchedulePrecedenceFeasible(result.sts))
@@ -527,20 +525,20 @@ SGSResult ProjectWithOvertime::forwardBackwardIterations(const IJobPrioProvider 
 	return result;
 }
 
-SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(const IJobPrioProvider &order, const vector<float> &tau, bool robust) const {
+SGSResult ProjectWithOvertime::serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(const vector<int> &order, const vector<float> &tau, bool robust) const {
 	SGSResult res = serialSGSTimeWindowArbitrary(order, tau, robust);
 	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>(), robust);
 }
 
 SGSResult ProjectWithOvertime::serialSGSWithRandomKeyAndFBI(const std::vector<float> &rk, const Matrix<int> &z) const {
 	const SGSResult res = serialSGSWithRandomKey(rk, z);
-	const auto order = al(scheduleToActivityList(res.sts));
+	const vector<int> order = scheduleToActivityList(res.sts);
 	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>());
 }
 
 SGSResult ProjectWithOvertime::serialSGSWithRandomKeyAndFBI(const std::vector<float>& rk, const std::vector<int>& z) const {
 	const SGSResult res = serialSGSWithRandomKey(rk, z);
-	const auto order = al(scheduleToActivityList(res.sts));
+	const vector<int> order = scheduleToActivityList(res.sts);
 	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>());
 }
 
