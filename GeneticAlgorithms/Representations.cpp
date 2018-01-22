@@ -188,6 +188,8 @@ void LambdaBeta::inherit(const Lambda &parent, int destIx, int srcIx) {
 
 void LambdaBeta::swap(int i1, int i2) {
     Lambda::swap(i1, i2);
+	if(!options.assocIndex)
+		Utils::swap(beta, i1, i2);
 }
 
 void LambdaBeta::separateOnePointCrossover(const LambdaBeta& mother, const LambdaBeta& father) {
@@ -195,6 +197,12 @@ void LambdaBeta::separateOnePointCrossover(const LambdaBeta& mother, const Lambd
 	int q2 = Utils::randRangeIncl(0, static_cast<int>(beta.size() - 1));
 	onePointCrossoverLists(q1, order, mother.order, father.order);
 	onePointCrossoverLists(q2, beta, mother.beta, father.beta);
+}
+
+ProjectWithOvertime::BorderSchedulingOptions LambdaBeta::options;
+
+void LambdaBeta::setOptions(ProjectWithOvertime::BorderSchedulingOptions _options) {
+	options = _options;
 }
 
 //======================================================================================================================

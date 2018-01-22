@@ -76,15 +76,13 @@ protected:
     GAParameters params;
 	ProjectWithOvertime &p;
 
-	std::unique_ptr<AbstractScheduleGenerationScheme> sgs = nullptr;
-
     std::unique_ptr<Utils::Tracer> tr = nullptr;
 
 	// also consider FORCE_SINGLE_THREAD!
     bool useThreads = false;
 	const std::string name;
 
-    explicit GeneticAlgorithm(ProjectWithOvertime &_p, const std::string &_name = "GenericGA") : p(_p), sgs(new SerialScheduleGenerationScheme(_p)), tr(nullptr), name(_name) {}
+    explicit GeneticAlgorithm(ProjectWithOvertime &_p, const std::string &_name = "GenericGA") : p(_p), tr(nullptr), name(_name) {}
 
     virtual Individual init(int ix) = 0;
     virtual void crossover(Individual &mother, Individual &father, Individual &daughter) = 0;
@@ -119,18 +117,6 @@ void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
     if(params.traceobj && tr == nullptr) {
         tr = std::make_unique<Utils::Tracer>(traceFilenameForGeneticAlgorithm(params.outPath, name, p.instanceName));
     }
-
-	switch(params.sgs) {
-	default:
-	case SGSChoice::SERIAL:
-		sgs.reset(new SerialScheduleGenerationScheme(p));
-		break;
-	case SGSChoice::PARALLEL:
-		sgs.reset(new ParallelScheduleGenerationScheme(p));
-		break;
-	}
-	
-	ActivityListPrioProvider::setRobustness(!params.enforceTopOrdering);
 }
 
 template<class Individual>

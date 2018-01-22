@@ -106,6 +106,9 @@ public:
     void swap(int i1, int i2) override;
 
 	void separateOnePointCrossover(const LambdaBeta& mother, const LambdaBeta& father);
+
+	static ProjectWithOvertime::BorderSchedulingOptions options;
+	static void setOptions(ProjectWithOvertime::BorderSchedulingOptions _options);
 };
 
 class LambdaTau : public Lambda {

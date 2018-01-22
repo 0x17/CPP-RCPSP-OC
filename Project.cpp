@@ -14,13 +14,12 @@
 #include "Logger.h"
 
 #include "JobPriorityProviders.h"
-#include "ScheduleGenerationSchemes.h"
 
 using namespace std;
 
 Project::Project(JsonWrap obj) {
 	Project::from_json(obj.obj);
-	heuristicMaxMs = makespan(serialSGS(al(topOrder)));
+	heuristicMaxMs = makespan(serialSGS(topOrder));
 }
 
 Project::Project(const string &filename) : Project(boost::filesystem::path(filename).stem().string(), Utils::readLines(filename)) {}
@@ -51,7 +50,7 @@ Project::Project(const string& projectName, const vector<string>& lines) : name(
 
 	computeELSFTs();
 
-	heuristicMaxMs = makespan(serialSGS(al(topOrder)));
+	heuristicMaxMs = makespan(serialSGS(topOrder));
 }
 
 vector<int> Project::serialSGS(const IJobPrioProvider &order) const {
@@ -108,8 +107,8 @@ SGSResult Project::serialSGS(const IJobPrioProvider &order, const Matrix<int> &z
 	return{ sts, resRem, 1 };
 }
 
-vector<int> Project::serialSGSCoreWithRandomKey(const std::vector<float>& priorities, Matrix<int>& resRem) const {
-	return serialSGSCore(rk(priorities), resRem, true);
+vector<int> Project::serialSGSCoreWithRandomKey(const std::vector<float>& rk, Matrix<int>& resRem) const {
+	return serialSGSCore(RandomKeyPrioProvider(rk), resRem, true);
 }
 
 vector<int> Project::serialSGSWithRandomKey(const std::vector<float> &rk) const {
@@ -236,7 +235,7 @@ bool Project::allSuccsScheduled(int j, const vector<int>& sts) const {
 vector<int> Project::serialSGSCore(const IJobPrioProvider &order, Matrix<int> &resRem, bool robust) const {
 	vector<int> sts(numJobs, UNSCHEDULED), fts(numJobs, UNSCHEDULED);
 	for (int i = 0; i < numJobs; i++) {
-		const int job = order.chooseEligibleWithHighestPriority(*this, sts, i);
+		const int job = robust ? order.chooseEligibleWithHighestPriority(*this, sts) : order.getJobAtIndex(i);
 		const int lastPredFinished = computeLastPredFinishingTime(fts, job);
 		int t;
 		for (t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++);
@@ -299,17 +298,7 @@ int Project::computeFirstSuccStartingTimeForPartial(const vector<int> &sts, int 
 }
 
 bool Project::enoughCapacityForJob(int job, int t, const Matrix<int> & resRem) const {
-	ACTIVE_PERIODS(job, t, EACH_RES(if (demands(job, r) > resRem(r, tau)) return false));
-	return true;
-}
-
-bool Project::enoughCapacityForJob(int job, int t, const Matrix<int> & resRem, const Matrix<int> & z) const {
-	ACTIVE_PERIODS(job, t, EACH_RES(if (demands(job, r) > resRem(r, tau) + z(r, tau)) return false));
-	return true;
-}
-
-bool Project::enoughCapacityForJob(int job, int t, const Matrix<int> & resRem, const vector<int> & z) const {
-	ACTIVE_PERIODS(job, t, EACH_RES(if (demands(job, r) > resRem(r, tau) + z[r]) return false));
+	ACTIVE_PERIODS(job, t, EACH_RES(if(demands(job,r) > resRem(r,tau)) return false))
 	return true;
 }
 
@@ -359,6 +348,22 @@ int Project::makespan(const SGSResult& res) const {
 	return makespan(res.sts);
 }
 
+template <class Pred>
+vector<int> Project::topOrderComputationCore(Pred isEligible) const {
+	vector<int> order(numJobs);
+	
+	for (int curIndex = 0; curIndex < numJobs; curIndex++) {
+		for (int job = 0; job < numJobs; job++) {
+			if (isEligible(curIndex, job, order)) {
+				order[curIndex] = job;
+				break;
+			}
+		}
+	}
+
+	return order;
+}
+
 vector<int> Project::computeTopOrder() const {
 	return topOrderComputationCore([&](int curIndex, int job, const vector<int> &order) {
 		return !jobBeforeInOrder(job, curIndex, order) && !hasPredNotBeforeInOrder(job, curIndex, order);
@@ -389,7 +394,7 @@ void Project::computeELSFTs() {
 
 void Project::complementPartialWithSSGS(const IJobPrioProvider &order, int startIx, vector<int> &fts, Matrix<int> &resRem, bool robust) const {
 	for(int i=startIx; i<numJobs; i++) {
-		const int job = order.chooseEligibleWithHighestPriority(*this, fts, i);
+		const int job = robust ? order.chooseEligibleWithHighestPriority(*this, fts) : order.getJobAtIndex(i);
 		const int lastPredFinished = computeLastPredFinishingTime(fts, job);
 		int t;
 		for (t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++);
@@ -570,7 +575,7 @@ void Project::shiftScheduleLeftBy(int offset, vector<int> &sts, Matrix<int> &res
 }
 
 vector<int> Project::stsToFts(const vector<int>& sts) const {
-	return Utils::constructVector<int>(numJobs, [&](int j) { return sts[j] == UNSCHEDULED ? UNSCHEDULED : sts[j] + durations[j]; });
+	return Utils::constructVector<int>(numJobs, [&](int j) { return sts[j] + durations[j]; });
 }
 
 string Project::coreInstanceName(const string &parentPath, const string &filename) {
@@ -580,13 +585,44 @@ string Project::coreInstanceName(const string &parentPath, const string &filenam
 	return fn;
 }
 
+std::vector<int> Project::standardizeRandomKey(const std::vector<float> &rk) const {
+	return activityListToRankVector(scheduleToActivityList(serialSGSWithRandomKey(rk)));
+}
 
+int Project::earliestJobInScheduleNotAlreadyTaken(const std::vector<int> &sts, const std::vector<bool> &alreadyTaken) const {
+	int earliestJob = 0, earliestT = std::numeric_limits<int>::max();
+	for(int i=0; i<numJobs; i++) {
+		if(sts[i] < earliestT && !alreadyTaken[i]) {
+			earliestT = sts[i];
+			earliestJob = i;
+		}
+	}
+	return earliestJob;
+};
 
+std::vector<int> Project::scheduleToActivityList(const std::vector<int> &sts) const {
+	vector<bool> alreadyTaken(numJobs);
+	vector<int> al(numJobs);
 
+	for(int i=0; i<numJobs; i++) {
+		al[i] = earliestJobInScheduleNotAlreadyTaken(sts, alreadyTaken);
+		alreadyTaken[al[i]] = true;
+	}
 
+	return al;
+}
 
+std::vector<float> Project::activityListToRandomKey(const std::vector<int>&order) const {
+	return Utils::constructVector<float>(numJobs, [&order, this](int j) { return 1.0f - static_cast<float>(Utils::indexOfFirstEqualTo(j, order)) / static_cast<float>(numJobs); });
+}
 
-
+std::vector<int> Project::activityListToRankVector(const std::vector<int> &order) const {
+	vector<int> rankVec(order.size());
+	for(int i=0; i < order.size(); i++) {
+		rankVec[i] = Utils::indexOfFirstEqualTo(i, order);
+	}
+	return rankVec;
+}
 
 std::vector<int> Project::parallelSGS(const IJobPrioProvider &order) const {
     auto baseResRem = Utils::constructVector<int>(numRes, [this](int r) { return capacities[r]; });
@@ -605,7 +641,7 @@ std::vector<int> Project::parallelSGSCore(const IJobPrioProvider &order, const s
     int dt = 0;
     sts[0] = 0;
     for(int i=0; i<numJobs; i++) {
-        int j = order.chooseEligibleWithHighestPrioAndResFeasInDt(*this, dt, sts, resRemInDt);
+        int j = order.chooseEligibleWithHighestPrioAndResFeasInDt(*this, sts, resRemInDt);
         if(j != -1) {
             sts[j] = dt;
             EACH_RES(resRemInDt[r] -= demands(j,r));
@@ -645,4 +681,6 @@ bool Project::enoughCapacityForJobInFirstPeriod(int job, const std::vector<int> 
 	return true;
 }
 
+
+SGSResult::SGSResult(vector<int> _sts, Matrix<int> _resRem, int _numSchedulesGenerated) : sts(_sts), resRem(_resRem), numSchedulesGenerated(_numSchedulesGenerated) {}
 

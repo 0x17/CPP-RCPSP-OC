@@ -20,53 +20,59 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BasicSolverParameters.cpp" />
+    <ClCompile Include="BranchAndBound.cpp" />
+    <ClCompile Include="GeneticAlgorithms\FixedDeadline.cpp" />
     <ClCompile Include="GeneticAlgorithms\GeneticAlgorithm.cpp" />
     <ClCompile Include="GeneticAlgorithms\OvertimeBound.cpp" />
     <ClCompile Include="GeneticAlgorithms\Representations.cpp" />
     <ClCompile Include="GeneticAlgorithms\Sampling.cpp" />
     <ClCompile Include="GeneticAlgorithms\TimeWindow.cpp" />
     <ClCompile Include="GurobiSolver.cpp" />
-    <ClCompile Include="JobPriorityProviders.cpp" />
     <ClCompile Include="JsonUtils.cpp" />
     <ClCompile Include="Libraries\json11.cpp" />
     <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="LSModels\FixedDeadlineModels.cpp" />
     <ClCompile Include="LSModels\ListModel.cpp" />
     <ClCompile Include="LSModels\NaiveModels.cpp" />
     <ClCompile Include="LSModels\OvertimeBoundModels.cpp" />
     <ClCompile Include="LSModels\TimeWindowModels.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="OvertimeChoiceProviders.cpp" />
+    <ClCompile Include="OnHold\ParticleSwarm.cpp" />
     <ClCompile Include="Project.cpp" />
     <ClCompile Include="ProjectWithOvertime.cpp" />
     <ClCompile Include="Runners.cpp" />
-    <ClCompile Include="ScheduleGenerationSchemes.cpp" />
+    <ClCompile Include="OnHold\Serialization.cpp" />
     <ClCompile Include="Stopwatch.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="OnHold\Visualization.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicSolverParameters.h" />
+    <ClInclude Include="BranchAndBound.h" />
+    <ClInclude Include="GeneticAlgorithms\FixedDeadline.h" />
     <ClInclude Include="GeneticAlgorithms\GeneticAlgorithm.h" />
     <ClInclude Include="GeneticAlgorithms\OvertimeBound.h" />
     <ClInclude Include="GeneticAlgorithms\Representations.h" />
     <ClInclude Include="GeneticAlgorithms\Sampling.h" />
     <ClInclude Include="GeneticAlgorithms\TimeWindow.h" />
     <ClInclude Include="GurobiSolver.h" />
-    <ClInclude Include="JobPriorityProviders.h" />
     <ClInclude Include="JsonUtils.h" />
     <ClInclude Include="Libraries\json11.hpp" />
     <ClInclude Include="Logger.h" />
+    <ClInclude Include="LSModels\FixedDeadlineModels.h" />
     <ClInclude Include="LSModels\ListModel.h" />
     <ClInclude Include="LSModels\NaiveModels.h" />
     <ClInclude Include="LSModels\OvertimeBoundModels.h" />
     <ClInclude Include="LSModels\TimeWindowModels.h" />
     <ClInclude Include="Matrix.h" />
-    <ClInclude Include="OvertimeChoiceProviders.h" />
+    <ClInclude Include="OnHold\ParticleSwarm.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="ProjectWithOvertime.h" />
     <ClInclude Include="Runners.h" />
-    <ClInclude Include="ScheduleGenerationSchemes.h" />
+    <ClInclude Include="OnHold\Serialization.h" />
     <ClInclude Include="Stopwatch.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="OnHold\Visualization.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{79EF54FB-DEF8-4F61-9C71-C3CF7F899037}</ProjectGuid>

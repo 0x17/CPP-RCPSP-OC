@@ -1,4 +1,3 @@
-#include "OvertimeChoiceProviders.h"
 #ifndef DISABLE_GUROBI
 
 #include "GurobiSolver.h"
@@ -144,7 +143,7 @@ void GurobiSolver::setupFeasibleMipStart() {
 
 	LOG_I("Seeding mip solver with feasible heuristic start solution (serial sgs schedule)");
 
-	auto sts = SerialScheduleGenerationScheme(p).constructSchedule(al(p.topOrder), ocnone()).sts;
+	auto sts = p.serialSGS(p.topOrder);
 
 	p.eachJobConst([&](int j) {
 		int ft = sts[j] + p.durations[j];

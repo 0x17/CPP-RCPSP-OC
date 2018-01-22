@@ -6,8 +6,6 @@
 #include "Sampling.h"
 #include <boost/algorithm/clamp.hpp>
 
-#include "../OvertimeChoiceProviders.h"
-
 using namespace std;
 
 TimeVaryingCapacityGA::TimeVaryingCapacityGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "TimeVaryingCapacityGA") {
@@ -48,11 +46,10 @@ void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
 FitnessResult TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
 	// TODO: Employ parallel sgs if chosen
 
-	const auto pair = sgs->constructScheduleAndFBI(al(i.order), oczrt(i.z));
-	//const auto pair = p.serialSGSWithForwardBackwardImprovement(al(i.order), i.z, !params.enforceTopOrdering);
+	const auto pair = p.serialSGSWithForwardBackwardImprovement(ActivityListPrioProvider(i.order), i.z, !params.enforceTopOrdering);
 
 	if(params.fbiFeedbackInjection) {
-		i.order = ((SerialScheduleGenerationScheme *)sgs.get())->scheduleToActivityList(pair.sts);
+		i.order = p.scheduleToActivityList(pair.sts);
 	}
 
 	return { p.calcProfit(pair), pair.numSchedulesGenerated };
@@ -60,8 +57,8 @@ FitnessResult TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
 
 vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
 	// TODO: Employ parallel sgs if chosen
-	return sgs->constructScheduleAndFBI(al(i.order), oczrt(i.z)).sts;
-	//return p.serialSGSWithForwardBackwardImprovement(al(i.order), i.z, !params.enforceTopOrdering).sts;
+
+	return p.serialSGSWithForwardBackwardImprovement(ActivityListPrioProvider(i.order), i.z, !params.enforceTopOrdering).sts;
 }
 
 void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) const {
@@ -100,16 +97,14 @@ void FixedCapacityGA::mutate(LambdaZr &i) {
 FitnessResult FixedCapacityGA::fitness(LambdaZr &i) {
 	// TODO: Employ parallel sgs if chosen
 
-	auto res = sgs->constructScheduleAndFBI(al(i.order), oczr(i.z));
-	//auto res = p.serialSGSWithForwardBackwardImprovement(al(i.order), i.z);
+	auto res = p.serialSGSWithForwardBackwardImprovement(ActivityListPrioProvider(i.order), i.z);
 	return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
 vector<int> FixedCapacityGA::decode(LambdaZr& i) {
 	// TODO: Employ parallel sgs if chosen
 
-	//return p.serialSGSWithForwardBackwardImprovement(al(i.order), i.z).sts;
-	return sgs->constructScheduleAndFBI(al(i.order), oczr(i.z)).sts;
+	return p.serialSGSWithForwardBackwardImprovement(ActivityListPrioProvider(i.order), i.z).sts;
 }
 
 void FixedCapacityGA::mutateOvertime(vector<int> &z) {
@@ -130,7 +125,7 @@ TimeVaryingCapacityRandomKeyGA::TimeVaryingCapacityRandomKeyGA(ProjectWithOverti
 
 RandomKeyZrt TimeVaryingCapacityRandomKeyGA::init(int ix) {
 	RandomKeyZrt indiv(p.numJobs, p.numRes, p.heuristicMakespanUpperBound());
-	indiv.priorities = params.rbbrs ? ((SerialScheduleGenerationScheme *)sgs.get())->activityListToRandomKey(Sampling::sample(true, p)) : Sampling::randomUnitFloats(p.numJobs);
+	indiv.priorities = params.rbbrs ? p.activityListToRandomKey(Sampling::sample(true, p)) : Sampling::randomUnitFloats(p.numJobs);
 
 	p.eachResConst([&](int r) {
 		int zr = ix == 0 ? 0 : Utils::randRangeIncl(0, p.zmax[r]);
@@ -151,14 +146,12 @@ void TimeVaryingCapacityRandomKeyGA::mutate(RandomKeyZrt& i) {
 }
 
 FitnessResult TimeVaryingCapacityRandomKeyGA::fitness(RandomKeyZrt& i) {
-	//auto res = p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z);
-	const auto res = sgs->constructScheduleAndFBI(rk(i.priorities), oczrt(i.z));
+	auto res = p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z);
 	return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
 std::vector<int> TimeVaryingCapacityRandomKeyGA::decode(RandomKeyZrt& i) {
-	//return p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z).sts;
-	return sgs->constructScheduleAndFBI(rk(i.priorities), oczrt(i.z)).sts;
+	return p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z).sts;
 }
 
 //============================================================================================
@@ -169,7 +162,7 @@ FixedCapacityRandomKeyGA::FixedCapacityRandomKeyGA(ProjectWithOvertime &_p) : Ge
 
 RandomKeyZr FixedCapacityRandomKeyGA::init(int ix) {
 	RandomKeyZr indiv(p.numJobs, p.numRes);
-	indiv.priorities = params.rbbrs ? ((SerialScheduleGenerationScheme *)sgs.get())->activityListToRandomKey(Sampling::sample(true, p)) : Sampling::randomUnitFloats(p.numJobs);
+	indiv.priorities = params.rbbrs ? p.activityListToRandomKey(Sampling::sample(true, p)) : Sampling::randomUnitFloats(p.numJobs);
 	p.eachRes([&](int r) { indiv.z[r] = ix == 0 ? 0 : Utils::randRangeIncl(0, p.zmax[r]); });
 	return indiv;
 }
@@ -184,14 +177,12 @@ void FixedCapacityRandomKeyGA::mutate(RandomKeyZr &i) {
 }
 
 FitnessResult FixedCapacityRandomKeyGA::fitness(RandomKeyZr &i) {
-	const auto res = sgs->constructScheduleAndFBI(rk(i.priorities), oczr(i.z));
-	//auto res = p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z);
+	auto res = p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z);
 	return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
 vector<int> FixedCapacityRandomKeyGA::decode(RandomKeyZr& i) {
-	//return p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z).sts;
-	return sgs->constructScheduleAndFBI(rk(i.priorities), oczr(i.z)).sts;
+	return p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z).sts;
 }
 
 void FixedCapacityRandomKeyGA::mutateOvertime(vector<int> &z) {

@@ -4,7 +4,6 @@
 
 #include "TimeWindow.h"
 #include "Sampling.h"
-#include "../OvertimeChoiceProviders.h"
 
 using namespace std;
 
@@ -36,8 +35,7 @@ FitnessResult TimeWindowArbitraryDiscretizedGA::fitness(LambdaBeta &i) {
 	vector<float> tau = Utils::constructVector<float>(static_cast<int>(i.beta.size()), [&i, this](int ix) {
 		return static_cast<float>(static_cast<double>(i.beta[ix]) / static_cast<double>(ub-1));
 	});
-
-	const auto res = sgs->constructScheduleAndFBI(al(i.order), octau(tau));
+	auto res = p.serialSGSTimeWindowArbitrary(ActivityListPrioProvider(i.order), tau);
 	return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
@@ -45,7 +43,7 @@ vector<int> TimeWindowArbitraryDiscretizedGA::decode(LambdaBeta& i) {
 	vector<float> tau = Utils::constructVector<float>(static_cast<int>(i.beta.size()), [&i, this](int ix) {
 		return static_cast<float>(static_cast<double>(i.beta[ix]) / static_cast<double>(ub-1));
 	});
-	return sgs->constructScheduleAndFBI(al(i.order), octau(tau)).sts;
+	return p.serialSGSTimeWindowArbitrary(ActivityListPrioProvider(i.order), tau).sts;
 }
 
 //======================================================================================================================
@@ -75,15 +73,22 @@ void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
 }
 
 FitnessResult TimeWindowArbitraryGA::fitness(LambdaTau &i) {
-	const auto pair = sgs->constructScheduleAndFBI(al(i.order), octau(i.tau));
+    auto pair = p.serialSGSTimeWindowArbitrary(ActivityListPrioProvider(i.order), i.tau);
 	return { p.calcProfit(pair), pair.numSchedulesGenerated };
 }
 
 vector<int> TimeWindowArbitraryGA::decode(LambdaTau& i)  {
-	return sgs->constructScheduleAndFBI(al(i.order), octau(i.tau)).sts;
+	return p.serialSGSTimeWindowArbitrary(ActivityListPrioProvider(i.order), i.tau).sts;
 }
 
 //======================================================================================================================
+
+ProjectWithOvertime::BorderSchedulingOptions TimeWindowBordersGA::options;
+
+void TimeWindowBordersGA::setVariant(int variant) {
+	options.setFromIndex(variant);
+	LambdaBeta::setOptions(options);
+}
 
 TimeWindowBordersGA::TimeWindowBordersGA(ProjectWithOvertime &_p) : GeneticAlgorithm(_p, "TimeWindowBordersGA") {
     useThreads = false;
@@ -97,8 +102,8 @@ LambdaBeta TimeWindowBordersGA::init(int ix) {
 }
 
 void TimeWindowBordersGA::crossover(LambdaBeta &mother, LambdaBeta &father, LambdaBeta &daughter) {
-	//if (options.separateCrossover) daughter.separateOnePointCrossover(mother, father);
-	daughter.randomOnePointCrossover(mother, father);
+	if (options.separateCrossover) daughter.separateOnePointCrossover(mother, father);
+	else daughter.randomOnePointCrossover(mother, father);
 }
 
 void TimeWindowBordersGA::mutate(LambdaBeta &i) {
@@ -112,14 +117,12 @@ void TimeWindowBordersGA::mutate(LambdaBeta &i) {
 }
 
 FitnessResult TimeWindowBordersGA::fitness(LambdaBeta &i) {
-    //auto res = p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(al(i.order), i.beta, options);
-	const auto res = sgs->constructScheduleAndFBI(al(i.order), ocbeta(i.beta));
+    auto res = p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(ActivityListPrioProvider(i.order), i.beta, options);
 	return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
 vector<int> TimeWindowBordersGA::decode(LambdaBeta& i) {
-	//return p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(al(i.order), i.beta, options).sts;
-	return sgs->constructScheduleAndFBI(al(i.order), ocbeta(i.beta)).sts;
+	return p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(ActivityListPrioProvider(i.order), i.beta, options).sts;
 }
 
 //======================================================================================================================
@@ -128,18 +131,16 @@ ActivityListBasedGA::ActivityListBasedGA(ProjectWithOvertime &_p, const std::str
     useThreads = true;
 }
 
-ActivityListBasedGA::TDecoder ActivityListBasedGA::selectDecoder(DecoderType type) const {
+ActivityListBasedGA::TDecoder ActivityListBasedGA::selectDecoder(DecoderType type) {
 	switch(type) {
 	case DecoderType::CompareAlternatives:
-		return [this](const ProjectWithOvertime& p, const vector<int>& order) {
-			//return p.serialSGSWithOvertime(al(order));
-			return sgs->constructScheduleAndFBI(al(order), ocalts(*sgs, al(order)));
+		return [](const ProjectWithOvertime& p, const vector<int>& order) {
+			return p.serialSGSWithOvertime(ActivityListPrioProvider(order));
 		};
 	case DecoderType::GoldenSectionSearch:
 	default:
-		return [this](const ProjectWithOvertime& p, const vector<int>& order) {
-			//return p.goldenSectionSearchBasedOptimization(al(order));
-			return goldenSectionSearchBasedOptimization(p, *sgs, al(order));
+		return [](const ProjectWithOvertime& p, const vector<int>& order) {
+			return p.goldenSectionSearchBasedOptimization(ActivityListPrioProvider(order));
 		};
 	}
 }

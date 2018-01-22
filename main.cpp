@@ -4,11 +4,11 @@
 
 #include "ProjectWithOvertime.h"
 #include "LSModels/NaiveModels.h"
+#include "LSModels/FixedDeadlineModels.h"
 #include "Runners.h"
 #include "BranchAndBound.h"
 #include "GurobiSolver.h"
 #include "Utils.h"
-#include "OvertimeChoiceProviders.h"
 
 using namespace std;
 
@@ -40,10 +40,8 @@ void Main::plotHeuristicProfits() {
 
 	for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(path), {})) {
 		ProjectWithOvertime p(entry.path().string());
-
-		int lb = p.makespan(SerialScheduleGenerationScheme(p).constructSchedule(al(p.topOrder), ocany()));
-		int ub = p.makespan(SerialScheduleGenerationScheme(p).constructSchedule(al(p.topOrder), ocnone()));
-
+		int lb = p.makespan(p.serialSGS(p.topOrder, p.zmax));
+		int ub = p.makespan(p.serialSGS(p.topOrder, p.zzero));
 		int diff = ub - lb;
 		if(diff > maxDiff) {
 			maxDiff = diff;
@@ -159,8 +157,8 @@ void Main::showUsage() {
 }
 
 int Main::computeMinMaxMakespanDifference(ProjectWithOvertime &p) {
-	const int maxMs = p.makespan(SerialScheduleGenerationScheme(p).constructSchedule(al(p.topOrder), ocnone()));
-	const int minMs = p.makespan(SerialScheduleGenerationScheme(p).constructSchedule(al(p.topOrder), ocany()));
+	int maxMs = p.makespan(p.serialSGS(p.topOrder));
+	int minMs = p.makespan(p.serialSGS(p.topOrder, p.zmax).sts);
 	return maxMs - minMs;
 }
 

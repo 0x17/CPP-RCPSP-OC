@@ -10,7 +10,6 @@
 #include "JobPriorityProviders.h"
 
 #include <boost/filesystem/path.hpp>
-#include "ScheduleGenerationSchemes.h"
 
 #define EACH_COMMON(ix, ubExcl, code) \
     for(int ix=0; ix<ubExcl; ix++) {\
@@ -25,14 +24,7 @@
 
 #define EACH_JOB(code) EACH_COMMON(j, numJobs, code)
 #define EACH_JOBi(code) EACH_COMMON(i, numJobs, code)
-
-#define EACH_JOB_P(p, code) EACH_COMMON(j, p.numJobs, code)
-#define EACH_JOBi_P(p, code) EACH_COMMON(i, p.numJobs, code)
-
 #define EACH_RES(code) EACH_COMMON(r, numRes, code)
-
-#define EACH_RES_P(p, code) EACH_COMMON(r, p.numRes, code)
-
 #define EACH_PERIOD(code) EACH_COMMON(t, numPeriods, code)
 
 #define EACH_RES_PERIOD(code) EACH_COMMON_2D(r, t, numRes, numPeriods, code)
@@ -56,10 +48,14 @@
         code; \
     }
 
-#define ACTIVE_PERIODS_P(p, j, stj, code) \
-    for(int tau = stj + 1; tau <= stj + p.durations[j]; tau++) { \
-        code; \
-    }
+struct SGSResult {
+	std::vector<int> sts;
+	Matrix<int> resRem;
+	int numSchedulesGenerated = 1;
+
+	SGSResult(std::vector<int> _sts, Matrix<int> _resRem, int _numSchedulesGenerated = 1);
+	SGSResult() = default;
+};
 
 struct JsonWrap {
 	json11::Json &obj;
@@ -90,7 +86,19 @@ public:
 
     ~Project() override = default;
 
-	
+	inline std::vector<int> serialSGS(const std::vector<int> &order) const {
+		return serialSGS(al(order));
+	}
+
+	inline SGSResult serialSGS(const std::vector<int> &order, const std::vector<int> &z, bool robust = false) const {
+		return serialSGS(al(order), z, robust);
+	}
+
+	inline SGSResult serialSGS(const std::vector<int> &order, const Matrix<int> &z, bool robust = false) const {
+		return serialSGS(al(order), z, robust);
+	}
+
+	std::vector<int> serialSGS(const IJobPrioProvider &order) const;
 
 	std::pair<std::vector<int>, Matrix<int>> serialSGSForPartial(const std::vector<int> &sts, const std::vector<int> &order, Matrix<int> &resRem) const;
 	std::pair<std::vector<int>, Matrix<int>> serialSGSForPartial(const std::vector<int> &sts, const std::vector<int> &order) const;
@@ -168,6 +176,13 @@ public:
 
 	static std::string coreInstanceName(const std::string & parentPath, const std::string & filename);
 
+	std::vector<int> standardizeRandomKey(const std::vector<float> &rk) const;
+	std::vector<int> scheduleToActivityList(const std::vector<int> &sts) const;
+	std::vector<float> activityListToRandomKey(const std::vector<int> &order) const;
+	std::vector<int> activityListToRankVector(const std::vector<int> &order) const;
+
+	int earliestJobInScheduleNotAlreadyTaken(const std::vector<int> &sts, const std::vector<bool> &alreadyTaken) const;
+
 	json11::Json to_json() const override;
 	void from_json(const json11::Json & obj) override;
 
@@ -186,64 +201,43 @@ public:
 	bool enoughCapacityForJobInFirstPeriod(int job, const std::vector<int> &resRemDt) const;
 
 	bool enoughCapacityForJob(int job, int t, const Matrix<int> & resRem) const;
-	bool enoughCapacityForJob(int job, int t, const Matrix<int>& resRem, const Matrix<int>& z) const;
-	bool enoughCapacityForJob(int job, int t, const Matrix<int>& resRem, const std::vector<int>& z) const;
-
-	std::vector<int> stsToFts(const std::vector<int>& sts) const;
-
-	void transferAlreadyScheduled(std::vector<int> &destSts, const std::vector<int> &partialSts) const;
 
 protected:
 
-	void scheduleJobAt(int job, int t, std::vector<int> &sts, std::vector<int> &fts, Matrix<int> &resRem) const;
-	void scheduleJobAt(int job, int t, std::vector<int> &sts, Matrix<int> &resRem) const;
-
 	std::vector<int> serialSGSCore(const IJobPrioProvider &order, Matrix<int> &resRem, bool robust = false) const;
-	std::vector<int> serialSGSCoreWithRandomKey(const std::vector<float>& priorities, Matrix<int>& resRem) const;
+	std::vector<int> serialSGSCoreWithRandomKey(const std::vector<float>& rk, Matrix<int>& resRem) const;
 
 	std::vector<int> parallelSGSCore(const IJobPrioProvider &order, const std::vector<int> &baseResRem) const;
 
 	int computeFirstSuccStartingTime(const std::vector<int> &sts, int job) const;
 	int computeFirstSuccStartingTimeForPartial(const std::vector<int> &sts, int job) const;
     int computeLastPredFinishingTimeForPartial(const std::vector<int> &fts, int job) const;
-	  
+
+    void scheduleJobAt(int job, int t, std::vector<int> &sts, std::vector<int> &fts, Matrix<int> &resRem) const;
+	void scheduleJobAt(int job, int t, std::vector<int> &sts, Matrix<int> &resRem) const;
 
 	void unscheduleJob(int j, std::vector<int>& sts, std::vector<int>& fts, Matrix<int>& resRem) const;
 	void unscheduleJob(int j, std::vector<int>& sts, Matrix<int>& resRem) const;
 
 	SGSResult earliestStartSchedule() const;
 
-    
+    void transferAlreadyScheduled(std::vector<int> &destSts, const std::vector<int> &partialSts) const;
 	void transferAlreadyScheduledToFts(std::vector<int> &destFts, const std::vector<int> &partialSts) const;
 
 	void shiftScheduleLeftBy(int offset, std::vector<int> &sts, Matrix<int> &resRem) const;
-	
+
+	std::vector<int> stsToFts(const std::vector<int>& sts) const;
+
 	Project(const std::string &projectName, const std::vector<std::string>& lines);
 
 private:
-	std::vector<int> serialSGS(const IJobPrioProvider &order) const;
-
     void parsePrecedenceRelation(const std::vector<std::string> &lines);
     void parseDurationsAndDemands(const std::vector<std::string> &lines);
 
     void reorderDispositionMethod();
 
 	template <class Pred>
-	std::vector<int> topOrderComputationCore(Pred isEligible) const {
-		std::vector<int> order(numJobs);
-
-		for (int curIndex = 0; curIndex < numJobs; curIndex++) {
-			for (int job = 0; job < numJobs; job++) {
-				if (isEligible(curIndex, job, order)) {
-					order[curIndex] = job;
-					break;
-				}
-			}
-		}
-
-		return order;
-	}
-
+	std::vector<int> topOrderComputationCore(Pred isEligible) const;
 	std::vector<int> computeTopOrder() const;
 	std::vector<int> computeReverseTopOrder() const;
 
