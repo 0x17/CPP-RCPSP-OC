@@ -10,6 +10,7 @@
 #include "../Stopwatch.h"
 #include "../Logger.h"
 #include "ListModel.h"
+#include "../OvertimeChoiceProviders.h"
 
 using namespace std;
 using namespace localsolver;
@@ -96,7 +97,7 @@ std::vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, int i
 	auto model = pair.first;
 	auto x = pair.second;
 
-	auto sts = p.serialSGS(p.topOrder);
+	auto sts = SerialScheduleGenerationScheme(p).constructSchedule(al(p.topOrder), ocnone()).sts;
 	p.eachJobTimeWindow([&](int j, int t) {
 		x(j, t).setValue(sts[j] + p.durations[j] == t ? 1LL : 0LL);
 	});

@@ -10,10 +10,7 @@
 #include "Representations.h"
 
 class TimeWindowBordersGA : public GeneticAlgorithm<LambdaBeta> {
-	static ProjectWithOvertime::BorderSchedulingOptions options;
 public:
-	static void setVariant(int variant);
-
 	TimeWindowBordersGA(ProjectWithOvertime &_p);
 protected:
     virtual LambdaBeta init(int ix) override;	
@@ -59,7 +56,7 @@ public:
 	ActivityListBasedGA(ProjectWithOvertime &_p, const std::string &name, TDecoder _decoder);
 	ActivityListBasedGA(ProjectWithOvertime &_p, DecoderType type);
 	
-	static TDecoder selectDecoder(DecoderType type);
+	TDecoder selectDecoder(DecoderType type) const;
 	static std::string selectName(DecoderType type);
 
 private:

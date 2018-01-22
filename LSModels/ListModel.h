@@ -20,9 +20,10 @@ class SchedulingNativeFunction : public BaseSchedulingNativeFunction {
 	Utils::Tracer *tr = nullptr;
 	localsolver::lsdouble bks = 0.0;	
 protected:
+	std::unique_ptr<AbstractScheduleGenerationScheme> sgs;
 	bool enforceTopOrdering;
 public:
-	explicit SchedulingNativeFunction(ProjectWithOvertime &_p, bool _enforceTopOrdering = false) : BaseSchedulingNativeFunction(_p), enforceTopOrdering(_enforceTopOrdering) {}
+	explicit SchedulingNativeFunction(ProjectWithOvertime &_p, bool _enforceTopOrdering = false) : BaseSchedulingNativeFunction(_p), sgs(new SerialScheduleGenerationScheme(p)), enforceTopOrdering(_enforceTopOrdering) {}
 	~SchedulingNativeFunction() override = default;
 
 	virtual int varCount() = 0;
@@ -31,6 +32,8 @@ public:
 	localsolver::lsdouble call(const localsolver::LSNativeContext& context) override;
 
 	void setTracer(Utils::Tracer *tr) { this->tr = tr; }
+
+	AbstractScheduleGenerationScheme &getSGS() const { return *sgs; }
 };
 
 class TopOrderChecker : public localsolver::LSNativeFunction {
@@ -51,6 +54,8 @@ public:
 	virtual std::vector<int> solve(SolverParams params) = 0;
 };
 
+class AbstractScheduleGenerationScheme;
+
 class ListModel : public ISolver {
 protected:
 	ProjectWithOvertime &p;
@@ -67,7 +72,7 @@ public:
 	ListModel(ProjectWithOvertime &_p, SchedulingNativeFunction *_decoder, bool _enforceTopOrdering = false);
 	virtual ~ListModel();
 
-	virtual std::vector<int> solve(SolverParams params);
+	virtual std::vector<int> solve(SolverParams params) override;
 
 	static std::string traceFilenameForListModel(const std::string& outPath, int lsIndex, const std::string& instanceName);
 

@@ -73,7 +73,8 @@ string ListModel::traceFilenameForListModel(const string& outPath, int lsIndex, 
 	return outPath + "LocalSolverNative" + to_string(lsIndex) + "Trace_" + instanceName;
 }
 
-ListModel::ListModel(ProjectWithOvertime& _p, SchedulingNativeFunction *_decoder, bool _enforceTopOrdering) : p(_p), decoder(_decoder), listElems(_p.numJobs), enforceTopOrdering(_enforceTopOrdering), topOrderChecker(_enforceTopOrdering ? new TopOrderChecker(_p) : nullptr) {
+ListModel::ListModel(ProjectWithOvertime& _p, SchedulingNativeFunction *_decoder, bool _enforceTopOrdering) : p(_p), decoder(_decoder), topOrderChecker(_enforceTopOrdering ? new TopOrderChecker(_p) : nullptr), listElems(_p.numJobs), enforceTopOrdering(_enforceTopOrdering) {
+	ActivityListPrioProvider::setRobustness(!enforceTopOrdering);
 }
 
 ListModel::~ListModel() {

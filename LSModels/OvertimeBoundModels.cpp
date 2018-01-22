@@ -1,5 +1,6 @@
 
 #include "OvertimeBoundModels.h"
+#include "../OvertimeChoiceProviders.h"
 
 using namespace std;
 using namespace localsolver;
@@ -12,8 +13,7 @@ SGSResult ListFixedOvertimeModel::SerialSGSZrDecoder::decode(vector<int>& order,
 	for (int r = 0; r < p.numRes; r++)
 		zr[r] = static_cast<int>(context.getIntValue(p.numJobs + r));
 
-	auto res = p.serialSGSWithForwardBackwardImprovement(al(order), zr, !enforceTopOrdering);
-	return res;
+	return sgs->constructScheduleAndFBI(al(order), oczr(zr));
 }
 
 void ListFixedOvertimeModel::addAdditionalData(LSModel &model, LSExpression& obj) {
@@ -32,23 +32,21 @@ vector<int> ListFixedOvertimeModel::parseScheduleFromSolution(LSSolution& sol) {
 	for (int r = 0; r < p.numRes; r++)
 		zr[r] = static_cast<int>(sol.getIntValue(zrVar[r]));
 
-	return p.serialSGSWithForwardBackwardImprovement(al(order), zr, !enforceTopOrdering).sts;
+	return decoder->getSGS().constructScheduleAndFBI(al(order), oczr(zr)).sts;
 }
 
 //==============================================================================================================
 
 int ListDynamicOvertimeModel::SerialSGSZrtDecoder::varCount() {
-	return p.numJobs + p.numRes * p.heuristicMakespanUpperBound();
+	return p.numJobs + p.numRes * p.getHeuristicMaxMakespan();
 }
 
 SGSResult ListDynamicOvertimeModel::SerialSGSZrtDecoder::decode(vector<int>& order, const LSNativeContext& context) {
-	int nperiods = p.heuristicMakespanUpperBound();
-	Matrix<int> zrt(p.numRes, nperiods, [this, &context, nperiods](int r, int t) {
+	const int nperiods = p.getHeuristicMaxMakespan();
+	const Matrix<int> zrt(p.numRes, nperiods, [this, &context, nperiods](int r, int t) {
 		return static_cast<int>(context.getIntValue(p.numJobs + r * nperiods + t));
 	});
-
-	auto res = p.serialSGSWithForwardBackwardImprovement(al(order), zrt, !enforceTopOrdering);
-	return res;
+	return sgs->constructScheduleAndFBI(al(order), oczrt(zrt));
 }
 
 void ListDynamicOvertimeModel::addAdditionalData(LSModel &model, LSExpression& obj) {
@@ -60,13 +58,13 @@ void ListDynamicOvertimeModel::addAdditionalData(LSModel &model, LSExpression& o
 }
 
 vector<int> ListDynamicOvertimeModel::parseScheduleFromSolution(LSSolution& sol) {
-	vector<int> order = Utils::constructVector<int>(p.numJobs, [this, &sol](int i) {
+	const vector<int> order = Utils::constructVector<int>(p.numJobs, [this, &sol](int i) {
 		return static_cast<int>(sol.getIntValue(listElems[i]));
 	});
-	Matrix<int> zrt(p.numRes, p.heuristicMakespanUpperBound(), [this, &sol](int r, int t) {
+	const Matrix<int> zrt(p.numRes, p.heuristicMakespanUpperBound(), [this, &sol](int r, int t) {
 		return static_cast<int>(sol.getIntValue(zrtVar(r, t)));
 	});
-	return p.serialSGSWithForwardBackwardImprovement(al(order), zrt, !enforceTopOrdering).sts;
+	return decoder->getSGS().constructScheduleAndFBI(al(order), oczrt(zrt)).sts;
 }
 
 //==============================================================================================================
