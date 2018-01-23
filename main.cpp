@@ -33,6 +33,34 @@ namespace Main {
 	}
 }
 
+int main(int argc, const char * argv[]) {
+	//computeScheduleAttributes("PaperBeispiel.sm");
+
+	//Main::plotHeuristicProfits();
+
+	//Main::Testing::testGurobi();
+
+	//Utils::partitionDirectory("j120", 60);
+
+	//string projFilename = "../../Projekte/j30/j3013_8.sm";
+	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_BETA, 100000);
+	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_ZR, 100000);
+	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_ZRT, 100000);
+	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_GS, 100000);
+	//Main::Testing::fixedScheduleLimitSolveTimesForProjects();
+
+	//Main::jsonConverter(argc, argv);
+
+	Main::commandLineRunner(argc, argv);
+
+	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_RANDKEY_ZRT, 10000, "j30/j3010_1.sm");
+
+	//Main::Testing::testGurobi();
+	//Main::Testing::testSerialOptimalSubschedules();
+
+	return 0;
+}
+
 void Main::plotHeuristicProfits() {
 	boost::filesystem::path path("../../Projekte/j30/");
 
@@ -88,34 +116,6 @@ void computeScheduleAttributes(const string &smfilename) {
 		vector<int> sts = Utils::deserializeSchedule(p.numJobs, resfile);
 		cout << resfile << " profit=" << p.calcProfit(sts) << ", makespan=" << p.makespan(sts) << endl;
 	}
-}
-
-int main(int argc, const char * argv[]) {
-	//computeScheduleAttributes("PaperBeispiel.sm");
-
-	//Main::plotHeuristicProfits();
-
-	//Main::Testing::testGurobi();
-
-	//Utils::partitionDirectory("j120", 60);
-
-    //string projFilename = "../../Projekte/j30/j3013_8.sm";
-    //Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_BETA, 100000);
-	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_ZR, 100000);
-    //Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_ZRT, 100000);
-	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_GS, 100000);
-	//Main::Testing::fixedScheduleLimitSolveTimesForProjects();
-
-	//Main::jsonConverter(argc, argv);
-
-	//Main::commandLineRunner(argc, argv);
-
-	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_RANDKEY_ZRT, 10000, "j30/j3010_1.sm");
-
-	//Main::Testing::testGurobi();
-	Main::Testing::testSerialOptimalSubschedules();
-	
-    return 0;
 }
 
 void Main::Testing::fixedScheduleLimitSolveTimesForProjects() {
@@ -297,7 +297,7 @@ void Main::Testing::testSerialOptimalSubschedules() {
 	//vector<int> order = p.scheduleToActivityList(resopt);
 	vector<int> order = p.topOrder;
 
-	const auto res = p.serialOptimalSubSGS(order, 4);
+	const auto res = p.serialOptimalSubSGS(order, 8);
 	cout << "Profit = " << p.calcProfit(res) << endl;
 	//Utils::serializeSchedule(res, "myschedule.txt");
 	//Utils::serializeProfit(p.calcProfit(res), "myprofit.txt");

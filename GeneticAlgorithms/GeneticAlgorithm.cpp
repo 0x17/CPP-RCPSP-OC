@@ -72,6 +72,6 @@ void GAParameters::fromJsonStr(const std::string &s) {
 }
 
 void GAParameters::fromJsonFile(const std::string &fn) {
-	if(boost::filesystem::exists(fn))
+	if(boost::filesystem::exists(fn) && boost::filesystem::is_regular_file(fn))
 		fromJsonStr(Utils::slurp(fn));
 }

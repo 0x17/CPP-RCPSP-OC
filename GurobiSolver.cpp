@@ -84,7 +84,7 @@ unique_ptr<GRBEnv> GurobiSolverBase::setupOptions(Options opts) {
 	env->set(GRB_DoubleParam_TimeLimit, opts.timeLimit);
 	env->set(GRB_IntParam_DisplayInterval, opts.displayInterval);
 	env->set(GRB_IntParam_Threads, opts.threadCount);
-	env->set(GRB_IntParam_OutputFlag, 1);
+	env->set(GRB_IntParam_OutputFlag, 0);
 	//env->set(GRB_DoubleParam_NodeLimit, opts.iterLimit);
 	//env->set(GRB_DoubleParam_Heuristics, 1.0);
 	return env;
