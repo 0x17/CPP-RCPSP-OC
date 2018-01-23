@@ -108,12 +108,12 @@ int main(int argc, const char * argv[]) {
 
 	//Main::jsonConverter(argc, argv);
 
-	Main::commandLineRunner(argc, argv);
+	//Main::commandLineRunner(argc, argv);
 
 	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_RANDKEY_ZRT, 10000, "j30/j3010_1.sm");
 
 	//Main::Testing::testGurobi();
-	//Main::Testing::testSerialOptimalSubschedules();
+	Main::Testing::testSerialOptimalSubschedules();
 	
     return 0;
 }
@@ -272,7 +272,7 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
 
 #ifndef DISABLE_GUROBI
 void Main::Testing::testGurobi() {
-	string projFilename = "j30/j3027_4.sm";
+	string projFilename = "j30/j3010_1.sm";
 	ProjectWithOvertime p(projFilename);
 	GurobiSolver::Options opts;
 	opts.traceobj = false;
@@ -286,23 +286,22 @@ void Main::Testing::testGurobi() {
 	solver.buildModel();
 	auto res = solver.solve();
 	cout << "Profit = " << p.calcProfit(res.sts) << endl;
-	Utils::serializeSchedule(res.sts, "myschedule.txt");
-	Utils::serializeProfit(p.calcProfit(res.sts), "myprofit.txt");
+	//Utils::serializeSchedule(res.sts, "myschedule.txt");
+	//Utils::serializeProfit(p.calcProfit(res.sts), "myprofit.txt");
 }
 
 void Main::Testing::testSerialOptimalSubschedules() {
-	string projFilename = "j30/j3027_4.sm";
+	string projFilename = "j30/j3010_1.sm";
 	ProjectWithOvertime p(projFilename);
-	const auto resopt = p.serialOptimalSubSGS(p.topOrder, 32);
-
-	vector<int> order = p.scheduleToActivityList(resopt);
-	//order = p.topOrder;
+	//const auto resopt = p.serialOptimalSubSGS(p.topOrder, 32);
+	//vector<int> order = p.scheduleToActivityList(resopt);
+	vector<int> order = p.topOrder;
 
 	const auto res = p.serialOptimalSubSGS(order, 4);
 	cout << "Profit = " << p.calcProfit(res) << endl;
-	Utils::serializeSchedule(res, "myschedule.txt");
-	Utils::serializeProfit(p.calcProfit(res), "myprofit.txt");
-	getchar();
+	//Utils::serializeSchedule(res, "myschedule.txt");
+	//Utils::serializeProfit(p.calcProfit(res), "myprofit.txt");
+	//getchar();
 }
 #endif
 

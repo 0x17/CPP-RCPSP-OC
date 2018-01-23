@@ -35,8 +35,6 @@ public:
 	void relaxJob(int j);
 	void relaxAllJobs();
 
-	void fixJobsToPartialSchedule(const std::vector<int>& sts);
-
 	void buildModel();
 
 	Result solve();	
@@ -84,13 +82,14 @@ private:
 
 class GurobiSubprojectSolver : public GurobiSolverBase {
 public:
-	GurobiSubprojectSolver(const ProjectWithOvertime& _p, Options& _opts, const std::vector<int>& _sts, const std::vector<int>& _nextPartition);
+	GurobiSubprojectSolver(const ProjectWithOvertime& _p, Options& _opts);
 	virtual ~GurobiSubprojectSolver() = default;
 
+	void setupModelForSubproject(const std::vector<int>& _sts, const std::vector<int>& _nextPartition);
+
 private:
-	const std::vector<int> &sts, &nextPartition;
+	std::vector<GRBConstr> eachOnceConstraints;
 	const std::vector<GRBVar> isms;
-	std::vector<int> jobsInSubproject;
 	
 	void setupObjectiveFunction() override;
 	void setupConstraints() override;

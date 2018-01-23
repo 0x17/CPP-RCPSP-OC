@@ -346,9 +346,10 @@ void ProjectWithOvertime::from_json(const json11::Json& obj) {
 }
 
 std::vector<int> ProjectWithOvertime::serialOptimalSubSGS(const std::vector<int>& partitions, int partitionSize) const {
+	static GurobiSolverBase::Options opts;
+	static GurobiSubprojectSolver solver(*this, opts);
+
 	std::vector<int> sts(numJobs, UNSCHEDULED), nextPartition(partitionSize, -1);
-	GurobiSolverBase::Options opts;
-	opts.traceobj = false;
 
 	const int numPartitions = ceil((float)partitions.size() / (float)partitionSize);
 	for(int p = 0; p < numPartitions; p++) {
@@ -360,9 +361,10 @@ std::vector<int> ProjectWithOvertime::serialOptimalSubSGS(const std::vector<int>
 			}
 			nextPartition[j] = partitions[ix];
 		}
-		GurobiSubprojectSolver solver(*this, opts, sts, nextPartition);
-		solver.buildModel();
+
+		solver.setupModelForSubproject(sts, nextPartition);
 		sts = solver.solve().sts;
+		cout << endl;
 	}
 
 	return sts;

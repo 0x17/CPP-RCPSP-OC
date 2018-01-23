@@ -46,9 +46,9 @@ Project::Project(const string& projectName, const vector<string>& lines) : name(
 	topOrder = computeTopOrder();
 	revTopOrder = computeReverseTopOrder();
 
-	computeELSFTs();
-
 	heuristicMaxMs = makespan(serialSGS(topOrder));
+
+	computeELSFTs();
 }
 
 vector<int> Project::serialSGS(const vector<int>& order) const {
@@ -331,10 +331,14 @@ int Project::computeLastPredFinishingTimeForPartial(const vector<int> &fts, int 
     return lastPredFinished;
 }
 
+int Project::computeFirstSuccStartingTime(const vector<int> &sts, int job, int ub) const {
+	int firstSuccStarted = ub;
+	EACH_JOB(if (adjMx(job,j) && sts[j] < firstSuccStarted) firstSuccStarted = sts[j])
+	return firstSuccStarted;
+}
+
 int Project::computeFirstSuccStartingTime(const vector<int> &sts, int job) const {
-    int firstSuccStarted = T;
-    EACH_JOB(if (adjMx(job,j) && sts[j] < firstSuccStarted) firstSuccStarted = sts[j])
-    return firstSuccStarted;
+    return computeFirstSuccStartingTime(sts, job, T);
 }
 
 int Project::computeFirstSuccStartingTimeForPartial(const vector<int> &sts, int job) const {
@@ -343,7 +347,7 @@ int Project::computeFirstSuccStartingTimeForPartial(const vector<int> &sts, int 
 	return firstSuccStarted;
 }
 
-bool Project::enoughCapacityForJob(int job, int t, Matrix<int> & resRem) const {
+bool Project::enoughCapacityForJob(int job, int t, const Matrix<int> & resRem) const {
     ACTIVE_PERIODS(job, t, EACH_RES(if(demands(job,r) > resRem(r,tau)) return false))
     return true;
 }
@@ -433,7 +437,7 @@ void Project::computeELSFTs() {
 
     for(int k=lastJob; k>=0; k--) {
         int j = topOrder[k];
-        lfts[j] = computeFirstSuccStartingTime(lsts, j);
+        lfts[j] = computeFirstSuccStartingTime(lsts, j, heuristicMaxMs);
         lsts[j] = lfts[j] - durations[j];
     }
 }
@@ -670,3 +674,77 @@ std::vector<int> Project::activityListToRankVector(const std::vector<int> &order
 	return rankVec;
 }
 
+std::vector<int> Project::parallelSGS(const vector<int> &order) const {
+	auto baseResRem = Utils::constructVector<int>(numRes, [this](int r) { return capacities[r]; });
+	return parallelSGSCore(order, baseResRem);
+}
+
+int Project::nextDecisionPoint(const std::vector<int> &sts, int dt) const {
+	int minActiveFt = numeric_limits<int>::max();
+	EACH_JOB(if(isJobActiveInPeriod(sts, j, dt) && sts[j] + durations[j] < minActiveFt) { minActiveFt = sts[j] + durations[j]; });
+	return minActiveFt;
+}
+
+std::vector<int> Project::parallelSGSCore(const vector<int> &order, const std::vector<int> &baseResRem) const {
+	std::vector<int> sts(numJobs, UNSCHEDULED);
+	std::vector<int> resRemInDt = baseResRem;
+	int dt = 0;
+	sts[0] = 0;
+	for(int i=0; i<numJobs; i++) {
+		int j = chooseEligibleWithHighestPrioAndResFeasInDt(order, dt, sts, resRemInDt);
+		if(j != -1) {
+			sts[j] = dt;
+			EACH_RES(resRemInDt[r] -= demands(j,r));
+		} else {
+			dt = nextDecisionPoint(sts, dt);
+			EACH_RES(resRemInDt[r] = baseResRem[r]);
+			EACH_JOB_RES(if(isJobActiveInPeriod(sts, j, dt)) { resRemInDt[r] -= demands(j,r); });
+		}
+	}
+	return sts;
+}
+
+std::vector<int> Project::parallelSGS(const std::vector<int> &order, const std::vector<int> &z) const {
+	auto baseResRem = Utils::constructVector<int>(numRes, [this, &z](int r) { return capacities[r] + z[r]; });
+	return parallelSGSCore(order, baseResRem);
+}
+
+SGSResult Project::parallelSGS(const std::vector<int> &order, const Matrix<int> &z) const {
+	Matrix<int> resRem(numRes, numPeriods, [this, &z](int r, int t) { return capacities[r] + z(r,t); });
+	std::vector<int> sts(numJobs, UNSCHEDULED);
+	int dt = 0;
+	sts[0] = 0;
+	for(int i=0; i<numJobs; i++) {
+		int j = chooseEligibleWithHighestPrioAndResFeasRuntime(order, dt, sts, resRem);
+		if(j != -1) {
+			scheduleJobAt(j, dt, sts, resRem);
+		} else {
+			dt = nextDecisionPoint(sts, dt);
+		}
+	}
+	return { sts, resRem, 1 };
+}
+
+bool Project::enoughCapacityForJobInFirstPeriod(int job, const std::vector<int> &resRemDt) const {
+	EACH_RES(if(resRemDt[r] - demands(job, r) < 0) return false);
+	return true;
+}
+
+int Project::chooseEligibleWithHighestPrioAndResFeasInDt(const std::vector<int> &order, int dt, const std::vector<int> &sts, const std::vector<int> &resRem) const {
+	for(int j : order) {
+		if(sts[j] == Project::UNSCHEDULED && allPredsScheduled(j, sts) && computeLastPredFinishingTimeForSts(sts, j) >= dt && enoughCapacityForJobInFirstPeriod(j, resRem)) {
+			return j;
+		}
+	}
+	return -1;
+}
+
+int Project::chooseEligibleWithHighestPrioAndResFeasRuntime(const std::vector<int> &order, int dt, const std::vector<int> &sts, const Matrix<int> &resRem) const {
+	for(int j : order) {
+		if(sts[j] == Project::UNSCHEDULED && allPredsScheduled(j, sts) && computeLastPredFinishingTimeForSts(sts, j) >= dt && enoughCapacityForJob(j, dt, resRem)) {
+			return j;
+		}
+	}
+	return -1;
+	return 0;
+}

@@ -179,9 +179,10 @@ protected:
 	std::vector<int> serialSGSCore(const std::vector<int>& order, Matrix<int> &resRem, bool robust = false) const;
 	std::vector<int> serialSGSCoreWithRandomKey(const std::vector<float>& rk, Matrix<int>& resRem) const;
 
-    bool enoughCapacityForJob(int job, int t, Matrix<int> & resRem) const;
+    bool enoughCapacityForJob(int job, int t, const Matrix<int> & resRem) const;
 
     int computeFirstSuccStartingTime(const std::vector<int> &sts, int job) const;
+	int computeFirstSuccStartingTime(const std::vector<int> &sts, int job, int ub) const;
 	int computeFirstSuccStartingTimeForPartial(const std::vector<int> &sts, int job) const;
     int computeLastPredFinishingTimeForPartial(const std::vector<int> &fts, int job) const;
 
@@ -201,6 +202,20 @@ protected:
 	std::vector<int> stsToFts(const std::vector<int>& sts) const;
 
 	Project(const std::string &projectName, const std::vector<std::string>& lines);
+
+	std::vector<int> parallelSGS(const std::vector<int> &order) const;
+	int nextDecisionPoint(const std::vector<int> &sts, int dt) const;
+	std::vector<int> parallelSGSCore(const std::vector<int> &order, const std::vector<int> &baseResRem) const;
+	std::vector<int> parallelSGS(const std::vector<int> &order, const std::vector<int> &z) const;
+	SGSResult parallelSGS(const std::vector<int> &order, const Matrix<int> &z) const;
+	bool enoughCapacityForJobInFirstPeriod(int job, const std::vector<int> &resRemDt) const;
+
+	inline bool isJobActiveInPeriod(const std::vector<int> &sts, int j, int t) const {
+		return sts[j] < t && t <= sts[j] + durations[j];
+	}
+
+	int chooseEligibleWithHighestPrioAndResFeasInDt(const std::vector<int> &order, int dt, const std::vector<int> &sts, const std::vector<int> &resRem) const;
+	int chooseEligibleWithHighestPrioAndResFeasRuntime(const std::vector<int> &order, int dt, const std::vector<int> &sts, const Matrix<int> &resRem) const;
 
 private:
     void parsePrecedenceRelation(const std::vector<std::string> &lines);
