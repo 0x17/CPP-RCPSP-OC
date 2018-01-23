@@ -137,6 +137,12 @@ ActivityListBasedGA::TDecoder ActivityListBasedGA::selectDecoder(DecoderType typ
 		return [](const ProjectWithOvertime& p, const vector<int>& order) {
 			return p.serialSGSWithOvertime(order);
 		};
+	case DecoderType::OptimalSubschedules:
+		return [](const ProjectWithOvertime& p, const vector<int>& order) {
+			vector<int> sts = p.serialOptimalSubSGS(order, 4);
+			Matrix<int> resRem = p.resRemForPartial(sts);
+			return SGSResult {sts, resRem, 1};
+		};
 	case DecoderType::GoldenSectionSearch:
 	default:
 		return [](const ProjectWithOvertime& p, const vector<int>& order) {
@@ -149,6 +155,8 @@ std::string ActivityListBasedGA::selectName(DecoderType type) {
 	switch(type) {
 	case DecoderType::CompareAlternatives:
 		return "CompareAlternativesGA";
+	case DecoderType::OptimalSubschedules:
+		return "OptimalSubschedulesGA";
 	case DecoderType::GoldenSectionSearch:
 	default:
 		return "GoldenSectionSearchGA";
@@ -189,4 +197,9 @@ CompareAlternativesGA::CompareAlternativesGA(ProjectWithOvertime& _p): ActivityL
 //======================================================================================================================
 
 GoldenSectionSearchGA::GoldenSectionSearchGA(ProjectWithOvertime& _p): ActivityListBasedGA(_p, DecoderType::GoldenSectionSearch) {
+}
+
+//======================================================================================================================
+
+OptimalSubschedulesGA::OptimalSubschedulesGA(ProjectWithOvertime& _p) : ActivityListBasedGA(_p, DecoderType::OptimalSubschedules) {
 }

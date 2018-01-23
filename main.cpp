@@ -29,6 +29,7 @@ namespace Main {
 		void testFixedDeadlineHeuristic();
 		void testLocalSolverNative(int seed);
 		void testGurobi();
+		void testSerialOptimalSubschedules();
 	}
 }
 
@@ -108,7 +109,11 @@ int main(int argc, const char * argv[]) {
 	//Main::jsonConverter(argc, argv);
 
 	Main::commandLineRunner(argc, argv);
+
 	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_RANDKEY_ZRT, 10000, "j30/j3010_1.sm");
+
+	//Main::Testing::testGurobi();
+	//Main::Testing::testSerialOptimalSubschedules();
 	
     return 0;
 }
@@ -148,7 +153,7 @@ void Main::convertArgFileToLSP(int argc, const char * argv[]) {
 
 void Main::showUsage() {
 	list<string> solMethods = { "BranchAndBound", "LocalSolver", "Gurobi" };
-	for (int i = 0; i < 10; i++) solMethods.push_back("GA" + to_string(i) + " // " + Runners::getDescription(i));
+	for (int i = 0; i < 11; i++) solMethods.push_back("GA" + to_string(i) + " // " + Runners::getDescription(i));
 	for (int i = 0; i < 10; i++) solMethods.push_back("LocalSolverNative" + to_string(i) + " // " + Runners::getDescription(i));
 	cout << "Number of arguments must be >= 4" << endl;
 	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ScheduleLimit ProjectFileSM [traceobj]" << endl;
@@ -216,7 +221,7 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
 			purgeOldTraceFile(BranchAndBound::getTraceFilename(outPath, p.instanceName));
             sts = b.solve(false, traceobj, outPath);			
         } else if(boost::starts_with(solMethod, "GA")) {
-			int gaIndex = stoi(solMethod.substr(2, 1));
+			int gaIndex = stoi(solMethod.substr(2, solMethod.length()-2));
 			int variant = (gaIndex == 0 && solMethod.length() == 4) ? stoi(solMethod.substr(3, 1)) : 0;
 			outFn += "GA" + to_string(gaIndex) + "Results.txt";
 			if (instanceAlreadySolvedInResultFile(coreName, outFn)) return;
@@ -241,6 +246,7 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
 			opts.iterLimit = (iterLimit == -1.0) ? opts.iterLimit : iterLimit;
 			opts.threadCount = 1;
 			GurobiSolver gsolver(p, opts);
+			gsolver.buildModel();
 			outFn += "GurobiResults.txt";
 			if (instanceAlreadySolvedInResultFile(coreName, outFn)) return;
 			purgeOldTraceFile(GurobiSolver::traceFilenameForInstance(outPath, p.instanceName));
@@ -266,18 +272,37 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
 
 #ifndef DISABLE_GUROBI
 void Main::Testing::testGurobi() {
-	string projFilename = "../../Projekte/j30/j3027_4.sm";
+	string projFilename = "j30/j3027_4.sm";
 	ProjectWithOvertime p(projFilename);
 	GurobiSolver::Options opts;
-	opts.traceobj = true;
+	opts.traceobj = false;
 	opts.useSeedSol = true;
 	opts.displayInterval = 1;
 	opts.gap = 0.0;
-	opts.outPath = "THISISNOTFORREAL";
+	opts.outPath = "SOMEPREFIX";
 	opts.timeLimit = 60; //GRB_INFINITY;
-	opts.threadCount = 1;
+	opts.threadCount = 0;
 	GurobiSolver solver(p, opts);
+	solver.buildModel();
 	auto res = solver.solve();
+	cout << "Profit = " << p.calcProfit(res.sts) << endl;
+	Utils::serializeSchedule(res.sts, "myschedule.txt");
+	Utils::serializeProfit(p.calcProfit(res.sts), "myprofit.txt");
+}
+
+void Main::Testing::testSerialOptimalSubschedules() {
+	string projFilename = "j30/j3027_4.sm";
+	ProjectWithOvertime p(projFilename);
+	const auto resopt = p.serialOptimalSubSGS(p.topOrder, 32);
+
+	vector<int> order = p.scheduleToActivityList(resopt);
+	//order = p.topOrder;
+
+	const auto res = p.serialOptimalSubSGS(order, 4);
+	cout << "Profit = " << p.calcProfit(res) << endl;
+	Utils::serializeSchedule(res, "myschedule.txt");
+	Utils::serializeProfit(p.calcProfit(res), "myprofit.txt");
+	getchar();
 }
 #endif
 

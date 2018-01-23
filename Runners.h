@@ -53,6 +53,7 @@ namespace Runners {
 	RUN_GA_FUNC_SIGN(runFixedDeadlineGA, FixedDeadlineGA)
 	RUN_GA_FUNC_SIGN(runFixedCapaRandomKeyGA, FixedCapacityRandomKeyGA)
 	RUN_GA_FUNC_SIGN(runTimeVaryCapaRandomKeyGA, TimeVaryingCapacityRandomKeyGA)
+	RUN_GA_FUNC_SIGN(runOptimalSubschedulesGA, OptimalSubschedulesGA)
 
 	GAResult run(ProjectWithOvertime &p, GAParameters &params, int index);
 
@@ -70,6 +71,8 @@ namespace Runners {
 		RE_LAMBDA_ALTS,
 		RE_LAMBDA_GS,
 		RE_LAMBDA_DEADLINE_OFFSET,
-		RE_RANDKEY_ZRT
+		RE_RANDKEY_ZR,
+		RE_RANDKEY_ZRT,
+		RE_LAMBDA_SUB
 	};
 }

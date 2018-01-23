@@ -246,6 +246,13 @@ bool Project::isResRemValid(const vector<int>& sts, const Matrix<int>& resRem) c
 	return true;
 }
 
+bool Project::isCompleteSchedule(const std::vector<int>& sts) const {
+	for(int stj : sts) {
+		if(stj == UNSCHEDULED) return false;
+	}
+	return true;
+}
+
 bool Project::allPredsScheduled(int j, const vector<int>& sts) const {
 	for (int i = 0; i < numJobs; i++) {
 		if (adjMx(i, j) && sts[i] == UNSCHEDULED)

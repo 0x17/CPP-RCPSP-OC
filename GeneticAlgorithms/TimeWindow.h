@@ -53,7 +53,8 @@ public:
 
 	enum class DecoderType {
 		CompareAlternatives,
-		GoldenSectionSearch
+		GoldenSectionSearch,
+		OptimalSubschedules
 	};
 
 	ActivityListBasedGA(ProjectWithOvertime &_p, const std::string &name, TDecoder _decoder);
@@ -80,4 +81,9 @@ public:
 class GoldenSectionSearchGA : public ActivityListBasedGA {
 public:
 	GoldenSectionSearchGA(ProjectWithOvertime& _p);
+};
+
+class OptimalSubschedulesGA : public ActivityListBasedGA {
+public:
+	OptimalSubschedulesGA(ProjectWithOvertime& _p);
 };

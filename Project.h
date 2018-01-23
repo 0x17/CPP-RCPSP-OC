@@ -157,6 +157,8 @@ public:
 
 	bool isResRemValid(const std::vector<int>& sts, const Matrix<int>& resRem) const;
 
+	bool isCompleteSchedule(const std::vector<int>& sts) const;
+
 	static std::string coreInstanceName(const std::string & parentPath, const std::string & filename);
 
 	std::vector<int> standardizeRandomKey(const std::vector<float> &rk) const;

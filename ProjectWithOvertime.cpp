@@ -9,6 +9,7 @@
 #include <boost/algorithm/clamp.hpp>
 
 #include "ProjectWithOvertime.h"
+#include "GurobiSolver.h"
 
 using namespace std;
 
@@ -30,12 +31,14 @@ ProjectWithOvertime::ProjectWithOvertime(const string& projectName, const vector
 	zmax(numRes),
 	zzero(numRes, 0),
 	kappa(numRes),
-	revenue(numPeriods) {
+	revenue(numPeriods),
+	revenueExtrapolated(numPeriods) {
 	eachRes([&](int r) {
 		zmax[r] = capacities[r] / 2;
 		kappa[r] = 0.5f;
 	});
 	computeRevenueFunction();
+	computeExtrapolatedRevenueFunction();
 }
 
 inline float ProjectWithOvertime::totalCosts(const Matrix<int> & resRem) const {
@@ -96,6 +99,26 @@ void ProjectWithOvertime::computeRevenueFunction() {
 		(t > maxMs) ? 0.0f :
 		maxCosts - maxCosts / pow(maxMs-minMs, 2) * pow(t-minMs, 2)))
 }
+
+void ProjectWithOvertime::computeExtrapolatedRevenueFunction() {
+	const auto ess = earliestStartSchedule();
+
+	const int minMs = makespan(ess);
+	const int maxMs = makespan(serialSGS(topOrder));
+
+	const float maxCosts = totalCosts(ess);
+
+	const auto extrapolatedLine = [&](int t) {
+		return maxCosts / (maxMs - minMs) * (maxMs - t);
+	};
+
+	EACH_PERIOD(revenueExtrapolated[t] = static_cast<float>(
+		minMs >= maxMs ? maxCosts :
+		t < minMs ? extrapolatedLine(t) :
+		t > maxMs ? 0.0f :
+		maxCosts - maxCosts / pow(maxMs - minMs, 2) * pow(t - minMs, 2)))
+}
+
 
 int ProjectWithOvertime::computeTKappa() const {
     int tkappa = 0;
@@ -320,6 +343,29 @@ void ProjectWithOvertime::from_json(const json11::Json& obj) {
 	revenue = JsonUtils::extractNumberArrayFromObj(obj, "u");
 	kappa = JsonUtils::extractNumberArrayFromObj(obj, "kappa");
 	zmax = JsonUtils::extractIntArrayFromObj(obj, "zmax");
+}
+
+std::vector<int> ProjectWithOvertime::serialOptimalSubSGS(const std::vector<int>& partitions, int partitionSize) const {
+	std::vector<int> sts(numJobs, UNSCHEDULED), nextPartition(partitionSize, -1);
+	GurobiSolverBase::Options opts;
+	opts.traceobj = false;
+
+	const int numPartitions = ceil((float)partitions.size() / (float)partitionSize);
+	for(int p = 0; p < numPartitions; p++) {
+		for(int j=0; j<partitionSize; j++) {
+			int ix = p*partitionSize + j;
+			if(ix >= partitions.size()) {
+				nextPartition.resize(j);
+				break;
+			}
+			nextPartition[j] = partitions[ix];
+		}
+		GurobiSubprojectSolver solver(*this, opts, sts, nextPartition);
+		solver.buildModel();
+		sts = solver.solve().sts;
+	}
+
+	return sts;
 }
 
 bool ProjectWithOvertime::isScheduleResourceFeasible(const vector<int>& sts) const {

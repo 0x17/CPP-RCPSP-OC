@@ -69,7 +69,8 @@ namespace Runners {
 		runGoldenSectionSearchGA,	// 6
 		runFixedDeadlineGA,			// 7
 		runFixedCapaGA,				// 8
-		runTimeVaryCapaRandomKeyGA  // 9
+		runTimeVaryCapaRandomKeyGA, // 9
+		runOptimalSubschedulesGA    // 10
 	};
 
 	static vector<string> representationDescriptions = {
@@ -82,7 +83,8 @@ namespace Runners {
 		"(lambda) gs",
 		"(lambda|deadline-offset)",
 		"(rk|zr)",
-		"(rk|zrt)"
+		"(rk|zrt)",
+		"(lambda) sub"
 	};
 
 	string getDescription(int ix) { return representationDescriptions[ix]; }
@@ -107,6 +109,7 @@ namespace Runners {
 	RUN_GA_FUNC_IMPL(runFixedDeadlineGA, FixedDeadlineGA)
 	RUN_GA_FUNC_IMPL(runFixedCapaRandomKeyGA, FixedCapacityRandomKeyGA)
 	RUN_GA_FUNC_IMPL(runTimeVaryCapaRandomKeyGA, TimeVaryingCapacityRandomKeyGA)
+	RUN_GA_FUNC_IMPL(runOptimalSubschedulesGA, OptimalSubschedulesGA)
 
 
 	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, RunnerParams rparams) {

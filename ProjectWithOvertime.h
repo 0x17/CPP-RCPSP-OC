@@ -12,6 +12,7 @@ class ProjectWithOvertime : public Project {
 public:
     std::vector<int> zmax, zzero;
 	std::vector<float> kappa, revenue;
+	std::vector<float> revenueExtrapolated;
 
 	explicit ProjectWithOvertime(const std::string &filename);
     explicit ProjectWithOvertime(JsonWrap obj);
@@ -88,8 +89,11 @@ public:
 	json11::Json to_json() const override;
 	void from_json(const json11::Json& obj) override;
 
+	std::vector<int> serialOptimalSubSGS(const std::vector<int>& partitions, int partitionSize) const;
+
 private:
     void computeRevenueFunction();
+	void computeExtrapolatedRevenueFunction();
     int computeTKappa() const;
 	bool enoughCapacityForJobWithOvertime(int job, int t, const Matrix<int> & resRem) const;
 };

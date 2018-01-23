@@ -12,7 +12,7 @@
 
 class ProjectWithOvertime;
 
-class GurobiSolver {
+class GurobiSolverBase {
 public:	
 	struct Options : BasicSolverParameters {
 		bool useSeedSol;
@@ -27,18 +27,25 @@ public:
 		Result(std::vector<int> &_sts, bool _optimal);
 	};
 
-	GurobiSolver(ProjectWithOvertime& _p, Options _opts);
+	GurobiSolverBase(const ProjectWithOvertime& _p, Options _opts);
+	virtual ~GurobiSolverBase() = default;
 
 	void restrictJobToTimeWindow(int j, int eft, int lft);
 
 	void relaxJob(int j);
 	void relaxAllJobs();
 
-	Result solve();
+	void fixJobsToPartialSchedule(const std::vector<int>& sts);
+
+	void buildModel();
+
+	Result solve();	
 
 	static std::string traceFilenameForInstance(const std::string& outPath, const std::string& instanceName);
 
-private:
+	static std::unique_ptr<GRBEnv> setupOptions(Options opts);
+
+protected:
 	class CustomCallback : public GRBCallback {
 	public:
 		CustomCallback(const std::string &outPath, const std::string& instanceName);
@@ -50,20 +57,44 @@ private:
 		Stopwatch sw;
 	};
 
-	ProjectWithOvertime &p;
+	const ProjectWithOvertime &p;
 	Options opts;
-	GRBEnv env;
+	const std::unique_ptr<GRBEnv> env;
 	GRBModel model;
 	Matrix<GRBVar> xjt, zrt;
-	CustomCallback cback;
+	const std::unique_ptr<CustomCallback> cback;
 
-	static GRBEnv setupOptions(Options opts);
-
-	void setupObjectiveFunction();
-	void setupConstraints();
-	void setupFeasibleMipStart();
-
+	virtual void setupObjectiveFunction() = 0;
+	virtual void setupConstraints() = 0;
+	virtual void setupFeasibleMipStart() = 0;
+	
 	std::vector<int> parseSchedule() const;
+};
+
+class GurobiSolver : public GurobiSolverBase {
+public:
+	GurobiSolver(const ProjectWithOvertime& _p, Options _opts) : GurobiSolverBase(_p, _opts) {}
+	virtual ~GurobiSolver() = default;
+
+private:
+	void setupObjectiveFunction() override;
+	void setupConstraints() override;
+	void setupFeasibleMipStart() override;	
+};
+
+class GurobiSubprojectSolver : public GurobiSolverBase {
+public:
+	GurobiSubprojectSolver(const ProjectWithOvertime& _p, Options& _opts, const std::vector<int>& _sts, const std::vector<int>& _nextPartition);
+	virtual ~GurobiSubprojectSolver() = default;
+
+private:
+	const std::vector<int> &sts, &nextPartition;
+	const std::vector<GRBVar> isms;
+	std::vector<int> jobsInSubproject;
+	
+	void setupObjectiveFunction() override;
+	void setupConstraints() override;
+	void setupFeasibleMipStart() override;
 };
 
 #endif
