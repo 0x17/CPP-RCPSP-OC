@@ -105,8 +105,6 @@ vector<int> GurobiSolverBase::parseSchedule() const {
 GurobiSolverBase::Result GurobiSolverBase::solve() {
 	//LOG_I("Optimizing model");
 
-	model.write("bagina.lp");
-
 	try {
 		model.optimize();
 		auto sts = parseSchedule();
@@ -273,7 +271,7 @@ void GurobiSubprojectSolver::setupConstraints() {
 			p.timeWindowBounded(j, [&](int t) { succSt += xjt(j, t) * t; });
 			succSt -= p.durations[j];
 
-			model.addConstr(predFt <= succSt, "i" + to_string(i) + "beforej" + to_string(j));
+			precedenceConstraints[make_pair(i,j)] = model.addConstr(succSt - predFt >= 0, "i" + to_string(i) + "beforej" + to_string(j));
 		}
 	});
 
@@ -295,6 +293,10 @@ void GurobiSubprojectSolver::setupFeasibleMipStart() {
 }
 
 void GurobiSubprojectSolver::setupModelForSubproject(const std::vector<int> &sts, const std::vector<int> &nextPartition) {
+	for(auto &pair : precedenceConstraints) {
+		pair.second.set(GRB_DoubleAttr_RHS, 0.0);
+	}
+
 	p.eachJobConst([&](int j) {
 		if(sts[j] != Project::UNSCHEDULED) {
 			p.eachPeriodBoundedConst([&](int t) {
@@ -317,11 +319,18 @@ void GurobiSubprojectSolver::setupModelForSubproject(const std::vector<int> &sts
 				xjt(j, t).set(GRB_DoubleAttr_UB, 0.0);
 			});
 			eachOnceConstraints[j].set(GRB_DoubleAttr_RHS, 0.0);
+			p.eachJobConst([&](int i) {
+				if(p.adjMx(i,j))
+					precedenceConstraints[make_pair(i,j)].set(GRB_DoubleAttr_RHS, -GRB_INFINITY);
+				if(p.adjMx(j,i))
+					precedenceConstraints[make_pair(j,i)].set(GRB_DoubleAttr_RHS, -GRB_INFINITY);
+			});
+
 		}
 	});
 
 	model.update();
-	//model.reset();
+	model.reset();
 }
 
 #endif

@@ -171,6 +171,8 @@ public:
 	json11::Json to_json() const override;
 	void from_json(const json11::Json & obj) override;
 
+	int countOrderRelations() const;
+
 protected:
 	bool allPredsScheduled(int j, const std::vector<int> &sts) const;
 	bool allPredsScheduled(int j, const std::vector<bool>& unscheduled) const;

@@ -364,7 +364,6 @@ std::vector<int> ProjectWithOvertime::serialOptimalSubSGS(const std::vector<int>
 
 		solver.setupModelForSubproject(sts, nextPartition);
 		sts = solver.solve().sts;
-		cout << endl;
 	}
 
 	return sts;

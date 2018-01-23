@@ -748,3 +748,13 @@ int Project::chooseEligibleWithHighestPrioAndResFeasRuntime(const std::vector<in
 	return -1;
 	return 0;
 }
+
+int Project::countOrderRelations() const {
+	int count = 0;
+	adjMx.foreach([&](int i, int j, int val) {
+		if(val == 1)
+			count++;
+	});
+	return count;
+
+}

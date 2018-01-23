@@ -89,6 +89,7 @@ public:
 
 private:
 	std::vector<GRBConstr> eachOnceConstraints;
+	std::map<std::pair<int,int>,GRBConstr> precedenceConstraints;
 	const std::vector<GRBVar> isms;
 	
 	void setupObjectiveFunction() override;
