@@ -4,7 +4,7 @@
 using namespace std;
 using namespace localsolver;
 
-GSListModel::GSListModel(ProjectWithOvertime& _p, SchedulingNativeFunction *func) : ListModel(_p, func) {}
+GSListModel::GSListModel(ProjectWithOvertime& _p, SchedulingNativeFunction *_func) : ListModel(_p, _func) {}
 GSListModel::GSListModel(ProjectWithOvertime& _p) : ListModel(_p, new QuasistableSGSFunction(_p)) {}
 
 int GSListModel::QuasistableSGSFunction::varCount() {

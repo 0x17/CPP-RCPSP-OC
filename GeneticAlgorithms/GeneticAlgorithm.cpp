@@ -15,26 +15,10 @@ GAParameters::GAParameters() :
 		fitnessBasedPairing(false),
 		selectionMethod(SelectionMethod::BEST),
 		crossoverMethod(CrossoverMethod::OPC),
+		sgs(ScheduleGenerationScheme::SERIAL),
 		rbbrs(false),
 		enforceTopOrdering(true),
 		fbiFeedbackInjection(false) {
-}
-
-template<class T>
-void assignNumberSlotsFromJsonWithMapping(const json11::Json &obj, const std::map<std::string, T *> mapping) {
-	for(const auto &pair : mapping) {
-		if(obj[pair.first].is_number()) {
-			*pair.second = static_cast<T>(obj[pair.first].number_value());
-		}
-	}
-}
-
-void assignBooleanSlotsFromJsonWithMapping(const json11::Json &obj, const std::map<std::string, bool *> mapping) {
-	for (const auto &pair : mapping) {
-		if (obj[pair.first].is_bool()) {
-			*pair.second = obj[pair.first].bool_value();
-		}
-	}
 }
 
 void GAParameters::fromJsonStr(const std::string &s) {
@@ -58,16 +42,20 @@ void GAParameters::fromJsonStr(const std::string &s) {
 			{"fbiFeedbackInjection", &fbiFeedbackInjection}
 	};
 
-	assignNumberSlotsFromJsonWithMapping<int>(obj, keyNamesToIntSlots);
-	assignNumberSlotsFromJsonWithMapping<double>(obj, keyNamesToDoubleSlots);
-	assignBooleanSlotsFromJsonWithMapping(obj, keyNamesToBooleanSlots);
+	JsonUtils::assignNumberSlotsFromJsonWithMapping<int>(obj, keyNamesToIntSlots);
+	JsonUtils::assignNumberSlotsFromJsonWithMapping<double>(obj, keyNamesToDoubleSlots);
+	JsonUtils::assignBooleanSlotsFromJsonWithMapping(obj, keyNamesToBooleanSlots);
 
 	if(obj["selectionMethod"].is_string()) {
 		selectionMethod = boost::equals(obj["selectionMethod"].string_value(), "best") ? SelectionMethod::BEST : SelectionMethod::DUEL;
 	}
 
-	if(obj["selectionMethod"].is_string()) {
+	if(obj["crossoverMethod"].is_string()) {
 		crossoverMethod = boost::equals(obj["crossoverMethod"].string_value(), "TPC") ? CrossoverMethod::TPC : CrossoverMethod::OPC;
+	}
+
+	if (obj["scheduleGenerationScheme"].is_string()) {
+		sgs = boost::equals(obj["scheduleGenerationScheme"].string_value(), "Parallel") ? ScheduleGenerationScheme::PARALLEL : ScheduleGenerationScheme::SERIAL;
 	}
 }
 

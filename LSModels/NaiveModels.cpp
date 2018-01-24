@@ -262,3 +262,74 @@ void LSSolver::writeLSPModelParamFile(ProjectWithOvertime &p, string outFilename
 		f << onum << "\n";
 	f.close();
 }
+
+//======================================================================================================================
+
+const static int partitionSize = 4;
+
+class SerialSubSGSFunction : public localsolver::LSNativeFunction {
+	const ProjectWithOvertime &p;
+public:
+	explicit SerialSubSGSFunction(const ProjectWithOvertime &_p) : p(_p) {}
+	~SerialSubSGSFunction() override = default;
+
+	lsdouble call(const LSNativeContext &context) override {
+		assert(context.count() == p.numJobs);
+
+		const auto partitionList = Utils::constructVector<int>(p.numJobs, [&](int j) { return static_cast<int>(context.getIntValue(j)); });
+		if (!p.isPartitionListFeasible(partitionList, partitionSize)) {
+			return numeric_limits<double>::lowest();
+		}
+		return p.calcProfit(p.serialOptimalSubSGSWithPartitionList(partitionList));
+	}
+};
+
+std::vector<int> LSSolver::solvePartitionListModel(ProjectWithOvertime &p) {
+	LocalSolver ls;
+	auto model = ls.getModel();
+
+	SerialSubSGSFunction sgsFunc(p);
+	LSExpression sgsFuncExpr = model.createNativeFunction(&sgsFunc);
+
+	int partitionCount = static_cast<int>(ceil(p.numJobs / partitionSize));
+
+	// Decision variables
+	auto partitionList = Utils::constructVector<LSExpression>(p.numJobs, [&](int j) { return model.intVar(0, partitionCount-1); });
+	
+	// Objective function
+	LSExpression objfunc = model.createExpression(O_Call, sgsFuncExpr);
+	p.eachJobConst([&](int j) { objfunc.addOperand(partitionList[j]); });
+
+	// Precedence restriction
+	p.eachJobPairConst([&](int i, int j) {
+		if(p.adjMx(i, j)) {
+			model.constraint(partitionList[i] <= partitionList[j]);
+		}
+	});
+
+	// Enforce partition size
+	for (int pix = 0; pix < partitionCount-1; pix++) {
+		LSExpression njobsInThisPartition = model.sum();
+		p.eachJobConst([&](int j) {
+			njobsInThisPartition += model.iif(partitionList[j] == pix, 1, 0);
+		});
+		model.constraint(njobsInThisPartition == partitionSize);
+	}
+
+	model.addObjective(objfunc, OD_Maximize);
+	model.close();
+
+	ls.createPhase().setTimeLimit(30);
+	auto param = ls.getParam();
+	param.setNbThreads(1);
+	param.setVerbosity(2);
+	ls.solve();
+
+	auto sol = ls.getSolution();
+	const auto partitionListResult = Utils::constructVector<int>(p.numJobs, [&](int j) { return static_cast<int>(sol.getIntValue(partitionList[j])); });
+
+	auto status = sol.getStatus();
+	auto solvetime = ls.getStatistics().getRunningTime();
+
+	return p.serialOptimalSubSGSWithPartitionList(partitionListResult);
+}

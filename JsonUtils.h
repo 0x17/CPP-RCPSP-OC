@@ -37,4 +37,14 @@ namespace JsonUtils {
     void fillIntFieldsWithObject(const json11::Json& obj, const std::vector<std::string> &keys, const std::vector<int *> &fields);
     void fillStrFieldsWithObject(const json11::Json& obj, const std::vector<std::string> &keys, const std::vector<std::string *> &fields);
 
+	template<class T>
+	void assignNumberSlotsFromJsonWithMapping(const json11::Json &obj, const std::map<std::string, T *> mapping) {
+		for (const auto &pair : mapping) {
+			if (obj[pair.first].is_number()) {
+				*pair.second = static_cast<T>(obj[pair.first].number_value());
+			}
+		}
+	}
+
+	void assignBooleanSlotsFromJsonWithMapping(const json11::Json &obj, const std::map<std::string, bool *> mapping);
 }

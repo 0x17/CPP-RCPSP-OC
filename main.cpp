@@ -30,6 +30,7 @@ namespace Main {
 		void testLocalSolverNative(int seed);
 		void testGurobi();
 		void testSerialOptimalSubschedules();
+		void testLocalSolverNativePartitionList();
 	}
 }
 
@@ -51,7 +52,9 @@ int main(int argc, const char * argv[]) {
 
 	//Main::jsonConverter(argc, argv);
 
-	Main::commandLineRunner(argc, argv);
+	//Main::commandLineRunner(argc, argv);
+
+	Main::Testing::testLocalSolverNativePartitionList();
 
 	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_RANDKEY_ZRT, 10000, "j30/j3010_1.sm");
 
@@ -302,6 +305,12 @@ void Main::Testing::testSerialOptimalSubschedules() {
 	//Utils::serializeSchedule(res, "myschedule.txt");
 	//Utils::serializeProfit(p.calcProfit(res), "myprofit.txt");
 	//getchar();
+}
+
+void Main::Testing::testLocalSolverNativePartitionList() {
+	ProjectWithOvertime p("j30/j3010_1.sm");
+	const auto res = LSSolver::solvePartitionListModel(p);
+	cout << "Profit = " << p.calcProfit(res) << endl;
 }
 #endif
 

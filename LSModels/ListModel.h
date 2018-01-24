@@ -18,11 +18,9 @@ public:
 
 class SchedulingNativeFunction : public BaseSchedulingNativeFunction {
 	Utils::Tracer *tr = nullptr;
-	localsolver::lsdouble bks = 0.0;	
-protected:
-	bool enforceTopOrdering;
+	localsolver::lsdouble bks = 0.0;
 public:
-	explicit SchedulingNativeFunction(ProjectWithOvertime &_p, bool _enforceTopOrdering = false) : BaseSchedulingNativeFunction(_p), enforceTopOrdering(_enforceTopOrdering) {}
+	explicit SchedulingNativeFunction(ProjectWithOvertime &_p) : BaseSchedulingNativeFunction(_p) {}
 	~SchedulingNativeFunction() override = default;
 
 	virtual int varCount() = 0;
@@ -51,6 +49,14 @@ public:
 	virtual std::vector<int> solve(SolverParams params) = 0;
 };
 
+struct LSModelOptions {
+	bool enforceTopOrdering, parallelSGS;
+	LSModelOptions(bool enforce_top_ordering = false, bool parallel_sgs = false) : enforceTopOrdering(enforce_top_ordering), parallelSGS(parallel_sgs) {}
+
+	void fromJsonStr(const std::string &s);
+	void parseFromJsonFile(const std::string &fn = "LSModelOptions.json");
+};
+
 class ListModel : public ISolver {
 protected:
 	ProjectWithOvertime &p;
@@ -58,18 +64,21 @@ protected:
 	SchedulingNativeFunction *decoder;
 	TopOrderChecker *topOrderChecker;
 	std::vector<localsolver::LSExpression> listElems;
-	bool enforceTopOrdering;
-
+	
 	virtual void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression &obj) = 0;
 	virtual std::vector<int> parseScheduleFromSolution(localsolver::LSSolution &sol) = 0;
 
+	static LSModelOptions options;
+
 public:
-	ListModel(ProjectWithOvertime &_p, SchedulingNativeFunction *_decoder, bool _enforceTopOrdering = false);
+	ListModel(ProjectWithOvertime &_p, SchedulingNativeFunction *_decoder);
 	virtual ~ListModel();
 
 	virtual std::vector<int> solve(SolverParams params);
 
 	static std::string traceFilenameForListModel(const std::string& outPath, int lsIndex, const std::string& instanceName);
+
+	static LSModelOptions &getOptions() { return options;  }
 
 private:
 	void buildModel();
@@ -116,7 +125,7 @@ protected:
 	virtual std::vector<int> parseScheduleFromSolution(localsolver::LSSolution &sol) = 0;
 
 public:
-	RandomKeyModel(ProjectWithOvertime &_p, RandomKeySchedulingNativeFunction *_decoder, bool _enforceTopOrdering = false);
+	RandomKeyModel(ProjectWithOvertime &_p, RandomKeySchedulingNativeFunction *_decoder);
 	virtual ~RandomKeyModel();
 
 	virtual std::vector<int> solve(SolverParams params);

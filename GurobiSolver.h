@@ -3,6 +3,7 @@
 #ifndef DISABLE_GUROBI
 
 #include <vector>
+#include <map>
 #include <gurobi_c++.h>
 
 #include "Matrix.h"

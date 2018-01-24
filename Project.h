@@ -173,6 +173,10 @@ public:
 
 	int countOrderRelations() const;
 
+	std::vector<int> parallelSGS(const std::vector<int> &order) const;
+	std::vector<int> parallelSGS(const std::vector<int> &order, const std::vector<int> &z) const;
+	SGSResult parallelSGS(const std::vector<int> &order, const Matrix<int> &z) const;
+
 protected:
 	bool allPredsScheduled(int j, const std::vector<int> &sts) const;
 	bool allPredsScheduled(int j, const std::vector<bool>& unscheduled) const;
@@ -205,11 +209,9 @@ protected:
 
 	Project(const std::string &projectName, const std::vector<std::string>& lines);
 
-	std::vector<int> parallelSGS(const std::vector<int> &order) const;
+	
 	int nextDecisionPoint(const std::vector<int> &sts, int dt) const;
 	std::vector<int> parallelSGSCore(const std::vector<int> &order, const std::vector<int> &baseResRem) const;
-	std::vector<int> parallelSGS(const std::vector<int> &order, const std::vector<int> &z) const;
-	SGSResult parallelSGS(const std::vector<int> &order, const Matrix<int> &z) const;
 	bool enoughCapacityForJobInFirstPeriod(int job, const std::vector<int> &resRemDt) const;
 
 	inline bool isJobActiveInPeriod(const std::vector<int> &sts, int j, int t) const {

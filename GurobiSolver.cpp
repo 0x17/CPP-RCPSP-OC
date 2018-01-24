@@ -6,7 +6,7 @@
 using namespace std;
 
 GurobiSolverBase::Options::Options() :
-	BasicSolverParameters(GRB_INFINITY, -1, false, "GurobiTrace_", 0),
+	BasicSolverParameters(GRB_INFINITY, -1, false, "GurobiTrace_", 1), // 0
 	useSeedSol(true),
 	gap(0.0),
 	displayInterval(1) {
@@ -84,7 +84,9 @@ unique_ptr<GRBEnv> GurobiSolverBase::setupOptions(Options opts) {
 	env->set(GRB_DoubleParam_TimeLimit, opts.timeLimit);
 	env->set(GRB_IntParam_DisplayInterval, opts.displayInterval);
 	env->set(GRB_IntParam_Threads, opts.threadCount);
+
 	env->set(GRB_IntParam_OutputFlag, 0);
+
 	//env->set(GRB_DoubleParam_NodeLimit, opts.iterLimit);
 	//env->set(GRB_DoubleParam_Heuristics, 1.0);
 	return env;
@@ -110,6 +112,11 @@ GurobiSolverBase::Result GurobiSolverBase::solve() {
 		auto sts = parseSchedule();
 		if(p.isCompleteSchedule(sts) && cback.get() != nullptr)
 			cback->manualCallback(p.calcProfit(sts));
+
+		if(model.get(GRB_IntAttr_Status) != GRB_OPTIMAL) {
+			cout << "INFEASIBLE!!!" << endl;
+		}
+
 		return { sts, model.get(GRB_IntAttr_Status) == GRB_OPTIMAL };
 	}
 	catch (GRBException &e) {

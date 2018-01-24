@@ -5,6 +5,7 @@
 #include <cmath>
 #include <string>
 #include <map>
+#include <algorithm>
 
 #include <boost/algorithm/clamp.hpp>
 
@@ -369,6 +370,47 @@ std::vector<int> ProjectWithOvertime::serialOptimalSubSGS(const std::vector<int>
 	return sts;
 }
 
+// TODO: LocalSolver partitionslistenmodell mit constraints: für alle i->j gilt: pl(i)<pl(j) und pl(j) in 0..ceil(njobs/partitionSize)-1 für alle j
+std::vector<int> ProjectWithOvertime::serialOptimalSubSGSWithPartitionList(const std::vector<int> &partitionList) const {
+	static GurobiSolverBase::Options opts;
+	static GurobiSubprojectSolver solver(*this, opts);
+
+	int numPartitions = *max_element(partitionList.begin(), partitionList.end())+1;
+	int partitionSize = count(partitionList.begin(), partitionList.end(), 0);
+
+	std::vector<int> sts(numJobs, UNSCHEDULED), nextPartition(partitionSize, -1);
+
+	for(int p=0; p<numPartitions; p++) {
+		int ctr = 0;
+		for(int j=0; j< numJobs; j++) {
+			if(partitionList[j] == p) {
+				nextPartition[ctr++] = j;
+			}
+		}
+
+		solver.setupModelForSubproject(sts, nextPartition);
+		sts = solver.solve().sts;
+	}
+
+	return sts;
+}
+
+bool ProjectWithOvertime::isPartitionListFeasible(const std::vector<int>& partitionList, int partitionSize) const {
+	int partitionCount = static_cast<int>(ceil(numJobs / partitionSize));
+
+	for (int pix = 0; pix < partitionCount - 1; pix++)
+		if (partitionSize != count(partitionList.begin(), partitionList.end(), pix))
+			return false;
+
+	for (int i = 0; i < numJobs; i++)
+		for (int j = 0; j < numJobs; j++)
+			if (adjMx(i,j) == 1 && partitionList[i] > partitionList[j])
+				return false;
+	
+	return true;
+}
+
+
 bool ProjectWithOvertime::isScheduleResourceFeasible(const vector<int>& sts) const {
 	return Project::isScheduleResourceFeasible(sts, zmax);
 }
@@ -587,5 +629,39 @@ SGSResult ProjectWithOvertime::serialSGSWithRandomKeyAndFBI(const std::vector<fl
 	const SGSResult res = serialSGSWithRandomKey(rk, z);
 	const vector<int> order = scheduleToActivityList(res.sts);
 	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>());
+}
+
+std::vector<int> ProjectWithOvertime::serialOptimalSubSGSAndFBI(const std::vector<int> &partitions, int partitionSize) const {
+	const vector<int> sts = serialOptimalSubSGS(partitions, partitionSize);
+	const Matrix<int> resRem = resRemForPartial(sts);
+	const SGSResult res = { sts, resRem, 1 };
+	return forwardBackwardIterations(partitions, res, makespan(res), boost::optional<int>()).sts;
+}
+
+std::vector<int> ProjectWithOvertime::serialOptimalSubSGSWithPartitionListAndFBI(const std::vector<int> &partitionList) const {
+	const vector<int> sts = serialOptimalSubSGSWithPartitionList(partitionList);
+	const vector<int> order = scheduleToActivityList(sts);
+	const Matrix<int> resRem = resRemForPartial(sts);
+	const SGSResult res = { sts, resRem, 1 };
+	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>()).sts;
+}
+
+SGSResult ProjectWithOvertime::parallelSGSWithForwardBackwardImprovement(const std::vector<int>& order, const Matrix<int>& z) const {
+	const auto res = parallelSGS(order, z);
+	return forwardBackwardIterations(order, res, makespan(res));
+}
+
+SGSResult ProjectWithOvertime::parallelSGSWithForwardBackwardImprovement(const std::vector<int>& order, const std::vector<int>& z) const {
+	const auto sts = parallelSGS(order, z);
+	const auto resRem = resRemForPartial(sts);
+	const SGSResult res = { sts, resRem, 1 };
+	return forwardBackwardIterations(order, res, makespan(res));
+}
+
+SGSResult ProjectWithOvertime::parallelSGSWithForwardBackwardImprovement(const std::vector<int>& order) const {
+	const auto sts = parallelSGS(order);
+	const auto resRem = resRemForPartial(sts);
+	const SGSResult res = { sts, resRem, 1 };
+	return forwardBackwardIterations(order, res, makespan(res));
 }
 

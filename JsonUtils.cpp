@@ -74,6 +74,14 @@ void JsonUtils::fillStrFieldsWithObject(const Json &obj, const std::vector<std::
     }
 }
 
+void JsonUtils::assignBooleanSlotsFromJsonWithMapping(const json11::Json & obj, const std::map<std::string, bool*> mapping) {
+	for (const auto &pair : mapping) {
+		if (obj[pair.first].is_bool()) {
+			*pair.second = obj[pair.first].bool_value();
+		}
+	}
+}
+
 Matrix<int> JsonUtils::matrixIntFromJson(const Json &obj) {
     assert(obj.is_array());
     auto rows = obj.array_items();

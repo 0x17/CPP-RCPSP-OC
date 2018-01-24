@@ -44,7 +44,17 @@ void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
 }
 
 FitnessResult TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
-	const auto pair = p.serialSGSWithForwardBackwardImprovement(i.order, i.z, !params.enforceTopOrdering);
+	SGSResult pair;
+
+	switch(params.sgs) {
+	default:
+	case ScheduleGenerationScheme::SERIAL:
+		pair = p.serialSGSWithForwardBackwardImprovement(i.order, i.z, !params.enforceTopOrdering);
+		break;
+	case ScheduleGenerationScheme::PARALLEL:
+		pair = p.parallelSGSWithForwardBackwardImprovement(i.order, i.z);		
+		break;
+	}	 
 
 	if(params.fbiFeedbackInjection) {
 		i.order = p.scheduleToActivityList(pair.sts);
@@ -54,7 +64,13 @@ FitnessResult TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
 }
 
 vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
-	return p.serialSGSWithForwardBackwardImprovement(i.order, i.z, !params.enforceTopOrdering).sts;
+	switch (params.sgs) {
+	default:
+	case ScheduleGenerationScheme::SERIAL:
+		return p.serialSGSWithForwardBackwardImprovement(i.order, i.z, !params.enforceTopOrdering).sts;
+	case ScheduleGenerationScheme::PARALLEL:
+		return p.parallelSGSWithForwardBackwardImprovement(i.order, i.z).sts;
+	}
 }
 
 void TimeVaryingCapacityGA::mutateOvertime(Matrix<int>& z) const {
@@ -91,12 +107,27 @@ void FixedCapacityGA::mutate(LambdaZr &i) {
 }
 
 FitnessResult FixedCapacityGA::fitness(LambdaZr &i) {
-	auto res = p.serialSGSWithForwardBackwardImprovement(i.order, i.z);
+	SGSResult res;
+	switch (params.sgs) {
+	default:
+	case ScheduleGenerationScheme::SERIAL:
+		res = p.serialSGSWithForwardBackwardImprovement(i.order, i.z, !params.enforceTopOrdering);
+		break;
+	case ScheduleGenerationScheme::PARALLEL:
+		res = p.parallelSGSWithForwardBackwardImprovement(i.order, i.z);
+		break;
+	}
 	return { p.calcProfit(res), res.numSchedulesGenerated };
 }
 
 vector<int> FixedCapacityGA::decode(LambdaZr& i) {
-	return p.serialSGSWithForwardBackwardImprovement(i.order, i.z).sts;
+	switch (params.sgs) {
+	default:
+	case ScheduleGenerationScheme::SERIAL:
+		return p.serialSGSWithForwardBackwardImprovement(i.order, i.z, !params.enforceTopOrdering).sts;
+	case ScheduleGenerationScheme::PARALLEL:
+		return p.parallelSGSWithForwardBackwardImprovement(i.order, i.z).sts;
+	}
 }
 
 void FixedCapacityGA::mutateOvertime(vector<int> &z) {

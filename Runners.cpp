@@ -37,7 +37,7 @@ namespace Runners {
 			solveModel = make_unique<ListFixedOvertimeModel>(p);
 			break;
 		case 4:
-			solveModel = make_unique<ListDynamicOvertimeModel>(p, false);
+			solveModel = make_unique<ListDynamicOvertimeModel>(p);
 			break;
 		case 5:
 			solveModel = make_unique<ListAlternativesModel>(p);
@@ -140,6 +140,13 @@ namespace Runners {
 		params.traceobj = rparams.traceobj;
 		params.solverIx = rparams.methodIndex;
 		params.outPath = rparams.outPath;
+
+		auto &opts = ListModel::getOptions();
+		opts.enforceTopOrdering = false;
+		opts.parallelSGS = false;
+
+		opts.parseFromJsonFile();
+
 		return lm->solve(params);
 	}
 

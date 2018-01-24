@@ -5,7 +5,7 @@
 class ListFixedOvertimeModel : public ListModel {
 	class SerialSGSZrDecoder : public SchedulingNativeFunction {
 	public:
-		explicit SerialSGSZrDecoder(ProjectWithOvertime &_p, bool _enforceTopOrdering) : SchedulingNativeFunction(_p, _enforceTopOrdering) {}
+		explicit SerialSGSZrDecoder(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
 		int varCount() override;
 		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
@@ -16,14 +16,14 @@ class ListFixedOvertimeModel : public ListModel {
 	std::vector<localsolver::LSExpression> zrVar;
 
 public:
-	explicit ListFixedOvertimeModel(ProjectWithOvertime &_p, bool _enforceTopOrdering = false) : ListModel(_p, new SerialSGSZrDecoder(_p, _enforceTopOrdering), _enforceTopOrdering), zrVar(p.numRes) {}
+	explicit ListFixedOvertimeModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSZrDecoder(_p)), zrVar(p.numRes) {}
 	~ListFixedOvertimeModel() final = default;
 };
 
 class ListDynamicOvertimeModel : public ListModel {
 	class SerialSGSZrtDecoder : public SchedulingNativeFunction {
 	public:
-		explicit SerialSGSZrtDecoder(ProjectWithOvertime &_p, bool _enforceTopOrdering) : SchedulingNativeFunction(_p, _enforceTopOrdering) {}
+		explicit SerialSGSZrtDecoder(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
 		int varCount() override;
 		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
@@ -34,7 +34,7 @@ class ListDynamicOvertimeModel : public ListModel {
 	Matrix<localsolver::LSExpression> zrtVar;
 
 public:
-	explicit ListDynamicOvertimeModel(ProjectWithOvertime &_p, bool _enforceTopOrdering = false) : ListModel(_p, new SerialSGSZrtDecoder(_p, _enforceTopOrdering), _enforceTopOrdering), zrtVar(p.numRes, p.heuristicMakespanUpperBound()) {}
+	explicit ListDynamicOvertimeModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSZrtDecoder(_p)), zrtVar(p.numRes, p.heuristicMakespanUpperBound()) {}
 	~ListDynamicOvertimeModel() final = default;
 };
 
@@ -72,6 +72,6 @@ class RandomKeyDynamicOvertimeModel : public RandomKeyModel {
 	Matrix<localsolver::LSExpression> zrtVar;
 
 public:
-	explicit RandomKeyDynamicOvertimeModel(ProjectWithOvertime &_p, bool _enforceTopOrdering = false) : RandomKeyModel(_p, new SerialSGSRandomKeyZrtDecoder(_p)), zrtVar(p.numRes, p.heuristicMakespanUpperBound()) {}
+	explicit RandomKeyDynamicOvertimeModel(ProjectWithOvertime &_p) : RandomKeyModel(_p, new SerialSGSRandomKeyZrtDecoder(_p)), zrtVar(p.numRes, p.heuristicMakespanUpperBound()) {}
 	~RandomKeyDynamicOvertimeModel() final = default;
 };

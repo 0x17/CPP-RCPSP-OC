@@ -2,6 +2,8 @@
 #include "../Stopwatch.h"
 #include "../Logger.h"
 
+#include <boost/filesystem.hpp>
+
 using namespace std;
 using namespace localsolver;
 
@@ -13,6 +15,25 @@ static int _nschedules = 0;
 static int _nindividuals = 0;
 static int _schedule_limit = -1;
 #endif
+
+LSModelOptions ListModel::options;
+
+void LSModelOptions::fromJsonStr(const std::string & s) {
+	const auto obj = JsonUtils::readJsonFromString(s);
+
+	map<string, bool *> keyNamesToBooleanSlots = {
+		{"enforceTopOrdering", &enforceTopOrdering},
+		{"parallelSGS", &parallelSGS}
+	};
+
+	JsonUtils::assignBooleanSlotsFromJsonWithMapping(obj, keyNamesToBooleanSlots);
+}
+
+void LSModelOptions::parseFromJsonFile(const std::string & fn) {
+	if (boost::filesystem::exists(fn) && boost::filesystem::is_regular_file(fn))
+		fromJsonStr(Utils::slurp(fn));
+}
+
 
 lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 #ifdef DIRTY_ENFORCE_ITERLIM_HACK
@@ -31,7 +52,7 @@ lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 			return numeric_limits<double>::lowest();
 	}
 
-	if (enforceTopOrdering && !p.isOrderFeasible(order)) {
+	if (ListModel::getOptions().enforceTopOrdering && !p.isOrderFeasible(order)) {
 		return numeric_limits<double>::lowest();
 	}
 
@@ -73,7 +94,7 @@ string ListModel::traceFilenameForListModel(const string& outPath, int lsIndex, 
 	return outPath + "LocalSolverNative" + to_string(lsIndex) + "Trace_" + instanceName;
 }
 
-ListModel::ListModel(ProjectWithOvertime& _p, SchedulingNativeFunction *_decoder, bool _enforceTopOrdering) : p(_p), decoder(_decoder), listElems(_p.numJobs), enforceTopOrdering(_enforceTopOrdering), topOrderChecker(_enforceTopOrdering ? new TopOrderChecker(_p) : nullptr) {
+ListModel::ListModel(ProjectWithOvertime& _p, SchedulingNativeFunction *_decoder) : p(_p), decoder(_decoder), listElems(_p.numJobs), topOrderChecker(ListModel::getOptions().enforceTopOrdering ? new TopOrderChecker(_p) : nullptr) {
 }
 
 ListModel::~ListModel() {
@@ -131,7 +152,7 @@ void ListModel::addTopologicalOrderingConstraint(LSModel &model, LSExpression &a
 			}
 		}
 	}*/
-	auto topOrderCheckerFunc = model.createNativeFunction(topOrderChecker);
+	const auto topOrderCheckerFunc = model.createNativeFunction(topOrderChecker);
 	auto topOrderCheckerExpr = model.call(topOrderCheckerFunc);
 	for(int i=0; i<p.numJobs; i++)
 		topOrderCheckerExpr.addOperand(listElems[i]);
@@ -163,7 +184,7 @@ void ListModel::buildModel() {
 			obj.addOperand(listElems[i]);
 		}
 
-		if(enforceTopOrdering)
+		if(options.enforceTopOrdering)
 			addTopologicalOrderingConstraint(model, activityList);
 
 		addAdditionalData(model, obj);
@@ -254,7 +275,7 @@ string RandomKeyModel::traceFilenameForRandomKeyModel(const string& outPath, int
 	return outPath + "LocalSolverNative" + to_string(lsIndex) + "Trace_" + instanceName;
 }
 
-RandomKeyModel::RandomKeyModel(ProjectWithOvertime& _p, RandomKeySchedulingNativeFunction *_decoder, bool _enforceTopOrdering) : p(_p), decoder(_decoder), prioritiesElems(_p.numJobs) {
+RandomKeyModel::RandomKeyModel(ProjectWithOvertime& _p, RandomKeySchedulingNativeFunction *_decoder) : p(_p), decoder(_decoder), prioritiesElems(_p.numJobs) {
 }
 
 RandomKeyModel::~RandomKeyModel() {
