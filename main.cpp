@@ -10,6 +10,7 @@
 #include "GurobiSolver.h"
 #include "Utils.h"
 #include "GeneticAlgorithms/PartitionList.h"
+#include "GeneticAlgorithms/OvertimeBound.h"
 
 using namespace std;
 
@@ -414,23 +415,23 @@ void Main::Testing::testLocalSolverNativePartitions() {
 }
 
 void Main::Testing::testOptimalSubschedulesGA() {
-	ProjectWithOvertime p("j30/j3010_1.sm");
+	ProjectWithOvertime p("j30/j3021_8.sm");
 
 	GAParameters params;
 	params.popSize = 80;
-	params.timeLimit = -1;
+	params.timeLimit = 30;
 	params.numGens = -1;
 	params.fitnessBasedPairing = false;
 	params.pmutate = 5;
 	params.traceobj = false;
 	params.selectionMethod = SelectionMethod::BEST;
 	params.rbbrs = true;
-	params.iterLimit = 1000;
+	params.iterLimit = -1;
 	params.enforceTopOrdering = true;
-	params.partitionSize = 4;
-
+	params.partitionSize = 8;
 
 	PartitionListGA ga(p);
+	//TimeVaryingCapacityGA ga(p);
 	ga.setParameters(params);
 	Stopwatch sw;
 	sw.start();

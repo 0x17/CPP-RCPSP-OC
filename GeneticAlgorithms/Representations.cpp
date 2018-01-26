@@ -319,44 +319,35 @@ void PartitionList::combine(const PartitionList &mother, const PartitionList &fa
 	}
 
 	int pix = q+1;
-	for(int i=0; i<plist.size()-q*partitionSize; i++) {
+	for(int i=0; i<plist.size()-(q+1)*partitionSize; i++) {
 		int j = lowestPartitionJobFromOtherNotAlreadyChosen(father.plist);
+		assert(j != -1);
 		plist[j] = pix;
-		if(++i % partitionSize == 0) {
+		if((i+1) % partitionSize == 0) {
 			pix++;
 		}
 	}
 }
 
-bool PartitionList::isPartitionNumberDecrementationFeasibleForJob(const Matrix<char> &adjMx, int j) const {
+bool PartitionList::isFeasible(const Matrix<char> &adjMx) const {
 	for(int i=0; i<adjMx.getM(); i++) {
-		if(adjMx(i, j) == 1 && plist[i] >= plist[j]) {
-			return false;
+		for(int j=0; j<adjMx.getN(); j++) {
+			if(adjMx(i,j) && plist[i] > plist[j])
+				return false;
 		}
 	}
 	return true;
 }
 
 int PartitionList::determineOtherJobForSwap(int j, MoveDir dir) const {
-	int countWithNewPartition = 0;
 	int npix = dir == MoveDir::LEFT ? plist[j] - 1 : plist[j] + 1;
-	for (int itspix : plist) {
-		if(itspix == npix) countWithNewPartition++;
-	}
-	int nthChosen = Utils::randRangeIncl(0, countWithNewPartition-1);
-
-	int nth = 0;
-	for(int i=0; i<plist.size(); i++) {
-		if(plist[i] == npix && nth++ == nthChosen) {
-			return i;
-		}
-	}
-
-	return -1;
+	int numInOtherPartition = static_cast<int>(count_if(plist.begin(), plist.end(), [&npix](int itspix) { return itspix == npix; }));
+	int nthChosen = Utils::randRangeIncl(0, numInOtherPartition-1);
+	return Utils::indexOfNthEqualTo(nthChosen, npix, plist);
 }
 
 void PartitionList::partitionSwap(const Matrix<char> &adjMx, int pmutate, int partitionSize) {
-	int numPartitions = static_cast<int>(ceil((float)adjMx.getM() / (float)partitionSize));
+	const auto numPartitions = static_cast<int>(ceil((float)adjMx.getM() / (float)partitionSize));
 
 	for(int j=0; j<adjMx.getM(); j++) {
 		if(Utils::randRangeIncl(1, 100) <= pmutate) {
@@ -367,10 +358,11 @@ void PartitionList::partitionSwap(const Matrix<char> &adjMx, int pmutate, int pa
 			else if(pix == numPartitions -1) dir = MoveDir::LEFT;
 
 			int otherJob = determineOtherJobForSwap(j, dir);
+			int npix = dir == MoveDir::LEFT ? plist[j] - 1 : plist[j] + 1;
 
-			if((dir == MoveDir::LEFT && isPartitionNumberDecrementationFeasibleForJob(adjMx, j))
-					|| (dir == MoveDir::RIGHT && isPartitionNumberDecrementationFeasibleForJob(adjMx, otherJob)) ) {
-				Utils::swap(plist, otherJob, j);
+			Utils::swap(plist, j, otherJob);
+			if(!isFeasible(adjMx)) {
+				Utils::swap(plist, j, otherJob);
 			}
 		}
 	}
@@ -378,7 +370,7 @@ void PartitionList::partitionSwap(const Matrix<char> &adjMx, int pmutate, int pa
 
 int PartitionList::lowestPartitionJobFromOtherNotAlreadyChosen(const std::vector<int> &other) {
 	int lowestPartition = numeric_limits<int>::max();
-	int lowestJob = 0;
+	int lowestJob = -1;
 	for(int j=0; j<plist.size(); j++) {
 		if(plist[j] == -1 && other[j] < lowestPartition) {
 			lowestPartition = other[j];

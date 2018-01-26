@@ -370,7 +370,6 @@ std::vector<int> ProjectWithOvertime::serialOptimalSubSGS(const std::vector<int>
 	return sts;
 }
 
-// TODO: LocalSolver partitionslistenmodell mit constraints: für alle i->j gilt: pl(i)<pl(j) und pl(j) in 0..ceil(njobs/partitionSize)-1 für alle j
 std::vector<int> ProjectWithOvertime::serialOptimalSubSGSWithPartitionList(const std::vector<int> &partitionList) const {
 	static GurobiSolverBase::Options opts;
 	static GurobiSubprojectSolver solver(*this, opts);
@@ -404,8 +403,9 @@ bool ProjectWithOvertime::isPartitionListFeasible(const std::vector<int>& partit
 
 	for (int i = 0; i < numJobs; i++)
 		for (int j = 0; j < numJobs; j++)
-			if (adjMx(i,j) == 1 && partitionList[i] > partitionList[j])
+			if (adjMx(i,j) && partitionList[i] > partitionList[j]) {
 				return false;
+			}
 	
 	return true;
 }

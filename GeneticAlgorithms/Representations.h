@@ -191,7 +191,7 @@ private:
 		RIGHT
 	};
 
-	bool isPartitionNumberDecrementationFeasibleForJob(const Matrix<char> &adjMx, int j) const;
+	bool isFeasible(const Matrix<char> &adjMx) const;
 	int determineOtherJobForSwap(int j, MoveDir dir) const;
 
 	int lowestPartitionJobFromOtherNotAlreadyChosen(const std::vector<int> &other);
