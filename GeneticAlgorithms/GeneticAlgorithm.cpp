@@ -18,7 +18,8 @@ GAParameters::GAParameters() :
 		sgs(ScheduleGenerationScheme::SERIAL),
 		rbbrs(false),
 		enforceTopOrdering(true),
-		fbiFeedbackInjection(false) {
+		fbiFeedbackInjection(false),
+		partitionSize(4) {
 }
 
 void GAParameters::fromJsonStr(const std::string &s) {
@@ -28,7 +29,8 @@ void GAParameters::fromJsonStr(const std::string &s) {
 			{"numGens", &numGens},
 			{"popSize", &popSize},
 			{"pmutate", &pmutate},
-			{"iterLimit", &iterLimit}
+			{"iterLimit", &iterLimit},
+			{"partitionSize", &partitionSize}
 	};
 
 	const std::map<std::string, double *> keyNamesToDoubleSlots = {
@@ -62,4 +64,25 @@ void GAParameters::fromJsonStr(const std::string &s) {
 void GAParameters::fromJsonFile(const std::string &fn) {
 	if(boost::filesystem::exists(fn) && boost::filesystem::is_regular_file(fn))
 		fromJsonStr(Utils::slurp(fn));
+}
+
+json11::Json GAParameters::toJson() const {
+	return json11::Json::object {
+			{"popSize", popSize},
+			{"crossoverMethod", crossoverMethod == CrossoverMethod::OPC ? "OPC" : "TPC"},
+			{"enforceTopOrdering", enforceTopOrdering},
+			{"fbiFeedbackInjection", fbiFeedbackInjection},
+			{"fitnessBasedPairing", fitnessBasedPairing},
+			{"numGens", numGens},
+			{"pmutate", pmutate},
+			{"rbbrs", rbbrs},
+			{"selectionMethod", selectionMethod == SelectionMethod::BEST ? "best" : "duel"},
+			{"sgs", sgs == ScheduleGenerationScheme::SERIAL ? "Serial" : "Parallel"},
+			{"iterLimit", iterLimit},
+			{"outPath", outPath},
+			{"threadCount", threadCount},
+			{"timeLimit", timeLimit},
+			{"traceobj", traceobj},
+			{"partitionSize", partitionSize}
+	};
 }

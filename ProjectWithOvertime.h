@@ -89,17 +89,19 @@ public:
 	json11::Json to_json() const override;
 	void from_json(const json11::Json& obj) override;
 
-	std::vector<int> serialOptimalSubSGS(const std::vector<int>& partitions, int partitionSize) const;
+	std::vector<int> serialOptimalSubSGS(const std::vector<int>& orderInducedPartitions, int partitionSize) const;
 	std::vector<int> serialOptimalSubSGSWithPartitionList(const std::vector<int>& partitionList) const;
 
 	bool isPartitionListFeasible(const std::vector<int> &partitionList, int partitionSize) const;
 
 	std::vector<int> serialOptimalSubSGSAndFBI(const std::vector<int>& partitions, int partitionSize) const;
-	std::vector<int> serialOptimalSubSGSWithPartitionListAndFBI(const std::vector<int>& partitionList) const;
+	SGSResult serialOptimalSubSGSWithPartitionListAndFBI(const std::vector<int>& partitionList) const;
 
 	SGSResult parallelSGSWithForwardBackwardImprovement(const std::vector<int> &order, const Matrix<int> &z) const;
 	SGSResult parallelSGSWithForwardBackwardImprovement(const std::vector<int> &order, const std::vector<int> &z) const;
 	SGSResult parallelSGSWithForwardBackwardImprovement(const std::vector<int> &order) const;
+
+	std::vector<int> orderInducedPartitionsToPartitionList(const std::vector<int>& orderInducedPartitions, int partitionSize) const;
 
 private:
     void computeRevenueFunction();

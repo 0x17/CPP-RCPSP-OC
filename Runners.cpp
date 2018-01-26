@@ -12,6 +12,17 @@
 
 using namespace std;
 
+#define RUN_GA_FUNC_IMPL(funcname, gaType) \
+	GAResult funcname(ProjectWithOvertime &p, GAParameters &params) { \
+		gaType ga(p); \
+        ga.setParameters(params); \
+		Stopwatch sw; \
+		sw.start(); \
+		auto pair = ga.solve(); \
+		double solvetime = sw.look(); \
+		return{ pair.first, pair.second, solvetime, ga.getName() }; \
+	}
+
 namespace Runners {
 	RunnerParams::RunnerParams(int _methodIndex, int _variant, double _timeLimit, int _iterLimit, bool _traceobj, const std::string& _outPath)
 		: BasicSolverParameters(_timeLimit, _iterLimit, _traceobj, _outPath, 1),
@@ -19,7 +30,6 @@ namespace Runners {
 		variant(_variant) {}
 
 	std::unique_ptr<ISolver> genListModelWithIndex(ProjectWithOvertime &p, int index, int variant) {
-		using std::make_unique;
 		std::unique_ptr<ISolver> solveModel = nullptr;
 		switch (index) {
 		default:
@@ -58,6 +68,18 @@ namespace Runners {
 		}
 		return solveModel;
 	}
+
+	RUN_GA_FUNC_IMPL(runTwBorderGA, TimeWindowBordersGA)
+	RUN_GA_FUNC_IMPL(runTwArbitraryGA, TimeWindowArbitraryGA)
+	RUN_GA_FUNC_IMPL(runTwArbitraryDiscretizedGA, TimeWindowArbitraryDiscretizedGA)
+	RUN_GA_FUNC_IMPL(runFixedCapaGA, FixedCapacityGA)
+	RUN_GA_FUNC_IMPL(runTimeVaryCapaGA, TimeVaryingCapacityGA)
+	RUN_GA_FUNC_IMPL(runCompAltsGA, CompareAlternativesGA)
+	RUN_GA_FUNC_IMPL(runGoldenSectionSearchGA, GoldenSectionSearchGA)
+	RUN_GA_FUNC_IMPL(runFixedDeadlineGA, FixedDeadlineGA)
+	RUN_GA_FUNC_IMPL(runFixedCapaRandomKeyGA, FixedCapacityRandomKeyGA)
+	RUN_GA_FUNC_IMPL(runTimeVaryCapaRandomKeyGA, TimeVaryingCapacityRandomKeyGA)
+	RUN_GA_FUNC_IMPL(runOptimalSubschedulesGA, OptimalSubschedulesGA)
 	
 	vector<GAResult(*)(ProjectWithOvertime &, GAParameters &)> funcs = {
 		runTwBorderGA,				// 0
@@ -91,25 +113,13 @@ namespace Runners {
 
 	GAResult run(ProjectWithOvertime &p, GAParameters &params, int index) {
 		if (index < 0 || index >= funcs.size()) {
-			throw new std::runtime_error("Genetic algorithm index " + to_string(index) + " is out of range!");
+			throw std::runtime_error("Genetic algorithm index " + to_string(index) + " is out of range!");
 		}
 		auto gafunc = funcs[index];
 		auto result = gafunc(p, params);
 		LOG_I("Representation=" + result.name + " Profit=" + to_string(result.profit) + " Solvetime=" + to_string(result.solvetime));
 		return result;
 	}
-
-	RUN_GA_FUNC_IMPL(runTwBorderGA, TimeWindowBordersGA)
-	RUN_GA_FUNC_IMPL(runTwArbitraryGA, TimeWindowArbitraryGA)
-	RUN_GA_FUNC_IMPL(runTwArbitraryDiscretizedGA, TimeWindowArbitraryDiscretizedGA)
-	RUN_GA_FUNC_IMPL(runFixedCapaGA, FixedCapacityGA)
-	RUN_GA_FUNC_IMPL(runTimeVaryCapaGA, TimeVaryingCapacityGA)
-	RUN_GA_FUNC_IMPL(runCompAltsGA, CompareAlternativesGA)
-	RUN_GA_FUNC_IMPL(runGoldenSectionSearchGA, GoldenSectionSearchGA)
-	RUN_GA_FUNC_IMPL(runFixedDeadlineGA, FixedDeadlineGA)
-	RUN_GA_FUNC_IMPL(runFixedCapaRandomKeyGA, FixedCapacityRandomKeyGA)
-	RUN_GA_FUNC_IMPL(runTimeVaryCapaRandomKeyGA, TimeVaryingCapacityRandomKeyGA)
-	RUN_GA_FUNC_IMPL(runOptimalSubschedulesGA, OptimalSubschedulesGA)
 
 
 	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, RunnerParams rparams) {

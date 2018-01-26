@@ -16,7 +16,7 @@ static int _nindividuals = 0;
 static int _schedule_limit = -1;
 #endif
 
-LSModelOptions ListModel::options;
+LSModelOptions LSBaseModel::options;
 
 void LSModelOptions::fromJsonStr(const std::string & s) {
 	const auto obj = JsonUtils::readJsonFromString(s);
@@ -26,7 +26,12 @@ void LSModelOptions::fromJsonStr(const std::string & s) {
 		{"parallelSGS", &parallelSGS}
 	};
 
+	map<string, int *> keyNamesToIntSlots = {
+			{"partitionSize", &partitionSize}
+	};
+
 	JsonUtils::assignBooleanSlotsFromJsonWithMapping(obj, keyNamesToBooleanSlots);
+	JsonUtils::assignNumberSlotsFromJsonWithMapping<int>(obj, keyNamesToIntSlots);
 }
 
 void LSModelOptions::parseFromJsonFile(const std::string & fn) {
@@ -34,8 +39,7 @@ void LSModelOptions::parseFromJsonFile(const std::string & fn) {
 		fromJsonStr(Utils::slurp(fn));
 }
 
-
-lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
+localsolver::lsdouble BaseSchedulingNativeFunction::call(const localsolver::LSNativeContext &context) {
 #ifdef DIRTY_ENFORCE_ITERLIM_HACK
 	if (_schedule_limit != -1 && _nschedules >= _schedule_limit && _ls != nullptr) {
 		_ls->stop();
@@ -43,25 +47,14 @@ lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 	}
 #endif
 
-	vector<int> order(static_cast<unsigned long>(p.numJobs));
-	if (context.count() < varCount()) return numeric_limits<double>::lowest();
+	const boost::optional<SGSResult> result = coreComputation(context);
+	if(!result) return numeric_limits<double>::lowest();
 
-	for (int i = 0; i < p.numJobs; i++) {
-		order[i] = static_cast<int>(context.getIntValue(i));
-		if (order[i] == Project::UNSCHEDULED)
-			return numeric_limits<double>::lowest();
-	}
-
-	if (ListModel::getOptions().enforceTopOrdering && !p.isOrderFeasible(order)) {
-		return numeric_limits<double>::lowest();
-	}
-
-	const SGSResult result = decode(order, context);
-	const auto profit = static_cast<lsdouble>(p.calcProfit(result));
+	const auto profit = static_cast<lsdouble>(p.calcProfit(result.get()));
 
 #ifdef DIRTY_ENFORCE_ITERLIM_HACK
-	_nschedules += result.numSchedulesGenerated;
-	_nindividuals++;	
+	_nschedules += result.get().numSchedulesGenerated;
+	_nindividuals++;
 #endif
 
 	if (tr != nullptr) {
@@ -73,6 +66,29 @@ lsdouble SchedulingNativeFunction::call(const LSNativeContext& context) {
 	}
 
 	return profit;
+}
+
+ProjectNativeFunction::ProjectNativeFunction(ProjectWithOvertime &_p) : p(_p) {}
+
+void ProjectNativeFunction::setTracer(Utils::Tracer *tr) { this->tr = tr; }
+
+
+boost::optional<SGSResult> ListSchedulingNativeFunction::coreComputation(const LSNativeContext& context) {
+	vector<int> order(static_cast<unsigned long>(p.numJobs));
+	if (context.count() < varCount()) return boost::optional<SGSResult>{};
+
+	for (int i = 0; i < p.numJobs; i++) {
+		order[i] = static_cast<int>(context.getIntValue(i));
+		if (order[i] == Project::UNSCHEDULED)
+			return boost::optional<SGSResult>{};
+	}
+
+	if (LSBaseModel::getOptions().enforceTopOrdering && !p.isOrderFeasible(order)) {
+		return boost::optional<SGSResult>{};
+	}
+
+	return decode(order, context);
+
 }
 
 lsdouble TopOrderChecker::call(const LSNativeContext& context) {
@@ -87,30 +103,20 @@ lsdouble TopOrderChecker::call(const LSNativeContext& context) {
 
 }
 
-SolverParams::SolverParams(double _tlimit, int _ilimit): BasicSolverParameters(_tlimit, _ilimit, false, "LocalSolverNative_", 1), seed(0), verbosityLevel(2), solverIx(0) {
-}
-
-string ListModel::traceFilenameForListModel(const string& outPath, int lsIndex, const string& instanceName) {
+string LSBaseModel::traceFilenameForLSModel(const string& outPath, int lsIndex, const string& instanceName) {
 	return outPath + "LocalSolverNative" + to_string(lsIndex) + "Trace_" + instanceName;
 }
 
-ListModel::ListModel(ProjectWithOvertime& _p, SchedulingNativeFunction *_decoder) : p(_p), decoder(_decoder), listElems(_p.numJobs), topOrderChecker(ListModel::getOptions().enforceTopOrdering ? new TopOrderChecker(_p) : nullptr) {
+ListModel::ListModel(ProjectWithOvertime& _p, ListSchedulingNativeFunction *_decoder) : LSBaseModel(_p, _decoder), listElems(_p.numJobs), topOrderChecker(ListModel::getOptions().enforceTopOrdering ? new TopOrderChecker(_p) : nullptr) {
 }
 
-ListModel::~ListModel() {
-	if (decoder != nullptr)
-		delete decoder;
-	if (topOrderChecker != nullptr)
-		delete topOrderChecker;
-}
-
-vector<int> ListModel::solve(SolverParams params) {
+vector<int> LSBaseModel::solve(SolverParams params) {
 	std::unique_ptr<Utils::Tracer> tr = nullptr;
 	std::unique_ptr<TraceCallback> cback = nullptr;
-	buildModel();
+	buildBaseModel();
 	applyParams(params);
     if(params.traceobj) {
-        tr = std::make_unique<Utils::Tracer>(traceFilenameForListModel(params.outPath, params.solverIx, p.instanceName));
+        tr = std::make_unique<Utils::Tracer>(traceFilenameForLSModel(params.outPath, params.solverIx, p.instanceName));
 		cback = std::make_unique<TraceCallback>(*tr);
         //ls.addCallback(CT_TimeTicked, cback);
 		decoder->setTracer(tr.get());
@@ -152,7 +158,7 @@ void ListModel::addTopologicalOrderingConstraint(LSModel &model, LSExpression &a
 			}
 		}
 	}*/
-	const auto topOrderCheckerFunc = model.createNativeFunction(topOrderChecker);
+	const auto topOrderCheckerFunc = model.createNativeFunction(topOrderChecker.get());
 	auto topOrderCheckerExpr = model.call(topOrderCheckerFunc);
 	for(int i=0; i<p.numJobs; i++)
 		topOrderCheckerExpr.addOperand(listElems[i]);
@@ -169,38 +175,41 @@ void ListModel::addTopologicalOrderingConstraint(LSModel &model, LSExpression &a
 	}*/
 }
 
-void ListModel::buildModel() {	
-	LOG_I("Building local solver list variable model");
+void LSBaseModel::buildBaseModel() {
 	LSModel model = ls.getModel();
 	if (model.getNbObjectives() == 0) {
-		auto nfunc = model.createNativeFunction(decoder);
+		auto nfunc = model.createNativeFunction(decoder.get());
 		LSExpression obj = model.call(nfunc);
 
-		LSExpression activityList = model.listVar(p.numJobs);
-		model.constraint(model.count(activityList) == p.numJobs);
-
-		for (int i = 0; i < p.numJobs; i++) {
-			listElems[i] = model.at(activityList, i);
-			obj.addOperand(listElems[i]);
-		}
-
-		if(options.enforceTopOrdering)
-			addTopologicalOrderingConstraint(model, activityList);
+		buildModel(model, obj);
 
 		addAdditionalData(model, obj);
 
 		model.maximize(obj);
 		model.close();
-
-		// initial solution 0, 1, ..., njobs
-		auto coll = activityList.getCollectionValue();
-		for (int i = 0; i < p.numJobs; i++)
-			coll.add(i);
 	}
 }
 
-void ListModel::applyParams(SolverParams &params) {
-	LOG_I("Applying custom parameters");
+void ListModel::buildModel(localsolver::LSModel &model, localsolver::LSExpression &obj) {
+	LSExpression activityList = model.listVar(p.numJobs);
+	model.constraint(model.count(activityList) == p.numJobs);
+
+	for (int i = 0; i < p.numJobs; i++) {
+		listElems[i] = model.at(activityList, i);
+		obj.addOperand(listElems[i]);
+	}
+
+	if(options.enforceTopOrdering)
+		addTopologicalOrderingConstraint(model, activityList);
+
+	// initial solution 0, 1, ..., njobs
+	auto coll = activityList.getCollectionValue();
+	for (int i = 0; i < p.numJobs; i++)
+		coll.add(i);
+
+}
+
+void LSBaseModel::applyParams(SolverParams &params) {
 	if (ls.getNbPhases() == 0) {
 		auto phase = ls.createPhase();
 		if (params.iterLimit != -1) {
@@ -233,122 +242,96 @@ void TraceCallback::callback(LocalSolver &solver, LSCallbackType type) {
     }
 }
 
-//=================================================================================================
+//======================================================================================================================
 
-// TODO: Refactor random key codepath for reduced redundancy
-
-lsdouble RandomKeySchedulingNativeFunction::call(const LSNativeContext& context) {
-#ifdef DIRTY_ENFORCE_ITERLIM_HACK
-	if (_schedule_limit != -1 && _nschedules >= _schedule_limit && _ls != nullptr) {
-		_ls->stop();
-		return -1.0;
-	}
-#endif
-
+boost::optional<SGSResult> RandomKeySchedulingNativeFunction::coreComputation(const LSNativeContext& context) {
 	vector<float> priorities(static_cast<unsigned long>(p.numJobs));
-	if (context.count() < varCount()) return numeric_limits<double>::lowest();
+	if (context.count() < varCount()) return boost::optional<SGSResult> {};
 
 	for (int i = 0; i < p.numJobs; i++) {
 		priorities[i] = static_cast<float>(context.getDoubleValue(i));
 	}
-
-	const SGSResult result = decode(priorities, context);
-	const auto profit = static_cast<lsdouble>(p.calcProfit(result));
-
-#ifdef DIRTY_ENFORCE_ITERLIM_HACK
-	_nschedules += result.numSchedulesGenerated;
-	_nindividuals++;
-#endif
-
-	if (tr != nullptr) {
-		if (profit > bks)
-			bks = profit;
-
-		tr->intervalTrace(static_cast<float>(bks), _nschedules, _nindividuals);
-		tr->countTrace(static_cast<float>(bks), _nschedules, _nindividuals);
-	}
-
-	return profit;
+	return decode(priorities, context);
 }
 
-string RandomKeyModel::traceFilenameForRandomKeyModel(const string& outPath, int lsIndex, const string& instanceName) {
-	return outPath + "LocalSolverNative" + to_string(lsIndex) + "Trace_" + instanceName;
+RandomKeyModel::RandomKeyModel(ProjectWithOvertime& _p, RandomKeySchedulingNativeFunction *_decoder) : LSBaseModel(_p, _decoder), prioritiesElems(_p.numJobs) {
 }
 
-RandomKeyModel::RandomKeyModel(ProjectWithOvertime& _p, RandomKeySchedulingNativeFunction *_decoder) : p(_p), decoder(_decoder), prioritiesElems(_p.numJobs) {
-}
-
-RandomKeyModel::~RandomKeyModel() {
-	if (decoder != nullptr)
-		delete decoder;
-}
-
-vector<int> RandomKeyModel::solve(SolverParams params) {
-	std::unique_ptr<Utils::Tracer> tr = nullptr;
-	std::unique_ptr<TraceCallback> cback = nullptr;
-	buildModel();
-	applyParams(params);
-	if (params.traceobj) {
-		tr = std::make_unique<Utils::Tracer>(traceFilenameForRandomKeyModel(params.outPath, params.solverIx, p.instanceName));
-		cback = std::make_unique<TraceCallback>(*tr);
-		//ls.addCallback(CT_TimeTicked, cback);
-		decoder->setTracer(tr.get());
-	}
-#ifdef DIRTY_ENFORCE_ITERLIM_HACK
-	if (tr != nullptr)
-		tr->setTraceMode(Utils::Tracer::TraceMode::ONLY_COUNT);
-	_nschedules = _nindividuals = 0;
-#endif
-	ls.solve();
-	auto sol = ls.getSolution();
-	assert(sol.getStatus() == LSSolutionStatus::SS_Feasible || sol.getStatus() == LSSolutionStatus::SS_Optimal);
-#ifdef DIRTY_ENFORCE_ITERLIM_HACK
-	LOG_I("Number of calls: " + to_string(_nschedules) + " vs. iteration limit = " + to_string(params.iterLimit));
-#endif
-	return parseScheduleFromSolution(sol);
-}
-
-void RandomKeyModel::buildModel() {
-	LOG_I("Building local solver list variable model");
-	LSModel model = ls.getModel();
-	if (model.getNbObjectives() == 0) {
-		auto nfunc = model.createNativeFunction(decoder);
-		LSExpression obj = model.call(nfunc);
-
-		for (int i = 0; i < p.numJobs; i++) {
-			prioritiesElems[i] = model.floatVar(0.0, 1.0);
-			obj.addOperand(prioritiesElems[i]);
-		}
-
-		addAdditionalData(model, obj);
-
-		model.maximize(obj);
-		model.close();
-
-		// TODO: initial solution?
+void RandomKeyModel::buildModel(localsolver::LSModel &model, localsolver::LSExpression &obj) {
+	for (int i = 0; i < p.numJobs; i++) {
+		prioritiesElems[i] = model.floatVar(0.0, 1.0);
+		obj.addOperand(prioritiesElems[i]);
 	}
 }
 
-void RandomKeyModel::applyParams(SolverParams &params) {
-	LOG_I("Applying custom parameters");
-	if (ls.getNbPhases() == 0) {
-		auto phase = ls.createPhase();
-		if (params.iterLimit != -1) {
-			phase.setIterationLimit(static_cast<long long>(params.iterLimit));
-#ifdef DIRTY_ENFORCE_ITERLIM_HACK
-			_schedule_limit = params.iterLimit;
-			_ls = &ls;
-#endif
-		}
-		if (params.timeLimit != -1.0)
-			phase.setTimeLimit(static_cast<int>(params.timeLimit));
-		auto param = ls.getParam();
-		param.setNbThreads(params.threadCount);
-		param.setSeed(params.seed);
-		param.setVerbosity(params.verbosityLevel);
-		if (params.traceobj) {
-			auto timeBetweenDisplays = static_cast<int>(ceil(MSECS_BETWEEN_TRACES_LONG / 1000.0));
-			param.setTimeBetweenDisplays(timeBetweenDisplays);
+//======================================================================================================================
+
+PartitionsModel::PartitionsModel(ProjectWithOvertime &_p, PartitionsSchedulingNativeFunction *_decoder) : LSBaseModel(_p, _decoder), partitionElems(_p.numJobs / options.partitionSize, options.partitionSize) {
+	assert(_p.numJobs % options.partitionSize == 0);
+}
+
+void PartitionsModel::buildModel(localsolver::LSModel &model, localsolver::LSExpression &obj) {
+	vector<LSExpression> partitions = Utils::constructVector<LSExpression>(p.numJobs / options.partitionSize, [&](int pix) { return model.listVar(p.numJobs); });
+	for(const auto &partition : partitions) {
+		model.constraint(model.count(partition) == options.partitionSize);
+	}
+
+	for (int i = 0; i < partitions.size(); i++) {
+		for(int j=0; j<options.partitionSize; j++) {
+			partitionElems(i, j) = model.at(partitions[i], j);
+			obj.addOperand(partitionElems(i, j));
 		}
 	}
+
+	model.constraint(model.partition(partitions.begin(), partitions.end()));
+
+	const auto partitionOfJob = [&](int j) {
+		LSExpression itspartition = model.sum();
+		for(int pix=0; pix<partitions.size(); pix++)
+			itspartition += model.iif(model.contains(partitions[pix], j), 1, 0) * pix;
+		return itspartition;
+	};
+
+	p.eachJobPairConst([&](int i, int j) {
+		if(p.adjMx(i,j)) {
+			model.constraint(partitionOfJob(i) < partitionOfJob(j));
+		}
+	});
+}
+
+int partitionOfJob(const Matrix<int> &partitions, int j) {
+	for(int pix=0; pix<partitions.getM(); pix++) {
+		for(int i=0; i < partitions.getN(); i++) {
+			if(partitions(pix, i) == j) {
+				return pix;
+			}
+		}
+	}
+	return -1;
+}
+
+SGSResult PartitionsSchedulingNativeFunction::decode(const Matrix<int> &partitions, const localsolver::LSNativeContext &context) {
+	const auto partitionList = Utils::constructVector<int>(p.numJobs, [&](int j) { return partitionOfJob(partitions, j); });
+	return p.serialOptimalSubSGSWithPartitionListAndFBI(partitionList);
+}
+
+boost::optional<SGSResult> PartitionsSchedulingNativeFunction::coreComputation(const localsolver::LSNativeContext &context) {
+	const int partitionSize = LSBaseModel::getOptions().partitionSize;
+	Matrix<int> partitions(p.numJobs / partitionSize, partitionSize);
+	
+	if (context.count() < varCount()) return boost::optional<SGSResult> {};
+
+	for (int i = 0; i < partitions.getM(); i++) {
+		for(int j=0; j<partitions.getN(); j++) {
+			partitions(i, j) = static_cast<int>(context.getIntValue(i*partitions.getN()+j));
+			if (partitions(i, j) == Project::UNSCHEDULED)
+				return boost::optional<SGSResult> {};
+		}
+	}
+
+	return decode(partitions, context);
+}
+
+int PartitionsSchedulingNativeFunction::varCount() {
+	return p.numJobs;
 }

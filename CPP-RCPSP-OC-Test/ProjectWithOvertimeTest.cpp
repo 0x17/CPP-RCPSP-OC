@@ -40,3 +40,9 @@ TEST_F(ProjectWithOvertimeTest, testBorderSchedulingOptionsSetFromIndex) {
 			ASSERT_TRUE(!expectedTable(i, j) || vals[j]);
 	}
 }
+
+TEST_F(ProjectWithOvertimeTest, testOrderInducedPartitionsToPartitionList) {
+	vector<int> order = { 0, 3, 1, 2, 4 };
+	vector<int> partitionList = p->orderInducedPartitionsToPartitionList(order, 2);
+	TestHelpers::arrayEquals({ 0, 1, 1, 0, 2 }, partitionList);
+}

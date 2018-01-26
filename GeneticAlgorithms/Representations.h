@@ -172,3 +172,27 @@ public:
 	void independentOnePointCrossovers(const RandomKeyZrt& mother, const RandomKeyZrt& father, int qj, int q2, CrossoverPartitionType ctype);
 	void independentMutations(const Matrix<char>& adjMx, const std::vector<int>& zmax, int pmutate);
 };
+
+class PartitionList {
+public:
+	std::vector<int> plist;
+
+	PartitionList() = default;
+	explicit PartitionList(int numJobs);
+	virtual ~PartitionList() = default;
+
+	void combine(const PartitionList &mother, const PartitionList &father, int partitionSize);
+	void partitionSwap(const Matrix<char> &adjMx, int pmutate, int partitionSize);
+
+private:
+
+	enum class MoveDir {
+		LEFT,
+		RIGHT
+	};
+
+	bool isPartitionNumberDecrementationFeasibleForJob(const Matrix<char> &adjMx, int j) const;
+	int determineOtherJobForSwap(int j, MoveDir dir) const;
+
+	int lowestPartitionJobFromOtherNotAlreadyChosen(const std::vector<int> &other);
+};

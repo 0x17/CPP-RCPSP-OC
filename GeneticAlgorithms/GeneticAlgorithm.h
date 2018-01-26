@@ -44,6 +44,7 @@ struct GAParameters : BasicSolverParameters {
 
 	void fromJsonFile(const std::string &fn = "GAParameters.json");
 	void fromJsonStr(const std::string &s);
+	json11::Json toJson() const;
 
 	int numGens, popSize, pmutate;
     bool fitnessBasedPairing;
@@ -51,6 +52,7 @@ struct GAParameters : BasicSolverParameters {
 	CrossoverMethod crossoverMethod;
 	ScheduleGenerationScheme sgs;
 	bool rbbrs, enforceTopOrdering, fbiFeedbackInjection;
+	int partitionSize;
 };
 
 struct FitnessResult {

@@ -52,9 +52,12 @@ int main(int argc, const char * argv[]) {
 
 	//Main::jsonConverter(argc, argv);
 
-	//Main::commandLineRunner(argc, argv);
+	Main::commandLineRunner(argc, argv);
 
-	Main::Testing::testLocalSolverNativePartitionList();
+	//Main::Testing::testLocalSolverNativePartitionList();
+
+	//GAParameters params;
+	//Utils::spit(params.toJson().dump(), "GAParameters.json");
 
 	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_RANDKEY_ZRT, 10000, "j30/j3010_1.sm");
 

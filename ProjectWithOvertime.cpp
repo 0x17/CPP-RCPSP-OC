@@ -346,21 +346,21 @@ void ProjectWithOvertime::from_json(const json11::Json& obj) {
 	zmax = JsonUtils::extractIntArrayFromObj(obj, "zmax");
 }
 
-std::vector<int> ProjectWithOvertime::serialOptimalSubSGS(const std::vector<int>& partitions, int partitionSize) const {
+std::vector<int> ProjectWithOvertime::serialOptimalSubSGS(const std::vector<int>& orderInducedPartitions, int partitionSize) const {
 	static GurobiSolverBase::Options opts;
 	static GurobiSubprojectSolver solver(*this, opts);
 
 	std::vector<int> sts(numJobs, UNSCHEDULED), nextPartition(partitionSize, -1);
 
-	const int numPartitions = ceil((float)partitions.size() / (float)partitionSize);
+	const int numPartitions = ceil((float)orderInducedPartitions.size() / (float)partitionSize);
 	for(int p = 0; p < numPartitions; p++) {
 		for(int j=0; j<partitionSize; j++) {
 			int ix = p*partitionSize + j;
-			if(ix >= partitions.size()) {
+			if(ix >= orderInducedPartitions.size()) {
 				nextPartition.resize(j);
 				break;
 			}
-			nextPartition[j] = partitions[ix];
+			nextPartition[j] = orderInducedPartitions[ix];
 		}
 
 		solver.setupModelForSubproject(sts, nextPartition);
@@ -638,12 +638,12 @@ std::vector<int> ProjectWithOvertime::serialOptimalSubSGSAndFBI(const std::vecto
 	return forwardBackwardIterations(partitions, res, makespan(res), boost::optional<int>()).sts;
 }
 
-std::vector<int> ProjectWithOvertime::serialOptimalSubSGSWithPartitionListAndFBI(const std::vector<int> &partitionList) const {
+SGSResult ProjectWithOvertime::serialOptimalSubSGSWithPartitionListAndFBI(const std::vector<int> &partitionList) const {
 	const vector<int> sts = serialOptimalSubSGSWithPartitionList(partitionList);
 	const vector<int> order = scheduleToActivityList(sts);
 	const Matrix<int> resRem = resRemForPartial(sts);
 	const SGSResult res = { sts, resRem, 1 };
-	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>()).sts;
+	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>());
 }
 
 SGSResult ProjectWithOvertime::parallelSGSWithForwardBackwardImprovement(const std::vector<int>& order, const Matrix<int>& z) const {
@@ -663,5 +663,11 @@ SGSResult ProjectWithOvertime::parallelSGSWithForwardBackwardImprovement(const s
 	const auto resRem = resRemForPartial(sts);
 	const SGSResult res = { sts, resRem, 1 };
 	return forwardBackwardIterations(order, res, makespan(res));
+}
+
+std::vector<int> ProjectWithOvertime::orderInducedPartitionsToPartitionList(const std::vector<int> &orderInducedPartitions, int partitionSize) const {
+	return Utils::constructVector<int>(numJobs, [&](int j) {
+		return (int)floor((float)Utils::indexOfFirstEqualTo(j, orderInducedPartitions) / (float)partitionSize);
+	});
 }
 

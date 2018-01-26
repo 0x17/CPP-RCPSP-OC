@@ -3,9 +3,9 @@
 #include "ListModel.h"
 
 class ListBetaModel : public ListModel {
-	class SerialSGSBetaFunction : public SchedulingNativeFunction {
+	class SerialSGSBetaFunction : public ListSchedulingNativeFunction {
 	public:
-		explicit SerialSGSBetaFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
+		explicit SerialSGSBetaFunction(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
 		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
@@ -26,9 +26,9 @@ public:
 //==============================================================================================================
 
 class ListTauModel : public ListModel {
-	class SerialSGSTauFunction : public SchedulingNativeFunction {
+	class SerialSGSTauFunction : public ListSchedulingNativeFunction {
 	public:
-		explicit SerialSGSTauFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
+		explicit SerialSGSTauFunction(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
 		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
@@ -45,9 +45,9 @@ public:
 //==============================================================================================================
 
 class ListTauDiscreteModel : public ListModel {
-	class SerialSGSIntegerFunction : public SchedulingNativeFunction {
+	class SerialSGSIntegerFunction : public ListSchedulingNativeFunction {
 	public:
-		explicit SerialSGSIntegerFunction(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
+		explicit SerialSGSIntegerFunction(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
 		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
@@ -65,9 +65,9 @@ public:
 //==============================================================================================================
 
 class ListAlternativesModel : public ListModel {
-	class SerialSGSAlternativesDecoder : public SchedulingNativeFunction {
+	class SerialSGSAlternativesDecoder : public ListSchedulingNativeFunction {
 	public:
-		explicit SerialSGSAlternativesDecoder(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
+		explicit SerialSGSAlternativesDecoder(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
 		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};

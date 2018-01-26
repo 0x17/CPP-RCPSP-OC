@@ -130,10 +130,11 @@ std::vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, int i
 
 //======================================================================================================================
 
-class RevenueFunction : public BaseSchedulingNativeFunction {
+class RevenueFunction : public ProjectNativeFunction {
 public:
-	explicit RevenueFunction(ProjectWithOvertime &_p) : BaseSchedulingNativeFunction(_p) {}
-	virtual lsdouble call(const LSNativeContext &context) override;
+	explicit RevenueFunction(ProjectWithOvertime &_p) : ProjectNativeFunction(_p) {}
+	lsdouble call(const LSNativeContext &context) override;
+	int varCount() override;
 };
 
 lsdouble RevenueFunction::call(const LSNativeContext &context) {
@@ -141,10 +142,15 @@ lsdouble RevenueFunction::call(const LSNativeContext &context) {
 	return p.revenue[context.getIntValue(0)];
 }
 
-class CumulatedDemandFunction : public BaseSchedulingNativeFunction {
+int RevenueFunction::varCount() {
+	return 1;
+}
+
+class CumulatedDemandFunction : public ProjectNativeFunction {
 public:
-	explicit CumulatedDemandFunction(ProjectWithOvertime &_p) : BaseSchedulingNativeFunction(_p) { }
-	virtual lsdouble call(const LSNativeContext &context) override;
+	explicit CumulatedDemandFunction(ProjectWithOvertime &_p) : ProjectNativeFunction(_p) { }
+	lsdouble call(const LSNativeContext &context) override;
+	int varCount() override;
 };
 
 lsdouble CumulatedDemandFunction::call(const LSNativeContext &context) {
@@ -160,6 +166,10 @@ lsdouble CumulatedDemandFunction::call(const LSNativeContext &context) {
 	});
 
 	return demand;
+}
+
+int CumulatedDemandFunction::varCount() {
+	return 2 + p.numJobs;
 }
 
 //======================================================================================================================

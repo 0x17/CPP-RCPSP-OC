@@ -9,16 +9,6 @@ class ProjectWithOvertime;
 class ListModel;
 class ISolver;
 
-#define RUN_GA_FUNC_SIGN(funcname, gaType) \
-	GAResult funcname(ProjectWithOvertime &p, GAParameters &params);
-
-#define RUN_GA_FUNC_IMPL(funcname, gaType) \
-	GAResult funcname(ProjectWithOvertime &p, GAParameters &params) { \
-		gaType ga(p); \
-        ga.setParameters(params); \
-		return runGeneticAlgorithm<gaType>(ga); \
-	}
-
 namespace Runners {
 	struct RunnerParams : BasicSolverParameters {
 		int methodIndex, variant;
@@ -33,27 +23,6 @@ namespace Runners {
 		double solvetime;
 		std::string name;
 	};
-
-	template<class T>
-	GAResult runGeneticAlgorithm(T &ga) {
-		Stopwatch sw;
-		sw.start();
-		auto pair = ga.solve();
-		double solvetime = sw.look();
-		return{ pair.first, pair.second, solvetime, ga.getName() };
-	}
-
-	RUN_GA_FUNC_SIGN(runTwBorderGA, TimeWindowBordersGA)
-	RUN_GA_FUNC_SIGN(runTwArbitraryGA, TimeWindowArbitraryGA)
-	RUN_GA_FUNC_SIGN(runTwArbitraryDiscretizedGA, TimeWindowArbitraryDiscretizedGA)
-	RUN_GA_FUNC_SIGN(runFixedCapaGA, FixedCapacityGA)
-	RUN_GA_FUNC_SIGN(runTimeVaryCapaGA, TimeVaryingCapacityGA)
-	RUN_GA_FUNC_SIGN(runCompAltsGA, CompareAlternativesGA)
-	RUN_GA_FUNC_SIGN(runGoldenSectionSearchGA, GoldenSectionSearchGA)
-	RUN_GA_FUNC_SIGN(runFixedDeadlineGA, FixedDeadlineGA)
-	RUN_GA_FUNC_SIGN(runFixedCapaRandomKeyGA, FixedCapacityRandomKeyGA)
-	RUN_GA_FUNC_SIGN(runTimeVaryCapaRandomKeyGA, TimeVaryingCapacityRandomKeyGA)
-	RUN_GA_FUNC_SIGN(runOptimalSubschedulesGA, OptimalSubschedulesGA)
 
 	GAResult run(ProjectWithOvertime &p, GAParameters &params, int index);
 

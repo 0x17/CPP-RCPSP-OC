@@ -3,9 +3,9 @@
 #include "ListModel.h"
 
 class ListFixedOvertimeModel : public ListModel {
-	class SerialSGSZrDecoder : public SchedulingNativeFunction {
+	class SerialSGSZrDecoder : public ListSchedulingNativeFunction {
 	public:
-		explicit SerialSGSZrDecoder(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
+		explicit SerialSGSZrDecoder(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
 		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
@@ -21,9 +21,9 @@ public:
 };
 
 class ListDynamicOvertimeModel : public ListModel {
-	class SerialSGSZrtDecoder : public SchedulingNativeFunction {
+	class SerialSGSZrtDecoder : public ListSchedulingNativeFunction {
 	public:
-		explicit SerialSGSZrtDecoder(ProjectWithOvertime &_p) : SchedulingNativeFunction(_p) {}
+		explicit SerialSGSZrtDecoder(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
 		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
 	};
