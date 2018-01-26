@@ -68,8 +68,6 @@ protected:
 
 	static LSModelOptions options;
 
-	static std::string traceFilenameForLSModel(const std::string& outPath, int lsIndex, const std::string& instanceName);
-
 public:
 	LSBaseModel(ProjectWithOvertime &_p, BaseSchedulingNativeFunction *_decoder) : p(_p), decoder(_decoder) {}
 	~LSBaseModel() override = default;
@@ -77,6 +75,8 @@ public:
 	std::vector<int> solve(SolverParams params) override;
 
 	static LSModelOptions &getOptions() { return options;  }
+
+	static std::string traceFilenameForLSModel(const std::string& outPath, int lsIndex, const std::string& instanceName);
 
 private:
 	void applyParams(SolverParams &params);
@@ -141,8 +141,14 @@ class PartitionsModel : public LSBaseModel {
 protected:
 	Matrix<localsolver::LSExpression> partitionElems;
 public:
-	PartitionsModel(ProjectWithOvertime &_p, PartitionsSchedulingNativeFunction *_decoder);
+	explicit PartitionsModel(ProjectWithOvertime &_p);
 	~PartitionsModel() override = default;
+
+protected:
+	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression &obj) override;
+
+	std::vector<int> parseScheduleFromSolution(localsolver::LSSolution &sol) override;
+
 private:
 	void buildModel(localsolver::LSModel &model, localsolver::LSExpression &obj) override;
 };

@@ -266,7 +266,7 @@ void RandomKeyModel::buildModel(localsolver::LSModel &model, localsolver::LSExpr
 
 //======================================================================================================================
 
-PartitionsModel::PartitionsModel(ProjectWithOvertime &_p, PartitionsSchedulingNativeFunction *_decoder) : LSBaseModel(_p, _decoder), partitionElems(_p.numJobs / options.partitionSize, options.partitionSize) {
+PartitionsModel::PartitionsModel(ProjectWithOvertime &_p) : LSBaseModel(_p, new PartitionsSchedulingNativeFunction(_p)), partitionElems(_p.numJobs / options.partitionSize, options.partitionSize) {
 	assert(_p.numJobs % options.partitionSize == 0);
 }
 
@@ -299,6 +299,8 @@ void PartitionsModel::buildModel(localsolver::LSModel &model, localsolver::LSExp
 	});
 }
 
+void PartitionsModel::addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression &obj) {}
+
 int partitionOfJob(const Matrix<int> &partitions, int j) {
 	for(int pix=0; pix<partitions.getM(); pix++) {
 		for(int i=0; i < partitions.getN(); i++) {
@@ -308,6 +310,14 @@ int partitionOfJob(const Matrix<int> &partitions, int j) {
 		}
 	}
 	return -1;
+}
+
+vector<int> PartitionsModel::parseScheduleFromSolution(localsolver::LSSolution &sol) {
+	Matrix<int> partitions(p.numJobs / options.partitionSize, options.partitionSize, [&](int i, int j) {
+		return sol.getIntValue(partitionElems(i,j));
+	});
+	const auto partitionList = Utils::constructVector<int>(p.numJobs, [&](int j) { return partitionOfJob(partitions, j); });
+	return p.serialOptimalSubSGSWithPartitionListAndFBI(partitionList).sts;
 }
 
 SGSResult PartitionsSchedulingNativeFunction::decode(const Matrix<int> &partitions, const localsolver::LSNativeContext &context) {

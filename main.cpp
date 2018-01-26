@@ -9,6 +9,7 @@
 #include "BranchAndBound.h"
 #include "GurobiSolver.h"
 #include "Utils.h"
+#include "GeneticAlgorithms/PartitionList.h"
 
 using namespace std;
 
@@ -31,6 +32,9 @@ namespace Main {
 		void testGurobi();
 		void testSerialOptimalSubschedules();
 		void testLocalSolverNativePartitionList();
+
+		void testLocalSolverNativePartitions();
+		void testOptimalSubschedulesGA();
 	}
 }
 
@@ -52,7 +56,7 @@ int main(int argc, const char * argv[]) {
 
 	//Main::jsonConverter(argc, argv);
 
-	Main::commandLineRunner(argc, argv);
+	//Main::commandLineRunner(argc, argv);
 
 	//Main::Testing::testLocalSolverNativePartitionList();
 
@@ -62,7 +66,10 @@ int main(int argc, const char * argv[]) {
 	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_RANDKEY_ZRT, 10000, "j30/j3010_1.sm");
 
 	//Main::Testing::testGurobi();
+
 	//Main::Testing::testSerialOptimalSubschedules();
+
+	Main::Testing::testOptimalSubschedulesGA();
 
 	return 0;
 }
@@ -242,7 +249,7 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
 			int variant = (lsnIndex == 0 && solMethod.length() == 19) ? stoi(solMethod.substr(18, 1)) : 0;
 			outFn += "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
 			if (instanceAlreadySolvedInResultFile(coreName, outFn)) return;
-			purgeOldTraceFile(ListModel::traceFilenameForListModel(outPath, lsnIndex, p.instanceName));
+			purgeOldTraceFile(LSBaseModel::traceFilenameForLSModel(outPath, lsnIndex, p.instanceName));
 			sts = Runners::runLocalSolverModelWithIndex(p, { lsnIndex, variant, timeLimit, iterLimit, traceobj, outPath });			
         }  else if(solMethod == "Gurobi") {
 #ifndef DISABLE_GUROBI
@@ -330,6 +337,8 @@ void Main::Testing::testFixedDeadlineHeuristic() {
 	params.traceobj = false;
 	params.selectionMethod = SelectionMethod::BEST;
 	params.rbbrs = true;
+	params.enforceTopOrdering = true;
+	params.partitionSize = 4;
 
 	auto res = Runners::run(p, params, 6);
 	auto sts = res.sts;
@@ -374,6 +383,8 @@ boost::optional<Runners::GAResult> Main::Testing::benchmarkGeneticAlgorithm(int 
 	params.selectionMethod = SelectionMethod::BEST;
 	params.rbbrs = true;
     params.iterLimit = iterLimit;
+	params.enforceTopOrdering = true;
+	params.partitionSize = 4;
 
     auto res = Runners::run(p, params, gaIndex);
 	//bool feas = p.isScheduleFeasible(res.sts);
@@ -386,5 +397,46 @@ boost::optional<Runners::GAResult> Main::Testing::benchmarkGeneticAlgorithm(int 
 	cout << "Solvetime = " << res.solvetime << endl;
 
     return res;
+}
+
+void Main::Testing::testLocalSolverNativePartitions() {
+	ProjectWithOvertime p("j30/j3010_1.sm");
+	PartitionsModel lm(p);
+	SolverParams params(5.0);
+	params.traceobj = true;
+	params.seed = 23;
+	params.threadCount = 1;
+	params.outPath = "";
+	params.timeLimit = -1;
+	params.iterLimit = 1000;
+	auto sts = lm.solve(params);
+	cout << "Profit = " << p.calcProfit(sts) << endl;
+}
+
+void Main::Testing::testOptimalSubschedulesGA() {
+	ProjectWithOvertime p("j30/j3010_1.sm");
+
+	GAParameters params;
+	params.popSize = 80;
+	params.timeLimit = -1;
+	params.numGens = -1;
+	params.fitnessBasedPairing = false;
+	params.pmutate = 5;
+	params.traceobj = false;
+	params.selectionMethod = SelectionMethod::BEST;
+	params.rbbrs = true;
+	params.iterLimit = 1000;
+	params.enforceTopOrdering = true;
+	params.partitionSize = 4;
+
+
+	PartitionListGA ga(p);
+	ga.setParameters(params);
+	Stopwatch sw;
+	sw.start();
+	auto pair = ga.solve();
+	double solvetime = sw.look();
+	Runners::GAResult result = { pair.first, pair.second, solvetime, ga.getName() };
+	LOG_I("Representation=" + result.name + " Profit=" + to_string(result.profit) + " Solvetime=" + to_string(result.solvetime));
 }
 
