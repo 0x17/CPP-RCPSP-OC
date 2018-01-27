@@ -71,7 +71,7 @@ public:
 
 	std::vector<int> topOrder, revTopOrder;
 
-	std::vector<int> ests, lsts, efts, lfts;
+	std::vector<int> ests, lsts, efts, lfts, lstsBounded, lftsBounded;
 
     const bool USE_DISPOSITION_METHOD = false;
 
@@ -246,7 +246,7 @@ inline void Project::timeWindow(int j, Func code) const {
 
 template<class Func>
 inline void Project::timeWindowBounded(int j, Func code) const {
-	for (int t = efts[j]; t <= std::min(lfts[j], heuristicMaxMs); t++) { code(t); }
+	for (int t = efts[j]; t <= lftsBounded[j]; t++) { code(t); }
 }
 
 template <class Func>
@@ -261,7 +261,7 @@ inline void Project::eachJobTimeWindow(Func code) const {
 template <class Func>
 inline void Project::eachJobTimeWindowBounded(Func code) const {
 	eachJobConst([&](int j) {
-		for (int t = efts[j]; t <= std::min(lfts[j], heuristicMaxMs); t++) {
+		for (int t = efts[j]; t <= lftsBounded[j]; t++) {
 			code(j, t);
 		}
 	});

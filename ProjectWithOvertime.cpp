@@ -387,7 +387,7 @@ std::vector<int> ProjectWithOvertime::serialOptimalSubSGSWithPartitionList(const
 			}
 		}
 
-		solver.setupModelForSubproject(sts, nextPartition);
+		solver.setupModelForSubproject(sts, nextPartition, p == 0);
 		sts = solver.solve().sts;
 	}
 

@@ -26,6 +26,7 @@ void PartitionListGA::mutate(PartitionList &i) {
 }
 
 FitnessResult PartitionListGA::fitness(PartitionList &i) {
+	//assert(p.isPartitionListFeasible(i.plist, params.partitionSize));
 	return { p.calcProfit(p.serialOptimalSubSGSWithPartitionListAndFBI(i.plist)), 1 };
 }
 

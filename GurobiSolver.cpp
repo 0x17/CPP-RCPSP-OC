@@ -30,45 +30,26 @@ void GurobiSolverBase::CustomCallback::manualCallback(float bks) {
 
 GurobiSolverBase::Result::Result(vector<int> &_sts, bool _optimal): sts(_sts), optimal(_optimal) {}
 
-GurobiSolverBase::GurobiSolverBase(const ProjectWithOvertime &_p, Options _opts) :
+GurobiSolverBase::GurobiSolverBase(const ProjectWithOvertime &_p, Options _opts, bool _heuristicPeriodUB) :
 	p(_p),
 	opts(_opts),
 	env(setupOptions(opts)),
 	model(*env),
 	// x_{jt}, binary restriction
-	xjt(p.numJobs, p.getHeuristicMaxMakespan()+1, [&](int j, int t) {
-		double ub = (t >= p.efts[j] && t <= p.lfts[j]) ? 1.0 : 0.0;
+	xjt(p.numJobs, (_heuristicPeriodUB ? p.getHeuristicMaxMakespan() : p.numPeriods)+1, [&](int j, int t) {
+		double ub = (t >= p.efts[j] && t <= (_heuristicPeriodUB ? p.lftsBounded[j] : p.lfts[j])) ? 1.0 : 0.0;
 		return model.addVar(0.0, ub, 0.0, GRB_BINARY, "xj" + to_string(j) + "t" + to_string(t));
 	}),
 	// z_{rt}, integer restriction, upper bound
-	zrt(p.numRes, p.getHeuristicMaxMakespan()+1, [&](int r, int t) {
+	zrt(p.numRes, (_heuristicPeriodUB ? p.getHeuristicMaxMakespan() : p.numPeriods)+1, [&](int r, int t) {
 		return model.addVar(0.0, static_cast<double>(p.zmax[r]), 0.0, GRB_INTEGER, "zr" + to_string(r) + "t" + to_string(t));
 	}),
-	cback(opts.traceobj ? new CustomCallback(opts.outPath, p.instanceName) : nullptr)
+	cback(opts.traceobj ? new CustomCallback(opts.outPath, p.instanceName) : nullptr),
+	heuristicPeriodUB(_heuristicPeriodUB)
 {
 	model.update();
 	if(cback != nullptr)
 		model.setCallback(cback.get());
-}
-
-void GurobiSolverBase::restrictJobToTimeWindow(int j, int eft, int lft) {
-	p.eachPeriodBoundedConst([&](int t) {
-		if(t >= eft && t <= lft) {
-			xjt(j, t).set(GRB_DoubleAttr_LB, 0.0);
-			xjt(j, t).set(GRB_DoubleAttr_UB, 1.0);
-		} else {
-			xjt(j, t).set(GRB_DoubleAttr_LB, 0.0);
-			xjt(j, t).set(GRB_DoubleAttr_UB, 0.0);
-		}
-	});
-}
-
-void GurobiSolverBase::relaxJob(int j) {
-	restrictJobToTimeWindow(j, p.efts[j], p.lfts[j]);
-}
-
-void GurobiSolverBase::relaxAllJobs() {
-	p.eachJobConst([&](int j) { relaxJob(j); });
 }
 
 void GurobiSolverBase::buildModel() {
@@ -93,38 +74,43 @@ unique_ptr<GRBEnv> GurobiSolverBase::setupOptions(Options opts) {
 }
 
 vector<int> GurobiSolverBase::parseSchedule() const {
-	//LOG_I("Parsing schedule from decision variable values");
-
 	vector<int> sts(p.numJobs, Project::UNSCHEDULED);
-	p.eachJobTimeWindowBounded([&](int j, int t) {
-		if (xjt(j, t).get(GRB_DoubleAttr_X) == 1.0) {
-			sts[j] = t - p.durations[j];
-		}
-	});
+	if(heuristicPeriodUB) {
+		p.eachJobTimeWindowBounded([&](int j, int t) {
+			if (xjt(j, t).get(GRB_DoubleAttr_X) == 1.0) {
+				sts[j] = t - p.durations[j];
+			}
+		});
+	} else {
+		p.eachJobTimeWindow([&](int j, int t) {
+			if (xjt(j, t).get(GRB_DoubleAttr_X) == 1.0) {
+				sts[j] = t - p.durations[j];
+			}
+		});
+	}
 	return sts;
 }
 
 GurobiSolverBase::Result GurobiSolverBase::solve() {
-	//LOG_I("Optimizing model");
-
 	try {
 		model.optimize();
+
+		if(model.get(GRB_IntAttr_Status) != GRB_OPTIMAL) {
+			LOG_W("Solution infeasible!");
+		}
+
 		auto sts = parseSchedule();
 		if(p.isCompleteSchedule(sts) && cback.get() != nullptr)
 			cback->manualCallback(p.calcProfit(sts));
 
-		if(model.get(GRB_IntAttr_Status) != GRB_OPTIMAL) {
-			cout << "INFEASIBLE!!!" << endl;
-		}
-
 		return { sts, model.get(GRB_IntAttr_Status) == GRB_OPTIMAL };
 	}
 	catch (GRBException &e) {
-		LOG_I("Error code = " + to_string(e.getErrorCode()));
-		LOG_I(e.getMessage());
+		LOG_W("Error code = " + to_string(e.getErrorCode()));
+		LOG_W(e.getMessage());
 	}
 	catch (...) {
-		LOG_I("Exception during optimization");
+		LOG_W("Exception during optimization");
 	}
 	vector<int> sts(p.numJobs);
 	return {sts, false};
@@ -137,12 +123,13 @@ string GurobiSolverBase::traceFilenameForInstance(const string& outPath, const s
 //================================================================================================================================================
 
 void GurobiSolver::setupObjectiveFunction() {
-	//LOG_I("Setting up objective function");
+	assert(heuristicPeriodUB);
 
 	GRBLinExpr revenueForMakespan = 0;
 	p.timeWindowBounded(p.numJobs - 1, [&](int t) {
 		revenueForMakespan += p.revenue[t] * xjt(p.numJobs - 1, t);
 	});
+
 	GRBLinExpr overtimeCosts = 0;
 	p.eachResPeriodBoundedConst([&](int r, int t) {
 		overtimeCosts += p.kappa[r] * zrt(r, t);
@@ -152,8 +139,6 @@ void GurobiSolver::setupObjectiveFunction() {
 }
 
 void GurobiSolver::setupConstraints() {
-	//LOG_I("Setting up constraints");
-
 	// each activity once
 	p.eachJobConst([&](int j) {
 		GRBLinExpr s = 0;
@@ -193,8 +178,6 @@ void GurobiSolver::setupConstraints() {
 void GurobiSolver::setupFeasibleMipStart() {
 	if (!opts.useSeedSol) return;
 
-	//LOG_I("Seeding mip solver with feasible heuristic start solution (serial sgs schedule)");
-
 	auto sts = p.serialSGS(p.topOrder);
 
 	p.eachJobConst([&](int j) {
@@ -214,39 +197,45 @@ void GurobiSolver::setupFeasibleMipStart() {
 	});
 }
 
+GurobiSolver::GurobiSolver(const ProjectWithOvertime &_p, GurobiSolverBase::Options _opts) : GurobiSolverBase(_p, _opts, true) {}
+
 //================================================================================================================================================
 
 GurobiSubprojectSolver::GurobiSubprojectSolver(const ProjectWithOvertime& _p, Options& _opts)
-:	 GurobiSolverBase(_p, _opts),
+:	 GurobiSolverBase(_p, _opts, false),
 	 eachOnceConstraints(_p.numJobs),
-	 isms(Utils::constructVector<GRBVar>(_p.heuristicMakespanUpperBound(), [this](int t) {return model.addVar(0.0, 1.0, 0.0, GRB_BINARY, "ismakespan"+to_string(t));  }))
+	 isms(Utils::constructVector<GRBVar>(p.numPeriods, [this](int t) {return model.addVar(0.0, 1.0, 0.0, GRB_BINARY, "ismakespan"+to_string(t));  }))
 {
 	cout << "New object construction!" << endl;
 	buildModel();
 }
 
 void GurobiSubprojectSolver::setupObjectiveFunction() {
+	assert(!heuristicPeriodUB);
+
 	GRBLinExpr revenueForMakespan = 0;
-	p.eachPeriodBoundedConst([&](int t) {
+	p.eachPeriodConst([&](int t) {
 		revenueForMakespan += p.revenueExtrapolated[t] * isms[t];
 	});
+
 	GRBLinExpr overtimeCosts = 0;
-	p.eachResPeriodBoundedConst([&](int r, int t) {
+	p.eachResPeriodConst([&](int r, int t) {
 		overtimeCosts += p.kappa[r] * zrt(r, t);
 	});
+
 	model.setObjective(revenueForMakespan - overtimeCosts, GRB_MAXIMIZE);
 }
 
 void GurobiSubprojectSolver::setupConstraints() {
 	// Link makespan
 	GRBLinExpr mssum = 0;
-	p.eachPeriodBoundedConst([&](int t) {
+	p.eachPeriodConst([&](int t) {
 		mssum += isms[t] * t;
 	});
 
 	p.eachJobConst([&](int j) {
 		GRBLinExpr ftjsum = 0;
-		p.timeWindowBounded(j, [&](int t) {
+		p.timeWindow(j, [&](int t) {
 			ftjsum += xjt(j, t) * t;
 		});
 		model.addConstr(ftjsum <= mssum, "linkMakespanj" + to_string(j));
@@ -254,7 +243,7 @@ void GurobiSubprojectSolver::setupConstraints() {
 
 	// Choose one makespan
 	GRBLinExpr mssumonce = 0;
-	p.eachPeriodBoundedConst([&](int t) {
+	p.eachPeriodConst([&](int t) {
 		mssumonce += isms[t];
 	});
 	model.addConstr(mssumonce == 1, "chooseOneMakespan");
@@ -262,7 +251,7 @@ void GurobiSubprojectSolver::setupConstraints() {
 	// each activity once
 	p.eachJobConst([&](int j) {
 		GRBLinExpr s = 0;
-		p.timeWindowBounded(j, [&](int t) {
+		p.timeWindow(j, [&](int t) {
 			s += xjt(j, t);
 		});
 		eachOnceConstraints[j] = model.addConstr(s == 1, "eachOncej" + to_string(j));
@@ -272,18 +261,17 @@ void GurobiSubprojectSolver::setupConstraints() {
 	p.eachJobPairConst([&](int i, int j) {
 		if (p.adjMx(i, j)) {
 			GRBLinExpr predFt = 0;
-			p.timeWindowBounded(i, [&](int t) { predFt += xjt(i, t) * t; });
+			p.timeWindow(i, [&](int t) { predFt += xjt(i, t) * t; });
 
-			GRBLinExpr succSt = 0;
-			p.timeWindowBounded(j, [&](int t) { succSt += xjt(j, t) * t; });
-			succSt -= p.durations[j];
+			GRBLinExpr succFt = 0;
+			p.timeWindow(j, [&](int t) { succFt += xjt(j, t) * t; });
 
-			precedenceConstraints[make_pair(i,j)] = model.addConstr(succSt - predFt >= 0, "i" + to_string(i) + "beforej" + to_string(j));
+			precedenceConstraints[make_pair(i,j)] = model.addConstr(succFt - predFt >= p.durations[j], "i" + to_string(i) + "beforej" + to_string(j));
 		}
 	});
 
 	// resource capacities
-	p.eachResPeriodBoundedConst([&](int r, int t) {
+	p.eachResPeriodConst([&](int r, int t) {
 		GRBLinExpr cumDemands = 0;
 
 		p.eachJobConst([&](int j) {
@@ -299,29 +287,39 @@ void GurobiSubprojectSolver::setupConstraints() {
 void GurobiSubprojectSolver::setupFeasibleMipStart() {
 }
 
-void GurobiSubprojectSolver::setupModelForSubproject(const std::vector<int> &sts, const std::vector<int> &nextPartition) {
-	for(auto &pair : precedenceConstraints) {
-		pair.second.set(GRB_DoubleAttr_RHS, 0.0);
-	}
-
+void GurobiSubprojectSolver::setupModelForSubproject(const std::vector<int> &sts, const std::vector<int> &nextPartition, bool forceInitIgnoredJobs) {
 	p.eachJobConst([&](int j) {
 		if(sts[j] != Project::UNSCHEDULED) {
-			p.eachPeriodBoundedConst([&](int t) {
+			p.eachPeriodConst([&](int t) {
 				double val = sts[j] + p.durations[j] == t ? 1.0 : 0.0;
 				xjt(j, t).set(GRB_DoubleAttr_LB, val);
 				xjt(j, t).set(GRB_DoubleAttr_UB, val);
 			});
-			eachOnceConstraints[j].set(GRB_DoubleAttr_RHS, 1.0);
+
+			p.eachJobConst([&](int i) {
+				if(p.adjMx(i,j))
+					precedenceConstraints[make_pair(i,j)].set(GRB_DoubleAttr_RHS, -GRB_INFINITY);
+				if(p.adjMx(j,i))
+					precedenceConstraints[make_pair(j,i)].set(GRB_DoubleAttr_RHS, -GRB_INFINITY);
+			});
 		}
 		else if(find(nextPartition.begin(), nextPartition.end(), j) != nextPartition.end()) {
-			p.eachPeriodBoundedConst([&](int t) {
-				double ub = (t >= p.efts[j] && t <= p.lfts[j]) ? 1.0 : 0.0;
+			int latestPredFt = p.computeLastPredFinishingTimeForSts(sts, j);
+			p.eachPeriodConst([&](int t) {
+				double ub = (t >= max(p.efts[j], latestPredFt+p.durations[j]) && t <= p.lfts[j]) ? 1.0 : 0.0;
 				xjt(j, t).set(GRB_DoubleAttr_LB, 0.0);
 				xjt(j, t).set(GRB_DoubleAttr_UB, ub);
 			});
+
 			eachOnceConstraints[j].set(GRB_DoubleAttr_RHS, 1.0);
-		} else {
-			p.eachPeriodBoundedConst([&](int t) {
+
+			p.eachJobConst([&](int i) {
+				if(p.adjMx(i,j) && find(nextPartition.begin(), nextPartition.end(), i) != nextPartition.end()) {
+					precedenceConstraints[make_pair(i, j)].set(GRB_DoubleAttr_RHS, p.durations[j]);
+				}
+			});
+		} else if(forceInitIgnoredJobs) {
+			p.eachPeriodConst([&](int t) {
 				xjt(j, t).set(GRB_DoubleAttr_LB, 0.0);
 				xjt(j, t).set(GRB_DoubleAttr_UB, 0.0);
 			});
@@ -332,7 +330,6 @@ void GurobiSubprojectSolver::setupModelForSubproject(const std::vector<int> &sts
 				if(p.adjMx(j,i))
 					precedenceConstraints[make_pair(j,i)].set(GRB_DoubleAttr_RHS, -GRB_INFINITY);
 			});
-
 		}
 	});
 

@@ -28,13 +28,8 @@ public:
 		Result(std::vector<int> &_sts, bool _optimal);
 	};
 
-	GurobiSolverBase(const ProjectWithOvertime& _p, Options _opts);
+	GurobiSolverBase(const ProjectWithOvertime& _p, Options _opts, bool _heuristicPeriodUB = true);
 	virtual ~GurobiSolverBase() = default;
-
-	void restrictJobToTimeWindow(int j, int eft, int lft);
-
-	void relaxJob(int j);
-	void relaxAllJobs();
 
 	void buildModel();
 
@@ -62,6 +57,7 @@ protected:
 	GRBModel model;
 	Matrix<GRBVar> xjt, zrt;
 	const std::unique_ptr<CustomCallback> cback;
+	bool heuristicPeriodUB;
 
 	virtual void setupObjectiveFunction() = 0;
 	virtual void setupConstraints() = 0;
@@ -72,7 +68,7 @@ protected:
 
 class GurobiSolver : public GurobiSolverBase {
 public:
-	GurobiSolver(const ProjectWithOvertime& _p, Options _opts) : GurobiSolverBase(_p, _opts) {}
+	GurobiSolver(const ProjectWithOvertime& _p, Options _opts);
 	virtual ~GurobiSolver() = default;
 
 private:
@@ -86,7 +82,7 @@ public:
 	GurobiSubprojectSolver(const ProjectWithOvertime& _p, Options& _opts);
 	virtual ~GurobiSubprojectSolver() = default;
 
-	void setupModelForSubproject(const std::vector<int>& _sts, const std::vector<int>& _nextPartition);
+	void setupModelForSubproject(const std::vector<int>& _sts, const std::vector<int>& _nextPartition, bool forceInitIgnoredJobs = true);
 
 private:
 	std::vector<GRBConstr> eachOnceConstraints;

@@ -185,19 +185,33 @@ bool Project::isScheduleFeasible(const vector<int>& sts) const {
 }
 
 bool Project::isSchedulePrecedenceFeasible(const vector<int>& sts) const {
-	for(int i = 0; i < numJobs; i++) {
-		if (sts[i] < 0 || sts[i] + durations[i] > T) {
-			LOG_W("Starting time of activity " + std::to_string(i) + " out of time horizon. t = " + std::to_string(sts[i]));
+	bool isPartial = false;
+	for(int j = 0; j < numJobs; j++) {
+		if(sts[j] == UNSCHEDULED) {
+			isPartial=true;
+			continue;
+		}
+
+		if (sts[j] < 0 || sts[j] + durations[j] > T) {
+			LOG_W("Starting time of activity " + std::to_string(j) + " out of time horizon. t = " + std::to_string(sts[j]));
 			return false;
 		}
 
-		for(int j = 0; j < numJobs; j++) {
-			if (adjMx(i, j) && sts[i] + durations[i] > sts[j]) {
-				LOG_W("Order feasibility violated. ft" + std::to_string(i) + "=" + std::to_string(sts[i] + durations[i]) + " > st" + std::to_string(j) + "=" + std::to_string(sts[j]));
-				return false;
+		for(int i = 0; i < numJobs; i++) {
+			if(adjMx(i,j)) {
+				if (sts[i] == UNSCHEDULED) {
+					LOG_W("Order feasibility violated. Predecessor " + to_string(i) + " of " + to_string(j) +  " is not scheduled yet!");
+					return false;
+				} else if (sts[i] + durations[i] > sts[j]) {
+					LOG_W("Order feasibility violated. ft" + std::to_string(i) + "=" + std::to_string(sts[i] + durations[i]) + " > st" + std::to_string(j) + "=" + std::to_string(sts[j]));
+					return false;
+				}
 			}
 		}
 	}
+
+	if(isPartial)
+		LOG_W("Partial schedule");
 
 	return true;
 }
@@ -212,6 +226,10 @@ bool Project::isScheduleResourceFeasible(const vector<int>& sts, const vector<in
 		for(int t = 0; t < numPeriods; t++) {
 			int cdem = 0;
 			for(int j = 0; j < numJobs; j++) {
+				if(sts[j] == UNSCHEDULED) {
+					continue;
+				}
+
 				if(sts[j] < t && t <= sts[j] + durations[j])
 					cdem += demands(j, r);
 			}
@@ -427,18 +445,23 @@ vector<int> Project::computeReverseTopOrder() const {
 }
 
 void Project::computeELSFTs() {
-    Utils::batchResize(numJobs, {&ests, &lsts, &efts, &lfts});
+    Utils::batchResize(numJobs, {&ests, &lsts, &efts, &lfts, &lstsBounded, &lftsBounded});
 
     for(int k=0; k<numJobs; k++) {
         int j = topOrder[k];
+
         ests[j] = computeLastPredFinishingTime(efts, j);
         efts[j] = ests[j] + durations[j];
     }
 
     for(int k=lastJob; k>=0; k--) {
         int j = topOrder[k];
-        lfts[j] = computeFirstSuccStartingTime(lsts, j, heuristicMaxMs);
-        lsts[j] = lfts[j] - durations[j];
+
+        lftsBounded[j] = computeFirstSuccStartingTime(lsts, j, heuristicMaxMs);
+        lstsBounded[j] = lftsBounded[j] - durations[j];
+
+		lfts[j] = computeFirstSuccStartingTime(lsts, j, T);
+		lsts[j] = lfts[j] - durations[j];
     }
 }
 

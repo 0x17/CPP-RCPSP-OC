@@ -415,11 +415,13 @@ void Main::Testing::testLocalSolverNativePartitions() {
 }
 
 void Main::Testing::testOptimalSubschedulesGA() {
-	ProjectWithOvertime p("j30/j3021_8.sm");
+	string instanceFilename = "j30/j3021_8.sm"; // "j30/j3010_1.sm";
+	
+	ProjectWithOvertime p(instanceFilename);
 
 	GAParameters params;
-	params.popSize = 80;
-	params.timeLimit = 30;
+	params.popSize = 10;
+	params.timeLimit = 15;
 	params.numGens = -1;
 	params.fitnessBasedPairing = false;
 	params.pmutate = 5;
@@ -428,7 +430,7 @@ void Main::Testing::testOptimalSubschedulesGA() {
 	params.rbbrs = true;
 	params.iterLimit = -1;
 	params.enforceTopOrdering = true;
-	params.partitionSize = 8;
+	params.partitionSize = 4;
 
 	PartitionListGA ga(p);
 	//TimeVaryingCapacityGA ga(p);
@@ -439,5 +441,12 @@ void Main::Testing::testOptimalSubschedulesGA() {
 	double solvetime = sw.look();
 	Runners::GAResult result = { pair.first, pair.second, solvetime, ga.getName() };
 	LOG_I("Representation=" + result.name + " Profit=" + to_string(result.profit) + " Solvetime=" + to_string(result.solvetime));
+	LOG_I("Actual profit = " + to_string(p.calcProfit(pair.first)));
+	assert(p.isScheduleFeasible(pair.first));
+
+	Utils::serializeSchedule(pair.first, "myschedule.txt");
+	Utils::serializeProfit(p.calcProfit(pair.first), "myprofit.txt");
+	system(("java -jar ScheduleValidator.jar . " + instanceFilename).c_str());
+	//Schedule infeasible: Schedule is not order feasible: 10->11 but ST(10)+d(10)=18+1=19>17=ST(11)!
 }
 
