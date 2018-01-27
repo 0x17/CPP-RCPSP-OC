@@ -66,11 +66,11 @@ int main(int argc, const char * argv[]) {
 
 	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_RANDKEY_ZRT, 10000, "j30/j3010_1.sm");
 
-	//Main::Testing::testGurobi();
+	Main::Testing::testGurobi();
 
 	//Main::Testing::testSerialOptimalSubschedules();
 
-	Main::Testing::testOptimalSubschedulesGA();
+	//Main::Testing::testOptimalSubschedulesGA();
 
 	return 0;
 }
@@ -286,7 +286,7 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
 
 #ifndef DISABLE_GUROBI
 void Main::Testing::testGurobi() {
-	string projFilename = "j30/j3010_1.sm";
+	string projFilename = "j30/j3021_8.sm"; //"j30/j3010_1.sm";
 	ProjectWithOvertime p(projFilename);
 	GurobiSolver::Options opts;
 	opts.traceobj = false;
@@ -294,14 +294,15 @@ void Main::Testing::testGurobi() {
 	opts.displayInterval = 1;
 	opts.gap = 0.0;
 	opts.outPath = "SOMEPREFIX";
-	opts.timeLimit = 60; //GRB_INFINITY;
+	opts.timeLimit = GRB_INFINITY;
 	opts.threadCount = 0;
 	GurobiSolver solver(p, opts);
 	solver.buildModel();
 	auto res = solver.solve();
 	cout << "Profit = " << p.calcProfit(res.sts) << endl;
-	//Utils::serializeSchedule(res.sts, "myschedule.txt");
-	//Utils::serializeProfit(p.calcProfit(res.sts), "myprofit.txt");
+	Utils::serializeSchedule(res.sts, "myschedule.txt");
+	Utils::serializeProfit(p.calcProfit(res.sts), "myprofit.txt");
+	system(("java -jar ScheduleValidator.jar . " + projFilename).c_str());
 }
 
 void Main::Testing::testSerialOptimalSubschedules() {
@@ -416,12 +417,12 @@ void Main::Testing::testLocalSolverNativePartitions() {
 
 void Main::Testing::testOptimalSubschedulesGA() {
 	string instanceFilename = "j30/j3021_8.sm"; // "j30/j3010_1.sm";
-	
+
 	ProjectWithOvertime p(instanceFilename);
 
 	GAParameters params;
-	params.popSize = 10;
-	params.timeLimit = 15;
+	params.popSize = 20;
+	params.timeLimit = 30;
 	params.numGens = -1;
 	params.fitnessBasedPairing = false;
 	params.pmutate = 5;
@@ -430,7 +431,7 @@ void Main::Testing::testOptimalSubschedulesGA() {
 	params.rbbrs = true;
 	params.iterLimit = -1;
 	params.enforceTopOrdering = true;
-	params.partitionSize = 4;
+	params.partitionSize = 16;
 
 	PartitionListGA ga(p);
 	//TimeVaryingCapacityGA ga(p);

@@ -387,6 +387,7 @@ std::vector<int> ProjectWithOvertime::serialOptimalSubSGSWithPartitionList(const
 			}
 		}
 
+		// TODO: For big partition sizes or as option: Seed MIP start solution from serial schedule generation scheme without overtime and topological order 1,2,3...
 		solver.setupModelForSubproject(sts, nextPartition, p == 0);
 		sts = solver.solve().sts;
 	}

@@ -258,6 +258,8 @@ std::pair<std::vector<int>, float> GeneticAlgorithm<Individual>::solve() {
     std::thread *threads[NUM_THREADS];
     int numPerThread = params.popSize / NUM_THREADS;
 
+	LOG_I("Computing with abort criterias: iterLimit=" + std::to_string(params.iterLimit) + ", numGens=" + std::to_string(params.numGens) + ", timeLimit=" + std::to_string(params.timeLimit));
+
 	int scheduleCount = 0, indivCount = 0;
 	std::vector<std::pair<Individual, float>> pop = computeInitialPopulation(params.popSize, scheduleCount, indivCount);
     float lastBestVal = std::numeric_limits<float>::max();
@@ -272,7 +274,8 @@ std::pair<std::vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 		}
 	};*/
 
-	LOG_I("Computing with abort criterias: iterLimit=" + std::to_string(params.iterLimit) + ", numGens=" + std::to_string(params.numGens) + ", timeLimit=" + std::to_string(params.timeLimit));
+	LOG_I("Initial population generated...");
+
     for(int i=0;   (params.iterLimit == -1 || scheduleCount <= params.iterLimit)
 				&& (params.numGens == -1 || i < params.numGens)
 				&& (params.timeLimit == -1.0 || sw.look() < params.timeLimit * 1000.0); i++) {
