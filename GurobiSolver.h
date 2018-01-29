@@ -82,7 +82,8 @@ public:
 	GurobiSubprojectSolver(const ProjectWithOvertime& _p, Options& _opts);
 	virtual ~GurobiSubprojectSolver() = default;
 
-	void setupModelForSubproject(const std::vector<int>& _sts, const std::vector<int>& _nextPartition, bool forceInitIgnoredJobs = true);
+	void setupModelForSubproject(const std::vector<int>& sts, const std::vector<int>& nextPartition, bool forceInitIgnoredJobs = true);
+	void supplyWithMIPStart(const std::vector<int> &sts, const std::vector<int> &nextPartition);
 
 private:
 	std::vector<GRBConstr> eachOnceConstraints;
@@ -92,6 +93,8 @@ private:
 	void setupObjectiveFunction() override;
 	void setupConstraints() override;
 	void setupFeasibleMipStart() override;
+
+	void fixJobToStartingTime(int j, int stj) const;
 };
 
 #endif

@@ -100,6 +100,7 @@ public:
 
     int makespan(const std::vector<int>& sts) const;
 	int makespan(const SGSResult& res) const;
+	int makespanOfPartial(const std::vector<int>& sts) const;
 
 	EACH_FUNC(eachJob, eachJobConst, j, numJobs)
 	EACH_FUNC(eachJobi, eachJobiConst, i, numJobs)
@@ -143,6 +144,12 @@ public:
 	int chooseEligibleWithHighestPriority(const std::vector<int> &sts, const std::vector<float> &rk) const;
 	
 	void complementPartialWithSSGS(const std::vector<int>& order, int startIx, std::vector<int> &fts, Matrix<int> &resRem, bool robust = false) const;
+
+	std::vector<int> complementPartialWithSpecificJobsUsingSSGS(const std::vector<int> &sts, const std::vector<int> &jobs) const {
+		return complementPartialWithSpecificJobsUsingSSGS(sts, jobs, topOrder);
+	}
+
+	std::vector<int> complementPartialWithSpecificJobsUsingSSGS(const std::vector<int> &sts, const std::vector<int> &jobs, const std::vector<int> &order) const;
 
 	Matrix<int> normalCapacityProfile() const;
 

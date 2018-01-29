@@ -416,6 +416,16 @@ int Project::makespan(const SGSResult& res) const {
 	return makespan(res.sts);
 }
 
+int Project::makespanOfPartial(const std::vector<int>& sts) const {
+	int ms = 0;
+	for(int j=0; j<numJobs; j++) {
+		if(sts[j] != UNSCHEDULED && sts[j] + durations[j] > ms) {
+			ms = sts[j] + durations[j];
+		}
+	}
+	return ms;
+}
+
 template <class Pred>
 vector<int> Project::topOrderComputationCore(Pred isEligible) const {
 	vector<int> order(numJobs);
@@ -780,4 +790,21 @@ int Project::countOrderRelations() const {
 	});
 	return count;
 
+}
+
+std::vector<int> Project::complementPartialWithSpecificJobsUsingSSGS(const std::vector<int> &sts, const std::vector<int> &jobs, const std::vector<int> &order) const {
+	vector<int> osts(sts);
+	Matrix<int> resRem = resRemForPartial(osts);
+
+	vector<int> sortedJobs(jobs);
+	sort(sortedJobs.begin(),  sortedJobs.end(), [&](int jobA, int jobB) { return Utils::indexOfFirstEqualTo(jobA, order) < Utils::indexOfFirstEqualTo(jobB, order); });
+
+	for(int job : sortedJobs) {
+		const int lastPredFinished = computeLastPredFinishingTimeForSts(osts, job);
+		int t;
+		for (t = lastPredFinished; !enoughCapacityForJob(job, t, resRem); t++);
+		scheduleJobAt(job, t, osts, resRem);
+	}
+
+	return osts;
 }

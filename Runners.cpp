@@ -9,6 +9,7 @@
 #include "LSModels/TimeWindowModels.h"
 #include "LSModels/OvertimeBoundModels.h"
 #include "LSModels/FixedDeadlineModels.h"
+#include "GeneticAlgorithms/PartitionList.h"
 
 using namespace std;
 
@@ -64,7 +65,9 @@ namespace Runners {
 		case 9:
 			solveModel = make_unique<RandomKeyDynamicOvertimeModel>(p);
 			break;
-			
+		case 10:
+			solveModel = make_unique<PartitionsModel>(p);
+			break;			
 		}
 		return solveModel;
 	}
@@ -80,6 +83,7 @@ namespace Runners {
 	RUN_GA_FUNC_IMPL(runFixedCapaRandomKeyGA, FixedCapacityRandomKeyGA)
 	RUN_GA_FUNC_IMPL(runTimeVaryCapaRandomKeyGA, TimeVaryingCapacityRandomKeyGA)
 	RUN_GA_FUNC_IMPL(runOptimalSubschedulesGA, OptimalSubschedulesGA)
+	RUN_GA_FUNC_IMPL(runPartitionListGA, PartitionListGA)
 	
 	vector<GAResult(*)(ProjectWithOvertime &, GAParameters &)> funcs = {
 		runTwBorderGA,				// 0
@@ -92,7 +96,8 @@ namespace Runners {
 		runFixedDeadlineGA,			// 7
 		runFixedCapaGA,				// 8
 		runTimeVaryCapaRandomKeyGA, // 9
-		runOptimalSubschedulesGA    // 10
+		runOptimalSubschedulesGA,   // 10
+		runPartitionListGA			// 11
 	};
 
 	static vector<string> representationDescriptions = {
@@ -106,7 +111,8 @@ namespace Runners {
 		"(lambda|deadline-offset)",
 		"(rk|zr)",
 		"(rk|zrt)",
-		"(lambda) sub"
+		"(lambda) sub",
+		"(lambda) plist"
 	};
 
 	string getDescription(int ix) { return representationDescriptions[ix]; }
@@ -124,16 +130,25 @@ namespace Runners {
 
 	vector<int> runGeneticAlgorithmWithIndex(ProjectWithOvertime &p, RunnerParams rparams) {
 		GAParameters params;
+
+		params.traceobj = rparams.traceobj;
+		params.timeLimit = rparams.timeLimit;
+		params.iterLimit = rparams.iterLimit;
+		params.outPath = rparams.outPath;
+
 		params.fitnessBasedPairing = false;
+		params.rbbrs = true;
+		params.fbiFeedbackInjection = false;
+		params.enforceTopOrdering = true;
+		
 		params.numGens = -1;
 		params.popSize = 80;
 		params.pmutate = 5;
-		params.timeLimit = rparams.timeLimit;
-		params.iterLimit = rparams.iterLimit;
-		params.traceobj = rparams.traceobj;
+		params.partitionSize = 8;
+
 		params.selectionMethod = SelectionMethod::BEST;
-		params.rbbrs = true;
-		params.outPath = rparams.outPath;
+		params.sgs = ScheduleGenerationScheme::SERIAL;
+		params.crossoverMethod = CrossoverMethod::OPC;
 
 		params.fromJsonFile();
 

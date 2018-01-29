@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 struct BasicSolverParameters {
 	double timeLimit;

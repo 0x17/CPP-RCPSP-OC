@@ -363,7 +363,8 @@ std::vector<int> ProjectWithOvertime::serialOptimalSubSGS(const std::vector<int>
 			nextPartition[j] = orderInducedPartitions[ix];
 		}
 
-		solver.setupModelForSubproject(sts, nextPartition);
+		solver.setupModelForSubproject(sts, nextPartition, p == 0);
+		solver.supplyWithMIPStart(complementPartialWithSpecificJobsUsingSSGS(sts, nextPartition), nextPartition);
 		sts = solver.solve().sts;
 	}
 
@@ -374,10 +375,13 @@ std::vector<int> ProjectWithOvertime::serialOptimalSubSGSWithPartitionList(const
 	static GurobiSolverBase::Options opts;
 	static GurobiSubprojectSolver solver(*this, opts);
 
-	int numPartitions = *max_element(partitionList.begin(), partitionList.end())+1;
-	int partitionSize = count(partitionList.begin(), partitionList.end(), 0);
+	const int numPartitions = *max_element(partitionList.begin(), partitionList.end())+1;
+	const int partitionSize = count(partitionList.begin(), partitionList.end(), 0);
 
 	std::vector<int> sts(numJobs, UNSCHEDULED), nextPartition(partitionSize, -1);
+
+	//Stopwatch sw;
+	//sw.start();
 
 	for(int p=0; p<numPartitions; p++) {
 		int ctr = 0;
@@ -387,9 +391,15 @@ std::vector<int> ProjectWithOvertime::serialOptimalSubSGSWithPartitionList(const
 			}
 		}
 
-		// TODO: For big partition sizes or as option: Seed MIP start solution from serial schedule generation scheme without overtime and topological order 1,2,3...
 		solver.setupModelForSubproject(sts, nextPartition, p == 0);
+		solver.supplyWithMIPStart(complementPartialWithSpecificJobsUsingSSGS(sts, nextPartition), nextPartition);
+
+		//cout << "Time required setup = " << sw.lookAndReset() << endl;
+
+		// Do problem specific partial branch and bound procedure here? what is a good UB for any choice?
 		sts = solver.solve().sts;
+
+		//cout << "Time required MIP solve = " << sw.lookAndReset() << endl;
 	}
 
 	return sts;

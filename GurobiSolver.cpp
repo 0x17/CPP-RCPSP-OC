@@ -47,7 +47,6 @@ GurobiSolverBase::GurobiSolverBase(const ProjectWithOvertime &_p, Options _opts,
 	cback(opts.traceobj ? new CustomCallback(opts.outPath, p.instanceName) : nullptr),
 	heuristicPeriodUB(_heuristicPeriodUB)
 {
-	model.update();
 	if(cback != nullptr)
 		model.setCallback(cback.get());
 }
@@ -56,7 +55,6 @@ void GurobiSolverBase::buildModel() {
 	setupObjectiveFunction();
 	setupConstraints();
 	setupFeasibleMipStart();
-	model.update();
 }
 
 unique_ptr<GRBEnv> GurobiSolverBase::setupOptions(Options opts) {
@@ -66,7 +64,7 @@ unique_ptr<GRBEnv> GurobiSolverBase::setupOptions(Options opts) {
 	env->set(GRB_IntParam_DisplayInterval, opts.displayInterval);
 	env->set(GRB_IntParam_Threads, opts.threadCount);
 
-	env->set(GRB_IntParam_OutputFlag, 1);
+	env->set(GRB_IntParam_OutputFlag, 0);
 
 	//env->set(GRB_DoubleParam_NodeLimit, opts.iterLimit);
 	//env->set(GRB_DoubleParam_Heuristics, 1.0);
@@ -93,6 +91,8 @@ vector<int> GurobiSolverBase::parseSchedule() const {
 
 GurobiSolverBase::Result GurobiSolverBase::solve() {
 	try {
+		model.update();
+		//model.write("mydebugmodel.lp");
 		model.optimize();
 
 		if(model.get(GRB_IntAttr_Status) != GRB_OPTIMAL) {
@@ -100,7 +100,7 @@ GurobiSolverBase::Result GurobiSolverBase::solve() {
 		}
 
 		auto sts = parseSchedule();
-		if(p.isCompleteSchedule(sts) && cback.get() != nullptr)
+		if(cback.get() != nullptr && p.isCompleteSchedule(sts))
 			cback->manualCallback(p.calcProfit(sts));
 
 		return { sts, model.get(GRB_IntAttr_Status) == GRB_OPTIMAL };
@@ -289,6 +289,10 @@ void GurobiSubprojectSolver::setupFeasibleMipStart() {
 }
 
 void GurobiSubprojectSolver::setupModelForSubproject(const std::vector<int> &sts, const std::vector<int> &nextPartition, bool forceInitIgnoredJobs) {
+	int subprojMsUB = p.makespanOfPartial(sts);
+	for (int j : nextPartition)
+		subprojMsUB += p.durations[j];
+
 	p.eachJobConst([&](int j) {
 		if(sts[j] != Project::UNSCHEDULED) {
 			p.eachPeriodConst([&](int t) {
@@ -307,7 +311,7 @@ void GurobiSubprojectSolver::setupModelForSubproject(const std::vector<int> &sts
 		else if(find(nextPartition.begin(), nextPartition.end(), j) != nextPartition.end()) {
 			int latestPredFt = p.computeLastPredFinishingTimeForSts(sts, j);
 			p.eachPeriodConst([&](int t) {
-				double ub = (t >= max(p.efts[j], latestPredFt+p.durations[j]) && t <= p.lfts[j]) ? 1.0 : 0.0;
+				double ub = (t >= max(p.efts[j], latestPredFt+p.durations[j]) && t <= min(p.lfts[j], subprojMsUB)) ? 1.0 : 0.0;
 				xjt(j, t).set(GRB_DoubleAttr_LB, 0.0);
 				xjt(j, t).set(GRB_DoubleAttr_UB, ub);
 			});
@@ -333,9 +337,23 @@ void GurobiSubprojectSolver::setupModelForSubproject(const std::vector<int> &sts
 			});
 		}
 	});
+}
 
-	model.update();
+void GurobiSubprojectSolver::supplyWithMIPStart(const std::vector<int> &sts, const std::vector<int> &nextPartition) {
 	model.reset();
+	for (int j = 0; j < sts.size(); j++) {
+		if (sts[j] != Project::UNSCHEDULED) {
+			fixJobToStartingTime(j, sts[j]);
+		}
+	}
+}
+
+void GurobiSubprojectSolver::fixJobToStartingTime(int j, int stj) const {
+	int ft = stj + p.durations[j];
+	p.eachPeriodConst([&](int t) {
+		double sval = (ft == t) ? 1.0 : 0.0;
+		xjt(j, t).set(GRB_DoubleAttr_Start, sval);
+	});
 }
 
 #endif

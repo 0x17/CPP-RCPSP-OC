@@ -57,7 +57,7 @@ int main(int argc, const char * argv[]) {
 
 	//Main::jsonConverter(argc, argv);
 
-	//Main::commandLineRunner(argc, argv);
+	Main::commandLineRunner(argc, argv);
 
 	//Main::Testing::testLocalSolverNativePartitionList();
 
@@ -66,7 +66,7 @@ int main(int argc, const char * argv[]) {
 
 	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_RANDKEY_ZRT, 10000, "j30/j3010_1.sm");
 
-	Main::Testing::testGurobi();
+	//Main::Testing::testGurobi();
 
 	//Main::Testing::testSerialOptimalSubschedules();
 
@@ -167,8 +167,8 @@ void Main::convertArgFileToLSP(int argc, const char * argv[]) {
 
 void Main::showUsage() {
 	list<string> solMethods = { "BranchAndBound", "LocalSolver", "Gurobi" };
-	for (int i = 0; i < 11; i++) solMethods.push_back("GA" + to_string(i) + " // " + Runners::getDescription(i));
-	for (int i = 0; i < 10; i++) solMethods.push_back("LocalSolverNative" + to_string(i) + " // " + Runners::getDescription(i));
+	for (int i = 0; i < 12; i++) solMethods.push_back("GA" + to_string(i) + " // " + Runners::getDescription(i));
+	for (int i = 0; i < 11; i++) solMethods.push_back("LocalSolverNative" + to_string(i) + " // " + Runners::getDescription(i));
 	cout << "Number of arguments must be >= 4" << endl;
 	cout << "Usage: Solver SolutionMethod TimeLimitInSecs ScheduleLimit ProjectFileSM [traceobj]" << endl;
 	cout << "Solution methods: " << endl;
@@ -431,20 +431,20 @@ void Main::Testing::testOptimalSubschedulesGA() {
 	params.rbbrs = true;
 	params.iterLimit = -1;
 	params.enforceTopOrdering = true;
-	params.partitionSize = 16;
+	params.partitionSize = 8; // 4;
 
 	PartitionListGA ga(p);
 	//TimeVaryingCapacityGA ga(p);
+
 	ga.setParameters(params);
 	Stopwatch sw;
 	sw.start();
-	auto pair = ga.solve();
-	double solvetime = sw.look();
-	Runners::GAResult result = { pair.first, pair.second, solvetime, ga.getName() };
+	const auto pair = ga.solve();
+	const double solvetime = sw.look();
+	const Runners::GAResult result = { pair.first, pair.second, solvetime, ga.getName() };
 	LOG_I("Representation=" + result.name + " Profit=" + to_string(result.profit) + " Solvetime=" + to_string(result.solvetime));
 	LOG_I("Actual profit = " + to_string(p.calcProfit(pair.first)));
 	assert(p.isScheduleFeasible(pair.first));
-
 	Utils::serializeSchedule(pair.first, "myschedule.txt");
 	Utils::serializeProfit(p.calcProfit(pair.first), "myprofit.txt");
 	system(("java -jar ScheduleValidator.jar . " + instanceFilename).c_str());
