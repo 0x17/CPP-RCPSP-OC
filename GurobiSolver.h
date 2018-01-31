@@ -64,17 +64,21 @@ protected:
 	virtual void setupFeasibleMipStart() = 0;
 	
 	std::vector<int> parseSchedule() const;
+
+	void mipStartFromSchedule(const std::vector<int> &sts);
 };
 
 class GurobiSolver : public GurobiSolverBase {
 public:
-	GurobiSolver(const ProjectWithOvertime& _p, Options _opts);
+	GurobiSolver(const ProjectWithOvertime& _p, Options _opts, boost::optional<const std::vector<int> &> _mipStartSts = boost::optional<const std::vector<int> &>());
 	virtual ~GurobiSolver() = default;
 
 private:
 	void setupObjectiveFunction() override;
 	void setupConstraints() override;
-	void setupFeasibleMipStart() override;	
+	void setupFeasibleMipStart() override;
+
+	boost::optional<const std::vector<int>> mipStartSts;
 };
 
 class GurobiSubprojectSolver : public GurobiSolverBase {

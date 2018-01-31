@@ -120,6 +120,24 @@ string GurobiSolverBase::traceFilenameForInstance(const string& outPath, const s
 	return outPath + "GurobiTrace_" + instanceName;
 }
 
+void GurobiSolverBase::mipStartFromSchedule(const std::vector<int> &sts) {
+	p.eachJobConst([&](int j) {
+		int ft = sts[j] + p.durations[j];
+		p.eachPeriodBoundedConst([&](int t) {
+			double sval = (ft == t) ? 1.0 : 0.0;
+			xjt(j, t).set(GRB_DoubleAttr_Start, sval);
+		});
+	});
+
+	p.eachResPeriodBoundedConst([&](int r, int t) {
+		int cumDemand = 0;
+		p.eachJobConst([&](int j) {
+			cumDemand += sts[j] + 1 < t && t <= sts[j] + p.durations[j] ? p.demands(j, r) : 0;
+		});
+		zrt(r, t).set(GRB_DoubleAttr_Start, std::max(0, cumDemand - p.capacities[r]));
+	});
+}
+
 //================================================================================================================================================
 
 void GurobiSolver::setupObjectiveFunction() {
@@ -178,27 +196,11 @@ void GurobiSolver::setupConstraints() {
 void GurobiSolver::setupFeasibleMipStart() {
 	if (!opts.useSeedSol) return;
 
-	// Here we could use a GA result for reference value computation
-	auto sts = p.serialSGS(p.topOrder);
-
-	p.eachJobConst([&](int j) {
-		int ft = sts[j] + p.durations[j];
-		p.eachPeriodBoundedConst([&](int t) {
-			double sval = (ft == t) ? 1.0 : 0.0;
-			xjt(j, t).set(GRB_DoubleAttr_Start, sval);
-		});
-	});
-
-	p.eachResPeriodBoundedConst([&](int r, int t) {
-		int cumDemand = 0;
-		p.eachJobConst([&](int j) {
-			cumDemand += sts[j] + 1 < t && t <= sts[j] + p.durations[j] ? p.demands(j, r) : 0;
-		});
-		zrt(r, t).set(GRB_DoubleAttr_Start, std::max(0, cumDemand - p.capacities[r]));
-	});
+	const auto sts = mipStartSts ? mipStartSts.get() : p.serialSGS(p.topOrder);
+	mipStartFromSchedule(sts);
 }
 
-GurobiSolver::GurobiSolver(const ProjectWithOvertime &_p, GurobiSolverBase::Options _opts) : GurobiSolverBase(_p, _opts, true) {}
+GurobiSolver::GurobiSolver(const ProjectWithOvertime &_p, GurobiSolverBase::Options _opts, boost::optional<const vector<int> &> _mipStartSts) : GurobiSolverBase(_p, _opts, true), mipStartSts(_mipStartSts) {}
 
 //================================================================================================================================================
 
@@ -224,7 +226,14 @@ void GurobiSubprojectSolver::setupObjectiveFunction() {
 		overtimeCosts += p.kappa[r] * zrt(r, t);
 	});
 
-	model.setObjective(revenueForMakespan - overtimeCosts, GRB_MAXIMIZE);
+	GRBLinExpr jobDelayPenalty = 0;
+	p.eachJobConst([&](int j) {
+		p.timeWindow(j, [&](int t) {
+			jobDelayPenalty += xjt(j,t) * t - p.efts[j];
+		});
+	});
+
+	model.setObjective(revenueForMakespan - overtimeCosts - 0.01 * jobDelayPenalty, GRB_MAXIMIZE);
 }
 
 void GurobiSubprojectSolver::setupConstraints() {

@@ -259,7 +259,19 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
 			opts.timeLimit = (timeLimit == -1.0) ? opts.timeLimit : timeLimit;
 			opts.iterLimit = (iterLimit == -1.0) ? opts.iterLimit : iterLimit;
 			opts.threadCount = 1;
-			GurobiSolver gsolver(p, opts);
+			auto mipStartSts = boost::optional<const vector<int> &>();
+			if(opts.timeLimit == -1 && opts.iterLimit == 1) {
+				LOG_I("no limits -> compute exact reference values with GA start and as much threads as quickly as possible");
+				opts.threadCount = 0;
+				GAParameters gaParams;
+				gaParams.timeLimit = 10;
+				TimeVaryingCapacityGA tvcga(p);
+				tvcga.setParameters(gaParams);
+				const auto gaResPair = tvcga.solve();
+				mipStartSts = gaResPair.first;
+				LOG_I("GA finished, now starting MIP solve with start solution with profit " + to_string(gaResPair.second));
+			}
+			GurobiSolver gsolver(p, opts, mipStartSts);
 			gsolver.buildModel();
 			outFn += "GurobiResults.txt";
 			if (instanceAlreadySolvedInResultFile(coreName, outFn)) return;

@@ -397,6 +397,7 @@ std::vector<int> ProjectWithOvertime::serialOptimalSubSGSWithPartitionList(const
 		//cout << "Time required setup = " << sw.lookAndReset() << endl;
 
 		// Do problem specific partial branch and bound procedure here? what is a good UB for any choice?
+		// Alternatively: Modified model with 'as early as possible without overtime increase' as objective
 		sts = solver.solve().sts;
 
 		//cout << "Time required MIP solve = " << sw.lookAndReset() << endl;
