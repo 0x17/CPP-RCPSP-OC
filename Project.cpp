@@ -714,7 +714,14 @@ std::vector<int> Project::parallelSGS(const vector<int> &order) const {
 
 int Project::nextDecisionPoint(const std::vector<int> &sts, int dt) const {
 	int minActiveFt = numeric_limits<int>::max();
-	EACH_JOB(if(isJobActiveInPeriod(sts, j, dt) && sts[j] + durations[j] < minActiveFt) { minActiveFt = sts[j] + durations[j]; });
+	int ftj;
+	for(int j=0; j<numJobs; j++) {
+		if (sts[j] == UNSCHEDULED) continue;
+		ftj = sts[j] + durations[j];
+		if (dt < ftj && ftj < minActiveFt) {
+			minActiveFt = ftj;
+		}
+	}
 	return minActiveFt;
 }
 
@@ -723,11 +730,12 @@ std::vector<int> Project::parallelSGSCore(const vector<int> &order, const std::v
 	std::vector<int> resRemInDt = baseResRem;
 	int dt = 0;
 	sts[0] = 0;
-	for(int i=0; i<numJobs; i++) {
+	for(int i=1; i<numJobs;) {
 		int j = chooseEligibleWithHighestPrioAndResFeasInDt(order, dt, sts, resRemInDt);
 		if(j != -1) {
 			sts[j] = dt;
 			EACH_RES(resRemInDt[r] -= demands(j,r));
+			i++;
 		} else {
 			dt = nextDecisionPoint(sts, dt);
 			EACH_RES(resRemInDt[r] = baseResRem[r]);
@@ -747,14 +755,16 @@ SGSResult Project::parallelSGS(const std::vector<int> &order, const Matrix<int> 
 	std::vector<int> sts(numJobs, UNSCHEDULED);
 	int dt = 0;
 	sts[0] = 0;
-	for(int i=0; i<numJobs; i++) {
+	for(int i=1; i<numJobs;) {
 		int j = chooseEligibleWithHighestPrioAndResFeasRuntime(order, dt, sts, resRem);
 		if(j != -1) {
 			scheduleJobAt(j, dt, sts, resRem);
+			i++;
 		} else {
 			dt = nextDecisionPoint(sts, dt);
 		}
 	}
+	z.foreach([&](int r, int t, int zrt) { resRem(r, t) -= zrt; });
 	return { sts, resRem, 1 };
 }
 
@@ -765,7 +775,7 @@ bool Project::enoughCapacityForJobInFirstPeriod(int job, const std::vector<int> 
 
 int Project::chooseEligibleWithHighestPrioAndResFeasInDt(const std::vector<int> &order, int dt, const std::vector<int> &sts, const std::vector<int> &resRem) const {
 	for(int j : order) {
-		if(sts[j] == Project::UNSCHEDULED && allPredsScheduled(j, sts) && computeLastPredFinishingTimeForSts(sts, j) >= dt && enoughCapacityForJobInFirstPeriod(j, resRem)) {
+		if(sts[j] == Project::UNSCHEDULED && allPredsScheduled(j, sts) && computeLastPredFinishingTimeForSts(sts, j) <= dt && enoughCapacityForJobInFirstPeriod(j, resRem)) {
 			return j;
 		}
 	}
@@ -774,12 +784,11 @@ int Project::chooseEligibleWithHighestPrioAndResFeasInDt(const std::vector<int> 
 
 int Project::chooseEligibleWithHighestPrioAndResFeasRuntime(const std::vector<int> &order, int dt, const std::vector<int> &sts, const Matrix<int> &resRem) const {
 	for(int j : order) {
-		if(sts[j] == Project::UNSCHEDULED && allPredsScheduled(j, sts) && computeLastPredFinishingTimeForSts(sts, j) >= dt && enoughCapacityForJob(j, dt, resRem)) {
+		if(sts[j] == Project::UNSCHEDULED && allPredsScheduled(j, sts) && computeLastPredFinishingTimeForSts(sts, j) <= dt && enoughCapacityForJob(j, dt, resRem)) {
 			return j;
 		}
 	}
 	return -1;
-	return 0;
 }
 
 int Project::countOrderRelations() const {

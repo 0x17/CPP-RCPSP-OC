@@ -33,9 +33,11 @@ namespace Main {
 		void testGurobi();
 		void testSerialOptimalSubschedules();
 		void testLocalSolverNativePartitionList();
-
 		void testLocalSolverNativePartitions();
 		void testOptimalSubschedulesGA();
+		void testPartitionListSGS();
+		void testRandomKeyGAZrt();
+		void testParallelSGSGAZrt();
 	}
 }
 
@@ -57,7 +59,12 @@ int main(int argc, const char * argv[]) {
 
 	//Main::jsonConverter(argc, argv);
 
-	Main::commandLineRunner(argc, argv);
+	//Main::commandLineRunner(argc, argv);
+
+	//Main::Testing::testPartitionListSGS();
+
+	//Main::Testing::testRandomKeyGAZrt();
+	Main::Testing::testParallelSGSGAZrt();
 
 	//Main::Testing::testLocalSolverNativePartitionList();
 
@@ -73,6 +80,12 @@ int main(int argc, const char * argv[]) {
 	//Main::Testing::testOptimalSubschedulesGA();
 
 	return 0;
+}
+
+void Main::Testing::testPartitionListSGS() {
+	const ProjectWithOvertime p("PartitionBeispiel.sm");
+	const vector<int> plist = { 0, 0, 0, 0, 1, 1, 1, 1 };
+	const vector<int> sts = p.serialOptimalSubSGSWithPartitionList(plist);
 }
 
 void Main::plotHeuristicProfits() {
@@ -427,6 +440,21 @@ void Main::Testing::testLocalSolverNativePartitions() {
 	cout << "Profit = " << p.calcProfit(sts) << endl;
 }
 
+template<class T>
+void solveAndvalidateGAResult(const ProjectWithOvertime &p, const std::string &instanceFilename, GeneticAlgorithm<T> &ga) {
+	Stopwatch sw;
+	sw.start();
+	const auto pair = ga.solve();
+	const double solvetime = sw.look();
+	const Runners::GAResult result = { pair.first, pair.second, solvetime, ga.getName() };
+	LOG_I("Representation=" + result.name + " Profit=" + to_string(result.profit) + " Solvetime=" + to_string(result.solvetime));
+	LOG_I("Actual profit = " + to_string(p.calcProfit(pair.first)));
+	assert(p.isScheduleFeasible(pair.first));
+	Utils::serializeSchedule(pair.first, "myschedule.txt");
+	Utils::serializeProfit(p.calcProfit(pair.first), "myprofit.txt");
+	system(("java -jar ScheduleValidator.jar . " + instanceFilename).c_str());
+}
+
 void Main::Testing::testOptimalSubschedulesGA() {
 	string instanceFilename = "j30/j3021_8.sm"; // "j30/j3010_1.sm";
 
@@ -449,17 +477,27 @@ void Main::Testing::testOptimalSubschedulesGA() {
 	//TimeVaryingCapacityGA ga(p);
 
 	ga.setParameters(params);
-	Stopwatch sw;
-	sw.start();
-	const auto pair = ga.solve();
-	const double solvetime = sw.look();
-	const Runners::GAResult result = { pair.first, pair.second, solvetime, ga.getName() };
-	LOG_I("Representation=" + result.name + " Profit=" + to_string(result.profit) + " Solvetime=" + to_string(result.solvetime));
-	LOG_I("Actual profit = " + to_string(p.calcProfit(pair.first)));
-	assert(p.isScheduleFeasible(pair.first));
-	Utils::serializeSchedule(pair.first, "myschedule.txt");
-	Utils::serializeProfit(p.calcProfit(pair.first), "myprofit.txt");
-	system(("java -jar ScheduleValidator.jar . " + instanceFilename).c_str());
+	solveAndvalidateGAResult(p, instanceFilename, ga);
+
 	//Schedule infeasible: Schedule is not order feasible: 10->11 but ST(10)+d(10)=18+1=19>17=ST(11)!
+}
+
+void Main::Testing::testRandomKeyGAZrt() {
+	string instanceFilename = "j30/j3021_8.sm"; // "j30/j3010_1.sm";
+	ProjectWithOvertime p(instanceFilename);
+	GAParameters params;
+	TimeVaryingCapacityRandomKeyGA ga(p);
+	ga.setParameters(params);
+	solveAndvalidateGAResult(p, instanceFilename, ga);
+}
+
+void Main::Testing::testParallelSGSGAZrt() {
+	string instanceFilename = "j30/j3021_8.sm"; // "j30/j3010_1.sm";
+	ProjectWithOvertime p(instanceFilename);
+	GAParameters params;
+	params.sgs = ScheduleGenerationScheme::PARALLEL;
+	TimeVaryingCapacityGA ga(p);
+	ga.setParameters(params);
+	solveAndvalidateGAResult(p, instanceFilename, ga);
 }
 
