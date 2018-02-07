@@ -62,7 +62,9 @@ void GAParameters::fromJsonStr(const std::string &s) {
 }
 
 void GAParameters::fromJsonFile(const std::string &fn) {
-	if(boost::filesystem::exists(fn) && boost::filesystem::is_regular_file(fn))
+	// FIXME: is_regular_file is false on existing file on Mac, why?
+	//if(boost::filesystem::exists(fn) && boost::filesystem::is_regular_file(fn))
+	if(Utils::fileExists(fn))
 		fromJsonStr(Utils::slurp(fn));
 }
 
@@ -77,7 +79,7 @@ json11::Json GAParameters::toJson() const {
 			{"pmutate", pmutate},
 			{"rbbrs", rbbrs},
 			{"selectionMethod", selectionMethod == SelectionMethod::BEST ? "best" : "duel"},
-			{"sgs", sgs == ScheduleGenerationScheme::SERIAL ? "Serial" : "Parallel"},
+			{"scheduleGenerationScheme", sgs == ScheduleGenerationScheme::SERIAL ? "Serial" : "Parallel"},
 			{"iterLimit", iterLimit},
 			{"outPath", outPath},
 			{"threadCount", threadCount},

@@ -59,12 +59,12 @@ int main(int argc, const char * argv[]) {
 
 	//Main::jsonConverter(argc, argv);
 
-	//Main::commandLineRunner(argc, argv);
+	Main::commandLineRunner(argc, argv);
 
 	//Main::Testing::testPartitionListSGS();
 
 	//Main::Testing::testRandomKeyGAZrt();
-	Main::Testing::testParallelSGSGAZrt();
+	//Main::Testing::testParallelSGSGAZrt();
 
 	//Main::Testing::testLocalSolverNativePartitionList();
 

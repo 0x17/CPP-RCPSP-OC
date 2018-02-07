@@ -160,4 +160,6 @@ namespace Utils {
 	}
 
 	std::vector<std::string> parseArgumentList(int argc, const char** argv);
+
+	bool fileExists(const std::string &filename);
 }

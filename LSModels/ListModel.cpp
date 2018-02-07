@@ -35,7 +35,8 @@ void LSModelOptions::fromJsonStr(const std::string & s) {
 }
 
 void LSModelOptions::parseFromJsonFile(const std::string & fn) {
-	if (boost::filesystem::exists(fn) && boost::filesystem::is_regular_file(fn))
+	//if (boost::filesystem::exists(fn) && boost::filesystem::is_regular_file(fn))
+	if(Utils::fileExists(fn))
 		fromJsonStr(Utils::slurp(fn));
 }
 

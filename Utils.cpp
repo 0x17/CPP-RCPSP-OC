@@ -206,3 +206,12 @@ vector<string> Utils::parseArgumentList(int argc, const char** argv) {
 	});
 }
 
+bool Utils::fileExists(const std::string &filename) {
+	FILE *fp = fopen(filename.c_str(), "r");
+	if(fp != nullptr) {
+		fclose(fp);
+		return true;
+	}
+	return false;
+}
+
