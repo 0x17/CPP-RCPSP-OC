@@ -176,6 +176,13 @@ void ListModel::addTopologicalOrderingConstraint(LSModel &model, LSExpression &a
 	}*/
 }
 
+void ListModel::applyInitialSolution() {
+	// initial solution is topological ordering of jobs
+	auto coll = activityList.getCollectionValue();
+	for (int i = 0; i < p.numJobs; i++)
+		coll.add(p.topOrder[i]);
+}
+
 void LSBaseModel::buildBaseModel() {
 	LSModel model = ls.getModel();
 	if (model.getNbObjectives() == 0) {
@@ -188,11 +195,13 @@ void LSBaseModel::buildBaseModel() {
 
 		model.maximize(obj);
 		model.close();
+
+		applyInitialSolution();
 	}
 }
 
 void ListModel::buildModel(localsolver::LSModel &model, localsolver::LSExpression &obj) {
-	LSExpression activityList = model.listVar(p.numJobs);
+	activityList = model.listVar(p.numJobs);
 	model.constraint(model.count(activityList) == p.numJobs);
 
 	for (int i = 0; i < p.numJobs; i++) {
@@ -202,12 +211,6 @@ void ListModel::buildModel(localsolver::LSModel &model, localsolver::LSExpressio
 
 	if(options.enforceTopOrdering)
 		addTopologicalOrderingConstraint(model, activityList);
-
-	// initial solution 0, 1, ..., njobs
-	auto coll = activityList.getCollectionValue();
-	for (int i = 0; i < p.numJobs; i++)
-		coll.add(i);
-
 }
 
 void LSBaseModel::applyParams(SolverParams &params) {
@@ -265,6 +268,14 @@ void RandomKeyModel::buildModel(localsolver::LSModel &model, localsolver::LSExpr
 	}
 }
 
+void RandomKeyModel::applyInitialSolution() {
+	// initial solution: random key variant of topological ordering
+	const vector<float> rk = p.activityListToRandomKey(p.topOrder);
+	for (int i = 0; i < p.numJobs; i++) {
+		prioritiesElems[i].setDoubleValue(rk[i]);
+	}
+}
+
 //======================================================================================================================
 
 PartitionsModel::PartitionsModel(ProjectWithOvertime &_p) : LSBaseModel(_p, new PartitionsSchedulingNativeFunction(_p)), partitionElems(_p.numJobs / options.partitionSize, options.partitionSize) {
@@ -272,7 +283,7 @@ PartitionsModel::PartitionsModel(ProjectWithOvertime &_p) : LSBaseModel(_p, new 
 }
 
 void PartitionsModel::buildModel(localsolver::LSModel &model, localsolver::LSExpression &obj) {
-	vector<LSExpression> partitions = Utils::constructVector<LSExpression>(p.numJobs / options.partitionSize, [&](int pix) { return model.listVar(p.numJobs); });
+	partitions = Utils::constructVector<LSExpression>(p.numJobs / options.partitionSize, [&](int pix) { return model.listVar(p.numJobs); });
 	for(const auto &partition : partitions) {
 		model.constraint(model.count(partition) == options.partitionSize);
 	}
@@ -298,6 +309,17 @@ void PartitionsModel::buildModel(localsolver::LSModel &model, localsolver::LSExp
 			model.constraint(partitionOfJob(i) < partitionOfJob(j));
 		}
 	});
+}
+
+void PartitionsModel::applyInitialSolution() {
+	// initial solution {0,1,2,...,psize},{psize+1,...,2*psize},...
+	int ctr = 0;
+	for (int i = 0; i < partitions.size(); i++) {
+		auto coll = partitions[i].getCollectionValue();
+		for (int j = 0; j < options.partitionSize; j++) {
+			coll.add(p.topOrder[ctr++]);
+		}
+	}
 }
 
 void PartitionsModel::addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression &obj) {}

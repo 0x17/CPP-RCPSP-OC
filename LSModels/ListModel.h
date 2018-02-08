@@ -66,6 +66,8 @@ protected:
 	virtual std::vector<int> parseScheduleFromSolution(localsolver::LSSolution &sol) = 0;
 	virtual void buildModel(localsolver::LSModel &model, localsolver::LSExpression &obj) = 0;
 
+	virtual void applyInitialSolution() = 0;
+
 	static LSModelOptions options;
 
 public:
@@ -86,14 +88,17 @@ private:
 class ListModel : public LSBaseModel {
 protected:
 	std::unique_ptr<TopOrderChecker> topOrderChecker;
-	std::vector<localsolver::LSExpression> listElems;
+	std::vector<localsolver::LSExpression> listElems;	
 public:
 	ListModel(ProjectWithOvertime &_p, ListSchedulingNativeFunction *_decoder);
 	~ListModel() override = default;
 
 private:
+	localsolver::LSExpression activityList;
+
 	void buildModel(localsolver::LSModel &model, localsolver::LSExpression &obj) override;
 	void addTopologicalOrderingConstraint(localsolver::LSModel &model, localsolver::LSExpression &activityList) const;
+	void applyInitialSolution() override;
 };
 
 class TraceCallback : public localsolver::LSCallback {
@@ -123,6 +128,7 @@ public:
 	~RandomKeyModel() override = default;
 private:
 	void buildModel(localsolver::LSModel &model, localsolver::LSExpression &obj) override;
+	virtual void applyInitialSolution() override;
 };
 
 //=================================================================================================
@@ -150,5 +156,8 @@ protected:
 	std::vector<int> parseScheduleFromSolution(localsolver::LSSolution &sol) override;
 
 private:
+	std::vector<localsolver::LSExpression> partitions;
+
 	void buildModel(localsolver::LSModel &model, localsolver::LSExpression &obj) override;
+	virtual void applyInitialSolution() override;
 };

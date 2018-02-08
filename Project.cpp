@@ -714,10 +714,11 @@ std::vector<int> Project::parallelSGS(const vector<int> &order) const {
 
 int Project::nextDecisionPoint(const std::vector<int> &sts, int dt) const {
 	int minActiveFt = numeric_limits<int>::max();
-	int ftj;
 	for(int j=0; j<numJobs; j++) {
 		if (sts[j] == UNSCHEDULED) continue;
-		ftj = sts[j] + durations[j];
+
+		int ftj = sts[j] + durations[j];
+
 		if (dt < ftj && ftj < minActiveFt) {
 			minActiveFt = ftj;
 		}
@@ -739,7 +740,7 @@ std::vector<int> Project::parallelSGSCore(const vector<int> &order, const std::v
 		} else {
 			dt = nextDecisionPoint(sts, dt);
 			EACH_RES(resRemInDt[r] = baseResRem[r]);
-			EACH_JOB_RES(if(isJobActiveInPeriod(sts, j, dt)) { resRemInDt[r] -= demands(j,r); });
+			EACH_JOB_RES(if(isJobActiveInPeriod(sts, j, dt+1)) { resRemInDt[r] -= demands(j,r); });
 		}
 	}
 	return sts;
@@ -751,7 +752,7 @@ std::vector<int> Project::parallelSGS(const std::vector<int> &order, const std::
 }
 
 SGSResult Project::parallelSGS(const std::vector<int> &order, const Matrix<int> &z) const {
-	Matrix<int> resRem(numRes, numPeriods, [this, &z](int r, int t) { return capacities[r] + z(r,t); });
+	Matrix<int> resRem(numRes, numPeriods, [this, &z](int r, int t) { return capacities[r] + (t >= z.getN() ? 0 : z(r, t)); });
 	std::vector<int> sts(numJobs, UNSCHEDULED);
 	int dt = 0;
 	sts[0] = 0;

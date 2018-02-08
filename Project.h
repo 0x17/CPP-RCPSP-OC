@@ -222,7 +222,7 @@ protected:
 	bool enoughCapacityForJobInFirstPeriod(int job, const std::vector<int> &resRemDt) const;
 
 	inline bool isJobActiveInPeriod(const std::vector<int> &sts, int j, int t) const {
-		return sts[j] < t && t <= sts[j] + durations[j];
+		return sts[j] != UNSCHEDULED && sts[j] < t && t <= sts[j] + durations[j];
 	}
 
 	int chooseEligibleWithHighestPrioAndResFeasInDt(const std::vector<int> &order, int dt, const std::vector<int> &sts, const std::vector<int> &resRem) const;
