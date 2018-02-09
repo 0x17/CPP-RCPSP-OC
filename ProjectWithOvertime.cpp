@@ -464,7 +464,7 @@ SGSResult ProjectWithOvertime::serialSGSWithOvertime(const vector<int> &order, b
         scheduleJobAt(job, bestT.first, sts, fts, resRem);
     }
 
-	return {sts, resRem};
+	return {sts, resRem, 1};
 }
 
 SGSResult ProjectWithOvertime::serialSGSWithOvertimeWithForwardBackwardImprovement(const vector<int>& order, bool robust) const {
@@ -643,11 +643,11 @@ SGSResult ProjectWithOvertime::serialSGSWithRandomKeyAndFBI(const std::vector<fl
 	return forwardBackwardIterations(order, res, makespan(res), boost::optional<int>());
 }
 
-std::vector<int> ProjectWithOvertime::serialOptimalSubSGSAndFBI(const std::vector<int> &partitions, int partitionSize) const {
-	const vector<int> sts = serialOptimalSubSGS(partitions, partitionSize);
+SGSResult ProjectWithOvertime::serialOptimalSubSGSAndFBI(const std::vector<int> &orderInducedPartitions, int partitionSize, bool robust) const {
+	const vector<int> sts = serialOptimalSubSGS(robust ? permutationToActivityList(orderInducedPartitions) : orderInducedPartitions, partitionSize);
 	const Matrix<int> resRem = resRemForPartial(sts);
 	const SGSResult res = { sts, resRem, 1 };
-	return forwardBackwardIterations(partitions, res, makespan(res), boost::optional<int>()).sts;
+	return forwardBackwardIterations(orderInducedPartitions, res, makespan(res), boost::optional<int>());
 }
 
 SGSResult ProjectWithOvertime::serialOptimalSubSGSWithPartitionListAndFBI(const std::vector<int> &partitionList) const {
@@ -681,5 +681,16 @@ std::vector<int> ProjectWithOvertime::orderInducedPartitionsToPartitionList(cons
 	return Utils::constructVector<int>(numJobs, [&](int j) {
 		return (int)floor((float)Utils::indexOfFirstEqualTo(j, orderInducedPartitions) / (float)partitionSize);
 	});
+}
+
+std::vector<int> ProjectWithOvertime::permutationToActivityList(const std::vector<int> permutation) const {
+	vector<bool> unscheduled(numJobs, true);
+	vector<int> order(numJobs);
+	for(int i = 0; i < permutation.size(); i++) {
+		int job = chooseEligibleWithLowestIndex(unscheduled, permutation);
+		unscheduled[job] = true;
+		order[i] = job;
+	}
+	return order;
 }
 

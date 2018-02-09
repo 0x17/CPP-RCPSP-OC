@@ -25,7 +25,9 @@ namespace JsonUtils {
         virtual void from_json(const json11::Json &obj) = 0;
 
         virtual void to_disk(const std::string &filename);
-        virtual void from_disk(const std::string &filename);
+        virtual void from_disk(const std::string &filename, bool skipOnMissing = false);
+
+		void print() const;
     };
 
     json11::Json modifyObject(const json11::Json& obj, const std::string& key, const json11::Json& newValue);

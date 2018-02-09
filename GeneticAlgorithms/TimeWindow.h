@@ -49,7 +49,7 @@ private:
 
 class ActivityListBasedGA : public GeneticAlgorithm<Lambda> {
 public:	
-	using TDecoder = std::function<SGSResult(const ProjectWithOvertime &p, const std::vector<int>&)>;
+	using TDecoder = std::function<SGSResult(const ProjectWithOvertime &p, const GAParameters &params, const std::vector<int>&)>;
 
 	enum class DecoderType {
 		CompareAlternatives,

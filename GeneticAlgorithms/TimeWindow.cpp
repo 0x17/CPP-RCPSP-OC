@@ -35,15 +35,14 @@ FitnessResult TimeWindowArbitraryDiscretizedGA::fitness(LambdaBeta &i) {
 	vector<float> tau = Utils::constructVector<float>(static_cast<int>(i.beta.size()), [&i, this](int ix) {
 		return static_cast<float>(static_cast<double>(i.beta[ix]) / static_cast<double>(ub-1));
 	});
-	auto res = p.serialSGSTimeWindowArbitrary(i.order, tau);
-	return { p.calcProfit(res), res.numSchedulesGenerated };
+	return { p, p.serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(i.order, tau, !params.enforceTopOrdering) };
 }
 
 vector<int> TimeWindowArbitraryDiscretizedGA::decode(LambdaBeta& i) {
 	vector<float> tau = Utils::constructVector<float>(static_cast<int>(i.beta.size()), [&i, this](int ix) {
 		return static_cast<float>(static_cast<double>(i.beta[ix]) / static_cast<double>(ub-1));
 	});
-	return p.serialSGSTimeWindowArbitrary(i.order, tau).sts;
+	return p.serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(i.order, tau, !params.enforceTopOrdering).sts;
 }
 
 //======================================================================================================================
@@ -73,12 +72,11 @@ void TimeWindowArbitraryGA::mutate(LambdaTau &i) {
 }
 
 FitnessResult TimeWindowArbitraryGA::fitness(LambdaTau &i) {
-    auto pair = p.serialSGSTimeWindowArbitrary(i.order, i.tau);
-	return { p.calcProfit(pair), pair.numSchedulesGenerated };
+	return { p, p.serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(i.order, i.tau, !params.enforceTopOrdering) };
 }
 
 vector<int> TimeWindowArbitraryGA::decode(LambdaTau& i)  {
-	return p.serialSGSTimeWindowArbitrary(i.order, i.tau).sts;
+	return p.serialSGSTimeWindowArbitraryWithForwardBackwardImprovement(i.order, i.tau, !params.enforceTopOrdering).sts;
 }
 
 //======================================================================================================================
@@ -117,12 +115,11 @@ void TimeWindowBordersGA::mutate(LambdaBeta &i) {
 }
 
 FitnessResult TimeWindowBordersGA::fitness(LambdaBeta &i) {
-    auto res = p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(i.order, i.beta, options);
-	return { p.calcProfit(res), res.numSchedulesGenerated };
+	return { p, p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(i.order, i.beta, options, !params.enforceTopOrdering) };
 }
 
 vector<int> TimeWindowBordersGA::decode(LambdaBeta& i) {
-	return p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(i.order, i.beta, options).sts;
+	return p.serialSGSTimeWindowBordersWithForwardBackwardImprovement(i.order, i.beta, options, !params.enforceTopOrdering).sts;
 }
 
 //======================================================================================================================
@@ -134,19 +131,17 @@ ActivityListBasedGA::ActivityListBasedGA(ProjectWithOvertime &_p, const std::str
 ActivityListBasedGA::TDecoder ActivityListBasedGA::selectDecoder(DecoderType type) {
 	switch(type) {
 	case DecoderType::CompareAlternatives:
-		return [](const ProjectWithOvertime& p, const vector<int>& order) {
-			return p.serialSGSWithOvertime(order);
+		return [](const ProjectWithOvertime& p, const GAParameters &params, const vector<int>& order) {
+			return p.serialSGSWithOvertimeWithForwardBackwardImprovement(order, !params.enforceTopOrdering);
 		};
 	case DecoderType::OptimalSubschedules:
-		return [](const ProjectWithOvertime& p, const vector<int>& order) {
-			vector<int> sts = p.serialOptimalSubSGS(order, 8);
-			Matrix<int> resRem = p.resRemForPartial(sts);
-			return SGSResult {sts, resRem, 1};
+		return [](const ProjectWithOvertime& p, const GAParameters &params, const vector<int>& order) {
+			return p.serialOptimalSubSGSAndFBI(order, params.partitionSize, !params.enforceTopOrdering);
 		};
 	case DecoderType::GoldenSectionSearch:
 	default:
-		return [](const ProjectWithOvertime& p, const vector<int>& order) {
-			return p.goldenSectionSearchBasedOptimization(order);
+		return [](const ProjectWithOvertime& p, const GAParameters &params, const vector<int>& order) {
+			return p.goldenSectionSearchBasedOptimization(order, !params.enforceTopOrdering);
 		};
 	}
 }
@@ -181,12 +176,11 @@ void ActivityListBasedGA::mutate(Lambda &i) {
 }
 
 FitnessResult ActivityListBasedGA::fitness(Lambda &i) {
-	auto res = decoder(p, i.order);
-	return { p.calcProfit(res), res.numSchedulesGenerated };
+	return { p, decoder(p, params, i.order) };
 }
 
 vector<int> ActivityListBasedGA::decode(Lambda& i) {
-	return decoder(p, i.order).sts;
+	return decoder(p, params, i.order).sts;
 }
 
 //======================================================================================================================

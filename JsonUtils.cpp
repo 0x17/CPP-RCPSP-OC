@@ -7,6 +7,7 @@
 
 #include <string>
 #include <map>
+#include <iostream>
 
 using namespace std;
 using namespace json11;
@@ -117,6 +118,11 @@ void JsonUtils::IJsonSerializable::to_disk(const std::string &filename) {
     Utils::spit(to_json().dump(), filename);
 }
 
-void JsonUtils::IJsonSerializable::from_disk(const std::string &filename) {
+void JsonUtils::IJsonSerializable::from_disk(const std::string &filename, bool skipOnMissing) {
+	if (skipOnMissing && !Utils::fileExists(filename)) return;
     from_json(JsonUtils::readJsonFromFile(filename));
+}
+
+void JsonUtils::IJsonSerializable::print() const {
+	cout << to_json().dump() << endl;
 }

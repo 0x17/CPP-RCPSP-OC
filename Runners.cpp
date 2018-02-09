@@ -6,10 +6,12 @@
 #include "GeneticAlgorithms/TimeWindow.h"
 #include "GeneticAlgorithms/OvertimeBound.h"
 #include "GeneticAlgorithms/FixedDeadline.h"
+#include "GeneticAlgorithms/Partition.h"
+
 #include "LSModels/TimeWindowModels.h"
 #include "LSModels/OvertimeBoundModels.h"
 #include "LSModels/FixedDeadlineModels.h"
-#include "GeneticAlgorithms/PartitionList.h"
+#include "LSModels/PartitionModels.h"
 
 using namespace std;
 
@@ -66,8 +68,11 @@ namespace Runners {
 			solveModel = make_unique<RandomKeyDynamicOvertimeModel>(p);
 			break;
 		case 10:
+			solveModel = make_unique<ActivityListPartitionsModel>(p);
+			break;
+		case 11:
 			solveModel = make_unique<PartitionsModel>(p);
-			break;			
+			break;
 		}
 		return solveModel;
 	}
@@ -150,7 +155,9 @@ namespace Runners {
 		params.sgs = ScheduleGenerationScheme::SERIAL;
 		params.crossoverMethod = CrossoverMethod::OPC;
 
-		params.fromJsonFile();
+		params.from_disk("GAParameters.json", true);
+
+		params.print();
 
 		if (rparams.methodIndex == 0)
 			TimeWindowBordersGA::setVariant(rparams.variant);
@@ -169,8 +176,11 @@ namespace Runners {
 		auto &opts = ListModel::getOptions();
 		opts.enforceTopOrdering = false;
 		opts.parallelSGS = false;
+		opts.partitionSize = 8;
 
-		opts.parseFromJsonFile();
+		opts.from_disk("LSParameters.json", true);
+
+		opts.print();
 
 		return lm->solve(params);
 	}

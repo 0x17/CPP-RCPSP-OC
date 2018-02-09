@@ -39,12 +39,15 @@ inline std::string traceFilenameForGeneticAlgorithm(const std::string &outPath, 
 	return outPath + "GA" + gaName + "Trace_" + instanceName;
 }
 
-struct GAParameters : BasicSolverParameters {
+struct GAParameters : BasicSolverParameters, JsonUtils::IJsonSerializable {
 	GAParameters();
+	virtual ~GAParameters() = default;
 
-	void fromJsonFile(const std::string &fn = "GAParameters.json");
-	void fromJsonStr(const std::string &s);
-	json11::Json toJson() const;
+	//void fromJsonFile(const std::string &fn = "GAParameters.json");
+	//void fromJsonStr(const std::string &s);
+
+	json11::Json to_json() const override;
+	void from_json(const json11::Json &obj) override;
 
 	int numGens, popSize, pmutate;
     bool fitnessBasedPairing;
@@ -60,6 +63,7 @@ struct FitnessResult {
 	int numSchedulesGenerated;
 
 	FitnessResult(float value, int numSchedulesGenerated);
+	FitnessResult(const ProjectWithOvertime &p, const SGSResult &res);
 	FitnessResult();
 };
 

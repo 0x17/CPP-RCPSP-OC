@@ -4,8 +4,6 @@
 
 #pragma once
 
-#define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
-
 #include <cstdlib>
 #include <vector>
 #include <list>

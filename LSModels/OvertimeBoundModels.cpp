@@ -111,8 +111,7 @@ SGSResult RandomKeyFixedOvertimeModel::SerialSGSRandomKeyZrDecoder::decode(vecto
 	for (int r = 0; r < p.numRes; r++)
 		zr[r] = static_cast<int>(context.getIntValue(p.numJobs + r));
 
-	auto res = p.serialSGSWithRandomKeyAndFBI(priorities, zr);
-	return res;
+	return p.serialSGSWithRandomKeyAndFBI(priorities, zr);
 }
 
 void RandomKeyFixedOvertimeModel::addAdditionalData(LSModel &model, LSExpression& obj) {

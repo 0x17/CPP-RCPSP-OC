@@ -24,7 +24,7 @@
     <ClCompile Include="GeneticAlgorithms\FixedDeadline.cpp" />
     <ClCompile Include="GeneticAlgorithms\GeneticAlgorithm.cpp" />
     <ClCompile Include="GeneticAlgorithms\OvertimeBound.cpp" />
-    <ClCompile Include="GeneticAlgorithms\PartitionList.cpp" />
+    <ClCompile Include="GeneticAlgorithms\Partition.cpp" />
     <ClCompile Include="GeneticAlgorithms\Representations.cpp" />
     <ClCompile Include="GeneticAlgorithms\Sampling.cpp" />
     <ClCompile Include="GeneticAlgorithms\TimeWindow.cpp" />
@@ -36,6 +36,7 @@
     <ClCompile Include="LSModels\ListModel.cpp" />
     <ClCompile Include="LSModels\NaiveModels.cpp" />
     <ClCompile Include="LSModels\OvertimeBoundModels.cpp" />
+    <ClCompile Include="LSModels\PartitionModels.cpp" />
     <ClCompile Include="LSModels\TimeWindowModels.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OnHold\ParticleSwarm.cpp" />
@@ -53,7 +54,7 @@
     <ClInclude Include="GeneticAlgorithms\FixedDeadline.h" />
     <ClInclude Include="GeneticAlgorithms\GeneticAlgorithm.h" />
     <ClInclude Include="GeneticAlgorithms\OvertimeBound.h" />
-    <ClInclude Include="GeneticAlgorithms\PartitionList.h" />
+    <ClInclude Include="GeneticAlgorithms\Partition.h" />
     <ClInclude Include="GeneticAlgorithms\Representations.h" />
     <ClInclude Include="GeneticAlgorithms\Sampling.h" />
     <ClInclude Include="GeneticAlgorithms\TimeWindow.h" />
@@ -65,6 +66,7 @@
     <ClInclude Include="LSModels\ListModel.h" />
     <ClInclude Include="LSModels\NaiveModels.h" />
     <ClInclude Include="LSModels\OvertimeBoundModels.h" />
+    <ClInclude Include="LSModels\PartitionModels.h" />
     <ClInclude Include="LSModels\TimeWindowModels.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="OnHold\ParticleSwarm.h" />
@@ -161,7 +163,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -194,7 +196,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

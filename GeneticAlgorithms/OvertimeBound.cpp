@@ -44,23 +44,23 @@ void TimeVaryingCapacityGA::mutate(LambdaZrt &i) {
 }
 
 FitnessResult TimeVaryingCapacityGA::fitness(LambdaZrt &i) {
-	SGSResult pair;
+	SGSResult res;
 
 	switch(params.sgs) {
 	default:
 	case ScheduleGenerationScheme::SERIAL:
-		pair = p.serialSGSWithForwardBackwardImprovement(i.order, i.z, !params.enforceTopOrdering);
+		res = p.serialSGSWithForwardBackwardImprovement(i.order, i.z, !params.enforceTopOrdering);
 		break;
 	case ScheduleGenerationScheme::PARALLEL:
-		pair = p.parallelSGSWithForwardBackwardImprovement(i.order, i.z);		
+		res = p.parallelSGSWithForwardBackwardImprovement(i.order, i.z);		
 		break;
 	}	 
 
 	if(params.fbiFeedbackInjection) {
-		i.order = p.scheduleToActivityList(pair.sts);
+		i.order = p.scheduleToActivityList(res.sts);
 	}
 
-	return { p.calcProfit(pair), pair.numSchedulesGenerated };
+	return { p, res };
 }
 
 vector<int> TimeVaryingCapacityGA::decode(LambdaZrt& i) {
@@ -117,7 +117,7 @@ FitnessResult FixedCapacityGA::fitness(LambdaZr &i) {
 		res = p.parallelSGSWithForwardBackwardImprovement(i.order, i.z);
 		break;
 	}
-	return { p.calcProfit(res), res.numSchedulesGenerated };
+	return { p, res };
 }
 
 vector<int> FixedCapacityGA::decode(LambdaZr& i) {
@@ -169,8 +169,7 @@ void TimeVaryingCapacityRandomKeyGA::mutate(RandomKeyZrt& i) {
 }
 
 FitnessResult TimeVaryingCapacityRandomKeyGA::fitness(RandomKeyZrt& i) {
-	auto res = p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z);
-	return { p.calcProfit(res), res.numSchedulesGenerated };
+	return { p, p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z) };
 }
 
 std::vector<int> TimeVaryingCapacityRandomKeyGA::decode(RandomKeyZrt& i) {
@@ -200,8 +199,7 @@ void FixedCapacityRandomKeyGA::mutate(RandomKeyZr &i) {
 }
 
 FitnessResult FixedCapacityRandomKeyGA::fitness(RandomKeyZr &i) {
-	auto res = p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z);
-	return { p.calcProfit(res), res.numSchedulesGenerated };
+	return { p, p.serialSGSWithRandomKeyAndFBI(i.priorities, i.z) };
 }
 
 vector<int> FixedCapacityRandomKeyGA::decode(RandomKeyZr& i) {

@@ -5,6 +5,10 @@ FitnessResult::FitnessResult(float value, int numSchedulesGenerated)
 		: value(value),
 		  numSchedulesGenerated(numSchedulesGenerated) {}
 
+FitnessResult::FitnessResult(const ProjectWithOvertime & p, const SGSResult & res)
+		: value(p.calcProfit(res)),
+		  numSchedulesGenerated(res.numSchedulesGenerated) {}
+
 FitnessResult::FitnessResult() : value(0.0f), numSchedulesGenerated(0) {}
 
 GAParameters::GAParameters() :
@@ -22,9 +26,7 @@ GAParameters::GAParameters() :
 		partitionSize(4) {
 }
 
-void GAParameters::fromJsonStr(const std::string &s) {
-	const auto obj = JsonUtils::readJsonFromString(s);
-
+void GAParameters::from_json(const json11::Json &obj) {
 	const std::map<std::string, int *> keyNamesToIntSlots = {
 			{"numGens", &numGens},
 			{"popSize", &popSize},
@@ -61,14 +63,7 @@ void GAParameters::fromJsonStr(const std::string &s) {
 	}
 }
 
-void GAParameters::fromJsonFile(const std::string &fn) {
-	// FIXME: is_regular_file is false on existing file on Mac, why?
-	//if(boost::filesystem::exists(fn) && boost::filesystem::is_regular_file(fn))
-	if(Utils::fileExists(fn))
-		fromJsonStr(Utils::slurp(fn));
-}
-
-json11::Json GAParameters::toJson() const {
+json11::Json GAParameters::to_json() const {
 	return json11::Json::object {
 			{"popSize", popSize},
 			{"crossoverMethod", crossoverMethod == CrossoverMethod::OPC ? "OPC" : "TPC"},

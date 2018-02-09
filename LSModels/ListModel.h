@@ -46,14 +46,20 @@ public:
 	localsolver::lsdouble call(const localsolver::LSNativeContext& context) override;
 };
 
-struct LSModelOptions {
-	bool enforceTopOrdering = false, parallelSGS = false;
-	int partitionSize = 4;
+struct LSModelOptions : JsonUtils::IJsonSerializable {
+	bool enforceTopOrdering = false,
+		 parallelSGS = false;
+	int partitionSize = 8;
+
 	explicit LSModelOptions(bool enforce_top_ordering, bool parallel_sgs, int _partitionSize) : enforceTopOrdering(enforce_top_ordering), parallelSGS(parallel_sgs), partitionSize(_partitionSize) {}
 	LSModelOptions() = default;
+	virtual ~LSModelOptions() = default;
 
-	void fromJsonStr(const std::string &s);
-	void parseFromJsonFile(const std::string &fn = "LSModelOptions.json");
+	//void fromJsonStr(const std::string &s);
+	//void parseFromJsonFile(const std::string &fn = "LSModelOptions.json");
+
+	json11::Json to_json() const override;
+	void from_json(const json11::Json &obj) override;
 };
 
 class LSBaseModel : public ISolver {
@@ -131,33 +137,3 @@ private:
 	virtual void applyInitialSolution() override;
 };
 
-//=================================================================================================
-
-class PartitionsSchedulingNativeFunction : public BaseSchedulingNativeFunction {
-public:
-	explicit PartitionsSchedulingNativeFunction(ProjectWithOvertime &_p) : BaseSchedulingNativeFunction(_p) {}
-	~PartitionsSchedulingNativeFunction() override = default;
-	SGSResult decode(const Matrix<int> &partitions, const localsolver::LSNativeContext &context);
-	boost::optional<SGSResult> coreComputation(const localsolver::LSNativeContext &context) override;
-
-	int varCount() override;
-};
-
-class PartitionsModel : public LSBaseModel {
-protected:
-	Matrix<localsolver::LSExpression> partitionElems;
-public:
-	explicit PartitionsModel(ProjectWithOvertime &_p);
-	~PartitionsModel() override = default;
-
-protected:
-	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression &obj) override;
-
-	std::vector<int> parseScheduleFromSolution(localsolver::LSSolution &sol) override;
-
-private:
-	std::vector<localsolver::LSExpression> partitions;
-
-	void buildModel(localsolver::LSModel &model, localsolver::LSExpression &obj) override;
-	virtual void applyInitialSolution() override;
-};

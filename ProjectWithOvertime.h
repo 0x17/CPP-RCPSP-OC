@@ -94,7 +94,7 @@ public:
 
 	bool isPartitionListFeasible(const std::vector<int> &partitionList, int partitionSize) const;
 
-	std::vector<int> serialOptimalSubSGSAndFBI(const std::vector<int>& partitions, int partitionSize) const;
+	SGSResult serialOptimalSubSGSAndFBI(const std::vector<int>& orderInducedPartitions, int partitionSize, bool robust = false) const;
 	SGSResult serialOptimalSubSGSWithPartitionListAndFBI(const std::vector<int>& partitionList) const;
 
 	SGSResult parallelSGSWithForwardBackwardImprovement(const std::vector<int> &order, const Matrix<int> &z) const;
@@ -102,6 +102,8 @@ public:
 	SGSResult parallelSGSWithForwardBackwardImprovement(const std::vector<int> &order) const;
 
 	std::vector<int> orderInducedPartitionsToPartitionList(const std::vector<int>& orderInducedPartitions, int partitionSize) const;
+
+	std::vector<int> permutationToActivityList(const std::vector<int> permutation) const;
 
 private:
     void computeRevenueFunction();

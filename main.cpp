@@ -3,14 +3,18 @@
 #include <boost/filesystem.hpp>
 
 #include "ProjectWithOvertime.h"
-#include "LSModels/NaiveModels.h"
-#include "LSModels/FixedDeadlineModels.h"
+
 #include "Runners.h"
 #include "BranchAndBound.h"
 #include "GurobiSolver.h"
 #include "Utils.h"
-#include "GeneticAlgorithms/PartitionList.h"
+
+#include "GeneticAlgorithms/Partition.h"
 #include "GeneticAlgorithms/OvertimeBound.h"
+
+#include "LSModels/NaiveModels.h"
+#include "LSModels/FixedDeadlineModels.h"
+#include "LSModels/PartitionModels.h"
 
 using namespace std;
 
@@ -259,7 +263,7 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
 			outFn += "LocalSolverResults.txt";
 			sts = LSSolver::solve(p, timeLimit, iterLimit, traceobj, outPath);			
 		} else if(boost::starts_with(solMethod, "LocalSolverNative")) {
-			int lsnIndex = stoi(solMethod.substr(17, 1));
+			int lsnIndex = stoi(solMethod.substr(17, solMethod.length()-17));
 			int variant = (lsnIndex == 0 && solMethod.length() == 19) ? stoi(solMethod.substr(18, 1)) : 0;
 			outFn += "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
 			if (instanceAlreadySolvedInResultFile(coreName, outFn)) return;
