@@ -117,7 +117,7 @@ namespace Runners {
 		"(rk|zr)",
 		"(rk|zrt)",
 		"(lambda) sub",
-		"(lambda) plist"
+		"(plist) partition"
 	};
 
 	string getDescription(int ix) { return representationDescriptions[ix]; }

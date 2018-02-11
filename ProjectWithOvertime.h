@@ -24,6 +24,7 @@ public:
 	float calcProfit(int makespan, const Matrix<int> &resRem) const;
 	float calcProfit(const SGSResult& result) const;
 	float calcProfit(const std::vector<int> &sts) const;
+	float calcProfitForPartial(const std::vector<int> &sts) const;
 
 	float totalCosts(const Matrix<int> & resRem) const;
 	float totalCosts(const std::vector<int> &sts) const;
@@ -100,10 +101,6 @@ public:
 	SGSResult parallelSGSWithForwardBackwardImprovement(const std::vector<int> &order, const Matrix<int> &z) const;
 	SGSResult parallelSGSWithForwardBackwardImprovement(const std::vector<int> &order, const std::vector<int> &z) const;
 	SGSResult parallelSGSWithForwardBackwardImprovement(const std::vector<int> &order) const;
-
-	std::vector<int> orderInducedPartitionsToPartitionList(const std::vector<int>& orderInducedPartitions, int partitionSize) const;
-
-	std::vector<int> permutationToActivityList(const std::vector<int> permutation) const;
 
 private:
     void computeRevenueFunction();

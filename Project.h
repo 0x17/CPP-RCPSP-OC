@@ -184,6 +184,9 @@ public:
 	std::vector<int> parallelSGS(const std::vector<int> &order, const std::vector<int> &z) const;
 	SGSResult parallelSGS(const std::vector<int> &order, const Matrix<int> &z) const;
 
+	std::vector<int> permutationToActivityList(const std::vector<int> permutation) const;
+	std::vector<int> orderInducedPartitionsToPartitionList(const std::vector<int>& orderInducedPartitions, int partitionSize) const;
+
 protected:
 	bool allPredsScheduled(int j, const std::vector<int> &sts) const;
 	bool allPredsScheduled(int j, const std::vector<bool>& unscheduled) const;

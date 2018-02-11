@@ -78,6 +78,10 @@ float ProjectWithOvertime::calcProfit(const vector<int> &sts) const {
 	return revenue[makespan(sts)] - totalCosts(sts);
 }
 
+float ProjectWithOvertime::calcProfitForPartial(const std::vector<int>& sts) const {
+	return revenueExtrapolated[makespanOfPartial(sts)] - totalCostsForPartial(sts);
+}
+
 float ProjectWithOvertime::calcProfit(int makespan, const Matrix<int>& resRem) const {
 	return revenue[makespan] - totalCosts(resRem);
 }
@@ -675,22 +679,5 @@ SGSResult ProjectWithOvertime::parallelSGSWithForwardBackwardImprovement(const s
 	const auto resRem = resRemForPartial(sts);
 	const SGSResult res = { sts, resRem, 1 };
 	return forwardBackwardIterations(order, res, makespan(res));
-}
-
-std::vector<int> ProjectWithOvertime::orderInducedPartitionsToPartitionList(const std::vector<int> &orderInducedPartitions, int partitionSize) const {
-	return Utils::constructVector<int>(numJobs, [&](int j) {
-		return (int)floor((float)Utils::indexOfFirstEqualTo(j, orderInducedPartitions) / (float)partitionSize);
-	});
-}
-
-std::vector<int> ProjectWithOvertime::permutationToActivityList(const std::vector<int> permutation) const {
-	vector<bool> unscheduled(numJobs, true);
-	vector<int> order(numJobs);
-	for(int i = 0; i < permutation.size(); i++) {
-		int job = chooseEligibleWithLowestIndex(unscheduled, permutation);
-		unscheduled[job] = true;
-		order[i] = job;
-	}
-	return order;
 }
 

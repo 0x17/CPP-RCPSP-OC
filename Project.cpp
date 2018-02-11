@@ -271,6 +271,23 @@ bool Project::isCompleteSchedule(const std::vector<int>& sts) const {
 	return true;
 }
 
+std::vector<int> Project::permutationToActivityList(const std::vector<int> permutation) const {
+	vector<bool> unscheduled(numJobs, true);
+	vector<int> order(numJobs);
+	for (int i = 0; i < permutation.size(); i++) {
+		int job = chooseEligibleWithLowestIndex(unscheduled, permutation);
+		unscheduled[job] = false;
+		order[i] = job;
+	}
+	return order;
+}
+
+std::vector<int> Project::orderInducedPartitionsToPartitionList(const std::vector<int> &orderInducedPartitions, int partitionSize) const {
+	return Utils::constructVector<int>(numJobs, [&](int j) {
+		return (int)floor((float)Utils::indexOfFirstEqualTo(j, orderInducedPartitions) / (float)partitionSize);
+	});
+}
+
 bool Project::allPredsScheduled(int j, const vector<int>& sts) const {
 	for (int i = 0; i < numJobs; i++) {
 		if (adjMx(i, j) && sts[i] == UNSCHEDULED)
