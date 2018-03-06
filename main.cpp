@@ -15,6 +15,7 @@
 #include "LSModels/NaiveModels.h"
 #include "LSModels/FixedDeadlineModels.h"
 #include "LSModels/PartitionModels.h"
+#include "LSModels/SimpleModel.h"
 
 using namespace std;
 
@@ -27,11 +28,12 @@ namespace Main {
 	void purgeOldTraceFile(const string &traceFilename);
 	void plotHeuristicProfits();
 	void jsonConverter(int argc, const char** argv);
+	void charactersticCollector(int argc, const char **argv);
 
 	namespace Testing {
-        void fixedScheduleLimitSolveTimesForProjects();
+		void fixedScheduleLimitSolveTimesForProjects();
 		boost::optional<Runners::GAResult> benchmarkGeneticAlgorithm(int gaIndex, int iterLimit, const string &projFilename = "../../Projekte/j30/j3013_8.sm");
-        double averageSolvetime(int gaIndex, int scheduleLimit, const string& path);
+		double averageSolvetime(int gaIndex, int scheduleLimit, const string& path);
 		void testFixedDeadlineHeuristic();
 		void testLocalSolverNative(int seed);
 		void testGurobi();
@@ -42,6 +44,8 @@ namespace Main {
 		void testPartitionListSGS();
 		void testRandomKeyGAZrt();
 		void testParallelSGSGAZrt();
+		void testLocalSolverForRCPSP();
+		void testCollectCharacteristics();
 	}
 }
 
@@ -63,7 +67,13 @@ int main(int argc, const char * argv[]) {
 
 	//Main::jsonConverter(argc, argv);
 
+	//Main::charactersticCollector(argc, argv);
+
 	Main::commandLineRunner(argc, argv);
+
+	//Main::Testing::testCollectCharacteristics();
+
+	//Main::Testing::testLocalSolverForRCPSP();
 
 	//Main::Testing::testPartitionListSGS();
 
@@ -138,6 +148,32 @@ void Main::jsonConverter(int argc, const char** argv) {
 
 	ProjectWithOvertime p(inpath);
 	p.to_disk(outpath);
+}
+
+void Main::charactersticCollector(int argc, const char** argv) {
+	const auto showCollectorUsage = []() {
+		cout << "Usage: Collector [instancePath] [outfile]" << endl;
+		cout << "Example usage: Collector j30 characteristics.txt" << endl;
+	};
+
+	vector<string> args = Utils::parseArgumentList(argc, argv);
+
+	if (args.empty()) {
+		showCollectorUsage();
+		return;
+	}
+
+	const string instancePath = !args.empty() ? args[0] : "j30";
+	const string outfn = args.size() >= 2 ? args[1] : "characteristics.txt";
+
+	string ostr = ProjectCharacteristics::csvHeaderLine();
+
+	for(const auto &instancefn : Utils::filenamesInDirWithExt(instancePath, ".sm")) {
+		ProjectWithOvertime p(instancefn);
+		ostr += p.collectCharacteristics().toCsvLine();
+	}
+
+	Utils::spit(ostr, outfn);
 }
 
 void computeScheduleAttributes(const string &smfilename) {
@@ -505,3 +541,14 @@ void Main::Testing::testParallelSGSGAZrt() {
 	solveAndvalidateGAResult(p, instanceFilename, ga);
 }
 
+void Main::Testing::testLocalSolverForRCPSP() {
+	Project p("j30/j3021_8.sm");
+	const auto sts = LSSolver::solveRCPSP(p);
+	printf("");
+}
+
+void Main::Testing::testCollectCharacteristics() {
+	ProjectWithOvertime p("j30/j3017_2.sm");
+	const ProjectCharacteristics characteristics = p.collectCharacteristics();
+	cout << characteristics.toCsvLine();
+}

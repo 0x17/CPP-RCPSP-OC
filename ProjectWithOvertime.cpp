@@ -14,6 +14,29 @@
 
 using namespace std;
 
+ProjectCharacteristics::ProjectCharacteristics(const std::string& instance_name, int num_res, float cmax, int tminSGS, int tmin, int tmax,
+                                               float network_complexity, float resource_factor,
+                                               float resource_strength): instanceName(instance_name),
+                                                                         numRes(num_res),
+																		cmax(cmax),
+																			tminSGS(tminSGS),
+                                                                         tmin(tmin),
+                                                                         tmax(tmax),
+                                                                         networkComplexity(network_complexity),
+                                                                         resourceFactor(resource_factor),
+                                                                         resourceStrength(resource_strength) {
+}
+
+string ProjectCharacteristics::csvHeaderLine() {
+	return "instance;numRes;cmax;tminSGS;tmin;tmax;networkComplexity;resourceFactor;resourceStrength\n";
+}
+
+string ProjectCharacteristics::toCsvLine() const {
+	stringstream ostr;
+	ostr << instanceName << ";" << numRes << ";" << cmax << ";" << tminSGS << ";" << tmin << ";" << tmax << ";" << networkComplexity << ";" << resourceFactor << ";" << resourceStrength << endl;
+	return ostr.str();
+}
+
 ProjectWithOvertime::ProjectWithOvertime(JsonWrap _obj) : Project(_obj) {
 	auto obj = _obj.obj;
     revenue = JsonUtils::extractNumberArrayFromObj(obj, "u");
@@ -679,5 +702,57 @@ SGSResult ProjectWithOvertime::parallelSGSWithForwardBackwardImprovement(const s
 	const auto resRem = resRemForPartial(sts);
 	const SGSResult res = { sts, resRem, 1 };
 	return forwardBackwardIterations(order, res, makespan(res));
+}
+
+ProjectCharacteristics ProjectWithOvertime::collectCharacteristics() const {
+	vector<int> zeroOc(numRes, 0);
+
+	SGSResult ess = earliestStartSchedule();
+
+	const float cmax = totalCosts(ess);
+	const int tminSGS = makespan(serialSGS(topOrder, zmax));
+	const int tmin = makespan(ess);
+	const int tmax = makespan(serialSGS(topOrder, zeroOc));
+
+	const auto computeNetworkComplexity = [this]() {
+		int edgeCount = 0;
+		adjMx.foreach([&edgeCount](int i, int j, int aij) {
+			edgeCount += aij;
+		});
+		return (float)edgeCount / (float)numJobs;
+	};
+
+	const auto computeResourceFactor = [this]() {
+		int strictlyPositiveDemandCount = 0;
+		eachJobResConst([this, &strictlyPositiveDemandCount](int j, int r) {
+			strictlyPositiveDemandCount += demands(j, r) > 0 ? 1 : 0;
+		});
+
+		return 1.0f / (float)(numJobs * numRes) * (float)strictlyPositiveDemandCount;
+	};
+
+	const auto computeResourceStrength = [&]() {
+		vector<int> maxActivityConsumptions(numRes);
+		eachJobResConst([this, &maxActivityConsumptions](int j, int r) {
+			maxActivityConsumptions[r] = max(demands(j, r), maxActivityConsumptions[r]);
+		});
+
+		vector<int> mostNeg(numRes, numeric_limits<int>::max());
+		ess.resRem.foreach([&mostNeg](int r, int t, int val) {
+			mostNeg[r] = min(val, mostNeg[r]);
+		});
+		const auto maxCumulativeConsumptionsESS = Utils::constructVector<int>(numRes, [this, &mostNeg](int r) {
+			return max(-mostNeg[r], 0) + capacities[r];
+		});
+
+		float sumRs = 0;
+		eachResConst([&](int r) {
+			sumRs += (maxCumulativeConsumptionsESS[r] - maxActivityConsumptions[r] == 0) ? 1.0f : (float)(capacities[r] - maxActivityConsumptions[r]) / (float)(maxCumulativeConsumptionsESS[r] - maxActivityConsumptions[r]);
+		});
+
+		return sumRs / (float)numRes;
+	};	
+
+	return ProjectCharacteristics{ instanceName, numRes, cmax, tminSGS, tmin, tmax, computeNetworkComplexity(), computeResourceFactor(), computeResourceStrength() };
 }
 

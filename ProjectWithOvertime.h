@@ -8,6 +8,22 @@
 
 #include "Project.h"
 
+struct ProjectCharacteristics {
+
+	std::string instanceName;
+	int numRes;
+	float cmax;
+	int tminSGS, tmin, tmax;
+	float networkComplexity;
+	float resourceFactor, resourceStrength;
+
+	ProjectCharacteristics(const std::string& instance_name, int num_res, float cmax, int tminSGS, int tmin, int tmax, float network_complexity,
+	                       float resource_factor, float resource_strength);
+
+	static std::string csvHeaderLine();
+	std::string toCsvLine() const;
+};
+
 class ProjectWithOvertime : public Project {
 public:
     std::vector<int> zmax, zzero;
@@ -101,6 +117,8 @@ public:
 	SGSResult parallelSGSWithForwardBackwardImprovement(const std::vector<int> &order, const Matrix<int> &z) const;
 	SGSResult parallelSGSWithForwardBackwardImprovement(const std::vector<int> &order, const std::vector<int> &z) const;
 	SGSResult parallelSGSWithForwardBackwardImprovement(const std::vector<int> &order) const;
+
+	ProjectCharacteristics collectCharacteristics() const;
 
 private:
     void computeRevenueFunction();

@@ -37,6 +37,7 @@
     <ClCompile Include="LSModels\NaiveModels.cpp" />
     <ClCompile Include="LSModels\OvertimeBoundModels.cpp" />
     <ClCompile Include="LSModels\PartitionModels.cpp" />
+    <ClCompile Include="LSModels\SimpleModel.cpp" />
     <ClCompile Include="LSModels\TimeWindowModels.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OnHold\ParticleSwarm.cpp" />
@@ -67,6 +68,7 @@
     <ClInclude Include="LSModels\NaiveModels.h" />
     <ClInclude Include="LSModels\OvertimeBoundModels.h" />
     <ClInclude Include="LSModels\PartitionModels.h" />
+    <ClInclude Include="LSModels\SimpleModel.h" />
     <ClInclude Include="LSModels\TimeWindowModels.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="OnHold\ParticleSwarm.h" />
