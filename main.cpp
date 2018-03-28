@@ -45,6 +45,7 @@ namespace Main {
 		void testRandomKeyGAZrt();
 		void testParallelSGSGAZrt();
 		void testLocalSolverForRCPSP();
+		void testLocalSolverForRCPSPROC();
 		void testCollectCharacteristics();
 	}
 }
@@ -74,6 +75,7 @@ int main(int argc, const char * argv[]) {
 	//Main::Testing::testCollectCharacteristics();
 
 	//Main::Testing::testLocalSolverForRCPSP();
+	//Main::Testing::testLocalSolverForRCPSPROC();
 
 	//Main::Testing::testPartitionListSGS();
 
@@ -544,6 +546,12 @@ void Main::Testing::testParallelSGSGAZrt() {
 void Main::Testing::testLocalSolverForRCPSP() {
 	Project p("j30/j3021_8.sm");
 	const auto sts = LSSolver::solveRCPSP(p);
+	printf("");
+}
+
+void Main::Testing::testLocalSolverForRCPSPROC() {
+	ProjectWithOvertime p("j30/j3021_8.sm");
+	const auto sts = LSSolver::solveRCPSPROC(p);
 	printf("");
 }
 

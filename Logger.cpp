@@ -49,6 +49,7 @@ namespace Utils {
 		double insecs = (slvtime / 1000.0);
 		if (trunc_secs) insecs = trunc(insecs);
 		// FIXME: Specify number of decimal places!
+		// FIXME?: Write in stringbuffer and only write out to disk at the end?
 		f << (boost::format("%.2f") % insecs) << "," << bks_objval << "," << nschedules << "," << nindividuals << endl;
 	}
 
