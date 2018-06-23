@@ -47,8 +47,16 @@ namespace Main {
 		void testLocalSolverForRCPSP();
 		void testLocalSolverForRCPSPROC();
 		void testCollectCharacteristics();
+
+		struct GAConfigurationExperiment;
+		void tweakGAParameters(const string &projFilename, int iterLimit, GAConfigurationExperiment &experiment);
 	}
 }
+
+struct Main::Testing::GAConfigurationExperiment {
+	string parameterName;
+	int lb, ub, step;
+};
 
 int main(int argc, const char * argv[]) {
 	//computeScheduleAttributes("PaperBeispiel.sm");
@@ -70,7 +78,10 @@ int main(int argc, const char * argv[]) {
 
 	//Main::charactersticCollector(argc, argv);
 
-	Main::commandLineRunner(argc, argv);
+	//Main::commandLineRunner(argc, argv);
+
+	Main::Testing::GAConfigurationExperiment varyMutationProb = { "pmutate", 0, 25, 1 };
+	Main::Testing::tweakGAParameters("PaperBeispiel.sm", 100, varyMutationProb);
 
 	//Main::Testing::testCollectCharacteristics();
 
@@ -559,4 +570,65 @@ void Main::Testing::testCollectCharacteristics() {
 	ProjectWithOvertime p("j30/j3017_2.sm");
 	const ProjectCharacteristics characteristics = p.collectCharacteristics();
 	cout << characteristics.toCsvLine();
+}
+
+
+void collectResultsVaryingParam(ProjectWithOvertime &p, GAParameters &params, int &param, int from, int to, int step, const string &csvFilename) {
+	string ostr = "paramValue;makespan;revenue;costs;profit;solvetime\n";
+
+	const auto stringify_i = [](int i) { return to_string(i); };
+	const auto stringify_f = [](float f) { return to_string(f); };
+
+	const auto construct_csv_line = [&p,&stringify_f,&stringify_i](const Runners::GAResult &res, int val) {
+		int ms = p.makespan(res.sts);
+
+		vector<int> ints = { val, ms };
+		vector<float> floats = { p.revenue[ms], p.totalCosts(res.sts), p.calcProfit(res.sts), static_cast<float>(res.solvetime) };
+
+		vector<string> strs(ints.size()+floats.size());
+		const auto lastElemIt = transform(ints.begin(), ints.end(), strs.begin(), stringify_i);
+		transform(floats.begin(), floats.end(), lastElemIt, stringify_f);
+
+		return boost::join(strs, ";") + "\n";
+	};
+
+	for(int val = from; val <= to; val += step) {
+		const auto res = Runners::run(p, params, 4);
+		ostr += construct_csv_line(res, val);
+	}
+
+	Utils::spit(ostr, csvFilename);
+}
+
+void Main::Testing::tweakGAParameters(const string& projFilename, int iterLimit, GAConfigurationExperiment &experiment) {
+	ProjectWithOvertime p(projFilename);
+
+	if (computeMinMaxMakespanDifference(p) <= 0) {
+		cout << "maxMs - minMs <= 0... ---> skipping!" << endl;
+		return;
+	}
+		
+	GAParameters params;
+
+	map<string, int*> nameToPtr = {
+		{"popSize", &params.popSize },
+		{"numGens", &params.numGens},
+		{"pmutate", &params.pmutate},
+		{"partitionSize", &params.partitionSize}
+	};
+
+	params.rbbrs = true;
+	params.enforceTopOrdering = true;
+	params.fitnessBasedPairing = false;
+	params.traceobj = false;
+
+	params.popSize = 80;
+	params.timeLimit = -1;
+	params.iterLimit = iterLimit;
+	params.numGens = -1;	
+	params.pmutate = 5;
+	params.selectionMethod = SelectionMethod::BEST;
+	params.partitionSize = 4;
+
+	collectResultsVaryingParam(p, params, *nameToPtr[experiment.parameterName], experiment.lb, experiment.ub, experiment.step, "varying_"+experiment.parameterName+".csv");
 }
