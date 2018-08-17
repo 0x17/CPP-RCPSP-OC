@@ -74,14 +74,14 @@ int main(int argc, const char * argv[]) {
 	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_GS, 100000);
 	//Main::Testing::fixedScheduleLimitSolveTimesForProjects();
 
-	//Main::jsonConverter(argc, argv);
+	Main::jsonConverter(argc, argv);
 
 	//Main::charactersticCollector(argc, argv);
 
 	//Main::commandLineRunner(argc, argv);
 
-	Main::Testing::GAConfigurationExperiment varyMutationProb = { "pmutate", 0, 25, 1 };
-	Main::Testing::tweakGAParameters("PaperBeispiel.sm", 100, varyMutationProb);
+	//Main::Testing::GAConfigurationExperiment varyMutationProb = { "pmutate", 0, 25, 1 };
+	//Main::Testing::tweakGAParameters("PaperBeispiel.sm", 100, varyMutationProb);
 
 	//Main::Testing::testCollectCharacteristics();
 
@@ -163,6 +163,14 @@ void Main::jsonConverter(int argc, const char** argv) {
 	p.to_disk(outpath);
 }
 
+template<class Func>
+void applyForAllProjectsInDirectory(Func f, const string &pathToDirectory, const string &projectExtension = ".sm") {
+	for(const auto &instancefn : Utils::filenamesInDirWithExt(pathToDirectory, projectExtension)) {
+		ProjectWithOvertime p(instancefn);
+		f(p);
+	}
+}
+
 void Main::charactersticCollector(int argc, const char** argv) {
 	const auto showCollectorUsage = []() {
 		cout << "Usage: Collector [instancePath] [outfile]" << endl;
@@ -181,10 +189,9 @@ void Main::charactersticCollector(int argc, const char** argv) {
 
 	string ostr = ProjectCharacteristics::csvHeaderLine();
 
-	for(const auto &instancefn : Utils::filenamesInDirWithExt(instancePath, ".sm")) {
-		ProjectWithOvertime p(instancefn);
+	applyForAllProjectsInDirectory([&ostr](const ProjectWithOvertime &p) {
 		ostr += p.collectCharacteristics().toCsvLine();
-	}
+	}, instancePath);
 
 	Utils::spit(ostr, outfn);
 }
