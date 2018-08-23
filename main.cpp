@@ -74,11 +74,11 @@ int main(int argc, const char * argv[]) {
 	//Main::Testing::benchmarkGeneticAlgorithm(Runners::RepresentationEnum::RE_LAMBDA_GS, 100000);
 	//Main::Testing::fixedScheduleLimitSolveTimesForProjects();
 
-	Main::jsonConverter(argc, argv);
+	//Main::jsonConverter(argc, argv);
 
 	//Main::charactersticCollector(argc, argv);
 
-	//Main::commandLineRunner(argc, argv);
+	Main::commandLineRunner(argc, argv);
 
 	//Main::Testing::GAConfigurationExperiment varyMutationProb = { "pmutate", 0, 25, 1 };
 	//Main::Testing::tweakGAParameters("PaperBeispiel.sm", 100, varyMutationProb);
@@ -167,6 +167,10 @@ template<class Func>
 void applyForAllProjectsInDirectory(Func f, const string &pathToDirectory, const string &projectExtension = ".sm") {
 	for(const auto &instancefn : Utils::filenamesInDirWithExt(pathToDirectory, projectExtension)) {
 		ProjectWithOvertime p(instancefn);
+		if(Main::computeMinMaxMakespanDifference(p) <= 0) {
+			cout << "maxMs - minMs <= 0... ---> skipping!" << endl;
+			continue;
+		}
 		f(p);
 	}
 }

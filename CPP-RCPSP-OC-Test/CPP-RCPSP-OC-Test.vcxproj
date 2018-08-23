@@ -24,9 +24,11 @@
     <ClCompile Include="..\GeneticAlgorithms\FixedDeadline.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\GeneticAlgorithm.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\OvertimeBound.cpp" />
+    <ClCompile Include="..\GeneticAlgorithms\Partition.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\Representations.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\Sampling.cpp" />
     <ClCompile Include="..\GeneticAlgorithms\TimeWindow.cpp" />
+    <ClCompile Include="..\GurobiSolver.cpp" />
     <ClCompile Include="..\JsonUtils.cpp" />
     <ClCompile Include="..\Libraries\json11.cpp" />
     <ClCompile Include="..\Logger.cpp" />
@@ -34,6 +36,7 @@
     <ClCompile Include="..\LSModels\ListModel.cpp" />
     <ClCompile Include="..\LSModels\NaiveModels.cpp" />
     <ClCompile Include="..\LSModels\OvertimeBoundModels.cpp" />
+    <ClCompile Include="..\LSModels\PartitionModels.cpp" />
     <ClCompile Include="..\LSModels\TimeWindowModels.cpp" />
     <ClCompile Include="..\Project.cpp" />
     <ClCompile Include="..\ProjectWithOvertime.cpp" />
@@ -56,9 +59,11 @@
     <ClInclude Include="..\GeneticAlgorithms\FixedDeadline.h" />
     <ClInclude Include="..\GeneticAlgorithms\GeneticAlgorithm.h" />
     <ClInclude Include="..\GeneticAlgorithms\OvertimeBound.h" />
+    <ClInclude Include="..\GeneticAlgorithms\Partition.h" />
     <ClInclude Include="..\GeneticAlgorithms\Representations.h" />
     <ClInclude Include="..\GeneticAlgorithms\Sampling.h" />
     <ClInclude Include="..\GeneticAlgorithms\TimeWindow.h" />
+    <ClInclude Include="..\GurobiSolver.h" />
     <ClInclude Include="..\JsonUtils.h" />
     <ClInclude Include="..\Libraries\json11.hpp" />
     <ClInclude Include="..\Logger.h" />
@@ -66,6 +71,7 @@
     <ClInclude Include="..\LSModels\ListModel.h" />
     <ClInclude Include="..\LSModels\NaiveModels.h" />
     <ClInclude Include="..\LSModels\OvertimeBoundModels.h" />
+    <ClInclude Include="..\LSModels\PartitionModels.h" />
     <ClInclude Include="..\LSModels\TimeWindowModels.h" />
     <ClInclude Include="..\matrix.h" />
     <ClInclude Include="..\Project.h" />
@@ -136,16 +142,16 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\local\boost_1_66_0;C:\localsolver_7_5\include;googletest\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
-    <LibraryPath>C:\local\boost_1_66_0\lib64-msvc-14.1;C:\localsolver_7_5\bin;lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <IncludePath>C:\gurobi752\win64\include;C:\local\boost_1_66_0;C:\localsolver_7_5\include;googletest\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>C:\gurobi752\win64\lib;C:\local\boost_1_66_0\lib64-msvc-14.1;C:\localsolver_7_5\bin;lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\local\boost_1_66_0;C:\localsolver_7_5\include;googletest\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\local\boost_1_66_0\lib64-msvc-14.1;C:\localsolver_7_5\bin;lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\gurobi752\win64\include;C:\local\boost_1_66_0;C:\localsolver_7_5\include;googletest\include;C:\gurobi752\win64\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\gurobi752\win64\lib;C:\local\boost_1_66_0\lib64-msvc-14.1;C:\localsolver_7_5\bin;lib;C:\gurobi752\win64\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -171,7 +177,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>localsolver.dll.lib;gtestd.lib;gtest_maind.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>localsolver.dll.lib;gtestd.lib;gtest_maind.lib;gurobi_c++mdd2017.lib;gurobi75.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -206,7 +212,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>localsolver.dll.lib;gtest.lib;gtest_main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>localsolver.dll.lib;gtest.lib;gtest_main.lib;gurobi_c++md2017.lib;gurobi75.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

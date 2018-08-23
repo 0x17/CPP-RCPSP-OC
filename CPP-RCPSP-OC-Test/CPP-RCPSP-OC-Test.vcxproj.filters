@@ -89,6 +89,13 @@
       <Filter>GeneticAlgorithms</Filter>
     </ClCompile>
     <ClCompile Include="..\JsonUtils.cpp" />
+    <ClCompile Include="..\GurobiSolver.cpp" />
+    <ClCompile Include="..\GeneticAlgorithms\Partition.cpp">
+      <Filter>GeneticAlgorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LSModels\PartitionModels.cpp">
+      <Filter>LSModels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BranchAndBound.h" />
@@ -155,5 +162,12 @@
     <ClInclude Include="..\BasicSolverParameters.h" />
     <ClInclude Include="..\Logger.h" />
     <ClInclude Include="..\JsonUtils.h" />
+    <ClInclude Include="..\GurobiSolver.h" />
+    <ClInclude Include="..\GeneticAlgorithms\Partition.h">
+      <Filter>GeneticAlgorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LSModels\PartitionModels.h">
+      <Filter>LSModels</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
