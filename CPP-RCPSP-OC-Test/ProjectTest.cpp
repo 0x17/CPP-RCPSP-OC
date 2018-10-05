@@ -37,8 +37,15 @@ TEST_F(ProjectTest, testConstructor) {
 }
 
 TEST_F(ProjectTest, testPattersonParsing) {
+	vector<int> expDurations = {0, 10, 5, 1, 3, 4, 1, 2, 2, 4,6, 4, 5, 6, 7, 10, 1, 1, 8, 8, 1, 6, 9, 9, 10, 5, 5, 8, 7, 7, 9, 0};
+
 	Project p("Data/Pat1.rcp");
-	// TODO: Finish
+	ASSERT_EQ(32, p.numJobs);
+	ASSERT_EQ(4, p.numRes);
+	TestHelpers::arrayEquals(vector<int>(4, 10), p.capacities);
+	TestHelpers::arrayEquals(expDurations, p.durations);
+
+	// TODO: Finish!
 }
 
 TEST_F(ProjectTest, testSerialSGS) {
