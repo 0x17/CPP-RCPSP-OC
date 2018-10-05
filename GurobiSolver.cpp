@@ -9,7 +9,8 @@ GurobiSolverBase::Options::Options() :
 	BasicSolverParameters(GRB_INFINITY, -1, false, "GurobiTrace_", 1), // 0
 	useSeedSol(true),
 	gap(0.0),
-	displayInterval(1) {
+	displayInterval(1),
+	saveTimeForBks(false) {
 }
 
 GurobiSolverBase::CustomCallback::CustomCallback(const string &outPath, const string &instanceName) :
@@ -28,6 +29,27 @@ void GurobiSolverBase::CustomCallback::manualCallback(float bks) {
 	tr.trace(sw.look(), bks, getDoubleInfo(GRB_CB_MIP_ITRCNT), getDoubleInfo(GRB_CB_MIP_ITRCNT));
 }
 
+GurobiSolverBase::IncumbentCallback::IncumbentCallback() {
+	sw.start();
+	previousBks = lastImprovementTime = 0.0;
+}
+
+void GurobiSolverBase::IncumbentCallback::callback() {
+	if(where == GRB_CB_MIPSOL) {
+		if(getIntInfo(GRB_CB_MIPSOL_SOLCNT) == 0) return;
+		const double bks = getDoubleInfo(GRB_CB_MIPSOL_OBJBST);
+		if(bks > previousBks) {
+			previousBks = bks;
+			lastImprovementTime = sw.look();
+		}
+	}
+}
+
+double GurobiSolverBase::IncumbentCallback::getLastImprovementTime() const {
+	return lastImprovementTime;
+}
+
+
 GurobiSolverBase::Result::Result(vector<int> &_sts, bool _optimal): sts(_sts), optimal(_optimal) {}
 
 GurobiSolverBase::GurobiSolverBase(const ProjectWithOvertime &_p, Options _opts, bool _heuristicPeriodUB) :
@@ -45,10 +67,13 @@ GurobiSolverBase::GurobiSolverBase(const ProjectWithOvertime &_p, Options _opts,
 		return model.addVar(0.0, static_cast<double>(p.zmax[r]), 0.0, GRB_INTEGER, "zr" + to_string(r) + "t" + to_string(t));
 	}),
 	cback(opts.traceobj ? new CustomCallback(opts.outPath, p.instanceName) : nullptr),
+	incCback(opts.saveTimeForBks ? new IncumbentCallback() : nullptr),
 	heuristicPeriodUB(_heuristicPeriodUB)
 {
 	if(cback != nullptr)
 		model.setCallback(cback.get());
+	if(incCback != nullptr)
+		model.setCallback(incCback.get());
 }
 
 void GurobiSolverBase::buildModel() {
@@ -102,6 +127,9 @@ GurobiSolverBase::Result GurobiSolverBase::solve() {
 		auto sts = parseSchedule();
 		if(cback.get() != nullptr && p.isCompleteSchedule(sts))
 			cback->manualCallback(p.calcProfit(sts));
+
+		if(incCback.get() != nullptr/* && model.get(GRB_IntAttr_Status) != GRB_INFEASIBLE*/)
+			Utils::spitAppend(p.instanceName+";"+to_string(incCback->getLastImprovementTime()*0.001)+"\n", "GUROBI_LastImprovementTime.txt");
 
 		return { sts, model.get(GRB_IntAttr_Status) == GRB_OPTIMAL };
 	}
@@ -366,3 +394,5 @@ void GurobiSubprojectSolver::fixJobToStartingTime(int j, int stj) const {
 }
 
 #endif
+
+

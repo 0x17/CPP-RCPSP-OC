@@ -249,6 +249,9 @@ std::vector<std::pair<Individual, float>> GeneticAlgorithm<Individual>::computeI
 
 template<class Individual>
 std::pair<std::vector<int>, float> GeneticAlgorithm<Individual>::solve() {
+	// TODO: Link with program command line arguments
+	const bool saveLastImprovementTime = true;
+
 	if(tr != nullptr)
 		tr->setTraceMode(Utils::Tracer::TraceMode::ONLY_COUNT);
 
@@ -256,6 +259,7 @@ std::pair<std::vector<int>, float> GeneticAlgorithm<Individual>::solve() {
     assert(params.popSize > 0);
 
 	Stopwatch sw;
+	double lastImprovementTime;
 	sw.start();
 
     const int NUM_THREADS = 4;
@@ -336,6 +340,9 @@ std::pair<std::vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 			else
 				LOG_I("Improvement by " + std::to_string(lastBestVal - pop[0].second));
 
+			if(saveLastImprovementTime)
+				lastImprovementTime = sw.look();
+
 	        /*if(params.traceobj)
 				tr->trace(sw.look(), -pop[0].second, scheduleCount, indivCount);*/
         }
@@ -345,6 +352,10 @@ std::pair<std::vector<int>, float> GeneticAlgorithm<Individual>::solve() {
 	if (tr != nullptr) {
 		tr->intervalTrace(-pop[0].second, scheduleCount, indivCount);
 		tr->countTrace(-pop[0].second, scheduleCount, indivCount);
+	}
+
+	if(saveLastImprovementTime) {
+		Utils::spitAppend(p.instanceName+";"+std::to_string(lastImprovementTime*0.001)+"\n", getName()+"_TimeAtLastImprovementTime.txt");
 	}
 
     auto best = pop[0];

@@ -19,6 +19,7 @@ public:
 		bool useSeedSol;
 		double gap;
 		int displayInterval;
+		bool saveTimeForBks;
 		Options();
 	};
 
@@ -51,12 +52,25 @@ protected:
 		Stopwatch sw;
 	};
 
+	class IncumbentCallback : public GRBCallback {
+	public:
+		IncumbentCallback();
+		double getLastImprovementTime() const;
+
+	private:
+		void callback() override;
+
+		Stopwatch sw;
+		double previousBks, lastImprovementTime;
+	};
+
 	const ProjectWithOvertime &p;
 	Options opts;
 	const std::unique_ptr<GRBEnv> env;
 	GRBModel model;
 	Matrix<GRBVar> xjt, zrt;
 	const std::unique_ptr<CustomCallback> cback;
+	const std::unique_ptr<IncumbentCallback> incCback;
 	bool heuristicPeriodUB;
 
 	virtual void setupObjectiveFunction() = 0;

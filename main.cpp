@@ -1,4 +1,5 @@
 #include <cmath>
+#include <map>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
@@ -295,8 +296,19 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
             return;
         }
 
-	    const bool traceobj = (argc == 6 && string(argv[5]) == "traceobj");
-        const bool quiet = (argc == 6 && string(argv[5]) == "quiet");
+	    bool traceobj, quiet, timeforbks;
+        traceobj = quiet = timeforbks = false;
+        map<string, bool *> lastParameterToggles = { { "traceobj", &traceobj }, { "quiet", &quiet }, { "timeforbks", &timeforbks } };
+
+        if(argc >= 6) {
+        	const auto lastArg = string(argv[5]);
+			for (const auto &pair : lastParameterToggles) {
+				if(lastArg == pair.first) {
+					*pair.second = true;
+					break;
+				}
+			}
+		}
 
 		const string parentPath = boost::filesystem::path(string(argv[4])).parent_path().string();
 		const string outPath = parentPath + "_" + (iterLimit == -1 ? to_string(int(round(timeLimit))) + "secs/" : to_string(iterLimit) + "schedules/");
@@ -337,6 +349,7 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
 			opts.timeLimit = (timeLimit == -1.0) ? opts.timeLimit : timeLimit;
 			opts.iterLimit = (iterLimit == -1.0) ? opts.iterLimit : iterLimit;
 			opts.threadCount = 1;
+			opts.saveTimeForBks = timeforbks;
 			auto mipStartSts = boost::optional<const vector<int> &>();
 			if(opts.timeLimit == -1 && opts.iterLimit == 1) {
 				LOG_I("no limits -> compute exact reference values with GA start and as much threads as quickly as possible");
