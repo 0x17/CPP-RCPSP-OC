@@ -234,6 +234,9 @@ protected:
 private:
     void parsePrecedenceRelation(const std::vector<std::string> &lines);
     void parseDurationsAndDemands(const std::vector<std::string> &lines);
+	void parseCapacities(const std::vector<std::string> &lines);
+	void parsePattersonFormat(const std::vector<std::string> &lines);
+
 
     void reorderDispositionMethod();
 

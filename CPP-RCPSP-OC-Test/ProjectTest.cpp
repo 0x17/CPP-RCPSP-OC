@@ -36,6 +36,11 @@ TEST_F(ProjectTest, testConstructor) {
     ASSERT_EQ(6, p->T);
 }
 
+TEST_F(ProjectTest, testPattersonParsing) {
+	Project p("Data/Pat1.rcp");
+	// TODO: Finish
+}
+
 TEST_F(ProjectTest, testSerialSGS) {
 	TestHelpers::arrayEquals({0, 0, 2, 4, 6 }, p->serialSGS({0, 1, 2, 3, 4}));
 }

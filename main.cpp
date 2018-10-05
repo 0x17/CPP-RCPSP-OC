@@ -296,6 +296,7 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
         }
 
 	    const bool traceobj = (argc == 6 && string(argv[5]) == "traceobj");
+        const bool quiet = (argc == 6 && string(argv[5]) == "quiet");
 
 		const string parentPath = boost::filesystem::path(string(argv[4])).parent_path().string();
 		const string outPath = parentPath + "_" + (iterLimit == -1 ? to_string(int(round(timeLimit))) + "secs/" : to_string(iterLimit) + "schedules/");
@@ -362,6 +363,8 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");
         }
+
+        if(quiet) return;
         
 		// FIXME: specify number of decimal places!
         string resStr = (sts[0] == Project::UNSCHEDULED) ? "infes" : to_string(p.calcProfit(sts));

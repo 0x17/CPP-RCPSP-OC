@@ -25,23 +25,25 @@ Project::Project(const string &filename) : Project(boost::filesystem::path(filen
 Project::Project(const string& projectName, const string& contents) : Project(projectName, Utils::splitLines(contents)) {}
 
 Project::Project(const string& projectName, const vector<string>& lines) : name(projectName), instanceName(projectName) {
-	numJobs = Utils::extractIntFromStr(lines[5], "jobs \\(incl. supersource\\/sink \\):  (\\d+)");
-	lastJob = numJobs - 1;
-	numRes = Utils::extractIntFromStr(lines[8], "  - renewable                 :  (\\d+)   R");
+	// Detect ProGen format
+	if(lines[0][0] == '*') {
+		numJobs = Utils::extractIntFromStr(lines[5], "jobs \\(incl. supersource\\/sink \\):  (\\d+)");
+		numRes = Utils::extractIntFromStr(lines[8], "  - renewable                 :  (\\d+)   R");
+		parsePrecedenceRelation(lines);
+		parseDurationsAndDemands(lines);
+		parseCapacities(lines);
+	// Otherwise assume Patterson format
+	} else {
+		parsePattersonFormat(lines);
+	}
 
-	parsePrecedenceRelation(lines);
-	parseDurationsAndDemands(lines);
+	lastJob = numJobs - 1;
 
 	if(USE_DISPOSITION_METHOD)
 		reorderDispositionMethod();
 
 	T = accumulate(durations.begin(), durations.end(), 0);
 	numPeriods = T + 1;
-
-	{
-		int capacitiesOffset = Utils::indexOf(lines, [](string line) { return boost::starts_with(line, "RESOURCEAVAILABILITIES"); }) + 2;
-		capacities = Utils::extractIntsFromLine(lines[capacitiesOffset]);
-	}
 
 	topOrder = computeTopOrder();
 	revTopOrder = computeReverseTopOrder();
@@ -344,6 +346,13 @@ void Project::parseDurationsAndDemands(const vector<string> &lines) {
         durations[j] = nums[2];
         EACH_RES(demands(j,r) = nums[3+r])
     )
+}
+
+void Project::parseCapacities(const std::vector<std::string> &lines) {
+	int capacitiesOffset = Utils::indexOf(lines, [](string line) {
+		return boost::starts_with(line, "RESOURCEAVAILABILITIES");
+	}) + 2;
+	capacities = Utils::extractIntsFromLine(lines[capacitiesOffset]);
 }
 
 int Project::computeLastPredFinishingTime(const vector<int> &fts, int job) const {
@@ -835,3 +844,40 @@ std::vector<int> Project::complementPartialWithSpecificJobsUsingSSGS(const std::
 
 	return osts;
 }
+
+void Project::parsePattersonFormat(const std::vector<std::string> &lines) {
+	bool cardinalitiesKnown = false;
+	int j=0;
+
+	for(const std::string &line : lines) {
+		const std::vector<int> values = Utils::extractIntsFromLine(line);
+		// #jobs #res
+		if(values.size() == 2) {
+			numJobs = values[0];
+			numRes = values[1];
+			adjMx = Matrix<char>(numJobs, numJobs, [](int i, int j) {
+				return false;
+			});
+			durations.resize(numJobs);
+			demands.resize(numJobs, numRes);
+			capacities.resize(numRes);
+			cardinalitiesKnown = true;
+		} else if(cardinalitiesKnown) {
+			// K1 K2 ...
+			if(values.size() == numRes) {
+				capacities = values;
+			// dj kj1 kj2 .. #succs succ1 succ2 ...
+			} else if(values.size() >= 1 + numRes + 1) {
+				durations[j] = values[0];
+				for(int r=0; r<numRes; r++)
+					demands(j,r) = values[1+r];
+				for(int k=0; k<values[1+numRes]; k++) {
+					adjMx(j, values[k]) = true;
+				}
+				j++;
+			}
+		}
+	}
+}
+
+
