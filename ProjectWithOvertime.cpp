@@ -14,26 +14,31 @@
 
 using namespace std;
 
-ProjectCharacteristics::ProjectCharacteristics(const std::string& instance_name, int num_res, float cmax, int tminSGS, int tmin, int tmax,
-                                               float network_complexity, float resource_factor,
-                                               float resource_strength): instanceName(instance_name),
-                                                                         numRes(num_res),
-																		cmax(cmax),
-																			tminSGS(tminSGS),
-                                                                         tmin(tmin),
-                                                                         tmax(tmax),
-                                                                         networkComplexity(network_complexity),
-                                                                         resourceFactor(resource_factor),
-                                                                         resourceStrength(resource_strength) {
+ProjectCharacteristics::ProjectCharacteristics(	const std::string& instance_name,
+												float cmax,
+												int tminSGS,
+												int tmin,
+												int tmax,
+                                               	float network_complexity,
+                                               	float resource_factor,
+                                               	float resource_strength) :
+                                               	instanceName(instance_name),
+												cmax(cmax),
+												tminSGS(tminSGS),
+												tmin(tmin),
+												tmax(tmax),
+												networkComplexity(network_complexity),
+												resourceFactor(resource_factor),
+												resourceStrength(resource_strength) {
 }
 
 string ProjectCharacteristics::csvHeaderLine() {
-	return "instance;numRes;cmax;tminSGS;tmin;tmax;networkComplexity;resourceFactor;resourceStrength\n";
+	return "instance;cmax;tminSGS;tmin;tmax;networkComplexity;resourceFactor;resourceStrength\n";
 }
 
 string ProjectCharacteristics::toCsvLine() const {
 	stringstream ostr;
-	ostr << instanceName << ";" << numRes << ";" << cmax << ";" << tminSGS << ";" << tmin << ";" << tmax << ";" << networkComplexity << ";" << resourceFactor << ";" << resourceStrength << endl;
+	ostr << instanceName <<  ";" << cmax << ";" << tminSGS << ";" << tmin << ";" << tmax << ";" << networkComplexity << ";" << resourceFactor << ";" << resourceStrength << endl;
 	return ostr.str();
 }
 
@@ -751,8 +756,8 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics() const {
 		});
 
 		return sumRs / (float)numRes;
-	};	
+	};
 
-	return ProjectCharacteristics{ instanceName, numRes, cmax, tminSGS, tmin, tmax, computeNetworkComplexity(), computeResourceFactor(), computeResourceStrength() };
+	return ProjectCharacteristics{ instanceName, cmax, tminSGS, tmin, tmax, computeNetworkComplexity(), computeResourceFactor(), computeResourceStrength() };
 }
 

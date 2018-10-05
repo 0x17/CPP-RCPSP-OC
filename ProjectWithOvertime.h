@@ -11,14 +11,19 @@
 struct ProjectCharacteristics {
 
 	std::string instanceName;
-	int numRes;
 	float cmax;
 	int tminSGS, tmin, tmax;
 	float networkComplexity;
 	float resourceFactor, resourceStrength;
 
-	ProjectCharacteristics(const std::string& instance_name, int num_res, float cmax, int tminSGS, int tmin, int tmax, float network_complexity,
-	                       float resource_factor, float resource_strength);
+	ProjectCharacteristics(	const std::string& instance_name,
+							float cmax,
+							int tminSGS,
+							int tmin,
+							int tmax,
+							float network_complexity,
+							float resource_factor,
+							float resource_strength);
 
 	static std::string csvHeaderLine();
 	std::string toCsvLine() const;
