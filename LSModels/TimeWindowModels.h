@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef DISABLE_LOCALSOLVER
+
 #include "ListModel.h"
 
 class ListBetaModel : public ListModel {
@@ -78,3 +80,5 @@ public:
 	ListAlternativesModel(ProjectWithOvertime &_p) : ListModel(_p, new SerialSGSAlternativesDecoder(_p)) {}
 	virtual ~ListAlternativesModel() {}
 };
+
+#endif

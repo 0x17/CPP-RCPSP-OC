@@ -2,6 +2,8 @@
 // Created by André Schnabel on 24.10.15.
 //
 
+#ifndef DISABLE_LOCALSOLVER
+
 #include <list>
 #include <fstream>
 #include <iostream>
@@ -343,3 +345,5 @@ std::vector<int> LSSolver::solvePartitionListModel(ProjectWithOvertime &p) {
 
 	return p.serialOptimalSubSGSWithPartitionList(partitionListResult);
 }
+
+#endif

@@ -237,10 +237,12 @@ double Main::Testing::averageSolvetime(int gaIndex, int scheduleLimit, const str
 }
 
 void Main::convertArgFileToLSP(int argc, const char * argv[]) {
+#ifndef DISABLE_LOCALSOLVER
     if (argc == 2) {
 		ProjectWithOvertime p(argv[1]);
 		LSSolver::writeLSPModelParamFile(p, string(argv[1])+".txt");
 	}
+#endif
 }
 
 void Main::showUsage() {
@@ -333,15 +335,19 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
 			sts = Runners::runGeneticAlgorithmWithIndex(p, { gaIndex, variant, timeLimit, iterLimit, traceobj, outPath });            
 		}
 		else if (solMethod == "LocalSolver") {
+#ifndef DISABLE_LOCALSOLVER
 			outFn += "LocalSolverResults.txt";
-			sts = LSSolver::solve(p, timeLimit, iterLimit, traceobj, outPath);			
+			sts = LSSolver::solve(p, timeLimit, iterLimit, traceobj, outPath);
+#endif
 		} else if(boost::starts_with(solMethod, "LocalSolverNative")) {
+#ifndef DISABLE_LOCALSOLVER
 			int lsnIndex = stoi(solMethod.substr(17, solMethod.length()-17));
 			int variant = (lsnIndex == 0 && solMethod.length() == 19) ? stoi(solMethod.substr(18, 1)) : 0;
 			outFn += "LocalSolverNative" + to_string(lsnIndex) + "Results.txt";
 			if (instanceAlreadySolvedInResultFile(coreName, outFn)) return;
 			purgeOldTraceFile(LSBaseModel::traceFilenameForLSModel(outPath, lsnIndex, p.instanceName));
-			sts = Runners::runLocalSolverModelWithIndex(p, { lsnIndex, variant, timeLimit, iterLimit, traceobj, outPath });			
+			sts = Runners::runLocalSolverModelWithIndex(p, { lsnIndex, variant, timeLimit, iterLimit, traceobj, outPath });
+#endif
         }  else if(solMethod == "Gurobi") {
 #ifndef DISABLE_GUROBI
 			GurobiSolver::Options opts;
@@ -424,12 +430,16 @@ void Main::Testing::testSerialOptimalSubschedules() {
 	//getchar();
 }
 
+#endif
+
+#ifndef DISABLE_LOCALSOLVER
 void Main::Testing::testLocalSolverNativePartitionList() {
 	ProjectWithOvertime p("j30/j3010_1.sm");
 	const auto res = LSSolver::solvePartitionListModel(p);
 	cout << "Profit = " << p.calcProfit(res) << endl;
 }
 #endif
+
 
 void Main::Testing::testFixedDeadlineHeuristic() {
 	string projFilename = "../../Projekte/j30/j301_3.sm";
@@ -457,6 +467,7 @@ void Main::Testing::testFixedDeadlineHeuristic() {
 	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe QBWLBeispiel.DAT myschedule.txt");
 }
 
+#ifndef DISABLE_LOCALSOLVER
 void Main::Testing::testLocalSolverNative(int seed) {
 	string projFilename = "Data/MiniBeispiel.DAT";
 	ProjectWithOvertime p(projFilename);
@@ -471,6 +482,7 @@ void Main::Testing::testLocalSolverNative(int seed) {
 	Utils::serializeProfit(p.calcProfit(sts), "myprofit.txt");
 	//system("C:\\Users\\a.schnabel\\Dropbox\\Arbeit\\Scheduling\\Code\\ScheduleVisualizer\\ScheduleVisualizerCommand.exe ../../Projekte/j30/j301_1.sm myschedule.txt");
 }
+#endif
 
 boost::optional<Runners::GAResult> Main::Testing::benchmarkGeneticAlgorithm(int gaIndex, int iterLimit, const string &projFilename) {
     ProjectWithOvertime p(projFilename);
@@ -506,6 +518,7 @@ boost::optional<Runners::GAResult> Main::Testing::benchmarkGeneticAlgorithm(int 
     return res;
 }
 
+#ifndef DISABLE_LOCALSOLVER
 void Main::Testing::testLocalSolverNativePartitions() {
 	ProjectWithOvertime p("j30/j3010_1.sm");
 	PartitionsModel lm(p);
@@ -519,6 +532,7 @@ void Main::Testing::testLocalSolverNativePartitions() {
 	auto sts = lm.solve(params);
 	cout << "Profit = " << p.calcProfit(sts) << endl;
 }
+#endif
 
 template<class T>
 void solveAndvalidateGAResult(const ProjectWithOvertime &p, const std::string &instanceFilename, GeneticAlgorithm<T> &ga) {
@@ -581,6 +595,7 @@ void Main::Testing::testParallelSGSGAZrt() {
 	solveAndvalidateGAResult(p, instanceFilename, ga);
 }
 
+#ifndef DISABLE_LOCALSOLVER
 void Main::Testing::testLocalSolverForRCPSP() {
 	Project p("j30/j3021_8.sm");
 	const auto sts = LSSolver::solveRCPSP(p);
@@ -592,6 +607,7 @@ void Main::Testing::testLocalSolverForRCPSPROC() {
 	const auto sts = LSSolver::solveRCPSPROC(p);
 	printf("");
 }
+#endif
 
 void Main::Testing::testCollectCharacteristics() {
 	ProjectWithOvertime p("j30/j3017_2.sm");

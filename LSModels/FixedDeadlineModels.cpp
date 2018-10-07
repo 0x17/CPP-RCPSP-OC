@@ -1,3 +1,4 @@
+#ifndef DISABLE_LOCALSOLVER
 
 #include "FixedDeadlineModels.h"
 
@@ -57,3 +58,5 @@ vector<int> ListDeadlineModel::parseScheduleFromSolution(LSSolution& sol) {
 
 	return p.forwardBackwardDeadlineOffsetSGS(order, deadlineOffset, true).sts;
 }
+
+#endif

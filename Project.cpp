@@ -6,6 +6,7 @@
 #include <list>
 #include <algorithm>
 #include <string>
+#include <cmath>
 
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
@@ -286,7 +287,7 @@ std::vector<int> Project::permutationToActivityList(const std::vector<int> permu
 
 std::vector<int> Project::orderInducedPartitionsToPartitionList(const std::vector<int> &orderInducedPartitions, int partitionSize) const {
 	return Utils::constructVector<int>(numJobs, [&](int j) {
-		return (int)floor((float)Utils::indexOfFirstEqualTo(j, orderInducedPartitions) / (float)partitionSize);
+		return (int)std::floor((float)Utils::indexOfFirstEqualTo(j, orderInducedPartitions) / (float)partitionSize);
 	});
 }
 

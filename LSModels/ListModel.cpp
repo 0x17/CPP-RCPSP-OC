@@ -1,3 +1,5 @@
+#ifndef DISABLE_LOCALSOLVER
+
 #include "ListModel.h"
 #include "../Stopwatch.h"
 #include "../Logger.h"
@@ -275,3 +277,5 @@ void RandomKeyModel::applyInitialSolution() {
 		prioritiesElems[i].setDoubleValue(rk[i]);
 	}
 }
+
+#endif

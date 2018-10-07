@@ -1,3 +1,4 @@
+#ifndef DISABLE_LOCALSOLVER
 
 #include "OvertimeBoundModels.h"
 
@@ -133,3 +134,5 @@ vector<int> RandomKeyFixedOvertimeModel::parseScheduleFromSolution(LSSolution& s
 
 	return p.serialSGSWithRandomKeyAndFBI(priorities, zr).sts;
 }
+
+#endif

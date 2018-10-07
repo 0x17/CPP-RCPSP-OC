@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef DISABLE_LOCALSOLVER
+
 #include "ListModel.h"
 
 class ListFixedOvertimeModel : public ListModel {
@@ -75,3 +77,5 @@ public:
 	explicit RandomKeyDynamicOvertimeModel(ProjectWithOvertime &_p) : RandomKeyModel(_p, new SerialSGSRandomKeyZrtDecoder(_p)), zrtVar(p.numRes, p.heuristicMakespanUpperBound()) {}
 	~RandomKeyDynamicOvertimeModel() final = default;
 };
+
+#endif

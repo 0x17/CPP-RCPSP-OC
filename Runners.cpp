@@ -34,6 +34,7 @@ namespace Runners {
 
 	std::unique_ptr<ISolver> genListModelWithIndex(ProjectWithOvertime &p, int index, int variant) {
 		std::unique_ptr<ISolver> solveModel = nullptr;
+#ifndef DISABLE_LOCALSOLVER
 		switch (index) {
 		default:
 		case 0:
@@ -74,6 +75,7 @@ namespace Runners {
 			solveModel = make_unique<PartitionsModel>(p);
 			break;
 		}
+#endif
 		return solveModel;
 	}
 
@@ -173,7 +175,9 @@ namespace Runners {
 		params.solverIx = rparams.methodIndex;
 		params.outPath = rparams.outPath;
 
+#ifndef DISABLE_LOCALSOLVER
 		auto &opts = ListModel::getOptions();
+
 		opts.enforceTopOrdering = false;
 		opts.parallelSGS = false;
 		opts.partitionSize = 8;
@@ -181,6 +185,7 @@ namespace Runners {
 		opts.from_disk("LSParameters.json", true);
 
 		opts.print();
+#endif
 
 		return lm->solve(params);
 	}

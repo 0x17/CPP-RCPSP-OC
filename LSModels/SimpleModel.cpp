@@ -1,3 +1,4 @@
+#ifndef DISABLE_LOCALSOLVER
 
 #include "SimpleModel.h"
 #include "../ProjectWithOvertime.h"
@@ -131,3 +132,5 @@ vector<int> LSSolver::solveRCPSPROC(const ProjectWithOvertime &p) {
 
 	return p.serialSGSWithOvertime(order, true).sts;
 }
+
+#endif

@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef DISABLE_LOCALSOLVER
+
 #include <localsolver.h>
 
 #include "../Project.h"
@@ -11,3 +13,5 @@ namespace LSSolver {
 	std::vector<int> solvePartitionListModel(ProjectWithOvertime &p);
 	void writeLSPModelParamFile(ProjectWithOvertime &p, std::string outFilename);
 };
+
+#endif

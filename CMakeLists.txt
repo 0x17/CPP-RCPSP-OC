@@ -6,12 +6,13 @@ set(CMAKE_CXX_STANDARD 14)
 find_package(Boost COMPONENTS system filesystem REQUIRED)
 find_package(GTest REQUIRED)
 
+
+
 if(APPLE)
     set(GUROBI_INCLUDE_DIRS /Library/gurobi752/mac64/include)
     set(LOCALSOLVER_INCLUDE_DIRS /opt/localsolver_8_0/include)
     set(GUROBI_LIB_DIRS /Library/gurobi752/mac64/lib)
     set(LOCALSOLVER_LIB_DIRS /opt/localsolver_8_0/bin)
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -llocalsolver -lgurobi_c++ -lgurobi75")
 else()
     set(GUROBI_INCLUDE_DIRS ~/gurobi752/linux64/include)
@@ -20,6 +21,7 @@ else()
     set(LOCALSOLVER_LIB_DIRS /opt/localsolver_8_0/bin ~/localsolver_8_0/bin)
     #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
     add_definitions(-DDISABLE_GUROBI)
+    add_definitions(-DDISABLE_LOCALSOLVER)
     #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
 endif()
 

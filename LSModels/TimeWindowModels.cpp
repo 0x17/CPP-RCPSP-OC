@@ -1,3 +1,4 @@
+#ifndef DISABLE_LOCALSOLVER
 
 #include "TimeWindowModels.h"
 
@@ -118,3 +119,5 @@ vector<int> ListAlternativesModel::parseScheduleFromSolution(LSSolution &sol) {
 	}
 	return p.serialSGSWithOvertimeWithForwardBackwardImprovement(order, true).sts;
 }
+
+#endif

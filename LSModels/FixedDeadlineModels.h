@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef DISABLE_LOCALSOLVER
+
 #include "ListModel.h"
 
 class GSListModel : public ListModel {
@@ -39,3 +41,5 @@ public:
 	ListDeadlineModel(ProjectWithOvertime &_p);
 	virtual ~ListDeadlineModel() {}
 };
+
+#endif

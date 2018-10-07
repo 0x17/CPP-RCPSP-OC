@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef DISABLE_LOCALSOLVER
+
 #include "../ProjectWithOvertime.h"
 #include "../BasicSolverParameters.h"
 #include <boost/optional.hpp>
@@ -137,3 +139,4 @@ private:
 	virtual void applyInitialSolution() override;
 };
 
+#endif

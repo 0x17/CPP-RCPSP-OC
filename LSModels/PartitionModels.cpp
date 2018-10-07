@@ -1,3 +1,5 @@
+#ifndef DISABLE_LOCALSOLVER
+
 #include "PartitionModels.h"
 
 using namespace std;
@@ -117,3 +119,5 @@ vector<int> ActivityListPartitionsModel::parseScheduleFromSolution(LSSolution& s
 		order[i] = static_cast<int>(sol.getIntValue(listElems[i]));
 	return p.serialOptimalSubSGSAndFBI(order, options.partitionSize, true).sts;
 }
+
+#endif

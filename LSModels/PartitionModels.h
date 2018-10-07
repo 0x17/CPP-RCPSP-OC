@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef DISABLE_LOCALSOLVER
+
 #include "ListModel.h"
 
 class PartitionsSchedulingNativeFunction : public BaseSchedulingNativeFunction {
@@ -50,3 +52,5 @@ public:
 	ActivityListPartitionsModel(ProjectWithOvertime &_p);
 	virtual ~ActivityListPartitionsModel() {}
 };
+
+#endif
