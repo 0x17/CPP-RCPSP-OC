@@ -14,34 +14,6 @@
 
 using namespace std;
 
-ProjectCharacteristics::ProjectCharacteristics(	const std::string& instance_name,
-												float cmax,
-												int tminSGS,
-												int tmin,
-												int tmax,
-                                               	float network_complexity,
-                                               	float resource_factor,
-                                               	float resource_strength) :
-                                               	instanceName(instance_name),
-												cmax(cmax),
-												tminSGS(tminSGS),
-												tmin(tmin),
-												tmax(tmax),
-												networkComplexity(network_complexity),
-												resourceFactor(resource_factor),
-												resourceStrength(resource_strength) {
-}
-
-string ProjectCharacteristics::csvHeaderLine() {
-	return "instance;cmax;tminSGS;tmin;tmax;networkComplexity;resourceFactor;resourceStrength\n";
-}
-
-string ProjectCharacteristics::toCsvLine() const {
-	stringstream ostr;
-	ostr << instanceName <<  ";" << cmax << ";" << tminSGS << ";" << tmin << ";" << tmax << ";" << networkComplexity << ";" << resourceFactor << ";" << resourceStrength << endl;
-	return ostr.str();
-}
-
 ProjectWithOvertime::ProjectWithOvertime(JsonWrap _obj) : Project(_obj) {
 	auto obj = _obj.obj;
     revenue = JsonUtils::extractNumberArrayFromObj(obj, "u");
@@ -758,6 +730,38 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics() const {
 		return sumRs / (float)numRes;
 	};
 
-	return ProjectCharacteristics{ instanceName, cmax, tminSGS, tmin, tmax, computeNetworkComplexity(), computeResourceFactor(), computeResourceStrength() };
+	const map<string, float> charMap = {
+			{"cmax",cmax},
+		    {"tminSGS",tminSGS},
+			{"tmin", tmin},
+			{"tmax", tmax},
+			{"nc", computeNetworkComplexity()},
+			{"rf", computeResourceFactor()},
+			{"rs", computeResourceStrength()}
+	};
+
+	return ProjectCharacteristics(instanceName, charMap);
 }
 
+ProjectCharacteristics::ProjectCharacteristics(const std::string _instanceName,
+											   const std::map<std::string, float> _characteristics) :
+		instanceName(_instanceName),
+		characteristics(_characteristics) {
+	for(const auto &pair : characteristics) {
+		orderedKeys.push_back(pair.first);
+	}
+	orderedKeys.sort();
+}
+
+std::string ProjectCharacteristics::csvHeaderLine() const {
+	return instanceName + ";" + boost::algorithm::join(orderedKeys, ";") + "\n";
+}
+
+std::string ProjectCharacteristics::toCsvLine() const {
+	std::stringstream ss;
+	ss << instanceName;
+	for(const auto &key : orderedKeys) {
+		ss << ";" << characteristics.at(key);
+	}
+	return ss.str();
+}

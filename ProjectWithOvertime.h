@@ -5,27 +5,18 @@
 #pragma once
 
 #include <map>
+#include <boost/algorithm/string/join.hpp>
 
 #include "Project.h"
 
-struct ProjectCharacteristics {
-
+class ProjectCharacteristics {
 	std::string instanceName;
-	float cmax;
-	int tminSGS, tmin, tmax;
-	float networkComplexity;
-	float resourceFactor, resourceStrength;
+	std::map<std::string, float> characteristics;
+	std::list<std::string> orderedKeys;
 
-	ProjectCharacteristics(	const std::string& instance_name,
-							float cmax,
-							int tminSGS,
-							int tmin,
-							int tmax,
-							float network_complexity,
-							float resource_factor,
-							float resource_strength);
-
-	static std::string csvHeaderLine();
+public:
+	ProjectCharacteristics(const std::string _instanceName, const std::map<std::string, float> _characteristics);
+	std::string csvHeaderLine() const;
 	std::string toCsvLine() const;
 };
 

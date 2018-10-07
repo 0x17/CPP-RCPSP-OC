@@ -192,10 +192,14 @@ void Main::charactersticCollector(int argc, const char** argv) {
 	const string instancePath = !args.empty() ? args[0] : "j30";
 	const string outfn = args.size() >= 2 ? args[1] : "characteristics.txt";
 
-	string ostr = ProjectCharacteristics::csvHeaderLine();
+	string ostr;
 
 	applyForAllProjectsInDirectory([&ostr](const ProjectWithOvertime &p) {
-		ostr += p.collectCharacteristics().toCsvLine();
+		const auto characteristics = p.collectCharacteristics();
+		if(ostr.empty()) {
+			ostr += characteristics.csvHeaderLine();;
+		}
+		ostr += characteristics.toCsvLine();
 	}, instancePath);
 
 	Utils::spit(ostr, outfn);
