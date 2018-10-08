@@ -681,6 +681,20 @@ SGSResult ProjectWithOvertime::parallelSGSWithForwardBackwardImprovement(const s
 	return forwardBackwardIterations(order, res, makespan(res));
 }
 
+Matrix<char> transitiveHull(const Matrix<char> &mx) {
+	Matrix<char> hull(mx.getM(), mx.getN(), 0);
+	const auto recursiveHelper = [](int i) {
+		// ...
+	};
+	return hull;
+}
+
+int matrixSum(const Matrix<char> &mx) {
+	int accum = 0;
+	mx.foreach([&accum](int i, int j, char v) { accum+=v; });
+	return accum;
+}
+
 ProjectCharacteristics ProjectWithOvertime::collectCharacteristics() const {
 	vector<int> zeroOc(numRes, 0);
 
@@ -730,6 +744,32 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics() const {
 		return sumRs / (float)numRes;
 	};
 
+	const auto computeOrderStrength = [&]() {
+		return matrixSum(transitiveHull(adjMx)) / ((numJobs*numJobs-numJobs)/2);
+	};
+
+	const auto computeResourceConstrainedness = [&]() {
+		const auto computeResourceConstrainednessForRes = [&](int r) {
+			int cumDem = 0;
+			int usageCount = 0;
+			eachJobConst([&](int j) {
+				cumDem += demands(j, r);
+				usageCount += demands(j,r) > 0 ? 1 : 0;
+			});
+			return cumDem / usageCount / capacities[r];
+		};
+		float rc = 0.0f;
+		eachResConst([&](int r){  rc += computeResourceConstrainednessForRes(r); });
+		rc /= numRes;
+		return rc;
+	};
+
+	const int minCapacity = *std::min_element(capacities.begin(), capacities.end());
+	const int maxCapacity = *std::max_element(capacities.begin(), capacities.end());
+	const float avgCapacity = Utils::average(capacities);
+	const float avgDuration = Utils::average(durations);
+	const float avgBranchFactor = matrixSum(adjMx);
+
 	const map<string, float> charMap = {
 			{"cmax",cmax},
 		    {"tminSGS",tminSGS},
@@ -737,7 +777,14 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics() const {
 			{"tmax", tmax},
 			{"nc", computeNetworkComplexity()},
 			{"rf", computeResourceFactor()},
-			{"rs", computeResourceStrength()}
+			{"rs", computeResourceStrength()},
+			{"oc", computeOrderStrength()},
+			{"rc", computeResourceConstrainedness()},
+			{"minCap", minCapacity},
+			{"maxCap", maxCapacity},
+			{"avgCap", avgCapacity},
+			{"avgDur", avgDuration},
+			{"avgBranch", avgBranchFactor}
 	};
 
 	return ProjectCharacteristics(instanceName, charMap);

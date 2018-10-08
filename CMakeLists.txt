@@ -6,8 +6,6 @@ set(CMAKE_CXX_STANDARD 14)
 find_package(Boost COMPONENTS system filesystem REQUIRED)
 find_package(GTest REQUIRED)
 
-
-
 if(APPLE)
     set(GUROBI_INCLUDE_DIRS /Library/gurobi752/mac64/include)
     set(LOCALSOLVER_INCLUDE_DIRS /opt/localsolver_8_0/include)

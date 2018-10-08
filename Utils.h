@@ -9,6 +9,7 @@
 #include <list>
 #include <fstream>
 #include <chrono>
+#include <numeric>
 
 #include <boost/format.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -162,4 +163,6 @@ namespace Utils {
 	std::vector<std::string> parseArgumentList(int argc, const char** argv);
 
 	bool fileExists(const std::string &filename);
+
+	float average(const std::vector<int> &values);
 }
