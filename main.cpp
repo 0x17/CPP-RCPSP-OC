@@ -77,9 +77,9 @@ int main(int argc, const char * argv[]) {
 
 	//Main::jsonConverter(argc, argv);
 
-	//Main::charactersticCollector(argc, argv);
+	Main::charactersticCollector(argc, argv);
 
-	Main::commandLineRunner(argc, argv);
+	//Main::commandLineRunner(argc, argv);
 
 	//Main::Testing::GAConfigurationExperiment varyMutationProb = { "pmutate", 0, 25, 1 };
 	//Main::Testing::tweakGAParameters("PaperBeispiel.sm", 100, varyMutationProb);

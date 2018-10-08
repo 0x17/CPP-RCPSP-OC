@@ -677,16 +677,24 @@ SGSResult ProjectWithOvertime::parallelSGSWithForwardBackwardImprovement(const s
 SGSResult ProjectWithOvertime::parallelSGSWithForwardBackwardImprovement(const std::vector<int>& order) const {
 	const auto sts = parallelSGS(order);
 	const auto resRem = resRemForPartial(sts);
-	const SGSResult res = { sts, resRem, 1 };
+	const SGSResult res = {sts, resRem, 1};
 	return forwardBackwardIterations(order, res, makespan(res));
 }
 
-Matrix<char> transitiveHull(const Matrix<char> &mx) {
-	Matrix<char> hull(mx.getM(), mx.getN(), 0);
-	const auto recursiveHelper = [](int i) {
-		// ...
-	};
-	return hull;
+Matrix<char> transitiveClosure(const Matrix<char> &mx) {
+	Matrix<char> closure = mx;
+	assert(mx.getM() == mx.getN());
+	int n = mx.getM();
+
+	for(int k=0; k<n; k++) {
+		for(int i=0; i<n; i++) {
+			for(int j=0; j<n; j++) {
+				closure(i,j) |= (closure(i,k) && closure(k,j));
+			}
+		}
+	}
+
+	return closure;
 }
 
 int matrixSum(const Matrix<char> &mx) {
@@ -706,11 +714,8 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics() const {
 	const int tmax = makespan(serialSGS(topOrder, zeroOc));
 
 	const auto computeNetworkComplexity = [this]() {
-		int edgeCount = 0;
-		adjMx.foreach([&edgeCount](int i, int j, int aij) {
-			edgeCount += aij;
-		});
-		return (float)edgeCount / (float)numJobs;
+		// FIXME: Remove redundant arcs?!!
+		return (float)matrixSum(adjMx) / (float)numJobs;
 	};
 
 	const auto computeResourceFactor = [this]() {
@@ -745,7 +750,7 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics() const {
 	};
 
 	const auto computeOrderStrength = [&]() {
-		return matrixSum(transitiveHull(adjMx)) / ((numJobs*numJobs-numJobs)/2);
+		return static_cast<float>(matrixSum(transitiveClosure(adjMx))) / (static_cast<float>(numJobs*numJobs-numJobs)/2.0f);
 	};
 
 	const auto computeResourceConstrainedness = [&]() {
@@ -756,11 +761,11 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics() const {
 				cumDem += demands(j, r);
 				usageCount += demands(j,r) > 0 ? 1 : 0;
 			});
-			return cumDem / usageCount / capacities[r];
+			return (float)cumDem / (float)usageCount / (float)capacities[r];
 		};
 		float rc = 0.0f;
 		eachResConst([&](int r){  rc += computeResourceConstrainednessForRes(r); });
-		rc /= numRes;
+		rc /= static_cast<float>(numRes);
 		return rc;
 	};
 
@@ -778,7 +783,7 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics() const {
 			{"nc", computeNetworkComplexity()},
 			{"rf", computeResourceFactor()},
 			{"rs", computeResourceStrength()},
-			{"oc", computeOrderStrength()},
+			{"os", computeOrderStrength()},
 			{"rc", computeResourceConstrainedness()},
 			{"minCap", minCapacity},
 			{"maxCap", maxCapacity},
@@ -801,7 +806,7 @@ ProjectCharacteristics::ProjectCharacteristics(const std::string _instanceName,
 }
 
 std::string ProjectCharacteristics::csvHeaderLine() const {
-	return instanceName + ";" + boost::algorithm::join(orderedKeys, ";") + "\n";
+	return "instance;" + boost::algorithm::join(orderedKeys, ";") + "\n";
 }
 
 std::string ProjectCharacteristics::toCsvLine() const {
@@ -810,5 +815,6 @@ std::string ProjectCharacteristics::toCsvLine() const {
 	for(const auto &key : orderedKeys) {
 		ss << ";" << characteristics.at(key);
 	}
+	ss << "\n";
 	return ss.str();
 }
