@@ -703,13 +703,16 @@ int matrixSum(const Matrix<char> &mx) {
 	return accum;
 }
 
-ProjectCharacteristics ProjectWithOvertime::collectCharacteristics() const {
+ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::optional<std::map<std::string, float>> additionalCharacteristics) const {
 	vector<int> zeroOc(numRes, 0);
+	const auto zbalanced = Utils::constructVector<int>(numRes, [this](int r) { return round(zmax[r] / 2.0f); });
+
+	const auto tminSGSSchedule = serialSGS(topOrder, zmax);
+	const float cmaxSGS = totalCosts(tminSGSSchedule);
+	const int tminSGS = makespan(tminSGSSchedule);
 
 	SGSResult ess = earliestStartSchedule();
-
 	const float cmax = totalCosts(ess);
-	const int tminSGS = makespan(serialSGS(topOrder, zmax));
 	const int tmin = makespan(ess);
 	const int tmax = makespan(serialSGS(topOrder, zeroOc));
 
@@ -775,9 +778,20 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics() const {
 	const float avgDuration = Utils::average(durations);
 	const float avgBranchFactor = matrixSum(adjMx);
 
-	const map<string, float> charMap = {
-			{"cmax",cmax},
-		    {"tminSGS",tminSGS},
+	const float revWidth = tmax-tmin;
+	const float revSlope = (revenue[tmin]-revenue[tmax])/revWidth;
+
+	const auto balancedSchedule = serialSGS(topOrder, zbalanced);
+	const float cmaxBalanced = totalCosts(balancedSchedule);
+	const int tminBalanced = makespan(balancedSchedule);
+
+	const vector<int> totalCapacities = Utils::constructVector<int>(numRes, [this](int r) { return capacities[r] + zmax[r]; });
+	const float avgTotalCapacity = Utils::average(totalCapacities);
+
+	map<string, float> charMap = {
+			{"cmax", cmax},
+			{"cmaxSGS", cmaxSGS},
+		    {"tminSGS", tminSGS},
 			{"tmin", tmin},
 			{"tmax", tmax},
 			{"nc", computeNetworkComplexity()},
@@ -789,8 +803,19 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics() const {
 			{"maxCap", maxCapacity},
 			{"avgCap", avgCapacity},
 			{"avgDur", avgDuration},
-			{"avgBranch", avgBranchFactor}
+			{"avgBranch", avgBranchFactor},
+			{"revWidth", revWidth},
+			{"revSlope", revSlope},
+			{"cmaxBalanced", cmaxBalanced},
+			{"tminBalanced", tminBalanced},
+			{"avgTotalCap", avgTotalCapacity}
 	};
+
+	if(additionalCharacteristics) {
+		for (const auto &pair : *additionalCharacteristics) {
+			charMap.insert(pair);
+		}
+	}
 
 	return ProjectCharacteristics(instanceName, charMap);
 }

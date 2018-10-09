@@ -12,6 +12,7 @@
 
 #include "GeneticAlgorithms/Partition.h"
 #include "GeneticAlgorithms/OvertimeBound.h"
+#include "GeneticAlgorithms/TimeWindow.h"
 
 #include "LSModels/NaiveModels.h"
 #include "LSModels/FixedDeadlineModels.h"
@@ -176,6 +177,32 @@ void applyForAllProjectsInDirectory(Func f, const string &pathToDirectory, const
 	}
 }
 
+std::map<std::string, float> quickGAResults(ProjectWithOvertime &p) {
+	GAParameters params;
+	params.traceobj = false;
+	params.numGens = -1;
+	params.iterLimit = 100;
+	params.timeLimit = -1;
+
+	vector<pair<vector<int>, float>> results = {
+		TimeWindowBordersGA(p).setParameters(params)->solve(),
+		FixedCapacityGA(p).setParameters(params)->solve(),
+		TimeVaryingCapacityGA(p).setParameters(params)->solve()
+	};
+
+	return map<string, float> {
+		{"qresga0obj", results[0].second },
+		{"qresga3obj", results[1].second },
+		{"qresga4obj", results[2].second },
+		{"qresga0ms", p.makespan(results[0].first) },
+		{"qresga3ms", p.makespan(results[1].first) },
+		{"qresga4ms", p.makespan(results[2].first) },
+		{"qresga0cost", p.totalCosts(results[0].first) },
+		{"qresga3cost", p.totalCosts(results[1].first) },
+		{"qresga4cost", p.totalCosts(results[2].first) },
+	};
+}
+
 void Main::charactersticCollector(int argc, const char** argv) {
 	const auto showCollectorUsage = []() {
 		cout << "Usage: Collector [instancePath] [outfile]" << endl;
@@ -194,8 +221,9 @@ void Main::charactersticCollector(int argc, const char** argv) {
 
 	string ostr;
 
-	applyForAllProjectsInDirectory([&ostr](const ProjectWithOvertime &p) {
-		const auto characteristics = p.collectCharacteristics();
+	applyForAllProjectsInDirectory([&ostr](ProjectWithOvertime &p) {
+		const auto characteristics = p.collectCharacteristics(quickGAResults(p));
+
 		if(ostr.empty()) {
 			ostr += characteristics.csvHeaderLine();;
 		}

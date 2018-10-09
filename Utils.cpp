@@ -219,3 +219,7 @@ float Utils::average(const std::vector<int> &values) {
 	return static_cast<float>(std::accumulate(values.begin(), values.end(), 0)) / static_cast<float>(values.size());
 }
 
+float Utils::average(const std::vector<float> &values) {
+	return static_cast<float>(std::accumulate(values.begin(), values.end(), 0.0f)) / static_cast<float>(values.size());
+}
+

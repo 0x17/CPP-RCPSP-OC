@@ -114,7 +114,7 @@ public:
 	SGSResult parallelSGSWithForwardBackwardImprovement(const std::vector<int> &order, const std::vector<int> &z) const;
 	SGSResult parallelSGSWithForwardBackwardImprovement(const std::vector<int> &order) const;
 
-	ProjectCharacteristics collectCharacteristics() const;
+	ProjectCharacteristics collectCharacteristics(const boost::optional<std::map<std::string, float>> additionalCharacteristics = boost::optional<std::map<std::string, float>>()) const;
 
 private:
     void computeRevenueFunction();

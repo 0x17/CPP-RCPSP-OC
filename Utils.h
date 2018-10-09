@@ -165,4 +165,5 @@ namespace Utils {
 	bool fileExists(const std::string &filename);
 
 	float average(const std::vector<int> &values);
+	float average(const std::vector<float> &values);
 }

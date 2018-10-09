@@ -74,7 +74,7 @@ public:
 
     std::pair<std::vector<int>, float> solve();
 
-    void setParameters(GAParameters _params);
+    GeneticAlgorithm<Individual> *setParameters(GAParameters _params);
 
 	std::string getName() const { return name; }
 
@@ -118,11 +118,12 @@ inline void GeneticAlgorithm<Individual>::withMutProb(Func code) const {
 }
 
 template<class Individual>
-void GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
+GeneticAlgorithm<Individual> *GeneticAlgorithm<Individual>::setParameters(GAParameters _params) {
     params = _params;
     if(params.traceobj && tr == nullptr) {
         tr = std::make_unique<Utils::Tracer>(traceFilenameForGeneticAlgorithm(params.outPath, name, p.instanceName));
     }
+    return this;
 }
 
 template<class Individual>
