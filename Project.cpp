@@ -881,4 +881,16 @@ void Project::parsePattersonFormat(const std::vector<std::string> &lines) {
 	}
 }
 
+void Project::updateDerivedParameters() {
+	lastJob = numJobs - 1;
+	if(USE_DISPOSITION_METHOD)
+		reorderDispositionMethod();
+	T = accumulate(durations.begin(), durations.end(), 0);
+	numPeriods = T + 1;
+	topOrder = computeTopOrder();
+	revTopOrder = computeReverseTopOrder();
+	heuristicMaxMs = makespan(serialSGS(topOrder));
+	computeELSFTs();
+}
+
 

@@ -120,9 +120,12 @@ public:
 	std::map<std::string, float> scheduleStatistics(const std::vector<int> &sts) const;
 	void printScheduleInformation(const std::vector<int> &sts) const;
 
-private:
-    void computeRevenueFunction();
+	void computeRevenueFunction();
 	void computeExtrapolatedRevenueFunction();
+
+	void updateDerivedParameters() override;
+
+private:
     int computeTKappa() const;
 	bool enoughCapacityForJobWithOvertime(int job, int t, const Matrix<int> & resRem) const;
 };

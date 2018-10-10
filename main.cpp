@@ -10,6 +10,8 @@
 #include "GurobiSolver.h"
 #include "Utils.h"
 
+#include "SensitivityAnalysis.h"
+
 #include "GeneticAlgorithms/Partition.h"
 #include "GeneticAlgorithms/OvertimeBound.h"
 #include "GeneticAlgorithms/TimeWindow.h"
@@ -80,7 +82,9 @@ int main(int argc, const char * argv[]) {
 
 	//Main::charactersticCollector(argc, argv);
 
-	Main::commandLineRunner(argc, argv);
+	//Main::commandLineRunner(argc, argv);
+
+	sensitivity::varyTotalAvailableCapacity("j30/j3029_9.sm", 0);
 
 	//Main::Testing::GAConfigurationExperiment varyMutationProb = { "pmutate", 0, 25, 1 };
 	//Main::Testing::tweakGAParameters("PaperBeispiel.sm", 100, varyMutationProb);

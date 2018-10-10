@@ -922,6 +922,24 @@ void ProjectWithOvertime::printScheduleInformation(const std::vector<int> &sts) 
 	}
 }
 
+void ProjectWithOvertime::updateDerivedParameters() {
+	Project::updateDerivedParameters();
+
+	zmax.resize(numRes);
+	zzero.resize(numRes);
+	kappa.resize(numRes);
+	revenue.resize(numPeriods);
+	revenueExtrapolated.resize(numPeriods);
+
+	/*eachRes([&](int r) {
+		zmax[r] = capacities[r] / 2;
+		kappa[r] = 0.5f;
+	});*/
+
+	computeRevenueFunction();
+	computeExtrapolatedRevenueFunction();
+}
+
 ProjectCharacteristics::ProjectCharacteristics(const std::string _instanceName,
 											   const std::map<std::string, float> _characteristics) :
 		instanceName(_instanceName),
