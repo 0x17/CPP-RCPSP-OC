@@ -78,9 +78,9 @@ int main(int argc, const char * argv[]) {
 
 	//Main::jsonConverter(argc, argv);
 
-	Main::charactersticCollector(argc, argv);
+	//Main::charactersticCollector(argc, argv);
 
-	//Main::commandLineRunner(argc, argv);
+	Main::commandLineRunner(argc, argv);
 
 	//Main::Testing::GAConfigurationExperiment varyMutationProb = { "pmutate", 0, 25, 1 };
 	//Main::Testing::tweakGAParameters("PaperBeispiel.sm", 100, varyMutationProb);
@@ -181,14 +181,31 @@ std::map<std::string, float> quickGAResults(ProjectWithOvertime &p) {
 	GAParameters params;
 	params.traceobj = false;
 	params.numGens = -1;
-	params.iterLimit = 100;
+	params.iterLimit = 1000;
 	params.timeLimit = -1;
 
-	vector<pair<vector<int>, float>> results = {
-		TimeWindowBordersGA(p).setParameters(params)->solve(),
-		FixedCapacityGA(p).setParameters(params)->solve(),
-		TimeVaryingCapacityGA(p).setParameters(params)->solve()
-	};
+	vector<pair<vector<int>, float>> results;
+
+	cout << "Instance = " << p.instanceName << endl;
+
+	{
+		TimeWindowBordersGA ga(p);
+		ga.setParameters(params);
+		results.push_back(ga.solve());
+	}
+
+	{
+		FixedCapacityGA ga(p);
+		ga.setParameters(params);
+		results.push_back(ga.solve());
+	}
+
+	{
+		TimeVaryingCapacityGA ga(p);
+		ga.setParameters(params);
+		results.push_back(ga.solve());
+	}
+
 
 	return map<string, float> {
 		{"qresga0obj", results[0].second },
@@ -222,7 +239,7 @@ void Main::charactersticCollector(int argc, const char** argv) {
 	string ostr;
 
 	applyForAllProjectsInDirectory([&ostr](ProjectWithOvertime &p) {
-		const auto characteristics = p.collectCharacteristics(quickGAResults(p));
+		const auto characteristics = p.collectCharacteristics(/*quickGAResults(p)*/);
 
 		if(ostr.empty()) {
 			ostr += characteristics.csvHeaderLine();;
@@ -330,14 +347,21 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
             return;
         }
 
-	    bool traceobj, quiet, timeforbks;
-        traceobj = quiet = timeforbks = false;
-        map<string, bool *> lastParameterToggles = { { "traceobj", &traceobj }, { "quiet", &quiet }, { "timeforbks", &timeforbks } };
+	    bool traceobj, quiet, timeforbks, info;
+        map<string, bool *> lastParameterToggles = {
+        		{ "traceobj", &traceobj },
+        		{ "quiet", &quiet },
+        		{ "timeforbks", &timeforbks },
+				{"info", &info}
+        };
 
-        if(argc >= 6) {
-        	const auto lastArg = string(argv[5]);
+		for (const auto &pair : lastParameterToggles) {
+			*pair.second = false;
+		}
+
+		for(int c=5; c<argc; c++) {
 			for (const auto &pair : lastParameterToggles) {
-				if(lastArg == pair.first) {
+				if(string(argv[c]) == pair.first) {
 					*pair.second = true;
 					break;
 				}
@@ -413,6 +437,10 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
 #endif
         } else {
 			throw runtime_error("Unknown method: " + solMethod + "!");
+        }
+
+        if(info) {
+        	p.printScheduleInformation(sts);
         }
 
         if(quiet) return;

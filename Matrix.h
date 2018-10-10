@@ -137,4 +137,15 @@ public:
 		out << "}" << std::endl;
 		return out.str();
 	}
+
+	std::string toStringCondensed() {
+		std::stringstream out;
+		for(int i=0; i<m; i++) {
+			for(int j=0; j<n; j++) {
+				out << at(i,j);
+			}
+			out << "\n";
+		}
+		return out.str();
+	}
 };

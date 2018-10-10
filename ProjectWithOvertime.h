@@ -116,6 +116,10 @@ public:
 
 	ProjectCharacteristics collectCharacteristics(const boost::optional<std::map<std::string, float>> additionalCharacteristics = boost::optional<std::map<std::string, float>>()) const;
 
+	std::string plotAsAscii(const std::vector<int> &sts, int r) const;
+	std::map<std::string, float> scheduleStatistics(const std::vector<int> &sts) const;
+	void printScheduleInformation(const std::vector<int> &sts) const;
+
 private:
     void computeRevenueFunction();
 	void computeExtrapolatedRevenueFunction();

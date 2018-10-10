@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include <boost/algorithm/clamp.hpp>
+#include <boost/algorithm/string/join.hpp>
 
 #include "ProjectWithOvertime.h"
 #include "GurobiSolver.h"
@@ -788,6 +789,50 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 	const vector<int> totalCapacities = Utils::constructVector<int>(numRes, [this](int r) { return capacities[r] + zmax[r]; });
 	const float avgTotalCapacity = Utils::average(totalCapacities);
 
+	const auto numPeriodsWithOvertime = [this](const SGSResult &res) {
+		float nperiods = 0.0f;
+		eachPeriodConst([this, &res, &nperiods](int t) {
+			for(int r=0; r<numRes; r++) {
+				if (res.resRem(r, t) < 0) {
+					nperiods++;
+					break;
+				}
+			}
+		});
+		return nperiods;
+	};
+
+	const auto numJobsInOvertimePeriods = [this](const SGSResult &res) {
+		vector<bool> jobInOC(numJobs, false);
+
+		eachPeriodConst([this, &res, &jobInOC](int t) {
+			for(int r=0; r<numRes; r++) {
+				if (res.resRem(r, t) < 0) {
+					for(int j=0; j<numJobs; j++) {
+						if (isJobActiveInPeriod(res.sts, j, t)) {
+							jobInOC[j] = true;
+						}
+					}
+					break;
+				}
+			}
+		});
+
+		float njobs = 0.0f;
+		for(bool indic : jobInOC) {
+			if(indic) njobs++;
+		}
+		return njobs;
+	};
+
+	const auto averageResidualCapacity = [this](const SGSResult &res) {
+		float accum = 0.0f;
+		eachResPeriodConst([this, &accum, &res](int r, int t) {
+			accum += max(0, res.resRem(r, t));
+		});
+		return accum / static_cast<float>(numRes * numPeriods);
+	};
+
 	map<string, float> charMap = {
 			{"cmax", cmax},
 			{"cmaxSGS", cmaxSGS},
@@ -808,7 +853,13 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 			{"revSlope", revSlope},
 			{"cmaxBalanced", cmaxBalanced},
 			{"tminBalanced", tminBalanced},
-			{"avgTotalCap", avgTotalCapacity}
+			{"avgTotalCap", avgTotalCapacity},
+			{"nperiodsOCESS", numPeriodsWithOvertime(ess)},
+			{"nperiodsOCSGSzmax", numPeriodsWithOvertime(tminSGSSchedule)},
+			{"njobsOCESS", numJobsInOvertimePeriods(ess)},
+			{"njobsOCSGSzmax", numJobsInOvertimePeriods(tminSGSSchedule)},
+			{"avgResESS", averageResidualCapacity(ess)},
+			{"avgResSGSzmax", averageResidualCapacity(tminSGSSchedule)}
 	};
 
 	if(additionalCharacteristics) {
@@ -818,6 +869,57 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 	}
 
 	return ProjectCharacteristics(instanceName, charMap);
+}
+
+std::string ProjectWithOvertime::plotAsAscii(const std::vector<int> &sts, int r) const {
+	const auto jobNumToSingleChar = [this](int j) {
+		if(j == 0) return '@';
+		else if(j == lastJob) return '$';
+		else if(j >= 1 && j <= 9) return static_cast<char>(j+'0');
+		else if(j >= 10 && j <= 35) return static_cast<char>(j-10+'A');
+		else if(j >= 36 && j <= 61) return static_cast<char>(j-36+'a');
+		else return '0';
+	};
+
+	int height = capacities[r] + zmax[r];
+	int width = sts[lastJob]+1;
+
+	Matrix<char> mx(height, width, (int)' ');
+
+	eachPeriodConst([&](int t) {
+		vector<int> active;
+		eachJobConst([&](int j) {
+			if(isJobActiveInPeriod(sts, j, t)) {
+				active.push_back(j);
+			}
+		});
+		int ctr = height-1;
+		for(int job : active) {
+			for(int k=0; k<demands(job, r); k++)
+				mx(ctr--, t) = jobNumToSingleChar(job);
+		}
+	});
+
+	return mx.toStringCondensed();
+}
+
+std::map<std::string, float> ProjectWithOvertime::scheduleStatistics(const std::vector<int> &sts) const {
+	return map<string, float> {
+			{"makespan", makespan(sts)},
+			{"totalCosts", totalCosts(sts)},
+			{"revenue", revenue[makespan(sts)]},
+			{"profit", calcProfit(sts)},
+	};
+}
+
+void ProjectWithOvertime::printScheduleInformation(const std::vector<int> &sts) const {
+	eachResConst([this, &sts](int r) {
+		cout << "Schedule for resource " << r << endl;
+		cout << plotAsAscii(sts, r) << endl;
+	});
+	for(const auto &pair : scheduleStatistics(sts)) {
+		cout << pair.first << "=" << pair.second << endl;
+	}
 }
 
 ProjectCharacteristics::ProjectCharacteristics(const std::string _instanceName,

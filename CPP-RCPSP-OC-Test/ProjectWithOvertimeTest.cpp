@@ -46,3 +46,7 @@ TEST_F(ProjectWithOvertimeTest, testOrderInducedPartitionsToPartitionList) {
 	vector<int> partitionList = p->orderInducedPartitionsToPartitionList(order, 2);
 	TestHelpers::arrayEquals({ 0, 1, 1, 0, 2 }, partitionList);
 }
+
+TEST_F(ProjectWithOvertimeTest, testPlotToAscii) {
+	const string res = p->plotAsAscii(p->serialSGS(p->topOrder), 0);
+}
