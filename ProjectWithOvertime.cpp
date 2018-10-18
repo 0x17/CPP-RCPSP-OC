@@ -940,6 +940,45 @@ void ProjectWithOvertime::updateDerivedParameters() {
 	computeExtrapolatedRevenueFunction();
 }
 
+std::pair<std::vector<std::string>, std::vector<float>> ProjectWithOvertime::flattenedRepresentation(const boost::optional<const ProjectCharacteristics&> chars) const {
+	const list<string> includedChars = chars ? chars->getOrderedKeys() : list<string>{"nc", "avgBranch", "revWidth", "revSlope"};
+	const unsigned int valueCount = numJobs+(chars ? includedChars.size() : numJobs*numJobs)+numJobs*numRes+numRes;
+	vector<float> values(valueCount);
+	vector<string> valueNames(valueCount);
+
+	int ctr = 0;
+
+	eachJobConst([&](int j) {
+		valueNames[ctr] = "d_"+to_string(j);
+		values[ctr++] = durations[j];
+	});
+
+	if(chars) {
+		const auto c = *chars;
+		for(const auto &k : includedChars) {
+			valueNames[ctr] = k;
+			values[ctr++] = c.getCharacteristic(k);
+		}
+	} else {
+		eachJobPairConst([&](int i, int j) {
+			valueNames[ctr] = "adj_"+to_string(i)+"_"+to_string(j);
+			values[ctr++] = adjMx(i,j);
+		});
+	}
+
+	eachJobResConst([&](int j, int r) {
+		valueNames[ctr] = "k_"+to_string(j)+"_"+to_string(r);
+		values[ctr++] = demands(j,r);
+	});
+
+	eachResConst([&](int r) {
+		valueNames[ctr] = "K_"+to_string(r);
+		values[ctr++] = capacities[r];
+	});
+
+	return make_pair(valueNames, values);
+}
+
 ProjectCharacteristics::ProjectCharacteristics(const std::string _instanceName,
 											   const std::map<std::string, float> _characteristics) :
 		instanceName(_instanceName),
@@ -962,4 +1001,8 @@ std::string ProjectCharacteristics::toCsvLine() const {
 	}
 	ss << "\n";
 	return ss.str();
+}
+
+float ProjectCharacteristics::getCharacteristic(std::string charName) const {
+	return characteristics.at(charName);
 }

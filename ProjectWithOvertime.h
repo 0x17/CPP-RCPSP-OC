@@ -18,6 +18,8 @@ public:
 	ProjectCharacteristics(const std::string _instanceName, const std::map<std::string, float> _characteristics);
 	std::string csvHeaderLine() const;
 	std::string toCsvLine() const;
+	float getCharacteristic(std::string charName) const;
+	std::list<std::string> getOrderedKeys() const { return orderedKeys; }
 };
 
 class ProjectWithOvertime : public Project {
@@ -124,6 +126,8 @@ public:
 	void computeExtrapolatedRevenueFunction();
 
 	void updateDerivedParameters() override;
+
+	std::pair<std::vector<std::string>, std::vector<float>> flattenedRepresentation(const boost::optional<const ProjectCharacteristics&> chars = boost::optional<const ProjectCharacteristics&>()) const;
 
 private:
     int computeTKappa() const;

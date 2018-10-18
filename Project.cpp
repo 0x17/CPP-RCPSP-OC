@@ -847,13 +847,24 @@ std::vector<int> Project::complementPartialWithSpecificJobsUsingSSGS(const std::
 }
 
 void Project::parsePattersonFormat(const std::vector<std::string> &lines) {
-	bool cardinalitiesKnown = false;
-	int j=0;
+	bool cardinalitiesKnown = false, continueSuccs = false;
+	int succRemaining = 0, j = 0;
 
 	for(const std::string &line : lines) {
 		const std::vector<int> values = Utils::extractIntsFromLine(line);
+
+		if(succRemaining > 0) {
+			int k;
+			for(k=0; k<succRemaining && k<values.size(); k++) {
+				adjMx(j, values[k]-1) = true;
+			}
+			succRemaining -= k;
+			if(succRemaining <= 0) {
+				j++;
+			}
+		}
 		// #jobs #res
-		if(values.size() == 2) {
+		else if(values.size() == 2) {
 			numJobs = values[0];
 			numRes = values[1];
 			adjMx = Matrix<char>(numJobs, numJobs, [](int i, int j) {
@@ -872,10 +883,16 @@ void Project::parsePattersonFormat(const std::vector<std::string> &lines) {
 				durations[j] = values[0];
 				for(int r=0; r<numRes; r++)
 					demands(j,r) = values[1+r];
-				for(int k=0; k<values[1+numRes]; k++) {
-					adjMx(j, values[k]) = true;
+				int succCount = values[1+numRes];
+				int k;
+				for(k=0; k<succCount && k+2+numRes<values.size(); k++) {
+					adjMx(j, values[2+numRes+k]-1) = true;
 				}
-				j++;
+				if(k+2+numRes == values.size()) {
+					succRemaining = succCount - k;
+				} else {
+					j++;
+				}
 			}
 		}
 	}

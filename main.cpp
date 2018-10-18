@@ -2,6 +2,7 @@
 #include <map>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <iomanip>
 
 #include "ProjectWithOvertime.h"
 
@@ -82,9 +83,9 @@ int main(int argc, const char * argv[]) {
 
 	//Main::charactersticCollector(argc, argv);
 
-	//Main::commandLineRunner(argc, argv);
+	Main::commandLineRunner(argc, argv);
 
-	sensitivity::varyTotalAvailableCapacity("j30/j3029_9.sm", 0);
+	//sensitivity::varyTotalAvailableCapacity("j30/j3029_9.sm", 0);
 
 	//Main::Testing::GAConfigurationExperiment varyMutationProb = { "pmutate", 0, 25, 1 };
 	//Main::Testing::tweakGAParameters("PaperBeispiel.sm", 100, varyMutationProb);
@@ -170,10 +171,10 @@ void Main::jsonConverter(int argc, const char** argv) {
 }
 
 template<class Func>
-void applyForAllProjectsInDirectory(Func f, const string &pathToDirectory, const string &projectExtension = ".sm") {
+void applyForAllProjectsInDirectory(Func f, const string &pathToDirectory, const string &projectExtension = ".sm", bool skipEqualMakespans = true) {
 	for(const auto &instancefn : Utils::filenamesInDirWithExt(pathToDirectory, projectExtension)) {
 		ProjectWithOvertime p(instancefn);
-		if(Main::computeMinMaxMakespanDifference(p) <= 0) {
+		if(skipEqualMakespans && Main::computeMinMaxMakespanDifference(p) <= 0) {
 			cout << "maxMs - minMs <= 0... ---> skipping!" << endl;
 			continue;
 		}
@@ -224,6 +225,19 @@ std::map<std::string, float> quickGAResults(ProjectWithOvertime &p) {
 	};
 }
 
+static string limitDecimals(float n) {
+	stringstream ss;
+	ss << std::setprecision(3) << n;
+	return ss.str();
+};
+
+string joinFloats(const vector<float> &v, const string &sep) {
+	const vector<string> strs = Utils::constructVector<string>(v.size(), [&v](int ix) {
+		return limitDecimals(v[ix]);
+	});
+	return boost::algorithm::join(strs, sep);
+}
+
 void Main::charactersticCollector(int argc, const char** argv) {
 	const auto showCollectorUsage = []() {
 		cout << "Usage: Collector [instancePath] [outfile]" << endl;
@@ -239,19 +253,31 @@ void Main::charactersticCollector(int argc, const char** argv) {
 
 	const string instancePath = !args.empty() ? args[0] : "j30";
 	const string outfn = args.size() >= 2 ? args[1] : "characteristics.txt";
+	const string outfnFlattened = args.size() >= 3 ? args[2] : "flattened.txt";
 
-	string ostr;
+	string ostr, ostrFlattened;
 
-	applyForAllProjectsInDirectory([&ostr](ProjectWithOvertime &p) {
+	applyForAllProjectsInDirectory([&ostr, &ostrFlattened](const ProjectWithOvertime &p) {
+
 		const auto characteristics = p.collectCharacteristics(/*quickGAResults(p)*/);
 
 		if(ostr.empty()) {
 			ostr += characteristics.csvHeaderLine();;
 		}
 		ostr += characteristics.toCsvLine();
-	}, instancePath);
+
+		const auto flattenedValues = p.flattenedRepresentation(characteristics);
+
+		if(ostrFlattened.empty()) {
+			ostrFlattened += "instance;" + boost::algorithm::join(flattenedValues.first, ";") + "\n";
+		}
+
+		ostrFlattened += p.instanceName + ";" + joinFloats(flattenedValues.second, ";") + "\n";
+
+	}, instancePath, ".sm", false);
 
 	Utils::spit(ostr, outfn);
+	Utils::spit(ostrFlattened, outfnFlattened);
 }
 
 void computeScheduleAttributes(const string &smfilename) {
@@ -345,18 +371,14 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
         double timeLimit = atof(argv[2]);
 		int iterLimit = atoi(argv[3]);
         ProjectWithOvertime p(argv[4]);
-        
-        if(computeMinMaxMakespanDifference(p) <= 0) {
-			cout << "maxMs - minMs <= 0... ---> skipping!" << endl;
-            return;
-        }
 
-	    bool traceobj, quiet, timeforbks, info;
+	    bool traceobj, quiet, timeforbks, info, noskip;
         map<string, bool *> lastParameterToggles = {
-        		{ "traceobj", &traceobj },
-        		{ "quiet", &quiet },
-        		{ "timeforbks", &timeforbks },
-				{"info", &info}
+        		{"traceobj", &traceobj },
+        		{"quiet", &quiet },
+        		{"timeforbks", &timeforbks },
+				{"info", &info},
+				{"noskip", &noskip}
         };
 
 		for (const auto &pair : lastParameterToggles) {
@@ -370,6 +392,11 @@ void Main::commandLineRunner(int argc, const char * argv[]) {
 					break;
 				}
 			}
+		}
+
+		if(!noskip && computeMinMaxMakespanDifference(p) <= 0) {
+			cout << "maxMs - minMs <= 0... ---> skipping!" << endl;
+			return;
 		}
 
 		const string parentPath = boost::filesystem::path(string(argv[4])).parent_path().string();
