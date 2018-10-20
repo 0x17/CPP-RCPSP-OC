@@ -886,9 +886,10 @@ void Project::parsePattersonFormat(const std::vector<std::string> &lines) {
 				int succCount = values[1+numRes];
 				int k;
 				for(k=0; k<succCount && k+2+numRes<values.size(); k++) {
-					adjMx(j, values[2+numRes+k]-1) = true;
+					int vix = 2+numRes+k;
+					adjMx(j, values[vix]-1) = true;
 				}
-				if(k+2+numRes == values.size()) {
+				if(k+2+numRes >= values.size() && k < succCount) {
 					succRemaining = succCount - k;
 				} else {
 					j++;

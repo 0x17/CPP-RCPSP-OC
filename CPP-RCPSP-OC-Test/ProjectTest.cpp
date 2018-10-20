@@ -37,15 +37,26 @@ TEST_F(ProjectTest, testConstructor) {
 }
 
 TEST_F(ProjectTest, testPattersonParsing) {
-	vector<int> expDurations = {0, 10, 5, 1, 3, 4, 1, 2, 2, 4,6, 4, 5, 6, 7, 10, 1, 1, 8, 8, 1, 6, 9, 9, 10, 5, 5, 8, 7, 7, 9, 0};
+	const vector<int> expDurations = {0, 2, 2, 2, 0};
+	const Matrix<int> expDemands({ {0}, {1}, {1}, {2}, {0} });
+	const Matrix<char> expAdjMx({
+			{0, 1, 0, 1, 0},
+			{0, 0, 1, 0, 0},
+			{0, 0, 0, 0, 1},
+			{0, 0, 0, 0, 1},
+			{0, 0, 0, 0, 0}
+	});
 
-	Project p("Data/Pat1.rcp");
-	ASSERT_EQ(32, p.numJobs);
-	ASSERT_EQ(4, p.numRes);
-	TestHelpers::arrayEquals(vector<int>(4, 10), p.capacities);
+
+	Project p("Data/MiniBeispiel.rcp");
+	//Project p("Data/Pat1.rcp");
+	ASSERT_EQ(5, p.numJobs);
+	ASSERT_EQ(1, p.numRes);
+	ASSERT_EQ(1, p.capacities.size());
+	ASSERT_EQ(2, p.capacities[0]);
 	TestHelpers::arrayEquals(expDurations, p.durations);
-
-	// TODO: Finish!
+	TestHelpers::matrixEquals(expDemands, p.demands);
+	TestHelpers::matrixEquals(expAdjMx, p.adjMx);
 }
 
 TEST_F(ProjectTest, testSerialSGS) {
