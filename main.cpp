@@ -81,9 +81,9 @@ int main(int argc, const char * argv[]) {
 
 	//Main::jsonConverter(argc, argv);
 
-	//Main::charactersticCollector(argc, argv);
+	Main::charactersticCollector(argc, argv);
 
-	Main::commandLineRunner(argc, argv);
+	//Main::commandLineRunner(argc, argv);
 
 	//sensitivity::varyTotalAvailableCapacity("j30/j3029_9.sm", 0);
 
@@ -258,8 +258,11 @@ void Main::charactersticCollector(int argc, const char** argv) {
 	string ostr, ostrFlattened;
 
 	applyForAllProjectsInDirectory([&ostr, &ostrFlattened](const ProjectWithOvertime &p) {
+		cout << "Instance " << p.instanceName << "..." << endl;
 
-		const auto characteristics = p.collectCharacteristics(/*quickGAResults(p)*/);
+		const auto messelisStats = p.collectMesselisStats();
+
+		const auto characteristics = p.collectCharacteristics(/*quickGAResults(p)*/messelisStats);
 
 		if(ostr.empty()) {
 			ostr += characteristics.csvHeaderLine();;
@@ -274,7 +277,7 @@ void Main::charactersticCollector(int argc, const char** argv) {
 
 		ostrFlattened += p.instanceName + ";" + joinFloats(flattenedValues.second, ";") + "\n";
 
-	}, instancePath, ".sm", false);
+	}, instancePath, /*".rcp"*/".sm", false);
 
 	Utils::spit(ostr, outfn);
 	Utils::spit(ostrFlattened, outfnFlattened);

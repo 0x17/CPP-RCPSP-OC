@@ -166,4 +166,8 @@ namespace Utils {
 
 	float average(const std::vector<int> &values);
 	float average(const std::vector<float> &values);
+
+	int sum(const std::vector<int> &values);
+
+	float variance(const std::vector<float> &values);
 }

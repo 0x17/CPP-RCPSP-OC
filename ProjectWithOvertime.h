@@ -118,6 +118,7 @@ public:
 
 	ProjectCharacteristics collectCharacteristics(const boost::optional<std::map<std::string, float>> additionalCharacteristics = boost::optional<std::map<std::string, float>>()) const;
 
+
 	std::string plotAsAscii(const std::vector<int> &sts, int r) const;
 	std::map<std::string, float> scheduleStatistics(const std::vector<int> &sts) const;
 	void printScheduleInformation(const std::vector<int> &sts) const;
@@ -128,6 +129,8 @@ public:
 	void updateDerivedParameters() override;
 
 	std::pair<std::vector<std::string>, std::vector<float>> flattenedRepresentation(const boost::optional<const ProjectCharacteristics&> chars = boost::optional<const ProjectCharacteristics&>()) const;
+
+	std::map<std::string, float> collectMesselisStats() const;
 
 private:
     int computeTKappa() const;

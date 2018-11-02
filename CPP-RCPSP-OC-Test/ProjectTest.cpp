@@ -48,8 +48,9 @@ TEST_F(ProjectTest, testPattersonParsing) {
 	});
 
 
-	Project p("Data/MiniBeispiel.rcp");
+	//Project p("Data/MiniBeispiel.rcp");
 	//Project p("Data/Pat1.rcp");
+	Project p("Data/RG300_1.rcp");
 	ASSERT_EQ(5, p.numJobs);
 	ASSERT_EQ(1, p.numRes);
 	ASSERT_EQ(1, p.capacities.size());

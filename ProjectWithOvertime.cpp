@@ -728,10 +728,11 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 			strictlyPositiveDemandCount += demands(j, r) > 0 ? 1 : 0;
 		});
 
-		return 1.0f / (float)(numJobs * numRes) * (float)strictlyPositiveDemandCount;
+		return (float)strictlyPositiveDemandCount / (float)(numJobs * numRes);
 	};
 
 	const auto computeResourceStrength = [&]() {
+		vector<float> results(numRes+1);
 		vector<int> maxActivityConsumptions(numRes);
 		eachJobResConst([this, &maxActivityConsumptions](int j, int r) {
 			maxActivityConsumptions[r] = max(demands(j, r), maxActivityConsumptions[r]);
@@ -747,26 +748,29 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 
 		float sumRs = 0;
 		eachResConst([&](int r) {
-			sumRs += (maxCumulativeConsumptionsESS[r] - maxActivityConsumptions[r] == 0) ? 1.0f : (float)(capacities[r] - maxActivityConsumptions[r]) / (float)(maxCumulativeConsumptionsESS[r] - maxActivityConsumptions[r]);
+			results[r] = (maxCumulativeConsumptionsESS[r] - maxActivityConsumptions[r] == 0) ? 1.0f : (float)(capacities[r] - maxActivityConsumptions[r]) / (float)(maxCumulativeConsumptionsESS[r] - maxActivityConsumptions[r]);
+			sumRs += results[r];
 		});
 
-		return sumRs / (float)numRes;
+		results[numRes] = sumRs / (float)numRes;
+		return results;
 	};
 
 	const auto computeOrderStrength = [&]() {
 		return static_cast<float>(matrixSum(transitiveClosure(adjMx))) / (static_cast<float>(numJobs*numJobs-numJobs)/2.0f);
 	};
 
+	const auto computeResourceConstrainednessForRes = [&](int r) {
+		int cumDem = 0;
+		int usageCount = 0;
+		eachJobConst([&](int j) {
+			cumDem += demands(j, r);
+			usageCount += demands(j,r) > 0 ? 1 : 0;
+		});
+		return (float)cumDem / (float)usageCount / (float)capacities[r];
+	};
+
 	const auto computeResourceConstrainedness = [&]() {
-		const auto computeResourceConstrainednessForRes = [&](int r) {
-			int cumDem = 0;
-			int usageCount = 0;
-			eachJobConst([&](int j) {
-				cumDem += demands(j, r);
-				usageCount += demands(j,r) > 0 ? 1 : 0;
-			});
-			return (float)cumDem / (float)usageCount / (float)capacities[r];
-		};
 		float rc = 0.0f;
 		eachResConst([&](int r){  rc += computeResourceConstrainednessForRes(r); });
 		rc /= static_cast<float>(numRes);
@@ -833,7 +837,12 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 		return accum / static_cast<float>(numRes * numPeriods);
 	};
 
+	vector<float> rsResults = computeResourceStrength();
+
 	map<string, float> charMap = {
+			{"njobs", numJobs},
+			{"nres", numRes},
+			{"nperiods", numPeriods},
 			{"cmax", cmax},
 			{"cmaxSGS", cmaxSGS},
 		    {"tminSGS", tminSGS},
@@ -841,7 +850,7 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 			{"tmax", tmax},
 			{"nc", computeNetworkComplexity()},
 			{"rf", computeResourceFactor()},
-			{"rs", computeResourceStrength()},
+			{"rs", rsResults[rsResults.size()-1]},
 			{"os", computeOrderStrength()},
 			{"rc", computeResourceConstrainedness()},
 			{"minCap", minCapacity},
@@ -862,6 +871,11 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 			{"avgResSGSzmax", averageResidualCapacity(tminSGSSchedule)}
 	};
 
+	for(int r=0; r<numRes; r++) {
+		charMap.insert(make_pair("rc"+to_string(r), computeResourceConstrainednessForRes(r)));
+		charMap.insert(make_pair("rs"+to_string(r), rsResults[r]));
+	}
+
 	if(additionalCharacteristics) {
 		for (const auto &pair : *additionalCharacteristics) {
 			charMap.insert(pair);
@@ -869,6 +883,119 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 	}
 
 	return ProjectCharacteristics(instanceName, charMap);
+}
+
+template<class Func, class T>
+void addStatisticalAggregates(map<string, float> &mapping, string prefix, Func f, vector<T> elems) {
+	const auto add = [&](string name, float v) {
+		mapping.insert(make_pair(prefix+"_"+name, v));
+	};
+
+	vector<float> mappedElems = Utils::constructVector<float>(elems.size(), [&](int ix) {
+		return f(elems[ix]);
+	});
+
+	float min = *std::min_element(mappedElems.begin(), mappedElems.end());
+	float max = *std::max_element(mappedElems.begin(), mappedElems.end());
+	float mean = Utils::average(mappedElems);
+
+	float variance = Utils::variance(mappedElems);
+	float stddev = std::sqrt(variance);
+
+	add("mean", mean);
+	add("min", min);
+	add("max", max);
+	add("ratio", min / max);
+	add("stddev", stddev);
+	add("variance", variance);
+}
+
+std::map<std::string, float> ProjectWithOvertime::collectMesselisStats() const {
+	vector<int> jobs = Utils::constructVector<int>(numJobs, [](int ix) { return ix; });
+	vector<int> res = Utils::constructVector<int>(numRes, [](int ix) { return ix; });
+
+	// size related features
+	map<string, float> statMap = {
+			{"total_capacity", Utils::sum(capacities)},
+			{"res_job_ratio", (float)numRes / (float)numJobs},
+			{"cap_job_ratio", (float)Utils::sum(capacities) / (float)numJobs},
+	};
+
+	addStatisticalAggregates(statMap, "cap_stats", [](int cap) {return cap;}, capacities);
+
+	// resource constraint related features
+	addStatisticalAggregates(statMap, "act_dem_res_count", [this](int j) {
+		int numResReq = 0;
+		eachResConst([&](int r) {
+			numResReq += demands(j,r) > 0 ? 1 : 0;
+		});
+		return numResReq;
+	}, jobs);
+
+	addStatisticalAggregates(statMap, "act_dem_units", [this](int j) {
+		int numUnitsReq = 0;
+		eachResConst([&](int r) {
+			numUnitsReq += demands(j,r);
+		});
+		return numUnitsReq;
+	}, jobs);
+
+	addStatisticalAggregates(statMap, "acts_per_res", [this](int r) {
+		int numActReq = 0;
+		eachJobConst([&](int j) {
+			numActReq += demands(j,r) > 0 ? 1 : 0;
+		});
+		return numActReq;
+	}, res);
+
+	addStatisticalAggregates(statMap, "res_util_ratio", [this](int r) {
+		int numUnitsReq = 0;
+		eachJobConst([&](int j) {
+			numUnitsReq += demands(j,r);
+		});
+		return (float)numUnitsReq / (float)capacities[r];
+	}, res);
+
+	// precedence constraint related features
+	addStatisticalAggregates(statMap, "prec_per_act", [this](int job) {
+		int precCount = 0;
+		adjMx.foreach([&](int i, int j, char v) {
+			precCount += v && (i == job || j  == job);
+		});
+		return precCount;
+	}, jobs);
+
+	addStatisticalAggregates(statMap, "predcount_per_act", [this](int job) {
+		int predCount = 0;
+		adjMx.foreach([&](int i, int j, char v) {
+			predCount += v && (j == job);
+		});
+		return predCount;
+	}, jobs);
+
+	addStatisticalAggregates(statMap, "succcount_per_act", [this](int job) {
+		int predCount = 0;
+		adjMx.foreach([&](int i, int j, char v) {
+			predCount += v && (i == job);
+		});
+		return predCount;
+	}, jobs);
+
+	// duration related features
+	addStatisticalAggregates(statMap, "act_durations", [this](int j) {
+		return durations[j];
+	}, jobs);
+
+	// FIXME: Implement n>1 times nested aggregations 6^n
+	addStatisticalAggregates(statMap, "act_durations_for_res", [this](int r) {
+		int totalDuration = 0;
+		eachJobConst([&](int j) {
+			totalDuration += demands(j,r) > 0 ? durations[j] : 0;
+		});
+		return totalDuration;
+	}, res);
+
+	return statMap;
 }
 
 std::string ProjectWithOvertime::plotAsAscii(const std::vector<int> &sts, int r) const {
@@ -941,38 +1068,40 @@ void ProjectWithOvertime::updateDerivedParameters() {
 }
 
 std::pair<std::vector<std::string>, std::vector<float>> ProjectWithOvertime::flattenedRepresentation(const boost::optional<const ProjectCharacteristics&> chars) const {
-	const list<string> includedChars = chars ? chars->getOrderedKeys() : list<string>{"nc", "avgBranch", "revWidth", "revSlope"};
-	const unsigned int valueCount = numJobs+(chars ? includedChars.size() : numJobs*numJobs)+numJobs*numRes+numRes;
+	const list<string> includedChars = chars ? chars->getOrderedKeys() : list<string>{"nc", "avgBranch", "revWidth",
+																					  "revSlope"};
+	const unsigned int valueCount =
+			numJobs + (chars ? includedChars.size() : numJobs * numJobs) + numJobs * numRes + numRes;
 	vector<float> values(valueCount);
 	vector<string> valueNames(valueCount);
 
 	int ctr = 0;
 
 	eachJobConst([&](int j) {
-		valueNames[ctr] = "d_"+to_string(j);
+		valueNames[ctr] = "d_" + to_string(j);
 		values[ctr++] = durations[j];
 	});
 
-	if(chars) {
+	if (chars) {
 		const auto c = *chars;
-		for(const auto &k : includedChars) {
+		for (const auto &k : includedChars) {
 			valueNames[ctr] = k;
 			values[ctr++] = c.getCharacteristic(k);
 		}
 	} else {
 		eachJobPairConst([&](int i, int j) {
-			valueNames[ctr] = "adj_"+to_string(i)+"_"+to_string(j);
-			values[ctr++] = adjMx(i,j);
+			valueNames[ctr] = "adj_" + to_string(i) + "_" + to_string(j);
+			values[ctr++] = adjMx(i, j);
 		});
 	}
 
 	eachJobResConst([&](int j, int r) {
-		valueNames[ctr] = "k_"+to_string(j)+"_"+to_string(r);
-		values[ctr++] = demands(j,r);
+		valueNames[ctr] = "k_" + to_string(j) + "_" + to_string(r);
+		values[ctr++] = demands(j, r);
 	});
 
 	eachResConst([&](int r) {
-		valueNames[ctr] = "K_"+to_string(r);
+		valueNames[ctr] = "K_" + to_string(r);
 		values[ctr++] = capacities[r];
 	});
 

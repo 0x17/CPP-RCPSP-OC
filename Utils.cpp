@@ -223,3 +223,20 @@ float Utils::average(const std::vector<float> &values) {
 	return static_cast<float>(std::accumulate(values.begin(), values.end(), 0.0f)) / static_cast<float>(values.size());
 }
 
+int Utils::sum(const std::vector<int> &values) {
+	int acc = 0;
+	for(int i=0; i<values.size(); i++)
+		acc += values[i];
+	return acc;
+}
+
+float Utils::variance(const std::vector<float> &values) {
+	if(values.size() <= 1) return 0.0f;
+	float mean = average(values);
+	float acc = 0.0f;
+	for(int v : values) {
+		acc += (v - mean)*(v - mean);
+	}
+	return acc / (float)(values.size() - 1);
+}
+
