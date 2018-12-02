@@ -172,13 +172,16 @@ void Main::jsonConverter(int argc, const char** argv) {
 
 template<class Func>
 void applyForAllProjectsInDirectory(Func f, const string &pathToDirectory, const string &projectExtension = ".sm", bool skipEqualMakespans = true) {
-	for(const auto &instancefn : Utils::filenamesInDirWithExt(pathToDirectory, projectExtension)) {
+	const auto instanceFilenames = Utils::filenamesInDirWithExt(pathToDirectory, projectExtension);
+	const int len = instanceFilenames.size();
+	int ctr = 1;
+	for(const auto &instancefn : instanceFilenames) {
 		ProjectWithOvertime p(instancefn);
 		if(skipEqualMakespans && Main::computeMinMaxMakespanDifference(p) <= 0) {
 			cout << "maxMs - minMs <= 0... ---> skipping!" << endl;
 			continue;
 		}
-		f(p);
+		f(p, ctr++, len);
 	}
 }
 
@@ -239,6 +242,8 @@ string joinFloats(const vector<float> &v, const string &sep) {
 }
 
 void Main::charactersticCollector(int argc, const char** argv) {
+	const string instanceFileExtension = ".sm"; // ".rcp"
+
 	const auto showCollectorUsage = []() {
 		cout << "Usage: Collector [instancePath] [outfile]" << endl;
 		cout << "Example usage: Collector j30 characteristics.txt" << endl;
@@ -257,8 +262,9 @@ void Main::charactersticCollector(int argc, const char** argv) {
 
 	string ostr, ostrFlattened;
 
-	applyForAllProjectsInDirectory([&ostr, &ostrFlattened](const ProjectWithOvertime &p) {
-		cout << "Instance " << p.instanceName << "..." << endl;
+	applyForAllProjectsInDirectory([&ostr, &ostrFlattened](const ProjectWithOvertime &p, int ctr, int len) {
+		cout << "\rInstance " << p.instanceName << ", progress " << ((float)ctr/(float)len*100.0f);
+		fflush(stdout);
 
 		const auto messelisStats = p.collectMesselisStats();
 
@@ -277,7 +283,7 @@ void Main::charactersticCollector(int argc, const char** argv) {
 
 		ostrFlattened += p.instanceName + ";" + joinFloats(flattenedValues.second, ";") + "\n";
 
-	}, instancePath, /*".rcp"*/".sm", false);
+	}, instancePath, instanceFileExtension, false);
 
 	Utils::spit(ostr, outfn);
 	Utils::spit(ostrFlattened, outfnFlattened);
