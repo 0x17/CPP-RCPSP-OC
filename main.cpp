@@ -171,8 +171,16 @@ void Main::jsonConverter(int argc, const char** argv) {
 }
 
 template<class Func>
-void applyForAllProjectsInDirectory(Func f, const string &pathToDirectory, const string &projectExtension = ".sm", bool skipEqualMakespans = true) {
-	const auto instanceFilenames = Utils::filenamesInDirWithExt(pathToDirectory, projectExtension);
+void applyForAllProjectsInDirectory(Func f, const string &pathToDirectory, const vector<string> &projectExtensions, bool skipEqualMakespans = true) {
+	list<string> instanceFilenames;
+
+	for(const string projectExtension : projectExtensions) {
+		const auto filenamesWithExtension = Utils::filenamesInDirWithExt(pathToDirectory, projectExtension);
+		for(const string filename : filenamesWithExtension) {
+			instanceFilenames.push_back(filename);
+		}
+	}
+
 	const int len = instanceFilenames.size();
 	int ctr = 1;
 	for(const auto &instancefn : instanceFilenames) {
@@ -242,11 +250,11 @@ string joinFloats(const vector<float> &v, const string &sep) {
 }
 
 void Main::charactersticCollector(int argc, const char** argv) {
-	const string instanceFileExtension = ".sm"; // ".rcp"
+	const vector<string> instanceFileExtensions = {".sm", ".rcp"};
 
 	const auto showCollectorUsage = []() {
-		cout << "Usage: Collector [instancePath] [outfile]" << endl;
-		cout << "Example usage: Collector j30 characteristics.txt" << endl;
+		cout << "Usage: Collector [instancePath] [outfile] [noheader]" << endl;
+		cout << "Example usage: Collector j30 characteristics.txt noheader" << endl;
 	};
 
 	vector<string> args = Utils::parseArgumentList(argc, argv);
@@ -259,10 +267,11 @@ void Main::charactersticCollector(int argc, const char** argv) {
 	const string instancePath = !args.empty() ? args[0] : "j30";
 	const string outfn = args.size() >= 2 ? args[1] : "characteristics.txt";
 	const string outfnFlattened = args.size() >= 3 ? args[2] : "flattened.txt";
+	const bool noHeader = args.size() >= 4 && args[3] == "noheader";
 
 	string ostr, ostrFlattened;
 
-	applyForAllProjectsInDirectory([&ostr, &ostrFlattened](const ProjectWithOvertime &p, int ctr, int len) {
+	applyForAllProjectsInDirectory([&ostr, &ostrFlattened, noHeader](const ProjectWithOvertime &p, int ctr, int len) {
 		cout << "\rInstance " << p.instanceName << ", progress " << ((float)ctr/(float)len*100.0f);
 		fflush(stdout);
 
@@ -270,7 +279,7 @@ void Main::charactersticCollector(int argc, const char** argv) {
 
 		const auto characteristics = p.collectCharacteristics(/*quickGAResults(p)*/messelisStats);
 
-		if(ostr.empty()) {
+		if(ostr.empty() && !noHeader) {
 			ostr += characteristics.csvHeaderLine();;
 		}
 		ostr += characteristics.toCsvLine();
@@ -283,7 +292,7 @@ void Main::charactersticCollector(int argc, const char** argv) {
 
 		ostrFlattened += p.instanceName + ";" + joinFloats(flattenedValues.second, ";") + "\n";
 
-	}, instancePath, instanceFileExtension, false);
+	}, instancePath, instanceFileExtensions, false);
 
 	Utils::spit(ostr, outfn);
 	Utils::spit(ostrFlattened, outfnFlattened);

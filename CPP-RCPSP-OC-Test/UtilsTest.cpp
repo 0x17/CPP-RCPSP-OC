@@ -360,17 +360,33 @@ TEST(UtilsTest, testSum) {
 }
 
 TEST(UtilsTest, testTransitiveClosure) {
-	Matrix<char> inMx({
-			{0,1,0,0},
-			{0,0,1,0},
-			{0,0,0,1},
-			{0,0,0,0}
-	});
-	Matrix<char> outMx({
-		  {0,1,1,1},
-		  {0,0,1,1},
-		  {0,0,0,1},
-		  {0,0,0,0}
-	});
-	TestHelpers::matrixEquals(outMx, Utils::transitiveClosure(inMx));
+	{
+		Matrix<char> inMx({
+								  {0, 1, 0, 0},
+								  {0, 0, 1, 0},
+								  {0, 0, 0, 1},
+								  {0, 0, 0, 0}
+						  });
+		Matrix<char> outMx({
+								   {0, 1, 1, 1},
+								   {0, 0, 1, 1},
+								   {0, 0, 0, 1},
+								   {0, 0, 0, 0}
+						   });
+		TestHelpers::matrixEquals(outMx, Utils::transitiveClosure(inMx));
+	}
+	{
+		Matrix<char> inMx({{1, 1, 0, 1},
+						   {0, 1, 1, 0},
+						   {0, 0, 1, 1},
+						   {0, 0, 0, 1}
+						  });
+		Matrix<char> outMx({
+								   {1, 1, 1, 1},
+								   {0, 1, 1, 1},
+								   {0, 0, 1, 1},
+								   {0, 0, 0, 1}
+						   });
+		TestHelpers::matrixEquals(outMx, Utils::transitiveClosure(inMx));
+	}
 }
