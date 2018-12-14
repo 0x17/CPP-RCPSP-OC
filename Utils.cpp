@@ -232,11 +232,23 @@ int Utils::sum(const std::vector<int> &values) {
 
 float Utils::variance(const std::vector<float> &values) {
 	if(values.size() <= 1) return 0.0f;
-	float mean = average(values);
+	const float mean = average(values);
 	float acc = 0.0f;
 	for(int v : values) {
 		acc += (v - mean)*(v - mean);
 	}
-	return acc / (float)(values.size() - 1);
+	return acc / static_cast<float>(values.size() - 1);
+}
+
+Matrix<char> Utils::transitiveClosure(const Matrix<char> & mx) {
+	assert(mx.getM() == mx.getN());
+	int n = mx.getN();
+	Matrix<char> tc = mx;
+	for(int ctr = 0; ctr < n - 2; ctr++)
+		for (int i = 0; i < n; i++)
+			for (int j = 0; j < n; j++)
+				for (int k = 0; k < n; k++)
+					if (tc(i, k) && tc(k, j)) tc(i, j) = 1;
+	return tc;
 }
 

@@ -682,26 +682,100 @@ SGSResult ProjectWithOvertime::parallelSGSWithForwardBackwardImprovement(const s
 	return forwardBackwardIterations(order, res, makespan(res));
 }
 
-Matrix<char> transitiveClosure(const Matrix<char> &mx) {
-	Matrix<char> closure = mx;
-	assert(mx.getM() == mx.getN());
-	int n = mx.getM();
+struct MIPFormulationMetrics {
+	string formulationName;
+	int numBinaryVars, numContinuousVars, numConstraints;
 
-	for(int k=0; k<n; k++) {
-		for(int i=0; i<n; i++) {
-			for(int j=0; j<n; j++) {
-				closure(i,j) |= (closure(i,k) && closure(k,j));
-			}
-		}
-	}
+	map<string, float> toDict() const;
+};
 
-	return closure;
+map<string, float> MIPFormulationMetrics::toDict() const {
+	return {
+		{"numBinaryVars_" + formulationName, numBinaryVars},
+		{"numContinuousVars" + formulationName, numContinuousVars},
+		{"numConstraints" + formulationName, numConstraints}
+	};
 }
 
-int matrixSum(const Matrix<char> &mx) {
-	int accum = 0;
-	mx.foreach([&accum](int i, int j, char v) { accum+=v; });
-	return accum;
+MIPFormulationMetrics computeMipFormulationMetricsForKopCt1(const ProjectWithOvertime& p) {
+	MIPFormulationMetrics res = {};
+	res.formulationName = "KopCt1";
+
+	// 1. C, B, G
+	const Matrix<char> C = Utils::transitiveClosure(p.adjMx);
+	const Matrix<char> B(p.numJobs, p.numJobs, [&p](int i, int j) {
+		return Utils::any([&p,i,j](int r) { return p.demands(i, r) > 0 && p.demands(j, r) > 0; }, 0, p.numRes);
+	});
+	const Matrix<char> G(p.numJobs, p.numJobs, [&p](int i, int j) {
+		return Utils::any([&p, i, j](int r) { return p.demands(i, r) + p.demands(j, r) > p.capacities[r]; }, 0, p.numRes);
+	});
+	// 2. D
+	const Matrix<char> D(p.numJobs, p.numJobs, [&p, &C](int i, int j) {
+		return (p.lfts[i] <= p.ests[j]) && !C(i, j);
+	});
+	// 3. K
+	const Matrix<char> K(p.numJobs, p.numJobs, [&C, &D](int i, int j) {
+		return C(i, j) || D(i, j);
+	});
+	// 4. Kprime
+	const Matrix<char> Kprime(p.numJobs, p.numJobs, [&K](int i, int j) {
+		return K(i,j) || K(j,i);
+	});
+	// 5. S, P
+	const Matrix<char> S(p.numJobs, p.numJobs, [&G, &Kprime](int i, int j) {
+		return G(i,j) && !Kprime(i,j);
+	});
+	const Matrix<char> P(p.numJobs, p.numJobs, [&B, &G, &Kprime](int i, int j) {
+		return B(i,j) && !G(i,j) && !Kprime(i,j);
+	});
+
+	const Matrix<char> one(p.numJobs, p.numJobs, 1);
+
+	const vector<int> numResUsed = Utils::constructVector<int>(p.numJobs, [&p](int j) {
+		return Utils::sum([&p,j](int r) { return p.demands(j, r) > 0 ? 1 : 0; }, 0, p.numRes);
+	});
+
+	const int pdiffcount = Utils::countPred(P, [](int i, int j) { return i != j; });
+
+	res.numConstraints = p.numJobs - 1
+		+ Utils::sum(K)
+		+ Utils::countPred(S, [](int i, int j) { return i != j; })
+		+ Utils::countPred(one, [&Kprime](int i, int j) { return i > j && !Kprime(i, j); })
+		+ Utils::countPred(P, [](int i, int j) { return i > j; }) * 2
+		+ pdiffcount * 2
+	    + Utils::sum(numResUsed) 
+		+ Utils::countPred(P, [&p](int i, int j) { return i != j && p.lsts[j] <= p.ests[i]; });
+
+	res.numContinuousVars = 2 * (p.numJobs - 1);
+
+	const int numX = pdiffcount;
+	const int numZ = Utils::countPred(one, [&B, &G, &Kprime](int i, int j) { return (B(i, j) || G(i, j)) && !Kprime(i, j) && i != j; });
+
+	res.numBinaryVars = numX + numZ;
+
+	return res;
+}
+
+MIPFormulationMetrics computeMipFormulationMetricsForKopDt2(const ProjectWithOvertime& p) {
+	MIPFormulationMetrics res = {};
+	res.formulationName = "KopDt2";
+
+	const int lsMinusEsSum = Utils::sum([&p](int j) { return p.lsts[j] - p.ests[j];  }, 0, p.numJobs);
+	const int lfMinusEsSum = Utils::sum([&p](int j) { return p.lfts[j] - p.ests[j] - 1;  }, 0, p.numJobs);
+
+	const int numY = (p.numJobs - 1)*lsMinusEsSum;
+	const int numW = (p.numJobs - 2)*lfMinusEsSum;
+
+	res.numBinaryVars = numY + numW;
+	res.numContinuousVars = 1;
+
+	int numEdges = 0;
+	p.adjMx.foreach([&numEdges](int i, int j, char v) {
+		numEdges += v;
+	});
+	res.numConstraints = numEdges + (p.numPeriods+1)*p.numRes + p.numJobs-1 + lfMinusEsSum;
+
+	return res;
 }
 
 ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::optional<std::map<std::string, float>> additionalCharacteristics) const {
@@ -719,7 +793,7 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 
 	const auto computeNetworkComplexity = [this]() {
 		// FIXME: Remove redundant arcs?!!
-		return (float)matrixSum(adjMx) / (float)numJobs;
+		return (float)Utils::sum(adjMx) / (float)numJobs;
 	};
 
 	const auto computeResourceFactor = [this]() {
@@ -757,7 +831,7 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 	};
 
 	const auto computeOrderStrength = [&]() {
-		return static_cast<float>(matrixSum(transitiveClosure(adjMx))) / (static_cast<float>(numJobs*numJobs-numJobs)/2.0f);
+		return static_cast<float>(Utils::sum(Utils::transitiveClosure(adjMx))) / (static_cast<float>(numJobs*numJobs-numJobs)/2.0f);
 	};
 
 	const auto computeResourceConstrainednessForRes = [&](int r) {
@@ -781,7 +855,7 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 	const int maxCapacity = *std::max_element(capacities.begin(), capacities.end());
 	const float avgCapacity = Utils::average(capacities);
 	const float avgDuration = Utils::average(durations);
-	const float avgBranchFactor = matrixSum(adjMx);
+	const float avgBranchFactor = Utils::sum(adjMx);
 
 	const float revWidth = tmax-tmin;
 	const float revSlope = (revenue[tmin]-revenue[tmax])/revWidth;
@@ -839,6 +913,9 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 
 	vector<float> rsResults = computeResourceStrength();
 
+	MIPFormulationMetrics ct1Metrics = computeMipFormulationMetricsForKopCt1(*this);
+	MIPFormulationMetrics dt2Metrics = computeMipFormulationMetricsForKopDt2(*this);
+
 	map<string, float> charMap = {
 			{"njobs", numJobs},
 			{"nres", numRes},
@@ -871,16 +948,23 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 			{"avgResSGSzmax", averageResidualCapacity(tminSGSSchedule)}
 	};
 
+	const auto extendCharMapWithDict = [&charMap](const map<string, float> &dict) {
+		for (const auto &pair : dict) {
+			charMap.insert(pair);
+		}
+	};
+
 	for(int r=0; r<numRes; r++) {
 		charMap.insert(make_pair("rc"+to_string(r), computeResourceConstrainednessForRes(r)));
 		charMap.insert(make_pair("rs"+to_string(r), rsResults[r]));
 	}
 
 	if(additionalCharacteristics) {
-		for (const auto &pair : *additionalCharacteristics) {
-			charMap.insert(pair);
-		}
+		extendCharMapWithDict(*additionalCharacteristics);
 	}
+
+	extendCharMapWithDict(ct1Metrics.toDict());
+	extendCharMapWithDict(dt2Metrics.toDict());
 
 	return ProjectCharacteristics(instanceName, charMap);
 }

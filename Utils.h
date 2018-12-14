@@ -169,5 +169,38 @@ namespace Utils {
 
 	int sum(const std::vector<int> &values);
 
+	template<class Func>
+	int sum(Func f, int fromIncl, int toExcl) {
+		int acc = 0;
+		for(int i=fromIncl; i<toExcl; i++) {
+			acc += f(i);
+		}
+		return acc;
+	}
+
 	float variance(const std::vector<float> &values);
+
+	Matrix<char> transitiveClosure(const Matrix<char> &mx);
+
+	inline int sum(const Matrix<char> &mx) {
+		int accum = 0;
+		mx.foreach([&accum](int i, int j, char v) { accum += v; });
+		return accum;
+	}
+
+	template<class Func>
+	bool any(Func pred, int fromIncl, int toExcl) {
+		for (int i = fromIncl; i < toExcl; i++)
+			if (pred(i)) return true;
+		return false;
+	}
+
+	template<class Func>
+	bool countPred(const Matrix<char> &mx, Func pred) {
+		int acc = 0;
+		mx.foreach([&acc, &pred](int i, int j, char v) {
+			acc += v && pred(i, j) ? 1 : 0;
+		});
+		return acc;
+	}
 }
