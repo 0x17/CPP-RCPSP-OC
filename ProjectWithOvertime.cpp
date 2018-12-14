@@ -858,7 +858,7 @@ ProjectCharacteristics ProjectWithOvertime::collectCharacteristics(const boost::
 	const float avgBranchFactor = Utils::sum(adjMx);
 
 	const float revWidth = tmax-tmin;
-	const float revSlope = (revenue[tmin]-revenue[tmax])/revWidth;
+	const float revSlope = revWidth > 0.0f ? (revenue[tmin]-revenue[tmax])/revWidth : 0.0f;
 
 	const auto balancedSchedule = serialSGS(topOrder, zbalanced);
 	const float cmaxBalanced = totalCosts(balancedSchedule);
@@ -1210,6 +1210,10 @@ std::string ProjectCharacteristics::toCsvLine() const {
 	std::stringstream ss;
 	ss << instanceName;
 	for(const auto &key : orderedKeys) {
+		float v = characteristics.at(key);
+		if(std::isnan(v)) {
+			printf("");
+		}
 		ss << ";" << characteristics.at(key);
 	}
 	ss << "\n";

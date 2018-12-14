@@ -244,11 +244,11 @@ Matrix<char> Utils::transitiveClosure(const Matrix<char> & mx) {
 	assert(mx.getM() == mx.getN());
 	int n = mx.getN();
 	Matrix<char> tc = mx;
-	for(int ctr = 0; ctr < n - 2; ctr++)
-		for (int i = 0; i < n; i++)
-			for (int j = 0; j < n; j++)
-				for (int k = 0; k < n; k++)
-					if (tc(i, k) && tc(k, j)) tc(i, j) = 1;
+	//for(int ctr = 0; ctr < n - 2; ctr++)
+	for (int i = 0; i < n; i++)
+		for (int j = 0; j < n; j++)
+			for (int k = 0; k < n; k++)
+				if (tc(i, k) && tc(k, j)) tc(i, j) = 1;
 	return tc;
 }
 

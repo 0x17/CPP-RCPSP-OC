@@ -350,3 +350,27 @@ TEST(UtilsTest, testIndexOf) {
 	ASSERT_EQ(3, Utils::indexOf(nums, [](int i) { return i % 10 == 0;  }));
 }
 
+TEST(UtilsTest, testSum) {
+	vector<int> nums = Utils::constructVector<int>(100, [](int i) {return i+1;});
+	int res = static_cast<int>(100.0f*101.0f/2.0f);
+	Matrix<char> numMx(2, 50, [](int i, int j) { return i*50+j+1; });
+	ASSERT_EQ(res, Utils::sum([](int i) {return i+1;}, 0, 100));
+	ASSERT_EQ(res, Utils::sum(nums));
+	ASSERT_EQ(res, Utils::sum(numMx));
+}
+
+TEST(UtilsTest, testTransitiveClosure) {
+	Matrix<char> inMx({
+			{0,1,0,0},
+			{0,0,1,0},
+			{0,0,0,1},
+			{0,0,0,0}
+	});
+	Matrix<char> outMx({
+		  {0,1,1,1},
+		  {0,0,1,1},
+		  {0,0,0,1},
+		  {0,0,0,0}
+	});
+	TestHelpers::matrixEquals(outMx, Utils::transitiveClosure(inMx));
+}

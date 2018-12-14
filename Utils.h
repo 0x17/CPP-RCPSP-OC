@@ -196,7 +196,7 @@ namespace Utils {
 	}
 
 	template<class Func>
-	bool countPred(const Matrix<char> &mx, Func pred) {
+	int countPred(const Matrix<char> &mx, Func pred) {
 		int acc = 0;
 		mx.foreach([&acc, &pred](int i, int j, char v) {
 			acc += v && pred(i, j) ? 1 : 0;
