@@ -36,7 +36,7 @@ ProjectWithOvertime::ProjectWithOvertime(const string& projectName, const vector
 	revenue(numPeriods),
 	revenueExtrapolated(numPeriods) {
 	eachRes([&](int r) {
-		zmax[r] = capacities[r] / 2;
+		zmax[r] = capacities[r] / 2; // FIXME: should be using floor operator here!
 		kappa[r] = 0.5f;
 	});
 	computeRevenueFunction();
@@ -1211,9 +1211,9 @@ std::string ProjectCharacteristics::toCsvLine() const {
 	ss << instanceName;
 	for(const auto &key : orderedKeys) {
 		float v = characteristics.at(key);
-		if(std::isnan(v)) {
+		/*if(std::isnan(v)) {
 			printf("");
-		}
+		}*/
 		ss << ";" << characteristics.at(key);
 	}
 	ss << "\n";

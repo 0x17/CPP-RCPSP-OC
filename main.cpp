@@ -64,6 +64,9 @@ struct Main::Testing::GAConfigurationExperiment {
 };
 
 int main(int argc, const char * argv[]) {
+	//ProjectWithOvertime p("j30/j301_1.sm");
+	//cout << "haha" << endl;
+
 	//computeScheduleAttributes("PaperBeispiel.sm");
 
 	//Main::plotHeuristicProfits();
@@ -174,9 +177,9 @@ template<class Func>
 void applyForAllProjectsInDirectory(Func f, const string &pathToDirectory, const vector<string> &projectExtensions, bool skipEqualMakespans = true) {
 	list<string> instanceFilenames;
 
-	for(const string projectExtension : projectExtensions) {
+	for(const string &projectExtension : projectExtensions) {
 		const auto filenamesWithExtension = Utils::filenamesInDirWithExt(pathToDirectory, projectExtension);
-		for(const string filename : filenamesWithExtension) {
+		for(const string &filename : filenamesWithExtension) {
 			instanceFilenames.push_back(filename);
 		}
 	}
