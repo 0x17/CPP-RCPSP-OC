@@ -9,7 +9,7 @@ class ListFixedOvertimeModel : public ListModel {
 	public:
 		explicit SerialSGSZrDecoder(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSExternalArgumentValues& context) override;
 	};
 
 	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression& obj) override;
@@ -27,7 +27,7 @@ class ListDynamicOvertimeModel : public ListModel {
 	public:
 		explicit SerialSGSZrtDecoder(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSExternalArgumentValues& context) override;
 	};
 
 	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression& obj) override;
@@ -47,7 +47,7 @@ class RandomKeyFixedOvertimeModel : public RandomKeyModel {
 	public:
 		explicit SerialSGSRandomKeyZrDecoder(ProjectWithOvertime &_p) : RandomKeySchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(std::vector<float>& priorities, const localsolver::LSNativeContext& context) override;
+		SGSResult decode(std::vector<float>& priorities, const localsolver::LSExternalArgumentValues& context) override;
 	};
 
 	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression& obj) override;
@@ -65,7 +65,7 @@ class RandomKeyDynamicOvertimeModel : public RandomKeyModel {
 	public:
 		explicit SerialSGSRandomKeyZrtDecoder(ProjectWithOvertime &_p) : RandomKeySchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(std::vector<float>& priorities, const localsolver::LSNativeContext& context) override;
+		SGSResult decode(std::vector<float>& priorities, const localsolver::LSExternalArgumentValues& context) override;
 	};
 
 	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression& obj) override;

@@ -84,9 +84,9 @@ int main(int argc, const char * argv[]) {
 
 	//Main::jsonConverter(argc, argv);
 
-	Main::charactersticCollector(argc, argv);
+	//Main::charactersticCollector(argc, argv);
 
-	//Main::commandLineRunner(argc, argv);
+	Main::commandLineRunner(argc, argv);
 
 	//sensitivity::varyTotalAvailableCapacity("j30/j3029_9.sm", 0);
 

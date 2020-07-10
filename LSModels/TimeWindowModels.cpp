@@ -15,7 +15,7 @@ int ListBetaModel::SerialSGSBetaFunction::varCount() {
 	return 2 * p.numJobs;
 }
 
-SGSResult ListBetaModel::SerialSGSBetaFunction::decode(vector<int>& order, const LSNativeContext& context) {
+SGSResult ListBetaModel::SerialSGSBetaFunction::decode(vector<int>& order, const LSExternalArgumentValues& context) {
 	vector<int> beta(p.numJobs);
 	for (int i = 0; i<p.numJobs; i++) {
 		beta[i] = static_cast<int>(context.getIntValue(p.numJobs + i));
@@ -45,7 +45,7 @@ int ListTauModel::SerialSGSTauFunction::varCount() {
 	return 2 * p.numJobs;
 }
 
-SGSResult ListTauModel::SerialSGSTauFunction::decode(vector<int>& order, const LSNativeContext& context) {
+SGSResult ListTauModel::SerialSGSTauFunction::decode(vector<int>& order, const LSExternalArgumentValues& context) {
 	vector<float> tau(p.numJobs);
 	for (int i = 0; i<p.numJobs; i++) {
 		tau[i] = static_cast<float>(context.getDoubleValue(p.numJobs + i));
@@ -76,7 +76,7 @@ int ListTauDiscreteModel::SerialSGSIntegerFunction::varCount() {
 	return 2 * p.numJobs;
 }
 
-SGSResult ListTauDiscreteModel::SerialSGSIntegerFunction::decode(vector<int>& order, const LSNativeContext& context) {
+SGSResult ListTauDiscreteModel::SerialSGSIntegerFunction::decode(vector<int>& order, const LSExternalArgumentValues& context) {
 	vector<float> tau(p.numJobs);
 	for (int i = 0; i<p.numJobs; i++) {
 		int beta = static_cast<int>(context.getIntValue(p.numJobs + i));
@@ -108,7 +108,7 @@ int ListAlternativesModel::SerialSGSAlternativesDecoder::varCount() {
 	return p.numJobs;
 }
 
-SGSResult ListAlternativesModel::SerialSGSAlternativesDecoder::decode(vector<int>& order, const LSNativeContext& context) {
+SGSResult ListAlternativesModel::SerialSGSAlternativesDecoder::decode(vector<int>& order, const LSExternalArgumentValues& context) {
 	return p.serialSGSWithOvertimeWithForwardBackwardImprovement(order, true);
 }
 

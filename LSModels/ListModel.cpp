@@ -42,7 +42,7 @@ json11::Json LSModelOptions::to_json() const {
 	};
 }
 
-localsolver::lsdouble BaseSchedulingNativeFunction::call(const localsolver::LSNativeContext &context) {
+localsolver::lsdouble BaseSchedulingNativeFunction::call(const localsolver::LSExternalArgumentValues &context) {
 #ifdef DIRTY_ENFORCE_ITERLIM_HACK
 	if (_schedule_limit != -1 && _nschedules >= _schedule_limit && _ls != nullptr) {
 		_ls->stop();
@@ -76,7 +76,7 @@ ProjectNativeFunction::ProjectNativeFunction(ProjectWithOvertime &_p) : p(_p) {}
 void ProjectNativeFunction::setTracer(Utils::Tracer *tr) { this->tr = tr; }
 
 
-boost::optional<SGSResult> ListSchedulingNativeFunction::coreComputation(const LSNativeContext& context) {
+boost::optional<SGSResult> ListSchedulingNativeFunction::coreComputation(const LSExternalArgumentValues& context) {
 	vector<int> order(static_cast<unsigned long>(p.numJobs));
 	if (context.count() < varCount()) return boost::optional<SGSResult>{};
 
@@ -94,7 +94,7 @@ boost::optional<SGSResult> ListSchedulingNativeFunction::coreComputation(const L
 
 }
 
-lsdouble TopOrderChecker::call(const LSNativeContext& context) {
+lsdouble TopOrderChecker::call(const LSExternalArgumentValues& context) {
 	vector<int> order(static_cast<unsigned long>(p.numJobs));
 	if(context.count() < order.size()) return numeric_limits<double>::lowest();
 	for(int i = 0; i < p.numJobs; i++) {
@@ -161,7 +161,7 @@ void ListModel::addTopologicalOrderingConstraint(LSModel &model, LSExpression &a
 			}
 		}
 	}*/
-	const auto topOrderCheckerFunc = model.createNativeFunction(topOrderChecker.get());
+	const auto topOrderCheckerFunc = model.createExternalFunction(topOrderChecker.get());
 	auto topOrderCheckerExpr = model.call(topOrderCheckerFunc);
 	for(int i=0; i<p.numJobs; i++)
 		topOrderCheckerExpr.addOperand(listElems[i]);
@@ -188,7 +188,7 @@ void ListModel::applyInitialSolution() {
 void LSBaseModel::buildBaseModel() {
 	LSModel model = ls.getModel();
 	if (model.getNbObjectives() == 0) {
-		auto nfunc = model.createNativeFunction(decoder.get());
+		auto nfunc = model.createExternalFunction(decoder.get());
 		LSExpression obj = model.call(nfunc);
 
 		buildModel(model, obj);
@@ -250,7 +250,7 @@ void TraceCallback::callback(LocalSolver &solver, LSCallbackType type) {
 
 //======================================================================================================================
 
-boost::optional<SGSResult> RandomKeySchedulingNativeFunction::coreComputation(const LSNativeContext& context) {
+boost::optional<SGSResult> RandomKeySchedulingNativeFunction::coreComputation(const LSExternalArgumentValues& context) {
 	vector<float> priorities(static_cast<unsigned long>(p.numJobs));
 	if (context.count() < varCount()) return boost::optional<SGSResult> {};
 

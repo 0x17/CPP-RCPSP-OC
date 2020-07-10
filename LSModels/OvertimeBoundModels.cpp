@@ -7,7 +7,7 @@ using namespace localsolver;
 
 int ListFixedOvertimeModel::SerialSGSZrDecoder::varCount() { return p.numJobs + p.numRes; }
 
-SGSResult ListFixedOvertimeModel::SerialSGSZrDecoder::decode(vector<int>& order, const LSNativeContext& context) {
+SGSResult ListFixedOvertimeModel::SerialSGSZrDecoder::decode(vector<int>& order, const LSExternalArgumentValues& context) {
 	vector<int> zr(p.numRes);
 
 	for (int r = 0; r < p.numRes; r++)
@@ -41,7 +41,7 @@ int ListDynamicOvertimeModel::SerialSGSZrtDecoder::varCount() {
 	return p.numJobs + p.numRes * p.heuristicMakespanUpperBound();
 }
 
-SGSResult ListDynamicOvertimeModel::SerialSGSZrtDecoder::decode(vector<int>& order, const LSNativeContext& context) {
+SGSResult ListDynamicOvertimeModel::SerialSGSZrtDecoder::decode(vector<int>& order, const LSExternalArgumentValues& context) {
 	int nperiods = p.heuristicMakespanUpperBound();
 	Matrix<int> zrt(p.numRes, nperiods, [this, &context, nperiods](int r, int t) {
 		return static_cast<int>(context.getIntValue(p.numJobs + r * nperiods + t));
@@ -74,7 +74,7 @@ int RandomKeyDynamicOvertimeModel::SerialSGSRandomKeyZrtDecoder::varCount() {
 	return p.numJobs + p.numRes * p.heuristicMakespanUpperBound();
 }
 
-SGSResult RandomKeyDynamicOvertimeModel::SerialSGSRandomKeyZrtDecoder::decode(vector<float>& priorities, const LSNativeContext& context) {
+SGSResult RandomKeyDynamicOvertimeModel::SerialSGSRandomKeyZrtDecoder::decode(vector<float>& priorities, const LSExternalArgumentValues& context) {
 	int nperiods = p.heuristicMakespanUpperBound();
 	Matrix<int> zrt(p.numRes, nperiods, [this, &context, nperiods](int r, int t) {
 		return static_cast<int>(context.getIntValue(p.numJobs + r * nperiods + t));
@@ -106,7 +106,7 @@ vector<int> RandomKeyDynamicOvertimeModel::parseScheduleFromSolution(LSSolution&
 
 int RandomKeyFixedOvertimeModel::SerialSGSRandomKeyZrDecoder::varCount() { return p.numJobs + p.numRes; }
 
-SGSResult RandomKeyFixedOvertimeModel::SerialSGSRandomKeyZrDecoder::decode(vector<float>& priorities, const LSNativeContext& context) {
+SGSResult RandomKeyFixedOvertimeModel::SerialSGSRandomKeyZrDecoder::decode(vector<float>& priorities, const LSExternalArgumentValues& context) {
 	vector<int> zr(p.numRes);
 
 	for (int r = 0; r < p.numRes; r++)

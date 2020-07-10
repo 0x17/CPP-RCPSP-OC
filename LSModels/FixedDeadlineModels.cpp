@@ -12,7 +12,7 @@ int GSListModel::QuasistableSGSFunction::varCount() {
 	return p.numJobs;
 }
 
-SGSResult GSListModel::QuasistableSGSFunction::decode(vector<int>& order, const LSNativeContext& context) {
+SGSResult GSListModel::QuasistableSGSFunction::decode(vector<int>& order, const LSExternalArgumentValues& context) {
 	return p.goldenSectionSearchBasedOptimization(order, true);
 }
 
@@ -35,7 +35,7 @@ int ListDeadlineModel::QuasistableSGSFunction::varCount() {
 	return p.numJobs + 1;
 }
 
-SGSResult ListDeadlineModel::QuasistableSGSFunction::decode(vector<int>& order, const LSNativeContext& context) {
+SGSResult ListDeadlineModel::QuasistableSGSFunction::decode(vector<int>& order, const LSExternalArgumentValues& context) {
 	int deadlineOffset = static_cast<int>(context.getIntValue(p.numJobs));
 	return p.forwardBackwardDeadlineOffsetSGS(order, deadlineOffset, true);
 }

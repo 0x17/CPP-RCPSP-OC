@@ -7,12 +7,12 @@
 using namespace std;
 using namespace localsolver;
 
-class ListDecoder : public LSNativeFunction {
+class ListDecoder : public LSExternalFunction<localsolver::lsdouble> {
 	const Project &p;
 public:
 	ListDecoder(const Project &_p) : p(_p) {}
 
-	lsdouble call(const LSNativeContext & context) override {
+	lsdouble call(const LSExternalArgumentValues & context) override {
 		vector<int> order(p.numJobs);
 
 		if (context.count() < p.numJobs) return std::numeric_limits<int>::max();
@@ -34,7 +34,7 @@ vector<int> LSSolver::solveRCPSP(const Project &p) {
 	auto model = ls.getModel();
 
 	ListDecoder sgsFunc(p);
-	const LSExpression sgsFuncExpr = model.createNativeFunction(&sgsFunc);
+	const LSExpression sgsFuncExpr = model.createExternalFunction(&sgsFunc);
 	LSExpression obj = model.createExpression(O_Call, sgsFuncExpr);
 
 	LSExpression activityList = model.listVar(p.numJobs);
@@ -69,12 +69,12 @@ vector<int> LSSolver::solveRCPSP(const Project &p) {
 	return p.serialSGS(order, zeroOc, true).sts;
 }
 
-class ListDecoderWithOC : public LSNativeFunction {
+class ListDecoderWithOC : public LSExternalFunction<localsolver::lsdouble> {
 	const ProjectWithOvertime &p;
 public:
 	ListDecoderWithOC(const ProjectWithOvertime &_p) : p(_p) {}
 
-	lsdouble call(const LSNativeContext & context) override {
+	lsdouble call(const LSExternalArgumentValues & context) override {
 		vector<int> order(p.numJobs);
 
 		if (context.count() < p.numJobs) return std::numeric_limits<int>::min();
@@ -99,7 +99,7 @@ vector<int> LSSolver::solveRCPSPROC(const ProjectWithOvertime &p) {
 	auto model = ls.getModel();
 
 	ListDecoderWithOC sgsFunc(p);
-	const LSExpression sgsFuncExpr = model.createNativeFunction(&sgsFunc);
+	const LSExpression sgsFuncExpr = model.createExternalFunction(&sgsFunc);
 	LSExpression obj = model.createExpression(O_Call, sgsFuncExpr);
 
 	LSExpression activityList = model.listVar(p.numJobs);

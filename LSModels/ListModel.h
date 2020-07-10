@@ -11,7 +11,7 @@ namespace Utils {
 	class Tracer;
 }
 
-class ProjectNativeFunction : public localsolver::LSNativeFunction {
+class ProjectNativeFunction : public localsolver::LSExternalFunction<localsolver::lsdouble> {
 protected:
 	ProjectWithOvertime &p;
 	Utils::Tracer *tr = nullptr;
@@ -25,8 +25,8 @@ public:
 
 class BaseSchedulingNativeFunction : public ProjectNativeFunction {
 protected:
-	virtual boost::optional<SGSResult> coreComputation(const localsolver::LSNativeContext &context) = 0;
-	localsolver::lsdouble call(const localsolver::LSNativeContext& context) override;
+	virtual boost::optional<SGSResult> coreComputation(const localsolver::LSExternalArgumentValues &context) = 0;
+	localsolver::lsdouble call(const localsolver::LSExternalArgumentValues& context) override;
 public:
 	explicit BaseSchedulingNativeFunction(ProjectWithOvertime &_p) : ProjectNativeFunction(_p) {}
 	~BaseSchedulingNativeFunction() override = default;
@@ -37,15 +37,15 @@ public:
 	explicit ListSchedulingNativeFunction(ProjectWithOvertime &_p) : BaseSchedulingNativeFunction(_p) {}
 	~ListSchedulingNativeFunction() override = default;
 
-	virtual SGSResult decode(std::vector<int> &order, const localsolver::LSNativeContext &context) = 0;
-	boost::optional<SGSResult> coreComputation(const localsolver::LSNativeContext& context) override;
+	virtual SGSResult decode(std::vector<int> &order, const localsolver::LSExternalArgumentValues &context) = 0;
+	boost::optional<SGSResult> coreComputation(const localsolver::LSExternalArgumentValues& context) override;
 };
 
-class TopOrderChecker : public localsolver::LSNativeFunction {
+class TopOrderChecker : public localsolver::LSExternalFunction<localsolver::lsdouble> {
 	const Project &p;
 public:
 	explicit TopOrderChecker(const Project &_p) : p(_p) {}
-	localsolver::lsdouble call(const localsolver::LSNativeContext& context) override;
+	localsolver::lsdouble call(const localsolver::LSExternalArgumentValues& context) override;
 };
 
 struct LSModelOptions : JsonUtils::IJsonSerializable {
@@ -124,8 +124,8 @@ class RandomKeySchedulingNativeFunction : public BaseSchedulingNativeFunction {
 public:
 	explicit RandomKeySchedulingNativeFunction(ProjectWithOvertime &_p) : BaseSchedulingNativeFunction(_p) {}
 	~RandomKeySchedulingNativeFunction() override = default;
-	virtual SGSResult decode(std::vector<float> &priorities, const localsolver::LSNativeContext &context) = 0;
-	boost::optional<SGSResult> coreComputation(const localsolver::LSNativeContext &context) override;
+	virtual SGSResult decode(std::vector<float> &priorities, const localsolver::LSExternalArgumentValues &context) = 0;
+	boost::optional<SGSResult> coreComputation(const localsolver::LSExternalArgumentValues &context) override;
 };
 
 class RandomKeyModel : public LSBaseModel {

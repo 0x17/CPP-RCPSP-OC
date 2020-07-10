@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <algorithm>
+#include <iostream>
 
 #include <boost/algorithm/clamp.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -351,11 +352,12 @@ void ProjectWithOvertime::from_json(const json11::Json& obj) {
 	zmax = JsonUtils::extractIntArrayFromObj(obj, "zmax");
 }
 
-std::vector<int> ProjectWithOvertime::serialOptimalSubSGS(const std::vector<int>& orderInducedPartitions, int partitionSize) const {
+std::vector<int> ProjectWithOvertime::serialOptimalSubSGS(const std::vector<int>& orderInducedPartitions, int partitionSize) const {	
+	std::vector<int> sts(numJobs, UNSCHEDULED), nextPartition(partitionSize, -1);
+
+#ifndef DISABLE_GUROBI
 	static GurobiSolverBase::Options opts;
 	static GurobiSubprojectSolver solver(*this, opts);
-
-	std::vector<int> sts(numJobs, UNSCHEDULED), nextPartition(partitionSize, -1);
 
 	const int numPartitions = ceil((float)orderInducedPartitions.size() / (float)partitionSize);
 	for(int p = 0; p < numPartitions; p++) {
@@ -372,18 +374,20 @@ std::vector<int> ProjectWithOvertime::serialOptimalSubSGS(const std::vector<int>
 		solver.supplyWithMIPStart(complementPartialWithSpecificJobsUsingSSGS(sts, nextPartition), nextPartition);
 		sts = solver.solve().sts;
 	}
+#endif
 
 	return sts;
 }
 
 std::vector<int> ProjectWithOvertime::serialOptimalSubSGSWithPartitionList(const std::vector<int> &partitionList) const {
-	static GurobiSolverBase::Options opts;
-	static GurobiSubprojectSolver solver(*this, opts);
-
-	const int numPartitions = *max_element(partitionList.begin(), partitionList.end())+1;
+	const int numPartitions = *max_element(partitionList.begin(), partitionList.end()) + 1;
 	const int partitionSize = count(partitionList.begin(), partitionList.end(), 0);
 
 	std::vector<int> sts(numJobs, UNSCHEDULED), nextPartition(partitionSize, -1);
+	
+#ifndef DISABLE_GUROBI	
+	static GurobiSolverBase::Options opts;
+	static GurobiSubprojectSolver solver(*this, opts);
 
 	//Stopwatch sw;
 	//sw.start();
@@ -407,6 +411,7 @@ std::vector<int> ProjectWithOvertime::serialOptimalSubSGSWithPartitionList(const
 
 		//cout << "Time required MIP solve = " << sw.lookAndReset() << endl;
 	}
+#endif
 
 	return sts;
 }

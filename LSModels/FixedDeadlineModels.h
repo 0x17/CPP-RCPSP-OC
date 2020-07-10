@@ -9,7 +9,7 @@ class GSListModel : public ListModel {
 	public:
 		explicit QuasistableSGSFunction(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSExternalArgumentValues& context) override;
 	};
 
 protected:
@@ -27,7 +27,7 @@ class ListDeadlineModel : public ListModel {
 	public:
 		explicit QuasistableSGSFunction(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSExternalArgumentValues& context) override;
 	};
 
 protected:

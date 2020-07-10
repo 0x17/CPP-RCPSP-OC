@@ -135,11 +135,11 @@ std::vector<int> LSSolver::solve(ProjectWithOvertime& p, double timeLimit, int i
 class RevenueFunction : public ProjectNativeFunction {
 public:
 	explicit RevenueFunction(ProjectWithOvertime &_p) : ProjectNativeFunction(_p) {}
-	lsdouble call(const LSNativeContext &context) override;
+	lsdouble call(const LSExternalArgumentValues &context) override;
 	int varCount() override;
 };
 
-lsdouble RevenueFunction::call(const LSNativeContext &context) {
+lsdouble RevenueFunction::call(const LSExternalArgumentValues &context) {
 	assert(context.count() == 1);
 	return p.revenue[context.getIntValue(0)];
 }
@@ -151,11 +151,11 @@ int RevenueFunction::varCount() {
 class CumulatedDemandFunction : public ProjectNativeFunction {
 public:
 	explicit CumulatedDemandFunction(ProjectWithOvertime &_p) : ProjectNativeFunction(_p) { }
-	lsdouble call(const LSNativeContext &context) override;
+	lsdouble call(const LSExternalArgumentValues &context) override;
 	int varCount() override;
 };
 
-lsdouble CumulatedDemandFunction::call(const LSNativeContext &context) {
+lsdouble CumulatedDemandFunction::call(const LSExternalArgumentValues &context) {
 	int demand = 0;
 
 	lsint r = context.getIntValue(0);
@@ -183,10 +183,10 @@ std::vector<int> LSSolver::solveNative(ProjectWithOvertime &p) {
 	auto model = ls.getModel();
 
 	RevenueFunction revFunc(p);
-	LSExpression revFuncExpr = model.createNativeFunction(&revFunc);
+	LSExpression revFuncExpr = model.createExternalFunction(&revFunc);
 
 	CumulatedDemandFunction cumDemFunc(p);
-	LSExpression cumDemFuncExpr = model.createNativeFunction(&cumDemFunc);
+	LSExpression cumDemFuncExpr = model.createExternalFunction(&cumDemFunc);
 
 	// Decision variables
 	std::vector<LSExpression> Sj(p.numJobs);
@@ -279,13 +279,13 @@ void LSSolver::writeLSPModelParamFile(ProjectWithOvertime &p, string outFilename
 
 const static int partitionSize = 4;
 
-class SerialSubSGSFunction : public localsolver::LSNativeFunction {
+class SerialSubSGSFunction : public localsolver::LSExternalFunction<localsolver::lsdouble> {
 	const ProjectWithOvertime &p;
 public:
 	explicit SerialSubSGSFunction(const ProjectWithOvertime &_p) : p(_p) {}
 	~SerialSubSGSFunction() override = default;
 
-	lsdouble call(const LSNativeContext &context) override {
+	lsdouble call(const LSExternalArgumentValues &context) override {
 		assert(context.count() == p.numJobs);
 
 		const auto partitionList = Utils::constructVector<int>(p.numJobs, [&](int j) { return static_cast<int>(context.getIntValue(j)); });
@@ -301,7 +301,7 @@ std::vector<int> LSSolver::solvePartitionListModel(ProjectWithOvertime &p) {
 	auto model = ls.getModel();
 
 	SerialSubSGSFunction sgsFunc(p);
-	LSExpression sgsFuncExpr = model.createNativeFunction(&sgsFunc);
+	LSExpression sgsFuncExpr = model.createExternalFunction(&sgsFunc);
 
 	int partitionCount = static_cast<int>(ceil(p.numJobs / partitionSize));
 

@@ -72,12 +72,12 @@ vector<int> PartitionsModel::parseScheduleFromSolution(localsolver::LSSolution &
 	return p.serialOptimalSubSGSWithPartitionListAndFBI(partitionList).sts;
 }
 
-SGSResult PartitionsSchedulingNativeFunction::decode(const Matrix<int> &partitions, const localsolver::LSNativeContext &context) {
+SGSResult PartitionsSchedulingNativeFunction::decode(const Matrix<int> &partitions, const localsolver::LSExternalArgumentValues &context) {
 	const auto partitionList = Utils::constructVector<int>(p.numJobs, [&](int j) { return partitionOfJob(partitions, j); });
 	return p.serialOptimalSubSGSWithPartitionListAndFBI(partitionList);
 }
 
-boost::optional<SGSResult> PartitionsSchedulingNativeFunction::coreComputation(const localsolver::LSNativeContext &context) {
+boost::optional<SGSResult> PartitionsSchedulingNativeFunction::coreComputation(const localsolver::LSExternalArgumentValues &context) {
 	const int partitionSize = LSBaseModel::getOptions().partitionSize;
 	Matrix<int> partitions(p.numJobs / partitionSize, partitionSize);
 
@@ -107,7 +107,7 @@ int ActivityListPartitionsModel::ActivityListPartitionsSchedulingNativeFunction:
 	return p.numJobs;
 }
 
-SGSResult ActivityListPartitionsModel::ActivityListPartitionsSchedulingNativeFunction::decode(vector<int>& order, const LSNativeContext& context) {
+SGSResult ActivityListPartitionsModel::ActivityListPartitionsSchedulingNativeFunction::decode(vector<int>& order, const LSExternalArgumentValues& context) {
 	return p.serialOptimalSubSGSAndFBI(order, options.partitionSize, true);
 }
 

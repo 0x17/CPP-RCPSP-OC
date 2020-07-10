@@ -9,7 +9,7 @@ class ListBetaModel : public ListModel {
 	public:
 		explicit SerialSGSBetaFunction(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSExternalArgumentValues& context) override;
 	};
 
 	void addAdditionalData(localsolver::LSModel &model, localsolver::LSExpression& obj) override;
@@ -32,7 +32,7 @@ class ListTauModel : public ListModel {
 	public:
 		explicit SerialSGSTauFunction(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSExternalArgumentValues& context) override;
 	};
 
 	std::vector<localsolver::LSExpression> tauVar;
@@ -51,7 +51,7 @@ class ListTauDiscreteModel : public ListModel {
 	public:
 		explicit SerialSGSIntegerFunction(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSExternalArgumentValues& context) override;
 	};
 
 	static const localsolver::lsint IV_COUNT = 4;
@@ -71,7 +71,7 @@ class ListAlternativesModel : public ListModel {
 	public:
 		explicit SerialSGSAlternativesDecoder(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSExternalArgumentValues& context) override;
 	};
 
 	std::vector<int> parseScheduleFromSolution(localsolver::LSSolution &sol) override;

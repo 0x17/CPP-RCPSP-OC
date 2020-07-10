@@ -8,8 +8,8 @@ class PartitionsSchedulingNativeFunction : public BaseSchedulingNativeFunction {
 public:
 	explicit PartitionsSchedulingNativeFunction(ProjectWithOvertime &_p) : BaseSchedulingNativeFunction(_p) {}
 	~PartitionsSchedulingNativeFunction() override = default;
-	SGSResult decode(const Matrix<int> &partitions, const localsolver::LSNativeContext &context);
-	boost::optional<SGSResult> coreComputation(const localsolver::LSNativeContext &context) override;
+	SGSResult decode(const Matrix<int> &partitions, const localsolver::LSExternalArgumentValues &context);
+	boost::optional<SGSResult> coreComputation(const localsolver::LSExternalArgumentValues &context) override;
 
 	int varCount() override;
 };
@@ -40,7 +40,7 @@ class ActivityListPartitionsModel : public ListModel {
 	public:
 		explicit ActivityListPartitionsSchedulingNativeFunction(ProjectWithOvertime &_p) : ListSchedulingNativeFunction(_p) {}
 		int varCount() override;
-		SGSResult decode(std::vector<int>& order, const localsolver::LSNativeContext& context) override;
+		SGSResult decode(std::vector<int>& order, const localsolver::LSExternalArgumentValues& context) override;
 	};
 
 protected:
